@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agenda da Congregação – Jardim Elizabeth</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "on-primary": "#ffffff",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "secondary-fixed-dim": "#aac7ff",
+            "surface-bright": "#fbf9f8",
+            "inverse-on-surface": "#f2f0f0",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface": "#fbf9f8",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#9cbffe",
+            "primary-fixed": "#d6e3ff",
+            "on-primary-fixed": "#001b3d",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .month-body { display: none; }
+    .month-block.open .month-body { display: block; }
+    .month-chevron { transition: transform 0.25s; }
+    .month-block.open .month-chevron { transform: rotate(180deg); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background font-body" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="text-2xl font-bold tracking-tighter text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth">Home</a>
+        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agenda">Agenda</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos">Agendamentos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/donativos">Donativos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/quadro-de-an%C3%BAncios">Quadro de Anúncios</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/territórios">Territórios</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
+        </a>
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
+  </nav>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          <span class="text-secondary">Jardim Elizabeth</span>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Agenda</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Agenda da Congregação</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Reuniões, eventos especiais e datas importantes organizados por mês.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-10 fade-up-2">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- ── ACORDEÃO ────────────────────────────────────────── -->
+        <div class="lg:col-span-8 space-y-3">
+
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-secondary">calendar_month</span>
+            <h2 class="text-xl font-bold text-primary tracking-tight">Programação</h2>
+            <div class="flex-1 h-px bg-outline-variant"></div>
+          </div>
+
+          <!-- ════ JANEIRO / 2026 ════ -->
+          <div class="month-block open bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
+              <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
+                <span class="font-bold text-primary text-base">Janeiro / 2026</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary-fixed/60 px-2 py-0.5 rounded-full">3 eventos</span>
+              </div>
+              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
+            </div>
+            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-xl font-extrabold text-primary leading-none">05</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Seg</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Rodízio de Horários</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião de quarta e sábado às 19:30 hs.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:30 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
+                  <div class="text-xl font-extrabold text-white leading-none">06</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Ter</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Visita do Superintendente de Circuito</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Visita oficial do superintendente de circuito à congregação.</p>
+                  <div class="flex gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-xl font-extrabold text-primary leading-none">09</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Sex</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião com Pioneiros Auxiliares</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Às 19:00 hs com pioneiros auxiliares. Às 20:15 hs com anciãos e servos.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:00 · 20:15 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ════ FEVEREIRO / 2026 ════ -->
+          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
+              <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
+                <span class="font-bold text-primary text-base">Fevereiro / 2026</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary-fixed/60 px-2 py-0.5 rounded-full">1 evento</span>
+              </div>
+              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
+            </div>
+            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
+                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">21</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Sáb</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião Especial com Representantes da Sede Mundial</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião especial com os representantes da sede mundial, às 18:00 horas.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>18:00 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ════ EVENTOS FUTUROS ════ -->
+          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
+              <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#c8a96e"></div>
+                <span class="font-bold text-primary text-base">Eventos Futuros</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary-fixed/60 px-2 py-0.5 rounded-full">10 eventos</span>
+              </div>
+              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
+            </div>
+            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-xl font-extrabold text-primary leading-none">01</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Mar</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Assembleia</span>
+                  <h3 class="font-bold text-on-surface text-sm">Assembleia de Circuito</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Assembleia de Circuito com o superintendente.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
+                  <div class="text-xl font-extrabold text-white leading-none">28</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Mar</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm">Discurso Especial</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Discurso especial para toda a congregação.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
+                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">02</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Abr</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
+                  <h3 class="font-bold text-on-surface text-sm">Celebração no Salão do Reino</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração especial em nosso salão do Reino.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-sm font-extrabold text-primary leading-none">18–19</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Abr</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm">Visita do Representante de Betel</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do representante de Betel à congregação.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
+                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">05</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Jun</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Passeio</span>
+                  <h3 class="font-bold text-on-surface text-sm">Visita a Betel</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Vagas limitadas — procurem nosso irmão Edvan para se inscrever.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-sm font-extrabold text-primary leading-none">09–14</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Jun</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm">Visita do Superintendente de Circuito</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do superintendente de circuito à congregação.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
+                  <div class="text-sm font-extrabold text-white leading-none">17–19</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Jul</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Congresso</span>
+                  <h3 class="font-bold text-on-surface text-sm">Congresso VGP (9)</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Congresso de circuito.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-[10px] font-extrabold text-primary leading-none">27/7–01/8</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">2026</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
+                  <h3 class="font-bold text-on-surface text-sm">Escola de Pioneiros — Classe A</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Início da Escola de Pioneiros Classe A.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
+                  <div class="text-[10px] font-extrabold text-primary leading-none">03–08/8</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">2026</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
+                  <h3 class="font-bold text-on-surface text-sm">Escola de Pioneiros — Classe B</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Escola de Pioneiros Classe B.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
+                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">22</div>
+                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Mar/27</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
+                  <h3 class="font-bold text-on-surface text-sm">Celebração — 2027</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração em 22/03/2027.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <!-- FIM ACORDEÃO ─────────────────────────────────────────── -->
+
+
+        <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+        <aside class="lg:col-span-4 space-y-5">
+
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
+              <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface-variant">Destaques do Ano</h3>
+            </div>
+            <div class="space-y-3">
+              <div class="flex gap-3">
+                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+                <div>
+                  <div class="text-[11px] font-bold text-secondary">21 Fev 2026</div>
+                  <div class="text-xs text-on-surface-variant">Reunião Especial — Representantes da Sede Mundial</div>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+                <div>
+                  <div class="text-[11px] font-bold text-secondary">01 Mar 2026</div>
+                  <div class="text-xs text-on-surface-variant">Assembleia de Circuito</div>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+                <div>
+                  <div class="text-[11px] font-bold text-secondary">02 Abr 2026</div>
+                  <div class="text-xs text-on-surface-variant">Celebração da Morte de Cristo</div>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+                <div>
+                  <div class="text-[11px] font-bold text-secondary">05 Jun 2026</div>
+                  <div class="text-xs text-on-surface-variant">Visita a Betel — vagas limitadas</div>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+                <div>
+                  <div class="text-[11px] font-bold text-secondary">17–19 Jul 2026</div>
+                  <div class="text-xs text-on-surface-variant">Congresso VGP (9)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-center leading-relaxed">
+              Os assuntos deste site são particulares e não devem ser compartilhados.
+            </p>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- ══ FAIXA INFORMATIVA ════════════════════════════════════ -->
+<section class="bg-surface-container-high py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+        <p class="text-on-surface-variant text-sm">
+          Rua Professor Orestes Rosólia, 164<br>
+          Jardim Rosana, São Paulo – SP<br>
+          CEP 05795-300
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
+        <p class="text-on-surface-variant text-sm">
+          Quartas-feiras às 19h30<br>
+          Sábados às 19h30
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
+        <p class="text-on-surface-variant text-sm">
+          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMonth(header) {
+      header.closest('.month-block').classList.toggle('open');
+    }
+  </script>
+
+</body>
+</html>

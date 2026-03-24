@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donativos – Jardim Elizabeth</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-lowest": "#ffffff",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="text-2xl font-bold tracking-tighter text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth">Home</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agenda">Agenda</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos">Agendamentos</a>
+        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/donativos">Donativos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/quadro-de-an%C3%BAncios">Quadro de Anúncios</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/territórios">Territórios</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
+        </a>
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
+  </nav>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          <span class="text-secondary">Jardim Elizabeth</span>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Donativos</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Donativos</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Esta página foi criada com o objetivo de facilitar o PIX para a congregação.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-3xl mx-auto px-6 py-14 fade-up-2">
+
+      <!-- Card PIX com QR Code ao lado -->
+      <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-8 md:p-10 mb-8">
+
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-secondary-fixed/40 flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary" style="font-size:24px">volunteer_activism</span>
+          </div>
+          <div>
+            <h2 class="text-xl font-extrabold text-primary tracking-tight">PIX da Congregação</h2>
+            <p class="text-on-surface-variant text-xs">Em nome do Irmão Marcelo Almeida</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-8">
+
+          <!-- Chave PIX -->
+          <div class="flex-1 w-full">
+            <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Chave PIX — E-mail</p>
+              <p class="text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
+              <p class="text-xs text-on-surface-variant mt-2">Marcelo Branco Almeida · Santander</p>
+            </div>
+          </div>
+
+          <!-- QR Code ao lado -->
+          <div class="flex-shrink-0 bg-white rounded-xl border border-outline-variant shadow-sm p-3 flex flex-col items-center">
+            <img src="https://i.imgur.com/UfObh21.jpeg"
+                 alt="QR Code PIX Jardim Elizabeth"
+                 class="w-40 h-40 object-contain"/>
+            <p class="text-[9px] font-bold uppercase tracking-widest text-outline text-center mt-2">Escaneie para pagar</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Aviso -->
+      <div class="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex items-start gap-4 mb-6">
+        <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:20px">info</span>
+        <p class="text-on-surface-variant text-sm leading-relaxed">
+          As contribuições são totalmente <strong class="text-primary">voluntárias</strong>. Nenhum membro está obrigado a contribuir. Agradecemos de coração o apoio de cada um.
+        </p>
+      </div>
+
+      <!-- Aviso de privacidade -->
+      <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-center leading-relaxed">
+          Os assuntos deste site são particulares e não devem ser compartilhados.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ══ FAIXA INFORMATIVA ════════════════════════════════════ -->
+    <section class="bg-surface-container-high py-16">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-3 gap-12">
+          <div>
+            <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+            <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+            <p class="text-on-surface-variant text-sm">
+              Rua Professor Orestes Rosólia, 164<br>
+              Jardim Rosana, São Paulo – SP<br>
+              CEP 05795-300
+            </p>
+          </div>
+          <div>
+            <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
+            <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
+            <p class="text-on-surface-variant text-sm">
+              Quartas-feiras às 19h30<br>
+              Sábados às 19h30
+            </p>
+          </div>
+          <div>
+            <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
+            <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
+            <p class="text-on-surface-variant text-sm">
+              <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

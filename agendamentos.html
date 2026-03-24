@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agendamentos – Jardim Elizabeth</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "on-primary": "#ffffff",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "surface-bright": "#fbf9f8",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface": "#fbf9f8",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed": "#d6e3ff",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="text-2xl font-bold tracking-tighter text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth">Home</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agenda">Agenda</a>
+        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos">Agendamentos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/donativos">Donativos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/quadro-de-an%C3%BAncios">Quadro de Anúncios</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/territórios">Territórios</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
+        </a>
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
+  </nav>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          <span class="text-secondary">Jardim Elizabeth</span>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Agendamentos</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Agendamentos</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Organize sua participação no testemunho público de forma simples e harmoniosa.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-12 fade-up-2">
+
+      <!-- Instrução — texto exato do site original -->
+      <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
+        Para prosseguir clique no equipamento desejado
+      </p>
+
+      <!-- Dois cards clicáveis — Carrinhos e Displays -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+        <!-- Carrinhos -->
+        <a href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos/carrinhos"
+           class="group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
+          <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <svg viewBox="0 0 64 80" width="44" height="54" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- rodas -->
+              <circle cx="20" cy="72" r="4" fill="#3b5e97"/>
+              <circle cx="44" cy="72" r="4" fill="#3b5e97"/>
+              <!-- base/chassi -->
+              <rect x="12" y="62" width="40" height="6" rx="3" fill="#3b5e97"/>
+              <!-- corpo do carrinho -->
+              <rect x="10" y="22" width="44" height="42" rx="3" fill="#3b5e97"/>
+              <!-- prateleira inferior -->
+              <rect x="10" y="50" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
+              <!-- prateleira meio -->
+              <rect x="10" y="36" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
+              <!-- publicações prateleira de cima -->
+              <rect x="14" y="24" width="16" height="11" rx="1" fill="#9dbcf2"/>
+              <rect x="33" y="24" width="16" height="11" rx="1" fill="#aac7ff"/>
+              <!-- publicações prateleira do meio -->
+              <rect x="14" y="39" width="16" height="10" rx="1" fill="#d6e3ff"/>
+              <rect x="33" y="39" width="16" height="10" rx="1" fill="#9cbffe"/>
+              <!-- caixas embaixo -->
+              <rect x="13" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+              <rect x="26" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+              <rect x="39" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+              <!-- folheto/publicação em cima -->
+              <rect x="18" y="6" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
+              <rect x="18" y="2" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
+              <rect x="22" y="6" width="10" height="7" rx="1" fill="#d6e3ff"/>
+              <line x1="22" y1="16" x2="34" y2="16" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="22" y1="19" x2="30" y2="19" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-extrabold text-primary tracking-tight mb-2">Carrinhos</h2>
+            <p class="text-on-surface-variant text-sm leading-relaxed">Testemunho público móvel em pontos estratégicos da cidade.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all mt-2">
+            Agendar <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+          </span>
+        </a>
+
+        <!-- Displays -->
+        <a href="http://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos/displays"
+           class="group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
+          <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <svg viewBox="0 0 64 64" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- base do display -->
+              <rect x="8" y="52" width="48" height="5" rx="2.5" fill="#3b5e97"/>
+              <!-- estrutura vertical esquerda -->
+              <rect x="8" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
+              <!-- estrutura vertical direita -->
+              <rect x="51" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
+              <!-- prateleira topo -->
+              <rect x="8" y="12" width="48" height="4" rx="2" fill="#3b5e97"/>
+              <!-- prateleira meio -->
+              <rect x="8" y="34" width="48" height="4" rx="2" fill="#2b4b7a"/>
+              <!-- publicações topo -->
+              <rect x="14" y="14" width="16" height="18" rx="1.5" fill="#9dbcf2"/>
+              <rect x="33" y="14" width="16" height="18" rx="1.5" fill="#aac7ff"/>
+              <!-- publicações baixo -->
+              <rect x="14" y="38" width="16" height="13" rx="1.5" fill="#d6e3ff"/>
+              <rect x="33" y="38" width="16" height="13" rx="1.5" fill="#9cbffe"/>
+              <!-- detalhe nas publicações -->
+              <rect x="16" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
+              <rect x="35" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-extrabold text-primary tracking-tight mb-2">Displays</h2>
+            <p class="text-on-surface-variant text-sm leading-relaxed">Expositores de mesa e publicações em locais fixos permitidos.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all mt-2">
+            Agendar <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+          </span>
+        </a>
+
+      </div>
+
+      <!-- Aviso de privacidade -->
+      <div class="mt-12 max-w-4xl mx-auto">
+        <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-center leading-relaxed">
+            Os assuntos deste site são particulares e não devem ser compartilhados.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ FAIXA INFORMATIVA ════════════════════════════════════ -->
+<section class="bg-surface-container-high py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+        <p class="text-on-surface-variant text-sm">
+          Rua Professor Orestes Rosólia, 164<br>
+          Jardim Rosana, São Paulo – SP<br>
+          CEP 05795-300
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
+        <p class="text-on-surface-variant text-sm">
+          Quartas-feiras às 19h30<br>
+          Sábados às 19h30
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
+        <p class="text-on-surface-variant text-sm">
+          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+</body>
+</html>

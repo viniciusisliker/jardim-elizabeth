@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Territórios – Jardim Elizabeth</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "on-primary": "#ffffff",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "secondary-fixed-dim": "#aac7ff",
+            "surface-bright": "#fbf9f8",
+            "inverse-on-surface": "#f2f0f0",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface": "#fbf9f8",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#9cbffe",
+            "primary-fixed": "#d6e3ff",
+            "on-primary-fixed": "#001b3d",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="text-2xl font-bold tracking-tighter text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth">Home</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agenda">Agenda</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos">Agendamentos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/donativos">Donativos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/quadro-de-an%C3%BAncios">Quadro de Anúncios</a>
+        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/territórios">Territórios</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
+        </a>
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
+  </nav>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          <span class="text-secondary">Jardim Elizabeth</span>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Territórios</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Territórios</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Confira as imagens dos territórios e organize o trabalho de pregação de forma eficiente.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-10 fade-up-2 space-y-8">
+
+            <!-- Título da seção -->
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-secondary">map</span>
+        <h2 class="text-xl font-bold text-primary tracking-tight">Territórios da Congregação</h2>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+
+      <!-- Grid de cards — 19 territórios reais -->
+      <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        <!-- 01 — Jardim Campo Limpo -->
+        <article data-nome="jardim campo limpo" data-num="01" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 01</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Campo Limpo</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 01 – Jardim Campo Limpo"
+                   src="https://i.imgur.com/qvFhstA.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02 — Jardim Elizabeth A -->
+        <article data-nome="jardim elizabeth a" data-num="02" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 02</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth A</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 02 – Jardim Elizabeth A"
+                   src="https://i.imgur.com/Hu5cQzj.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 03 — Jardim Elizabeth B -->
+        <article data-nome="jardim elizabeth b" data-num="03" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 03</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth B</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 03 – Jardim Elizabeth B"
+                   src="https://i.imgur.com/Iu28ZGN.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 04 — Jardim Elizabeth C -->
+        <article data-nome="jardim elizabeth c" data-num="04" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 04</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth C</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 04 – Jardim Elizabeth C"
+                   src="https://i.imgur.com/nqyMIZt.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 05 — Jardim Elizabeth D -->
+        <article data-nome="jardim elizabeth d" data-num="05" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 05</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth D</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 05 – Jardim Elizabeth D"
+                   src="https://i.imgur.com/V5sOIys.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 06 — Vila Pirajussara -->
+        <article data-nome="vila pirajussara" data-num="06" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 06</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Vila Pirajussara</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 06 – Vila Pirajussara"
+                   src="https://i.imgur.com/TtL1NRZ.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 07 — Jardim Iracema A -->
+        <article data-nome="jardim iracema a" data-num="07" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 07</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Iracema A</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 07 – Jardim Iracema A"
+                   src="https://i.imgur.com/QvT4lcC.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 08 — Jardim Iracema B -->
+        <article data-nome="jardim iracema b" data-num="08" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 08</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Iracema B</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 08 – Jardim Iracema B"
+                   src="https://i.imgur.com/Dlocux8.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 09 — Jardim Helga E -->
+        <article data-nome="jardim helga e" data-num="09" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 09</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga E</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 09 – Jardim Helga E"
+                   src="https://i.imgur.com/7jaE4gy.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 10 — Jd Leônidas Moreira A -->
+        <article data-nome="jardim leônidas moreira a leonidas" data-num="10" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 10</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira A</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 10 – Jd Leônidas Moreira A"
+                   src="https://i.imgur.com/Ws9ip6w.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 11 — Jd Leônidas Moreira B -->
+        <article data-nome="jardim leônidas moreira b leonidas" data-num="11" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 11</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira B</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 11 – Jd Leônidas Moreira B"
+                   src="https://i.imgur.com/f5HvcIG.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 12 — Jd Leônidas Moreira C -->
+        <article data-nome="jardim leônidas moreira c leonidas" data-num="12" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 12</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira C</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 12 – Jd Leônidas Moreira C"
+                   src="https://i.imgur.com/ZS5qw7x.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 13 — CDHU A -->
+        <article data-nome="cdhu a" data-num="13" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 13</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">CDHU A</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 13 – CDHU A"
+                   src="https://i.imgur.com/cAuKYWN.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 14 — CDHU B -->
+        <article data-nome="cdhu b" data-num="14" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 14</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">CDHU B</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 14 – CDHU B"
+                   src="https://i.imgur.com/362NXfR.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 15 — CDHU C -->
+        <article data-nome="cdhu c" data-num="15" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 15</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">CDHU C</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 15 – CDHU C"
+                   src="https://i.imgur.com/f0NDx0z.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 16 — Jardim Helga A -->
+        <article data-nome="jardim helga a" data-num="16" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 16</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga A</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 16 – Jardim Helga A"
+                   src="https://i.imgur.com/xyJt7dc.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 17 — Jardim Helga B -->
+        <article data-nome="jardim helga b" data-num="17" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 17</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga B</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 17 – Jardim Helga B"
+                   src="https://i.imgur.com/nXrMdXk.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 18 — Jardim Helga C -->
+        <article data-nome="jardim helga c" data-num="18" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 18</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga C</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 18 – Jardim Helga C"
+                   src="https://i.imgur.com/BCMwLbR.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 19 — Jardim Helga D -->
+        <article data-nome="jardim helga d" data-num="19" data-status="disponivel"
+                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 19</span>
+                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga D</h3>
+              </div>
+            </div>
+            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
+              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                   alt="Mapa Território 19 – Jardim Helga D"
+                   src="https://i.imgur.com/uLxj3O1.jpeg"/>
+            </div>
+            <div class="flex items-center justify-between">
+              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
+                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Diretrizes -->
+      <div class="bg-surface-container-low border border-outline-variant rounded-xl p-8 md:p-10 mt-4">
+        <div class="flex flex-col md:flex-row gap-10">
+          <div class="md:w-1/3">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="material-symbols-outlined text-secondary">verified_user</span>
+              <h2 class="text-xl font-bold text-primary tracking-tight">Diretrizes de Trabalho</h2>
+            </div>
+            <p class="text-on-surface-variant text-sm leading-relaxed">Orientações essenciais para um testemunho eficaz e respeitoso em nossa região.</p>
+          </div>
+          <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:18px">update</span> Prazos
+              </h4>
+              <p class="text-xs text-on-surface-variant leading-relaxed">Procure trabalhar o território de forma consciente, hábil e com agilidade.</p>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:18px">note_alt</span> Registros
+              </h4>
+              <p class="text-xs text-on-surface-variant leading-relaxed">Mantenha as anotações de 'não em casa' e 'revisitas' organizadas para o próximo publicador.</p>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:18px">notifications_off</span> Não Visitar
+              </h4>
+              <p class="text-xs text-on-surface-variant leading-relaxed">Respeite rigorosamente as residências marcadas como "Não Visitar" para evitar conflitos.</p>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:18px">assignment_turned_in</span> Devolução
+              </h4>
+              <p class="text-xs text-on-surface-variant leading-relaxed">Ao concluir, sinalize para o Servo de Territórios que ele foi concluído para que a devolução seja efetuada.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ FAIXA INFORMATIVA ════════════════════════════════════ -->
+<section class="bg-surface-container-high py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+        <p class="text-on-surface-variant text-sm">
+          Rua Professor Orestes Rosólia, 164<br>
+          Jardim Rosana, São Paulo – SP<br>
+          CEP 05795-300
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
+        <p class="text-on-surface-variant text-sm">
+          Quartas-feiras às 19h30<br>
+          Sábados às 19h30
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
+        <p class="text-on-surface-variant text-sm">
+          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+  
+
+</body>
+</html>

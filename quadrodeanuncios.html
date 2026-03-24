@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quadro de Anúncios – Jardim Elizabeth</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-lowest": "#ffffff",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+
+    /* Acordeão */
+    .accordion-content { display: none; }
+    .accordion-item.open .accordion-content { display: block; }
+    .accordion-item.open .chevron { transform: rotate(180deg); }
+    .chevron { transition: transform 0.2s ease; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+      <div class="text-2xl font-bold tracking-tighter text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth">Home</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agenda">Agenda</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/agendamentos">Agendamentos</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/donativos">Donativos</a>
+        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/quadro-de-an%C3%BAncios">Quadro de Anúncios</a>
+        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://sites.google.com/view/congjardimelizabeth/jdelizabeth/territórios">Territórios</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
+        </a>
+        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
+          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
+  </nav>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          <span class="text-secondary">Jardim Elizabeth</span>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Quadro de Anúncios</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Quadro de Anúncios</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Mantenha-se atualizado com designações, programações e informações importantes da congregação.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-12 fade-up-2">
+
+      <!-- Instrução -->
+      <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
+        Para prosseguir clique na seção desejada
+      </p>
+
+      <!-- 3 Cards clicáveis — seções do quadro -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+
+        <!-- Designações Mecânicas -->
+        <a href="https://drive.google.com/file/d/1TMO3W1rz3exmqgqvLzBFrB3-ovdJNusn/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">build</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Organização</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Designações Mecânicas</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Limpeza, som, indicadores e manutenção do Salão.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+        <!-- Meio de Semana -->
+        <a href="https://drive.google.com/file/d/1rq6nMXHeHRzmzcf-XoQJipptYVVLgMc3/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">menu_book</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Meio de Semana</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Reunião de Meio de Semana</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Vida e Ministério Cristão — partes e designações.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+        <!-- Final de Semana -->
+        <a href="https://drive.google.com/file/d/1wklBUziwEbSbcIv6S7Ftt7u6mJgZkYre/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">record_voice_over</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Final de Semana</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Reunião de Final de Semana</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Discurso Público e Estudo de A Sentinela.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+      </div>
+
+      <!-- ══ HISTÓRICO (Acordeão) ═══════════════════════════════ -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="material-symbols-outlined text-secondary">history</span>
+        <h2 class="text-xl font-bold text-primary tracking-tight">Histórico</h2>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+
+      <div class="space-y-3 max-w-3xl">
+
+        <!-- Março/2026 -->
+        <div class="accordion-item open bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
+            <span class="font-bold text-primary">Março/2026</span>
+            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
+          </button>
+          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
+            <a href="https://drive.google.com/file/d/1TMO3W1rz3exmqgqvLzBFrB3-ovdJNusn/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Designações Mecânicas — Março/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1rq6nMXHeHRzmzcf-XoQJipptYVVLgMc3/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Meio de Semana — Março/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1wklBUziwEbSbcIv6S7Ftt7u6mJgZkYre/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Final de Semana — Março/2026
+            </a>
+          </div>
+        </div>
+
+        <!-- Fevereiro/2026 -->
+        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
+            <span class="font-bold text-primary">Fevereiro/2026</span>
+            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
+          </button>
+          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
+            <a href="https://drive.google.com/file/d/1N73meXm0WoiiptQbGLI9E8sNSEkIcgUj/view?usp=sharing" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Designações Mecânicas — Fevereiro/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1rETJtrjw1A-I7b4GgZJrjzRmoRUhZY3I/view?usp=sharing" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Meio de Semana — Fevereiro/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1J5hJw3KMzEbiYqCXFXttTjKJNC5f-WRo/view?usp=sharing" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Final de Semana — Fevereiro/2026
+            </a>
+          </div>
+        </div>
+
+        <!-- Janeiro/2026 -->
+        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
+            <span class="font-bold text-primary">Janeiro/2026</span>
+            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
+          </button>
+          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
+            <a href="https://drive.google.com/file/d/1GrvZiUcmfcuEmQtiB92sVFKoso632Epz/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Designações Mecânicas — Janeiro/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1LxV6cetQq5zFMnZs_zJX7B_1UPEeKZJN/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Meio de Semana — Janeiro/2026
+            </a>
+            <a href="https://drive.google.com/file/d/1QToVYwF9S4e3mY-Qp19KZ72OO8z6HDhD/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Final de Semana — Janeiro/2026
+            </a>
+          </div>
+        </div>
+
+        <!-- Dezembro/2025 -->
+        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
+            <span class="font-bold text-primary">Dezembro/2025</span>
+            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
+          </button>
+          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
+            <a href="https://drive.google.com/file/d/1uDMm4eWLZy9QrwDUTiDX29Yl-RIZaJaC/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Designações Mecânicas — Dezembro/2025
+            </a>
+            <a href="https://drive.google.com/file/d/1YoqBgW6OYvrb3hCTSJt0onfV-wc3SDj2/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Meio de Semana — Dezembro/2025
+            </a>
+            <a href="https://drive.google.com/file/d/1PvmuV_7Gh6Ttl3rv_MhNNxOfJhZlFoBo/view?usp=drive_link" target="_blank"
+               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
+              <span class="material-symbols-outlined" style="font-size:18px">description</span>
+              Final de Semana — Dezembro/2025
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Aviso de privacidade -->
+      <div class="mt-10 max-w-3xl">
+        <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant text-center leading-relaxed">
+            Os assuntos deste site são particulares e não devem ser compartilhados.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ FAIXA INFORMATIVA ════════════════════════════════════ -->
+<section class="bg-surface-container-high py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+        <p class="text-on-surface-variant text-sm">
+          Rua Professor Orestes Rosólia, 164<br>
+          Jardim Rosana, São Paulo – SP<br>
+          CEP 05795-300
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
+        <p class="text-on-surface-variant text-sm">
+          Quartas-feiras às 19h30<br>
+          Sábados às 19h30
+        </p>
+      </div>
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
+        <p class="text-on-surface-variant text-sm">
+          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleAccordion(btn) {
+      const item = btn.closest('.accordion-item');
+      item.classList.toggle('open');
+    }
+  </script>
+
+</body>
+</html>
