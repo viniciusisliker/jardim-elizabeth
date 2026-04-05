@@ -66,28 +66,8 @@ gtag('config', 'G-PGXCZF9S9W');
 <body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
 
   <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
-  <nav class="bg-[#fbf9f8] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm top-0 sticky z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-<a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html" class="text-2xl font-bold tracking-tighter text-[#0f3462] block"> Jardim Elizabeth </a>
-      <div class="hidden md:flex items-center gap-8">
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">Home</a>
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html">Agenda</a>
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/agendamentos.html">Agendamentos</a>
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/donativos.html">Donativos</a>
-        <a class="text-[#0f3462] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://viniciusisliker.github.io/jardim-elizabeth/quadrodeanuncios.html">Quadro de Anúncios</a>
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/territorios.html">Territórios</a>
-      </div>
-      <div class="flex items-center gap-4">
-        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
-          <span class="material-symbols-outlined text-[#0f3462]">notifications</span>
-        </a>
-        <a href="" class="p-2 hover:bg-[#eae8e7]/50 rounded-lg transition-all">
-          <span class="material-symbols-outlined text-[#0f3462]">account_circle</span>
-        </a>
-      </div>
-    </div>
-    <div class="bg-[#eae8e7] h-[1px] w-full"></div>
-  </nav>
+<div id="header"></div>
+  <main>
 
   <main>
 
@@ -347,5 +327,13 @@ gtag('config', 'G-PGXCZF9S9W');
     }
   </script>
 
+	<script>
+fetch('components/header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('header').innerHTML = data;
+  });
+</script>
+	  
 </body>
 </html>
