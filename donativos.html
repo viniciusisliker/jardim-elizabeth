@@ -165,6 +165,13 @@ fetch('components/header.html')
     });
 
   });
+
+// FOOTER 👇
+fetch('components/footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer').innerHTML = data;
+  });
 </script>
 	  
 </body>
