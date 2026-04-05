@@ -173,49 +173,8 @@ gtag('config', 'G-PGXCZF9S9W');
     Fica fixada no topo da página (sticky) enquanto o usuário rola a página.
     Contém: logo, links de navegação e botões de notificação/perfil.
   ══════════════════════════════════════════════════════════════════════════ -->
-  <nav class="bg-[#fbf9f8] dark:bg-[#1b1c1c] backdrop-blur-md bg-opacity-80 font-['Inter'] antialiased tracking-tight shadow-sm dark:shadow-none docked full-width top-0 sticky z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-
-      <!-- LOGO / NOME DA CONGREGAÇÃO ─────────────────────────────────────────
-        Altere o texto "Jardim Elizabeth" para o nome da sua congregação.
-        As classes controlam: tamanho (text-2xl), peso (font-bold), cor (text-[#0f3462]).
-      -->
-<a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html" class="text-2xl font-bold tracking-tighter text-[#0f3462] block"> Jardim Elizabeth </a>
-
-      <!-- LINKS DE NAVEGAÇÃO (visíveis apenas em telas médias/grandes: hidden md:flex) ─
-        Cada <a href="#"> é um link do menu.
-        - href="#" significa "não vai a lugar nenhum ainda" — troque por URLs reais.
-        - O link "Home" tem borda inferior (border-b-2) indicando a página atual.
-        Para adicionar um novo link: copie um dos blocos <a> e altere o texto.
-      -->
-      <div class="hidden md:flex items-center space-gap-8 gap-8">
-        <a class="text-[#0f3462] dark:text-[#ffffff] border-b-2 border-[#0f3462] pb-1 font-semibold" href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">Home</a>
-        <a class="text-[#3b5e97] dark:text-[#eae8e7] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html">Agenda</a>
-        <a class="text-[#3b5e97] dark:text-[#eae8e7] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/agendamentos.html">Agendamentos</a>
-        <a class="text-[#3b5e97] dark:text-[#eae8e7] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/donativos.html">Donativos</a>
-        <a class="text-[#3b5e97] dark:text-[#eae8e7] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/quadrodeanuncios.html">Quadro de Anúncios</a>
-        <a class="text-[#3b5e97] hover:text-[#0f3462] transition-colors" href="https://viniciusisliker.github.io/jardim-elizabeth/territorios.html">Territórios</a>
-      </div>
-
-      <!-- BOTÕES DE AÇÃO (notificações e perfil) ─────────────────────────────
-        Os ícones "notifications" e "account_circle" vêm da biblioteca Material Symbols.
-        Para trocar um ícone, mude o texto entre as tags <span>.
-        Busque nomes de ícones em: fonts.google.com/icons
-      -->
-      <div class="flex items-center gap-4">
-        <button class="p-2 hover:bg-[#eae8e7]/50 dark:hover:bg-[#2b4b7a]/30 rounded-lg transition-all">
-          <span class="material-symbols-outlined text-[#0f3462] dark:text-[#3b5e97]">notifications</span>
-        </button>
-        <button class="p-2 hover:bg-[#eae8e7]/50 dark:hover:bg-[#2b4b7a]/30 rounded-lg transition-all">
-          <span class="material-symbols-outlined text-[#0f3462] dark:text-[#3b5e97]">account_circle</span>
-        </button>
-      </div>
-
-    </div>
-
-    <!-- Linha divisória abaixo da navbar -->
-    <div class="bg-[#eae8e7] dark:bg-[#2b4b7a]/20 h-[1px] w-full"></div>
-  </nav>
+<div id="header"></div>
+  <main>
   <!-- FIM DA NAVBAR ──────────────────────────────────────────────────────── -->
 
 
@@ -420,44 +379,6 @@ gtag('config', 'G-PGXCZF9S9W');
     </div>
     <!-- FIM DA GRADE DE CONTEÚDO PRINCIPAL ──────────────────────────────── -->
 
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-      FAIXA INFORMATIVA (antes do rodapé)
-      Quatro colunas com informações de contato, localização e reuniões.
-      Altere os textos em cada coluna para as informações reais da congregação.
-    ══════════════════════════════════════════════════════════════════════ -->
-<section class="bg-surface-container-high py-16">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid md:grid-cols-3 gap-12">
-      <div>
-        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
-        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
-        <p class="text-on-surface-variant text-sm">
-          Rua Professor Orestes Rosólia, 164<br>
-          Jardim Rosana, São Paulo – SP<br>
-          CEP 05795-300
-        </p>
-      </div>
-      <div>
-        <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
-        <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
-        <p class="text-on-surface-variant text-sm">
-          Quartas-feiras às 19h30<br>
-          Sábados às 19h30
-        </p>
-      </div>
-      <div>
-        <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
-        <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
-        <p class="text-on-surface-variant text-sm">
-          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>        
-	</p>
-      </div>
-    </div>
-  </div>
-</section>
-    <!-- FIM DA FAIXA INFORMATIVA ─────────────────────────────────────────── -->
-
   </main>
   <!-- FIM DO CONTEÚDO PRINCIPAL (<main>) ───────────────────────────────── -->
 
@@ -467,27 +388,39 @@ gtag('config', 'G-PGXCZF9S9W');
     Barra inferior com logo, links legais e copyright.
     Altere os textos e links conforme necessário.
   ══════════════════════════════════════════════════════════════════════ -->
-  <footer class="bg-[#eae8e7] dark:bg-[#1b1c1c] w-full border-t border-[#0f3462]/10">
-    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
-
-      <!-- NOME NO RODAPÉ ─ altere o texto -->
-      <div class="text-lg font-bold text-[#0f3462]">
-        Jardim Elizabeth <!-- ← ALTERE O NOME -->
-      </div>
-
-      <!-- LINKS DO RODAPÉ ────────────────────────────────────────────────
-        href="#" = link sem destino ainda. Substitua pelo caminho real das páginas.
-        Para REMOVER um link: apague o bloco <a> correspondente.
-        Para ADICIONAR um link: copie um <a> e ajuste href e texto.
-      -->
-      <!-- COPYRIGHT ─ altere o ano e o nome se necessário -->
-      <div class="text-sm text-[#0f3462] opacity-60">
-        © 2026 Jardim Elizabeth. Todos os direitos reservados. <!-- ← ALTERE O ANO E NOME -->
-      </div>
-
-    </div>
-  </footer>
+<div id="footer"></div>
   <!-- FIM DO RODAPÉ ────────────────────────────────────────────────────── -->
 
+  <script>
+    function toggleMonth(header) {
+      header.closest('.month-block').classList.toggle('open');
+    }
+  </script>
+
+<script>
+fetch('components/header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('header').innerHTML = data;
+
+    // ativa o menu DEPOIS de carregar
+    const pagina = window.location.pathname;
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (pagina.includes(link.getAttribute('href'))) {
+        link.classList.add('border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]');
+      }
+    });
+
+  });
+	
+// FOOTER 👇
+fetch('components/footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer').innerHTML = data;
+  });
+</script>
+	  
 </body>
 </html>
