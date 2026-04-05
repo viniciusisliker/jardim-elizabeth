@@ -327,11 +327,21 @@ gtag('config', 'G-PGXCZF9S9W');
     }
   </script>
 
-	<script>
+<script>
 fetch('components/header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('header').innerHTML = data;
+
+    // ativa o menu DEPOIS de carregar
+    const pagina = window.location.pathname;
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (pagina.includes(link.getAttribute('href'))) {
+        link.classList.add('border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]');
+      }
+    });
+
   });
 </script>
 	  
