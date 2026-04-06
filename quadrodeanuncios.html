@@ -11,7 +11,6 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-
 gtag('config', 'G-PGXCZF9S9W');
 </script>
 
@@ -54,20 +53,13 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
-
-    /* Acordeão */
-    .accordion-content { display: none; }
-    .accordion-item.open .accordion-content { display: block; }
-    .accordion-item.open .chevron { transform: rotate(180deg); }
-    .chevron { transition: transform 0.2s ease; }
   </style>
 </head>
 
 <body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
 
   <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
-<div id="header"></div>
-  <main>
+  <div id="header"></div>
 
   <main>
 
@@ -75,10 +67,12 @@ gtag('config', 'G-PGXCZF9S9W');
     <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-<a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
           <a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">
-			      <span class="text-secondary">Jardim Elizabeth</span>
-		      </a>
+            <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          </a>
+          <a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">
+            <span class="text-secondary">Jardim Elizabeth</span>
+          </a>
           <span class="text-outline">/</span>
           <span class="text-primary">Quadro de Anúncios</span>
         </div>
@@ -103,7 +97,7 @@ gtag('config', 'G-PGXCZF9S9W');
         Para prosseguir clique na seção desejada
       </p>
 
-      <!-- 3 Cards clicáveis — seções do quadro -->
+      <!-- 3 Cards clicáveis -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
 
         <!-- Designações Mecânicas -->
@@ -156,114 +150,47 @@ gtag('config', 'G-PGXCZF9S9W');
 
       </div>
 
-      <!-- ══ HISTÓRICO (Acordeão) ═══════════════════════════════ -->
+      <!-- ══ HISTÓRICO ═══════════════════════════════════════════ -->
       <div class="flex items-center gap-3 mb-6">
         <span class="material-symbols-outlined text-secondary">history</span>
         <h2 class="text-xl font-bold text-primary tracking-tight">Histórico</h2>
         <div class="flex-1 h-px bg-outline-variant"></div>
       </div>
 
-      <div class="space-y-3 max-w-3xl">
+      <div class="max-w-xl bg-surface-container-lowest rounded-2xl border border-outline-variant px-10 py-10 flex flex-col items-center gap-6 text-center">
 
-        <!-- Março/2026 -->
-        <div class="accordion-item open bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
-            <span class="font-bold text-primary">Março/2026</span>
-            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
-          </button>
-          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
-            <a href="https://drive.google.com/file/d/1TMO3W1rz3exmqgqvLzBFrB3-ovdJNusn/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Designações Mecânicas — Março/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1rq6nMXHeHRzmzcf-XoQJipptYVVLgMc3/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Meio de Semana — Março/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1wklBUziwEbSbcIv6S7Ftt7u6mJgZkYre/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Final de Semana — Março/2026
-            </a>
-          </div>
+        <!-- Ícone Google Drive -->
+        <div class="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center">
+          <svg width="32" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+            <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+            <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+            <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+            <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+            <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+          </svg>
         </div>
 
-        <!-- Fevereiro/2026 -->
-        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
-            <span class="font-bold text-primary">Fevereiro/2026</span>
-            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
-          </button>
-          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
-            <a href="https://drive.google.com/file/d/1N73meXm0WoiiptQbGLI9E8sNSEkIcgUj/view?usp=sharing" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Designações Mecânicas — Fevereiro/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1rETJtrjw1A-I7b4GgZJrjzRmoRUhZY3I/view?usp=sharing" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Meio de Semana — Fevereiro/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1J5hJw3KMzEbiYqCXFXttTjKJNC5f-WRo/view?usp=sharing" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Final de Semana — Fevereiro/2026
-            </a>
-          </div>
+        <!-- Texto -->
+        <div>
+          <p class="text-base font-semibold text-primary mb-1">O histórico completo está disponível no Google Drive</p>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Acesse todos os meses anteriores — designações mecânicas, meio de semana e final de semana — organizados em pastas por período.</p>
         </div>
 
-        <!-- Janeiro/2026 -->
-        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
-            <span class="font-bold text-primary">Janeiro/2026</span>
-            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
-          </button>
-          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
-            <a href="https://drive.google.com/file/d/1GrvZiUcmfcuEmQtiB92sVFKoso632Epz/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Designações Mecânicas — Janeiro/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1LxV6cetQq5zFMnZs_zJX7B_1UPEeKZJN/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Meio de Semana — Janeiro/2026
-            </a>
-            <a href="https://drive.google.com/file/d/1QToVYwF9S4e3mY-Qp19KZ72OO8z6HDhD/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Final de Semana — Janeiro/2026
-            </a>
-          </div>
-        </div>
-
-        <!-- Dezembro/2025 -->
-        <div class="accordion-item bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-container-low transition-colors">
-            <span class="font-bold text-primary">Dezembro/2025</span>
-            <span class="material-symbols-outlined text-secondary chevron">expand_more</span>
-          </button>
-          <div class="accordion-content border-t border-outline-variant px-6 py-4 space-y-3">
-            <a href="https://drive.google.com/file/d/1uDMm4eWLZy9QrwDUTiDX29Yl-RIZaJaC/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Designações Mecânicas — Dezembro/2025
-            </a>
-            <a href="https://drive.google.com/file/d/1YoqBgW6OYvrb3hCTSJt0onfV-wc3SDj2/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Meio de Semana — Dezembro/2025
-            </a>
-            <a href="https://drive.google.com/file/d/1PvmuV_7Gh6Ttl3rv_MhNNxOfJhZlFoBo/view?usp=drive_link" target="_blank"
-               class="flex items-center gap-3 text-secondary hover:text-primary transition-colors text-sm font-semibold">
-              <span class="material-symbols-outlined" style="font-size:18px">description</span>
-              Final de Semana — Dezembro/2025
-            </a>
-          </div>
-        </div>
+        <!-- Botão -->
+        <a href="https://drive.google.com/drive/folders/1-YO6Qi61D_Nay6RbKuynxgLvJyao0Yim?usp=sharing" target="_blank"
+           class="flex items-center gap-2.5 px-5 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-semibold text-on-background hover:bg-surface-container transition-colors">
+          <svg width="16" height="14" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+            <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+            <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+            <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+            <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+            <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+          </svg>
+          Abrir no Google Drive
+          <span class="material-symbols-outlined text-outline" style="font-size:14px">open_in_new</span>
+        </a>
 
       </div>
 
@@ -272,39 +199,27 @@ gtag('config', 'G-PGXCZF9S9W');
   </main>
 
   <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
-<div id="footer"></div>
+  <div id="footer"></div>
 
-   <script>
-    function toggleAccordion(btn) {
-      const item = btn.closest('.accordion-item');
-      item.classList.toggle('open');
-    }
+  <script>
+    fetch('components/header.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('header').innerHTML = data;
+        const pagina = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (pagina.includes(link.getAttribute('href'))) {
+            link.classList.add('border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]');
+          }
+        });
+      });
+
+    fetch('components/footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer').innerHTML = data;
+      });
   </script>
 
-<script>
-fetch('components/header.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('header').innerHTML = data;
-
-    // ativa o menu DEPOIS de carregar
-    const pagina = window.location.pathname;
-
-    document.querySelectorAll('.nav-link').forEach(link => {
-      if (pagina.includes(link.getAttribute('href'))) {
-        link.classList.add('border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]');
-      }
-    });
-
-  });
-
-// FOOTER 👇
-fetch('components/footer.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('footer').innerHTML = data;
-  });
-</script>
-	  
 </body>
 </html>
