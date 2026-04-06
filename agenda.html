@@ -66,6 +66,56 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+
+    /* ── Bloco de data uniforme ── */
+    .date-badge {
+      flex-shrink: 0;
+      width: 3rem;          /* w-12 */
+      text-align: center;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .date-badge .date-num {
+      font-size: 0.8125rem;  /* 13px — proporcional para qualquer conteúdo */
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .date-badge .date-lbl {
+      font-size: 0.5625rem;  /* 9px */
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+
+    /* variante padrão (cinza) */
+    .date-badge.variant-default {
+      background: #f5f3f3;
+      border: 1px solid #c3c6d0;
+    }
+    .date-badge.variant-default .date-num { color: #0f3462; }
+    .date-badge.variant-default .date-lbl { color: #3b5e97; }
+
+    /* variante destaque (azul escuro) */
+    .date-badge.variant-primary {
+      background: #0f3462;
+    }
+    .date-badge.variant-primary .date-num { color: #ffffff; }
+    .date-badge.variant-primary .date-lbl { color: rgba(255,255,255,0.7); }
+
+    /* variante especial (dourado) */
+    .date-badge.variant-gold {
+      background: rgba(200,169,110,0.12);
+      border: 1px solid #c8a96e;
+    }
+    .date-badge.variant-gold .date-num { color: #8a6a2a; }
+    .date-badge.variant-gold .date-lbl { color: #a07c35; }
   </style>
 </head>
 
@@ -116,91 +166,38 @@ gtag('config', 'G-PGXCZF9S9W');
             <div class="flex-1 h-px bg-outline-variant"></div>
           </div>
 
-          <!-- ════ JANEIRO / 2026 ════ -->
+          <!-- ════ ABRIL / 2026 ════ (primeiro = abre automaticamente) -->
           <div class="month-block open bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
             <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
               <div class="flex items-center gap-3">
                 <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Janeiro / 2026</span>
+                <span class="font-bold text-primary text-base">Abril / 2026</span>
               </div>
               <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
             </div>
             <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-xl font-extrabold text-primary leading-none">05</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Seg</div>
+                <div class="date-badge variant-gold">
+                  <span class="date-num">02</span>
+                  <span class="date-lbl">Abr</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Rodízio de Horários</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião de quarta e sábado às 19:30 hs.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:30 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
-                  </div>
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
+                  <h3 class="font-bold text-on-surface text-sm">Celebração no Salão do Reino</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração especial em nosso salão do Reino.</p>
                 </div>
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
-                  <div class="text-xl font-extrabold text-white leading-none">06</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Ter</div>
+                <div class="date-badge variant-default">
+                  <span class="date-num">18–19</span>
+                  <span class="date-lbl">Abr</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Visita do Superintendente de Circuito</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Visita oficial do superintendente de circuito à congregação.</p>
-                  <div class="flex gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-xl font-extrabold text-primary leading-none">09</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Sex</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião com Pioneiros Auxiliares</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Às 19:00 hs com pioneiros auxiliares. Às 20:15 hs com anciãos e servos.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:00 · 20:15 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- ════ FEVEREIRO / 2026 ════ -->
-          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Fevereiro / 2026</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
-                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">21</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Sáb</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião Especial com Representantes da Sede Mundial</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião especial com os representantes da sede mundial, às 18:00 horas.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>18:00 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
-                  </div>
+                  <h3 class="font-bold text-on-surface text-sm">Visita do Representante de Betel</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do representante de Betel à congregação.</p>
                 </div>
               </div>
 
@@ -219,9 +216,9 @@ gtag('config', 'G-PGXCZF9S9W');
             <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-xl font-extrabold text-primary leading-none">01</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Mar</div>
+                <div class="date-badge variant-default">
+                  <span class="date-num">01</span>
+                  <span class="date-lbl">Mar</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Assembleia</span>
@@ -231,9 +228,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
-                  <div class="text-xl font-extrabold text-white leading-none">28</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Mar</div>
+                <div class="date-badge variant-primary">
+                  <span class="date-num">28</span>
+                  <span class="date-lbl">Mar</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
@@ -245,44 +242,97 @@ gtag('config', 'G-PGXCZF9S9W');
             </div>
           </div>
 
-          <!-- ════ ABRIL / 2026 ════ -->
+          <!-- ════ FEVEREIRO / 2026 ════ -->
           <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
             <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
               <div class="flex items-center gap-3">
                 <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Abril / 2026</span>
+                <span class="font-bold text-primary text-base">Fevereiro / 2026</span>
               </div>
               <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
             </div>
             <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
-                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">02</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Abr</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
-                  <h3 class="font-bold text-on-surface text-sm">Celebração no Salão do Reino</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração especial em nosso salão do Reino.</p>
-                </div>
-              </div>
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-sm font-extrabold text-primary leading-none">18–19</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Abr</div>
+                <div class="date-badge variant-gold">
+                  <span class="date-num">21</span>
+                  <span class="date-lbl">Sáb</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm">Visita do Representante de Betel</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do representante de Betel à congregação.</p>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião Especial com Representantes da Sede Mundial</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião especial com os representantes da sede mundial, às 18:00 horas.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>18:00 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
                 </div>
               </div>
 
             </div>
-          </div>			
-			
+          </div>
+
+          <!-- ════ JANEIRO / 2026 ════ -->
+          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
+              <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
+                <span class="font-bold text-primary text-base">Janeiro / 2026</span>
+              </div>
+              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
+            </div>
+            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="date-badge variant-default">
+                  <span class="date-num">05</span>
+                  <span class="date-lbl">Seg</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Rodízio de Horários</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião de quarta e sábado às 19:30 hs.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:30 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="date-badge variant-primary">
+                  <span class="date-num">06</span>
+                  <span class="date-lbl">Ter</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Visita do Superintendente de Circuito</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Visita oficial do superintendente de circuito à congregação.</p>
+                  <div class="flex gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+                <div class="date-badge variant-default">
+                  <span class="date-num">09</span>
+                  <span class="date-lbl">Sex</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
+                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião com Pioneiros Auxiliares</h3>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Às 19:00 hs com pioneiros auxiliares. Às 20:15 hs com anciãos e servos.</p>
+                  <div class="flex flex-wrap gap-4 mt-2">
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:00 · 20:15 hs</span>
+                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
           <!-- ════ EVENTOS FUTUROS ════ -->
           <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
             <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
@@ -295,9 +345,9 @@ gtag('config', 'G-PGXCZF9S9W');
             <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
-                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">05</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Jun</div>
+                <div class="date-badge variant-gold">
+                  <span class="date-num">05</span>
+                  <span class="date-lbl">Jun</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Passeio</span>
@@ -307,9 +357,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-sm font-extrabold text-primary leading-none">09–14</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">Jun</div>
+                <div class="date-badge variant-default">
+                  <span class="date-num">09–14</span>
+                  <span class="date-lbl">Jun</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
@@ -319,9 +369,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-primary rounded-lg py-2">
-                  <div class="text-sm font-extrabold text-white leading-none">17–19</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1">Jul</div>
+                <div class="date-badge variant-primary">
+                  <span class="date-num">17–19</span>
+                  <span class="date-lbl">Jul</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Congresso</span>
@@ -331,9 +381,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-[10px] font-extrabold text-primary leading-none">27/7–01/8</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">2026</div>
+                <div class="date-badge variant-default">
+                  <span class="date-num">27/7–01/8</span>
+                  <span class="date-lbl">2026</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
@@ -343,9 +393,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center bg-surface-container-low rounded-lg py-2 border border-outline-variant">
-                  <div class="text-[10px] font-extrabold text-primary leading-none">03–08/8</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider text-secondary mt-1">2026</div>
+                <div class="date-badge variant-default">
+                  <span class="date-num">03–08/8</span>
+                  <span class="date-lbl">2026</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
@@ -355,9 +405,9 @@ gtag('config', 'G-PGXCZF9S9W');
               </div>
 
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
-                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">26</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Set</div>
+                <div class="date-badge variant-gold">
+                  <span class="date-num">26</span>
+                  <span class="date-lbl">Set</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
@@ -365,11 +415,11 @@ gtag('config', 'G-PGXCZF9S9W');
                   <p class="text-xs text-on-surface-variant mt-0.5">Discurso especial para toda a congregação.</p>
                 </div>
               </div>
-				
+
               <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="flex-shrink-0 w-12 text-center rounded-lg py-2" style="background:rgba(200,169,110,0.12); border:1px solid #c8a96e;">
-                  <div class="text-xl font-extrabold leading-none" style="color:#8a6a2a">22</div>
-                  <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color:#a07c35">Mar/27</div>
+                <div class="date-badge variant-gold">
+                  <span class="date-num">22</span>
+                  <span class="date-lbl">Mar/27</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
@@ -454,7 +504,6 @@ fetch('components/header.html')
   .then(data => {
     document.getElementById('header').innerHTML = data;
 
-    // ativa o menu DEPOIS de carregar
     const pagina = window.location.pathname;
 
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -464,8 +513,7 @@ fetch('components/header.html')
     });
 
   });
-	
-// FOOTER 👇
+
 fetch('components/footer.html')
   .then(res => res.text())
   .then(data => {
