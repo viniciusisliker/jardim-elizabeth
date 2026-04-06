@@ -1,70 +1,62 @@
 <section class="bg-surface-container-high py-16">
-  <div>
-  <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
-  <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
-  <p class="text-on-surface-variant text-sm mb-4">
-    Rua Professor Orestes Rosólia, 164<br>
-    Jardim Rosana, São Paulo – SP<br>
-    CEP 05795-300
-  </p>
-
-<!-- Botões de navegação -->
-<div class="flex flex-wrap gap-2 mt-4">
-
-  <!-- Google Maps -->
-  <a href="https://www.google.com/maps/search/?api=1&query=Rua+Professor+Orestes+Ros%C3%B3lia+164+Jardim+Rosana+S%C3%A3o+Paulo+SP"
-     target="_blank" rel="noopener"
-     class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
-    <svg width="14" height="14" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-      <path fill="#4285F4" d="M24 9.5c3.1 0 5.8 1.1 8 2.9l6-6C34.3 3.2 29.5 1 24 1 14.9 1 7.2 6.4 3.6 14.1l7 5.4C12.4 13.5 17.7 9.5 24 9.5z"/>
-      <path fill="#34A853" d="M46 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7C43.5 36.6 46 30.8 46 24z"/>
-      <path fill="#FBBC05" d="M10.6 28.5c-.5-1.5-.8-3.1-.8-4.8s.3-3.3.8-4.8l-7-5.4C2.1 16.7 1 20.2 1 24s1.1 7.3 2.6 10.4l7-5.9z"/>
-      <path fill="#EA4335" d="M24 47c5.4 0 10-1.8 13.3-4.8l-7.3-5.7c-1.8 1.2-4.1 1.9-6.6 1.9-6.2 0-11.5-4.2-13.4-9.9l-7 5.9C7.1 41.6 14.9 47 24 47z"/>
-    </svg>
-    Google Maps
-  </a>
-
-  <!-- Waze -->
-  <a href="https://waze.com/ul?q=Rua+Professor+Orestes+Ros%C3%B3lia+164+Jardim+Rosana+S%C3%A3o+Paulo+SP&navigate=yes"
-     target="_blank" rel="noopener"
-     class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
-    <svg width="14" height="14" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="50" cy="48" rx="38" ry="36" fill="#05C8F7"/>
-      <circle cx="38" cy="45" r="6" fill="#fff"/>
-      <circle cx="62" cy="45" r="6" fill="#fff"/>
-      <circle cx="38" cy="47" r="3" fill="#222"/>
-      <circle cx="62" cy="47" r="3" fill="#222"/>
-      <path d="M38 58 Q50 68 62 58" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <ellipse cx="50" cy="80" rx="14" ry="8" fill="#05C8F7"/>
-      <path d="M36 78 Q50 96 64 78" fill="#05C8F7"/>
-    </svg>
-    Waze
-  </a>
-
-  <!-- Uber -->
-  <a href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=Rua+Professor+Orestes+Ros%C3%B3lia+164+S%C3%A3o+Paulo"
-     target="_blank" rel="noopener"
-     class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
-    <svg width="14" height="14" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-      <rect width="56" height="56" rx="10" fill="#000"/>
-      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fff">U</text>
-    </svg>
-    Uber
-  </a>
-
-  <!-- 99 -->
-  <a href="https://99app.com"
-     target="_blank" rel="noopener"
-     class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
-    <svg width="14" height="14" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-      <rect width="56" height="56" rx="10" fill="#FFD400"/>
-      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="22" font-weight="900" fill="#000">99</text>
-    </svg>
-    99
-  </a>
-
-  </div>
-</div>
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-3 gap-12 items-start">
+      <div>
+        <span class="material-symbols-outlined text-secondary text-4xl mb-4">location_on</span>
+        <h4 class="text-lg font-bold text-primary mb-2">Localização</h4>
+        <p class="text-on-surface-variant text-sm mb-4">
+          Rua Professor Orestes Rosólia, 164<br>
+          Jardim Rosana, São Paulo – SP<br>
+          CEP 05795-300
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Professor+Orestes+Ros%C3%B3lia+164+Jardim+Rosana+S%C3%A3o+Paulo+SP"
+             target="_blank" rel="noopener"
+             class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
+            <svg width="14" height="14" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#4285F4" d="M24 9.5c3.1 0 5.8 1.1 8 2.9l6-6C34.3 3.2 29.5 1 24 1 14.9 1 7.2 6.4 3.6 14.1l7 5.4C12.4 13.5 17.7 9.5 24 9.5z"/>
+              <path fill="#34A853" d="M46 24c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.2 5.2-4.7 6.8l7.3 5.7C43.5 36.6 46 30.8 46 24z"/>
+              <path fill="#FBBC05" d="M10.6 28.5c-.5-1.5-.8-3.1-.8-4.8s.3-3.3.8-4.8l-7-5.4C2.1 16.7 1 20.2 1 24s1.1 7.3 2.6 10.4l7-5.9z"/>
+              <path fill="#EA4335" d="M24 47c5.4 0 10-1.8 13.3-4.8l-7.3-5.7c-1.8 1.2-4.1 1.9-6.6 1.9-6.2 0-11.5-4.2-13.4-9.9l-7 5.9C7.1 41.6 14.9 47 24 47z"/>
+            </svg>
+            Google Maps
+          </a>
+          <a href="https://waze.com/ul?q=Rua+Professor+Orestes+Ros%C3%B3lia+164+Jardim+Rosana+S%C3%A3o+Paulo+SP&navigate=yes"
+             target="_blank" rel="noopener"
+             class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
+            <svg width="14" height="14" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="50" cy="48" rx="38" ry="36" fill="#05C8F7"/>
+              <circle cx="38" cy="45" r="6" fill="#fff"/>
+              <circle cx="62" cy="45" r="6" fill="#fff"/>
+              <circle cx="38" cy="47" r="3" fill="#222"/>
+              <circle cx="62" cy="47" r="3" fill="#222"/>
+              <path d="M38 58 Q50 68 62 58" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <ellipse cx="50" cy="80" rx="14" ry="8" fill="#05C8F7"/>
+              <path d="M36 78 Q50 96 64 78" fill="#05C8F7"/>
+            </svg>
+            Waze
+          </a>
+          <a href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=Rua+Professor+Orestes+Ros%C3%B3lia+164+S%C3%A3o+Paulo"
+             target="_blank" rel="noopener"
+             class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
+            <svg width="14" height="14" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+              <rect width="56" height="56" rx="10" fill="#000"/>
+              <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fff">U</text>
+            </svg>
+            Uber
+          </a>
+          <a href="https://99app.com"
+             target="_blank" rel="noopener"
+             class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:shadow-sm transition-shadow whitespace-nowrap">
+            <svg width="14" height="14" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+              <rect width="56" height="56" rx="10" fill="#FFD400"/>
+              <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="22" font-weight="900" fill="#000">99</text>
+            </svg>
+            99
+          </a>
+        </div>
+      </div>
+      <div>
         <span class="material-symbols-outlined text-secondary text-4xl mb-4">schedule</span>
         <h4 class="text-lg font-bold text-primary mb-2">Reuniões</h4>
         <p class="text-on-surface-variant text-sm">
@@ -76,17 +68,17 @@
         <span class="material-symbols-outlined text-secondary text-4xl mb-4">alternate_email</span>
         <h4 class="text-lg font-bold text-primary mb-2">Contato</h4>
         <p class="text-on-surface-variant text-sm">
-          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>        
-	</p>
+          <a href="mailto:elizabeth49577@gmail.com" class="hover:underline">elizabeth49577@gmail.com</a>
+        </p>
       </div>
     </div>
   </div>
 </section>
 
-  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
-  <footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
-    <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
-      <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
-      <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
-    </div>
-  </footer>
+<!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+<footer class="bg-[#eae8e7] w-full border-t border-[#0f3462]/10">
+  <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="text-lg font-bold text-[#0f3462]">Jardim Elizabeth</div>
+    <div class="text-sm text-[#0f3462] opacity-60">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
+  </div>
+</footer>
