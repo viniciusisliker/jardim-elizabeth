@@ -353,12 +353,37 @@ gtag('config', 'G-PGXCZF9S9W');
         -->
         <div class="lg:col-span-9 space-y-8">
 
-          <!-- LINHA 1: Duas colunas — Reuniões e Anúncios lado a lado -->
+          <!-- ══ PRÓXIMOS EVENTOS (lidos automaticamente da agenda.html) ══ -->
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+
+            <!-- Cabeçalho do bloco -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:20px">event</span>
+                <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Próximos Eventos</h3>
+                <span id="proxeventos-mes" class="text-xs text-on-surface-variant font-normal ml-1"></span>
+              </div>
+              <a href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html"
+                 class="text-xs font-semibold text-secondary hover:underline flex items-center gap-1">
+                Ver agenda completa
+                <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+              </a>
+            </div>
+
+            <!-- Lista de eventos (preenchida via JS) -->
+            <div id="proxeventos-lista" class="divide-y divide-outline-variant">
+              <!-- Estado de carregamento -->
+              <div id="proxeventos-loading" class="flex items-center gap-3 px-5 py-4 text-on-surface-variant text-sm">
+                <span class="material-symbols-outlined animate-spin" style="font-size:18px">progress_activity</span>
+                Carregando eventos…
+              </div>
+            </div>
+
+          </div>
+          <!-- FIM: PRÓXIMOS EVENTOS ─────────────────────────────────────── -->
+
+          <!-- LINHA 1: reservado para futuro uso -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            </section>
-            <!-- FIM: ÚLTIMOS ANÚNCIOS ──────────────────────────────────── -->
-
           </div>
           <!-- FIM DA LINHA 1 ─────────────────────────────────────────────── -->
 
@@ -396,6 +421,108 @@ gtag('config', 'G-PGXCZF9S9W');
       header.closest('.month-block').classList.toggle('open');
     }
   </script>
+
+  <!-- ══ SCRIPT: PRÓXIMOS EVENTOS da Agenda ══════════════════════════════ -->
+  <script>
+  (function carregarProximosEventos() {
+
+    // ── Mapeamento de variante → cores inline (espelha o CSS da agenda) ──
+    const variantStyle = {
+      'variant-gold':    { bg:'rgba(200,169,110,0.12)', border:'1px solid #c8a96e', numColor:'#8a6a2a', lblColor:'#a07c35' },
+      'variant-primary': { bg:'#0f3462',                border:'none',               numColor:'#ffffff',  lblColor:'rgba(255,255,255,0.7)' },
+      'variant-default': { bg:'#f5f3f3',                border:'1px solid #c3c6d0', numColor:'#0f3462',  lblColor:'#3b5e97' },
+    };
+
+    // ── Mapeamento de classe de tag → cores ──────────────────────────────
+    function tagStyle(classList) {
+      if (classList.includes('bg-[#c8a96e]/20'))   return 'color:#7a5200;background:rgba(200,169,110,0.15)';
+      if (classList.includes('bg-secondary-fixed')) return 'color:#274d85;background:#d6e3ff80';
+      return 'color:#3b5e97;background:#d6e3ff80';
+    }
+
+    fetch('agenda.html')
+      .then(r => {
+        if (!r.ok) throw new Error('Não foi possível carregar a agenda.');
+        return r.text();
+      })
+      .then(html => {
+        const parser  = new DOMParser();
+        const doc     = parser.parseFromString(html, 'text/html');
+
+        // Pega o PRIMEIRO month-block (o mais recente = aberto)
+        const firstBlock = doc.querySelector('.month-block');
+        if (!firstBlock) throw new Error('Nenhum bloco de mês encontrado.');
+
+        // Título do mês
+        const mesLabel = firstBlock.querySelector('.month-header span.font-bold')?.textContent?.trim() || '';
+        document.getElementById('proxeventos-mes').textContent = '— ' + mesLabel;
+
+        // Todos os eventos dentro desse bloco
+        const eventRows = firstBlock.querySelectorAll('.month-body > div.flex');
+
+        const lista = document.getElementById('proxeventos-lista');
+        lista.innerHTML = ''; // remove loading
+
+        if (!eventRows.length) {
+          lista.innerHTML = '<p class="px-5 py-4 text-sm text-on-surface-variant">Nenhum evento cadastrado neste mês.</p>';
+          return;
+        }
+
+        eventRows.forEach(row => {
+          // ── Badge de data ──────────────────────────────────────────────
+          const badge   = row.querySelector('.date-badge');
+          const dateNum = badge?.querySelector('.date-num')?.textContent?.trim() || '';
+          const dateLbl = badge?.querySelector('.date-lbl')?.textContent?.trim() || '';
+
+          // detecta variante
+          let vs = variantStyle['variant-default'];
+          if (badge?.classList.contains('variant-gold'))    vs = variantStyle['variant-gold'];
+          if (badge?.classList.contains('variant-primary')) vs = variantStyle['variant-primary'];
+          const isLong = badge?.classList.contains('date-long');
+
+          // ── Conteúdo do evento ─────────────────────────────────────────
+          const tagEl    = row.querySelector('span.inline-block');
+          const tagText  = tagEl?.textContent?.trim() || '';
+          const tagCls   = tagEl?.className || '';
+          const title    = row.querySelector('h3')?.textContent?.trim() || '';
+          const desc     = row.querySelector('p.text-xs')?.textContent?.trim() || '';
+
+          // Infos extras (horário / local)
+          const extras = [...row.querySelectorAll('.flex.flex-wrap span.flex, .flex.gap-4 span.flex')]
+            .map(s => s.textContent.trim()).filter(Boolean).join(' · ');
+
+          // ── Monta o HTML do evento ─────────────────────────────────────
+          const numSize = isLong ? '0.625rem' : '0.8125rem';
+          const item = document.createElement('div');
+          item.className = 'flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors';
+          item.innerHTML = `
+            <div style="
+              flex-shrink:0; width:3rem; text-align:center; border-radius:0.5rem;
+              padding:0.5rem 0.25rem; display:flex; flex-direction:column;
+              align-items:center; justify-content:center; gap:2px;
+              background:${vs.bg}; border:${vs.border};
+            ">
+              <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${dateNum}</span>
+              <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${dateLbl}</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              ${tagText ? `<span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${tagStyle(tagCls)};padding:1px 6px;border-radius:4px;margin-bottom:4px">${tagText}</span>` : ''}
+              <h3 style="font-weight:700;font-size:0.875rem;color:#1b1c1c;line-height:1.4">${title}</h3>
+              ${desc    ? `<p style="font-size:0.75rem;color:#43474f;margin-top:2px">${desc}</p>` : ''}
+              ${extras  ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${extras}</p>` : ''}
+            </div>
+          `;
+          lista.appendChild(item);
+        });
+      })
+      .catch(err => {
+        const lista = document.getElementById('proxeventos-lista');
+        lista.innerHTML = `<p class="px-5 py-4 text-sm text-on-surface-variant">Não foi possível carregar os eventos. <a href="agenda.html" class="text-secondary underline">Ver agenda</a></p>`;
+        console.warn('Próximos Eventos:', err);
+      });
+  })();
+  </script>
+  <!-- ══ FIM: PRÓXIMOS EVENTOS ════════════════════════════════════════════ -->
 
 <script>
 fetch('components/header.html')
