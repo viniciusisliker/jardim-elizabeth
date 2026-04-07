@@ -322,39 +322,24 @@ gtag('config', 'G-PGXCZF9S9W');
           Ocupa 3 das 12 colunas da grid em telas grandes.
           Em telas pequenas, aparece acima do conteúdo principal.
         -->
-        <aside class="lg:col-span-3 space-y-6">
+        <!-- ── LINHA: PRÓXIMA REUNIÃO + PRÓXIMOS EVENTOS lado a lado ─────── -->
+        <div class="lg:col-span-12 flex flex-col md:flex-row gap-6 items-start">
 
-<!-- WIDGET: PRÓXIMA REUNIÃO -->
-<div class="bg-primary-container text-on-primary-container p-6 rounded-xl">
-  <div class="flex items-center gap-2 mb-4">
-    <span class="material-symbols-outlined text-on-primary-container">info</span>
-    <h3 class="font-bold uppercase text-xs tracking-tighter">Próxima Reunião</h3>
-  </div>
-  <p class="text-lg font-bold mb-1" id="proxima-reuniao-dia"></p>
-  <p class="text-sm opacity-80 mb-4">Salão do Reino<br>
-          Rua Professor Orestes Rosólia, 164<br>
-          Jardim Rosana, São Paulo – SP<br>
-</div>
-
-<script>
-  const dia = new Date().getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
-  const texto = [0, 1, 2, 3].includes(dia)
-    ? 'Quarta-feira, 19h30'
-    : 'Sábado, 19h30';
-  document.getElementById('proxima-reuniao-dia').textContent = texto;
-</script>
-
-        </aside>
-        <!-- FIM DA SIDEBAR ─────────────────────────────────────────────── -->
-
-
-        <!-- ── FEED PRINCIPAL ───────────────────────────────────────────────
-          Ocupa 9 das 12 colunas em telas grandes.
-        -->
-        <div class="lg:col-span-9 space-y-8">
+          <!-- WIDGET: PRÓXIMA REUNIÃO -->
+          <div class="bg-primary-container text-on-primary-container p-6 rounded-xl w-full md:w-72 flex-shrink-0">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-on-primary-container">info</span>
+              <h3 class="font-bold uppercase text-xs tracking-tighter">Próxima Reunião</h3>
+            </div>
+            <p class="text-lg font-bold mb-1" id="proxima-reuniao-dia"></p>
+            <p class="text-sm opacity-80 mb-4">Salão do Reino<br>
+                    Rua Professor Orestes Rosólia, 164<br>
+                    Jardim Rosana, São Paulo – SP<br>
+            </p>
+          </div>
 
           <!-- ══ PRÓXIMOS EVENTOS (lidos automaticamente da agenda.html) ══ -->
-          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden w-full md:w-72 flex-shrink-0">
 
             <!-- Cabeçalho do bloco -->
             <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant">
@@ -363,6 +348,8 @@ gtag('config', 'G-PGXCZF9S9W');
                 <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Próximos Eventos</h3>
                 <span id="proxeventos-mes" class="text-xs text-on-surface-variant font-normal ml-1"></span>
               </div>
+            </div>
+            <div class="px-4 py-2 border-b border-outline-variant">
               <a href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html"
                  class="text-xs font-semibold text-secondary hover:underline flex items-center gap-1">
                 Ver agenda completa
@@ -372,7 +359,6 @@ gtag('config', 'G-PGXCZF9S9W');
 
             <!-- Lista de eventos (preenchida via JS) -->
             <div id="proxeventos-lista" class="divide-y divide-outline-variant">
-              <!-- Estado de carregamento -->
               <div id="proxeventos-loading" class="flex items-center gap-3 px-5 py-4 text-on-surface-variant text-sm">
                 <span class="material-symbols-outlined animate-spin" style="font-size:18px">progress_activity</span>
                 Carregando eventos…
@@ -381,6 +367,15 @@ gtag('config', 'G-PGXCZF9S9W');
 
           </div>
           <!-- FIM: PRÓXIMOS EVENTOS ─────────────────────────────────────── -->
+
+        </div>
+        <!-- FIM DA LINHA ───────────────────────────────────────────────── -->
+
+
+        <!-- ── FEED PRINCIPAL ───────────────────────────────────────────────
+          Ocupa 9 das 12 colunas em telas grandes.
+        -->
+        <div class="lg:col-span-9 space-y-8">
 
           <!-- LINHA 1: reservado para futuro uso -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -420,6 +415,10 @@ gtag('config', 'G-PGXCZF9S9W');
     function toggleMonth(header) {
       header.closest('.month-block').classList.toggle('open');
     }
+
+    const dia = new Date().getDay();
+    const texto = [0, 1, 2, 3].includes(dia) ? 'Quarta-feira, 19h30' : 'Sábado, 19h30';
+    document.getElementById('proxima-reuniao-dia').textContent = texto;
   </script>
 
   <!-- ══ SCRIPT: PRÓXIMOS EVENTOS da Agenda ══════════════════════════════ -->
