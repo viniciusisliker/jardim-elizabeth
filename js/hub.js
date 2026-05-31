@@ -95,6 +95,8 @@
       }
       document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
 
+      setupHubTabs();
+
       const client = await window.JEAuth.getClient();
       await Promise.all([
         loadMembers(),
@@ -104,6 +106,37 @@
       console.warn('Hub init:', err);
       window.location.href = 'index.html';
     }
+  }
+
+  function setupHubTabs() {
+    const views = {
+      home: document.getElementById('hub-view-home'),
+      agenda: document.getElementById('hub-view-agenda')
+    };
+    const tabButtons = document.querySelectorAll('[data-hub-tab]');
+
+    function showTab(tab) {
+      const name = tab === 'agenda' ? 'agenda' : 'home';
+      Object.entries(views).forEach(([key, el]) => {
+        if (el) el.classList.toggle('hidden', key !== name);
+      });
+      tabButtons.forEach((btn) => {
+        const active = btn.dataset.hubTab === name;
+        btn.classList.toggle('hub-tab-active', active);
+        btn.classList.toggle('text-on-surface-variant', !active);
+      });
+      if (name === 'agenda') {
+        history.replaceState(null, '', '#agenda');
+      } else if (location.hash === '#agenda') {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => showTab(btn.dataset.hubTab));
+    });
+
+    if (location.hash === '#agenda') showTab('agenda');
   }
 
   if (document.readyState === 'loading') {

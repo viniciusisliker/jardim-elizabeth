@@ -2,70 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin — Agenda | Jardim Elizabeth</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
-  <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
-  <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style>
+  <meta http-equiv="refresh" content="0;url=../hub.html#agenda"/>
+  <title>Redirecionando…</title>
+  <script>location.replace('../hub.html#agenda');</script>
 </head>
-<body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
-  <div id="header"></div>
-  <main class="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
-    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-      <a href="../hub.html" class="text-secondary">Hub</a><span>/</span><span class="text-primary">Agenda</span>
-    </div>
-    <div class="flex items-center justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl font-extrabold text-primary">Gerenciar Agenda</h1>
-        <p class="text-sm text-on-surface-variant mt-1">Eventos exibidos na página pública e na home.</p>
-      </div>
-      <button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg hover:opacity-90">+ Novo evento</button>
-    </div>
-    <p id="admin-toast" class="hidden text-sm mb-4"></p>
-    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden mb-6">
-      <div id="event-list"></div>
-    </div>
-    <form id="event-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-      <h2 id="form-title" class="font-bold text-primary">Novo evento</h2>
-      <input type="hidden" id="ev-id"/>
-      <div class="grid md:grid-cols-2 gap-4">
-        <label class="block text-sm font-semibold text-primary">Título<input id="ev-title" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-        <label class="block text-sm font-semibold text-primary">Categoria
-          <select id="ev-category" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="Especial">Especial</option>
-            <option value="Reuniões">Reuniões</option>
-            <option value="Assembleia">Assembleia</option>
-            <option value="Celebração">Celebração</option>
-            <option value="Escola">Escola</option>
-          </select>
-        </label>
-        <label class="block text-sm font-semibold text-primary">Data (ISO)<input id="ev-event-date" type="date" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-        <label class="block text-sm font-semibold text-primary">Exibição da data<input id="ev-date-display" required class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="02 ou 18–19"/></label>
-        <label class="block text-sm font-semibold text-primary">Rótulo da data<input id="ev-date-label" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Abr, Sáb…"/></label>
-        <label class="block text-sm font-semibold text-primary">Mês (chave)<input id="ev-month-key" required class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="2026-04 ou futuros"/></label>
-        <label class="block text-sm font-semibold text-primary md:col-span-2">Mês (rótulo)<input id="ev-month-label" required class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Abril / 2026"/></label>
-        <label class="block text-sm font-semibold text-primary">Horário<input id="ev-time" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-        <label class="block text-sm font-semibold text-primary">Local<input id="ev-location" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-        <label class="block text-sm font-semibold text-primary">Estilo do badge
-          <select id="ev-badge" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="default">Padrão</option><option value="primary">Azul</option><option value="gold">Dourado</option>
-          </select>
-        </label>
-        <label class="block text-sm font-semibold text-primary">Ordem<input id="ev-sort" type="number" value="0" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-      </div>
-      <label class="block text-sm font-semibold text-primary">Descrição<textarea id="ev-description" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm"></textarea></label>
-      <label class="flex items-center gap-2 text-sm"><input id="ev-highlight" type="checkbox"/> Destaque na sidebar e home</label>
-      <label class="flex items-center gap-2 text-sm"><input id="ev-future" type="checkbox"/> Agrupar em Eventos Futuros</label>
-      <div class="flex gap-3">
-        <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
-        <button id="btn-cancel" type="button" class="text-sm text-on-surface-variant">Cancelar</button>
-      </div>
-    </form>
-    <p class="mt-6 text-xs text-on-surface-variant"><a href="../agenda.html" class="text-secondary underline">Ver página pública</a></p>
-  </main>
-  <div id="footer"></div>
-  <script src="../js/config.js"></script><script src="../js/auth.js"></script><script src="../js/header.js"></script><script src="../js/site-loader.js"></script><script src="../js/admin-core.js"></script><script src="../js/agenda-helpers.js"></script><script src="../js/admin/agenda.js"></script>
+<body>
+  <p><a href="../hub.html#agenda">Ir para Agenda no Hub</a></p>
 </body>
 </html>

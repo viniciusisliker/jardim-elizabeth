@@ -25,8 +25,7 @@
       const { data, error } = await client
         .from('agenda_events')
         .select('*')
-        .order('event_date', { ascending: false })
-        .limit(20);
+        .order('event_date', { ascending: false });
       if (error) {
         list.innerHTML = `<p class="px-4 py-6 text-sm text-error">${esc(error.message)}</p>`;
         return;
@@ -54,10 +53,10 @@
               <p class="text-xs text-on-surface-variant">${esc(ev.month_label)}${ev.event_time ? ` · ${esc(ev.event_time)}` : ''}${ev.is_highlight ? ' · ★ destaque' : ''}</p>
             </div>
           </div>
-          <div class="flex gap-2 shrink-0">
-            <button type="button" data-copy="${ev.id}" class="text-xs font-semibold text-on-surface-variant hover:underline">Copiar</button>
-            <button type="button" data-edit="${ev.id}" class="text-xs font-semibold text-secondary hover:underline">Editar</button>
-            <button type="button" data-del="${ev.id}" class="text-xs font-semibold text-error hover:underline">Excluir</button>
+          <div class="flex flex-wrap gap-1.5 shrink-0">
+            <button type="button" data-copy="${ev.id}" class="hub-ev-action hub-ev-action--copy">Copiar</button>
+            <button type="button" data-edit="${ev.id}" class="hub-ev-action hub-ev-action--edit">Editar</button>
+            <button type="button" data-del="${ev.id}" class="hub-ev-action hub-ev-action--del">Excluir</button>
           </div>
         </div>`).join('');
 
