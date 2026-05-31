@@ -1,5 +1,6 @@
 (function () {
   const ROLE_LABELS = {
+    superuser: 'SuperUser',
     anciao: 'Ancião',
     servo_ministerial: 'Servo Ministerial',
     publicador: 'Publicador'
@@ -19,8 +20,15 @@
     return supabaseClient;
   }
 
-  function getRoleLabel(role) {
-    return ROLE_LABELS[role] || role;
+  function getRoleLabel(roleOrProfile, designation) {
+    const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
+    const extra = typeof roleOrProfile === 'object' ? roleOrProfile?.designation : designation;
+    const base = ROLE_LABELS[role] || role;
+    return extra ? `${base} (${extra})` : base;
+  }
+
+  function isSuperUser(role) {
+    return role === 'superuser';
   }
 
   function isAdminRole(role) {
@@ -33,7 +41,7 @@
 
     const { data, error } = await client
       .from('profiles')
-      .select('id, full_name, role')
+      .select('id, full_name, role, designation')
       .eq('id', userId)
       .maybeSingle();
 
@@ -97,6 +105,7 @@
     signOut,
     onAuthStateChange,
     getRoleLabel,
-    isAdminRole
+    isAdminRole,
+    isSuperUser
   };
 })();

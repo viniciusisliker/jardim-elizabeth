@@ -59,7 +59,7 @@
     const content = qs('profile-dropdown-content');
     if (!content || !profile) return;
 
-    const roleLabel = window.JEAuth.getRoleLabel(profile.role);
+    const roleLabel = window.JEAuth.getRoleLabel(profile);
     const isAdmin = window.JEAuth.isAdminRole(profile.role);
     const icon = qs('profile-icon');
     if (icon) icon.textContent = 'person';
