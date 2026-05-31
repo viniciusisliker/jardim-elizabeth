@@ -113,7 +113,11 @@
     .hub-module-icon{
       display:flex;align-items:center;justify-content:center;
       width:2.5rem;height:2.5rem;border-radius:0.625rem;flex-shrink:0;
-      font-size:1.375rem;
+    }
+    .hub-module-icon .material-symbols-outlined{
+      font-family:'Material Symbols Outlined',sans-serif;
+      font-size:1.375rem;line-height:1;font-feature-settings:'liga';
+      font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
     }
     .hub-module-body{flex:1;min-width:0}
     .hub-module-body h4{
@@ -261,7 +265,7 @@
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Publicação</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="agenda" data-hub-requires-permission="agenda" class="hub-module-card hub-module-card--agenda">
-                <span class="hub-module-icon material-symbols-outlined">calendar_month</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span></span>
                 <div class="hub-module-body">
                   <h4>Agenda</h4>
                   <p>Criar, editar e publicar eventos na home e na página Agenda.</p>
@@ -269,7 +273,7 @@
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
               <a href="admin/anuncios.html" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
-                <span class="hub-module-icon material-symbols-outlined">campaign</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">campaign</span></span>
                 <div class="hub-module-body">
                   <h4>Quadro de Anúncios</h4>
                   <p>Editor por data, PDF e exportação para Google Agenda.</p>
@@ -283,7 +287,7 @@
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Organização e campo</h3>
             <div class="hub-module-grid">
               <a href="admin/agendamentos.html" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
-                <span class="hub-module-icon material-symbols-outlined">event_available</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></span>
                 <div class="hub-module-body">
                   <h4>Agendamentos</h4>
                   <p>Calendários de carrinhos e displays.</p>
@@ -291,7 +295,7 @@
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </a>
               <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
-                <span class="hub-module-icon material-symbols-outlined">map</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
                 <div class="hub-module-body">
                   <h4>Territórios</h4>
                   <p>Status, nomes e mapas do serviço de campo.</p>
@@ -305,7 +309,7 @@
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
             <div class="hub-module-grid">
               <a href="admin/donativos.html" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
-                <span class="hub-module-icon material-symbols-outlined">volunteer_activism</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span></span>
                 <div class="hub-module-body">
                   <h4>Donativos</h4>
                   <p>Chave PIX, QR code e textos da página de donativos.</p>
@@ -313,7 +317,7 @@
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </a>
               <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
-                <span class="hub-module-icon material-symbols-outlined">settings</span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
                 <div class="hub-module-body">
                   <h4>Configurações</h4>
                   <p>Usuários, cargos, designações e permissões de acesso.</p>
