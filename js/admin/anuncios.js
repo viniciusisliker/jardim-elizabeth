@@ -243,11 +243,11 @@
             ${fieldsHtmlGrouped(fields, entry, block)}
           </div>
           <div class="qa-doc-footer">
-            <button type="button" data-prev-entry" ${idx === 0 ? 'disabled' : ''} class="text-sm font-semibold text-primary disabled:opacity-40 flex items-center gap-1">
+            <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="qa-doc-nav-btn qa-doc-nav-prev">
               <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span> Anterior
             </button>
-            <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover esta data</button>
-            <button type="button" data-next-entry" ${idx >= list.length - 1 ? 'disabled' : ''} class="text-sm font-semibold text-primary disabled:opacity-40 flex items-center gap-1">
+            <button type="button" data-remove-entry="${entry.id}" class="qa-doc-nav-btn qa-doc-nav-remove">Remover esta data</button>
+            <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="qa-doc-nav-btn qa-doc-nav-next">
               Próxima <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
             </button>
           </div>
