@@ -14,7 +14,7 @@
   </script>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
   <script id="tailwind-config">
@@ -27,6 +27,8 @@
             "on-primary-container": "#9dbcf2",
             "secondary": "#3b5e97",
             "primary": "#0f3462",
+            "accent": "#984806",
+            "accent-gold": "#c8a96e",
             "background": "#fbf9f8",
             "on-surface-variant": "#43474f",
             "outline-variant": "#c3c6d0",
@@ -43,16 +45,119 @@
 
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .hub-tab-btn{border:1px solid transparent;background:transparent}
+    .hub-tab-btn{border:1px solid transparent;background:transparent;border-radius:9999px;padding:0.5rem 1.125rem}
     .hub-tab-btn:hover{background:#fff;border-color:#c3c6d0;color:#0f3462}
-    .hub-tab-btn.hub-tab-active{background:#0f3462;color:#fff;border-color:#0f3462}
-    .hub-card-btn{cursor:pointer}
+    .hub-tab-btn.hub-tab-active{background:#0f3462;color:#fff;border-color:#0f3462;box-shadow:0 4px 14px rgba(15,52,98,.25)}
     .hub-ev-action{display:inline-flex;align-items:center;padding:0.375rem 0.625rem;border-radius:0.375rem;border:1px solid #c3c6d0;background:#fff;font-size:0.6875rem;font-weight:700;line-height:1;cursor:pointer;transition:all .15s}
     .hub-ev-action:hover{border-color:#3b5e97;background:#f5f3f3}
     .hub-ev-action--edit{color:#3b5e97}
     .hub-ev-action--copy{color:#43474f}
     .hub-ev-action--del{color:#ba1a1a;border-color:rgba(186,26,26,.25)}
     .hub-ev-action--del:hover{background:#fff5f5;border-color:#ba1a1a}
+
+    .hub-hero{
+      position:relative;overflow:hidden;
+      background:linear-gradient(135deg,#0a2847 0%,#0f3462 42%,#1a4a7a 100%);
+      color:#fff;
+    }
+    .hub-hero::before{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:
+        radial-gradient(ellipse 80% 60% at 100% 0%,rgba(200,169,110,.22) 0%,transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%,rgba(59,94,151,.45) 0%,transparent 50%);
+    }
+    .hub-hero-grid{
+      position:absolute;inset:0;pointer-events:none;opacity:.07;
+      background-image:linear-gradient(rgba(255,255,255,.8) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.8) 1px,transparent 1px);
+      background-size:48px 48px;
+    }
+    .hub-user-chip{
+      background:rgba(255,255,255,.1);backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.18);border-radius:1rem;
+    }
+    .hub-bento{
+      display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;
+      margin-top:-2.5rem;position:relative;z-index:1;
+    }
+    @media(max-width:1023px){.hub-bento{grid-template-columns:repeat(2,1fr);margin-top:-1.5rem}}
+    @media(max-width:639px){.hub-bento{grid-template-columns:1fr}}
+
+    .hub-tile{
+      position:relative;display:flex;flex-direction:column;justify-content:space-between;
+      min-height:9.5rem;padding:1.375rem 1.5rem;border-radius:1.25rem;
+      border:1px solid rgba(255,255,255,.65);background:#fff;
+      box-shadow:0 1px 2px rgba(15,52,98,.06),0 8px 24px rgba(15,52,98,.06);
+      overflow:hidden;text-align:left;cursor:pointer;
+      transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s, border-color .2s;
+    }
+    a.hub-tile{text-decoration:none;color:inherit}
+    .hub-tile::after{
+      content:'';position:absolute;top:0;right:0;width:7rem;height:7rem;border-radius:50%;
+      transform:translate(30%,-30%);opacity:.12;transition:transform .35s,opacity .35s;
+    }
+    .hub-tile:hover{
+      transform:translateY(-4px);
+      box-shadow:0 4px 8px rgba(15,52,98,.08),0 20px 40px rgba(15,52,98,.12);
+      border-color:rgba(59,94,151,.35);
+    }
+    .hub-tile:hover::after{transform:translate(20%,-20%) scale(1.15);opacity:.2}
+    .hub-tile:hover .hub-tile-arrow{opacity:1;transform:translate(2px,-2px)}
+
+    .hub-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem}
+    .hub-tile-icon{
+      display:flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;
+      border-radius:0.875rem;font-size:1.5rem;flex-shrink:0;
+    }
+    .hub-tile-arrow{
+      opacity:0;color:#3b5e97;transition:opacity .2s,transform .2s;font-size:1.25rem;
+    }
+    .hub-tile-tag{
+      font-size:0.5625rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+      padding:0.2rem 0.5rem;border-radius:9999px;margin-bottom:0.625rem;display:inline-block;
+    }
+    .hub-tile-title{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.125rem;font-weight:800;color:#0f3462;line-height:1.2}
+    .hub-tile-desc{font-size:0.8125rem;color:#43474f;line-height:1.45;margin-top:0.375rem;max-width:28ch}
+
+    .hub-tile--featured{grid-column:span 7;min-height:11.5rem}
+    .hub-tile--featured .hub-tile-title{font-size:1.5rem}
+    .hub-tile--featured .hub-tile-desc{max-width:36ch;font-size:0.875rem}
+    .hub-tile--featured::before{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(145deg,rgba(15,52,98,.04) 0%,transparent 55%);
+    }
+    @media(max-width:1023px){.hub-tile--featured{grid-column:span 2}}
+    @media(max-width:639px){.hub-tile--featured{grid-column:span 1}}
+
+    .hub-tile--compact{grid-column:span 4;min-height:8.5rem}
+    @media(max-width:1023px){.hub-tile--compact{grid-column:span 1}}
+    .hub-tile--anuncios[style]{grid-column:span 5}
+    @media(max-width:1023px){.hub-tile--anuncios[style]{grid-column:span 1}}
+    .hub-tile--half{grid-column:span 6}
+    @media(max-width:1023px){.hub-tile--half{grid-column:span 1}}
+
+    .hub-tile--agenda .hub-tile-icon{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:#1d4ed8}
+    .hub-tile--agenda::after{background:#3b82f6}
+    .hub-tile--agenda .hub-tile-tag{background:#dbeafe;color:#1e40af}
+
+    .hub-tile--anuncios .hub-tile-icon{background:linear-gradient(135deg,#fef3c7,#fffbeb);color:#b45309}
+    .hub-tile--anuncios::after{background:#f59e0b}
+    .hub-tile--anuncios .hub-tile-tag{background:#fef3c7;color:#92400e}
+
+    .hub-tile--agendamentos .hub-tile-icon{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#047857}
+    .hub-tile--agendamentos::after{background:#10b981}
+    .hub-tile--agendamentos .hub-tile-tag{background:#d1fae5;color:#065f46}
+
+    .hub-tile--territorios .hub-tile-icon{background:linear-gradient(135deg,#e0e7ff,#eef2ff);color:#4338ca}
+    .hub-tile--territorios::after{background:#6366f1}
+    .hub-tile--territorios .hub-tile-tag{background:#e0e7ff;color:#3730a3}
+
+    .hub-tile--donativos .hub-tile-icon{background:linear-gradient(135deg,#fce7f3,#fdf2f8);color:#be185d}
+    .hub-tile--donativos::after{background:#ec4899}
+    .hub-tile--donativos .hub-tile-tag{background:#fce7f3;color:#9d174d}
+
+    .hub-tile--config .hub-tile-icon{background:linear-gradient(135deg,#f1f5f9,#f8fafc);color:#475569}
+    .hub-tile--config::after{background:#64748b}
+    .hub-tile--config .hub-tile-tag{background:#f1f5f9;color:#334155}
   </style>
 </head>
 
@@ -61,72 +166,112 @@
   <div id="header"></div>
 
   <main class="flex-1">
-    <section class="bg-surface-container-low border-b border-outline-variant py-10">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-          <a href="index.html"><span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span></a>
-          <a href="index.html"><span class="text-secondary">Jardim Elizabeth</span></a>
-          <span class="text-outline">/</span>
-          <span class="text-primary">Hub Administrativo</span>
+    <section class="hub-hero py-12 md:py-14 pb-16 md:pb-20">
+      <div class="hub-hero-grid" aria-hidden="true"></div>
+      <div class="max-w-7xl mx-auto px-6 relative">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60 mb-5">
+          <a href="index.html" class="hover:text-white transition-colors"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+          <a href="index.html" class="hover:text-white transition-colors">Jardim Elizabeth</a>
+          <span>/</span>
+          <span class="text-accent-gold">Hub</span>
         </div>
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">Hub Administrativo</h1>
-            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Central de gestão da congregação. Acesso para SuperUser, anciãos e servos ministeriais.</p>
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div class="max-w-xl">
+            <p class="text-accent-gold text-xs font-bold uppercase tracking-[0.2em] mb-2">Central administrativa</p>
+            <h1 class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
+            <p class="text-white/70 mt-3 text-sm md:text-base leading-relaxed">Gestão do site da congregação — publicações, campo, agenda e configurações em um só lugar.</p>
           </div>
-          <div class="bg-white border border-outline-variant rounded-xl px-4 py-3 text-sm">
-            <p class="font-bold text-primary" id="hub-user-name">—</p>
-            <p class="text-xs text-secondary" id="hub-user-role">—</p>
-            <p class="text-xs text-outline mt-1" id="hub-user-username">—</p>
+          <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
+            <p class="font-bold text-white" id="hub-user-name">—</p>
+            <p class="text-xs text-accent-gold font-semibold mt-0.5" id="hub-user-role">—</p>
+            <p class="text-xs text-white/50 mt-1" id="hub-user-username">—</p>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="max-w-7xl mx-auto px-6 py-10 space-y-8">
+    <div class="max-w-7xl mx-auto px-6 pb-12">
 
-      <nav class="flex flex-wrap gap-2 border-b border-outline-variant pb-4" aria-label="Seções do hub">
-        <button type="button" data-hub-tab="home" class="hub-tab-btn hub-tab-active text-sm font-semibold px-4 py-2 rounded-lg">Início</button>
-        <button type="button" data-hub-tab="agenda" class="hub-tab-btn text-sm font-semibold px-4 py-2 rounded-lg text-on-surface-variant">Agenda</button>
+      <nav class="flex flex-wrap gap-2 mb-6 pt-2" aria-label="Seções do hub">
+        <button type="button" data-hub-tab="home" class="hub-tab-btn hub-tab-active text-sm font-semibold">Início</button>
+        <button type="button" data-hub-tab="agenda" class="hub-tab-btn text-sm font-semibold text-on-surface-variant">Agenda</button>
       </nav>
 
-      <div id="hub-view-home" class="hub-view space-y-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <button type="button" data-hub-tab="agenda" class="hub-card-btn group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all text-left w-full">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">calendar_month</span>
-          <h2 class="font-bold text-primary">Agenda</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Criar, editar e publicar eventos no site.</p>
+      <div id="hub-view-home" class="hub-view">
+      <div class="hub-bento">
+
+        <button type="button" data-hub-tab="agenda" class="hub-tile hub-tile--featured hub-tile--agenda">
+          <div>
+            <span class="hub-tile-tag">Publicação</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">calendar_month</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-4">Agenda</h2>
+            <p class="hub-tile-desc">Criar, editar e publicar eventos na home e na página Agenda — com modelos e cópia rápida.</p>
+          </div>
         </button>
 
-        <a href="admin/agendamentos.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">event_available</span>
-          <h2 class="font-bold text-primary">Agendamentos</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Gerenciar calendários de carrinhos e displays.</p>
+        <a href="admin/anuncios.html" class="hub-tile hub-tile--compact hub-tile--anuncios" style="grid-column:span 5">
+          <div>
+            <span class="hub-tile-tag">Publicação</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">campaign</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-3">Quadro de Anúncios</h2>
+            <p class="hub-tile-desc">Editor por data, PDF e exportação Google Agenda.</p>
+          </div>
         </a>
 
-        <a href="admin/anuncios.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">campaign</span>
-          <h2 class="font-bold text-primary">Quadro de Anúncios</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Editor estruturado, PDF automático e exportação CSV.</p>
+        <a href="admin/agendamentos.html" class="hub-tile hub-tile--compact hub-tile--agendamentos">
+          <div>
+            <span class="hub-tile-tag">Organização</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">event_available</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-3">Agendamentos</h2>
+            <p class="hub-tile-desc">Calendários de carrinhos e displays.</p>
+          </div>
         </a>
 
-        <a href="admin/territorios.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">map</span>
-          <h2 class="font-bold text-primary">Territórios</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Status, nomes e mapas dos territórios.</p>
+        <a href="admin/territorios.html" class="hub-tile hub-tile--compact hub-tile--territorios">
+          <div>
+            <span class="hub-tile-tag">Campo</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">map</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-3">Territórios</h2>
+            <p class="hub-tile-desc">Status, nomes e mapas.</p>
+          </div>
         </a>
 
-        <a href="admin/donativos.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">volunteer_activism</span>
-          <h2 class="font-bold text-primary">Donativos</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Alterar chave PIX, QR code e textos.</p>
+        <a href="admin/donativos.html" class="hub-tile hub-tile--half hub-tile--donativos">
+          <div>
+            <span class="hub-tile-tag">Contribuições</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">volunteer_activism</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-3">Donativos</h2>
+            <p class="hub-tile-desc">Chave PIX, QR code e textos da página de donativos.</p>
+          </div>
         </a>
 
-        <a href="admin/configuracoes.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
-          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">settings</span>
-          <h2 class="font-bold text-primary">Configurações</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Membros, cargos e permissões de acesso.</p>
+        <a href="admin/configuracoes.html" class="hub-tile hub-tile--half hub-tile--config">
+          <div>
+            <span class="hub-tile-tag">Sistema</span>
+            <div class="hub-tile-top">
+              <span class="hub-tile-icon material-symbols-outlined">settings</span>
+              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+            </div>
+            <h2 class="hub-tile-title mt-3">Configurações</h2>
+            <p class="hub-tile-desc">Usuários, cargos e permissões de acesso.</p>
+          </div>
         </a>
+
       </div>
       </div>
 
