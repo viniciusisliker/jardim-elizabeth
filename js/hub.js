@@ -1,9 +1,14 @@
 (function () {
-  const ROLE_LABELS = {
-    anciao: 'Ancião',
-    servo_ministerial: 'Servo Ministerial',
-    publicador: 'Publicador'
-  };
+  const QUERY_TIMEOUT_MS = 8000;
+
+  function withTimeout(promise, ms = QUERY_TIMEOUT_MS) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), ms);
+      })
+    ]);
+  }
 
   async function guardHubAccess() {
     const session = await window.JEAuth.getSession();
@@ -21,49 +26,80 @@
     return { session, profile };
   }
 
+  function renderMembersError(list, message) {
+    list.innerHTML = `<p class="px-4 py-6 text-sm text-error">${message}</p>`;
+  }
+
   async function loadMembers() {
-    const client = window.JEAuth.getClient();
     const list = document.getElementById('members-list');
-    if (!client || !list) return;
+    if (!list) return;
 
-    const { data, error } = await client
-      .from('profiles')
-      .select('full_name, role, designation, username')
-      .order('role')
-      .order('full_name');
+    try {
+      const client = await window.JEAuth.getClient();
+      if (!client) {
+        renderMembersError(list, 'Não foi possível conectar ao serviço de autenticação.');
+        return;
+      }
 
-    if (error) {
-      list.innerHTML = `<p class="text-sm text-error">Não foi possível carregar os membros.</p>`;
-      return;
-    }
+      const { data, error } = await withTimeout(
+        client
+          .from('profiles')
+          .select('full_name, role, designation, username')
+          .order('role')
+          .order('full_name')
+      );
 
-    list.innerHTML = data.map((member) => `
-      <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant last:border-0">
-        <div>
-          <span class="font-medium text-primary text-sm">${member.full_name}</span>
-          ${member.username ? `<p class="text-xs text-outline">@${member.username}</p>` : ''}
+      if (error) {
+        renderMembersError(list, 'Não foi possível carregar os membros.');
+        console.warn('Hub membros:', error.message);
+        return;
+      }
+
+      if (!data?.length) {
+        list.innerHTML = '<p class="px-4 py-6 text-sm text-on-surface-variant">Nenhum membro encontrado.</p>';
+        return;
+      }
+
+      list.innerHTML = data.map((member) => `
+        <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant last:border-0">
+          <div>
+            <span class="font-medium text-primary text-sm">${member.full_name}</span>
+            ${member.username ? `<p class="text-xs text-outline">@${member.username}</p>` : ''}
+          </div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-secondary">${window.JEAuth.getRoleLabel(member)}</span>
         </div>
-        <span class="text-xs font-semibold uppercase tracking-wider text-secondary">${window.JEAuth.getRoleLabel(member)}</span>
-      </div>
-    `).join('');
+      `).join('');
+    } catch (err) {
+      renderMembersError(list, 'Tempo esgotado ao carregar membros. Recarregue a página.');
+      console.warn('Hub membros:', err);
+    }
   }
 
   async function initHub() {
-    const access = await guardHubAccess();
-    if (!access) return;
+    try {
+      const access = await guardHubAccess();
+      if (!access) return;
 
-    const { profile, session } = access;
+      const { profile } = access;
 
-    document.getElementById('hub-user-name').textContent = profile.full_name;
-    document.getElementById('hub-user-role').textContent = window.JEAuth.getRoleLabel(profile);
+      document.getElementById('hub-user-name').textContent = profile.full_name;
+      document.getElementById('hub-user-role').textContent = window.JEAuth.getRoleLabel(profile);
 
-    if (window.JEAuth.isSuperUser(profile.role)) {
-      document.getElementById('hub-user-role').classList.add('text-primary', 'font-semibold');
+      if (window.JEAuth.isSuperUser(profile.role)) {
+        document.getElementById('hub-user-role').classList.add('text-primary', 'font-semibold');
+      }
+      document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
+
+      await loadMembers();
+    } catch (err) {
+      console.warn('Hub init:', err);
+      window.location.href = 'index.html';
     }
-    document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
-
-    await loadMembers();
   }
 
-  document.addEventListener('DOMContentLoaded', initHub);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHub);
+  } else {
+    initHub();
+  }
 })();
