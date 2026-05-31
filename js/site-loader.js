@@ -12,12 +12,29 @@
       .catch((err) => console.warn(`Erro ao carregar ${url}:`, err));
   }
 
+  function navSlugFromHref(href) {
+    if (!href) return '';
+    const file = href.split('/').pop().replace(/\.html$/i, '').toLowerCase();
+    return file === 'index' ? 'home' : file;
+  }
+
+  function navSlugFromPath(pathname) {
+    const segments = pathname.replace(/\/$/, '').split('/').filter(Boolean);
+    const last = (segments.length ? segments[segments.length - 1] : 'index')
+      .replace(/\.html$/i, '')
+      .toLowerCase();
+    return last === 'index' ? 'home' : last;
+  }
+
   function highlightActiveNav() {
-    const pagina = window.location.pathname;
+    const current = navSlugFromPath(window.location.pathname);
+    const activeClasses = ['border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]'];
+
     document.querySelectorAll('.nav-link').forEach((link) => {
-      const href = link.getAttribute('href');
-      if (href && pagina.includes(href.replace('./', ''))) {
-        link.classList.add('border-b-2', 'border-[#0f3462]', 'pb-1', 'font-semibold', 'text-[#0f3462]');
+      const isActive = navSlugFromHref(link.getAttribute('href')) === current;
+      if (isActive) {
+        link.classList.add(...activeClasses);
+        link.setAttribute('aria-current', 'page');
       }
     });
   }
