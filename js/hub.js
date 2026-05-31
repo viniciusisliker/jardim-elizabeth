@@ -28,7 +28,7 @@
 
     const { data, error } = await client
       .from('profiles')
-      .select('full_name, role, designation')
+      .select('full_name, role, designation, username')
       .order('role')
       .order('full_name');
 
@@ -39,7 +39,10 @@
 
     list.innerHTML = data.map((member) => `
       <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant last:border-0">
-        <span class="font-medium text-primary text-sm">${member.full_name}</span>
+        <div>
+          <span class="font-medium text-primary text-sm">${member.full_name}</span>
+          ${member.username ? `<p class="text-xs text-outline">@${member.username}</p>` : ''}
+        </div>
         <span class="text-xs font-semibold uppercase tracking-wider text-secondary">${window.JEAuth.getRoleLabel(member)}</span>
       </div>
     `).join('');
@@ -57,7 +60,7 @@
     if (window.JEAuth.isSuperUser(profile.role)) {
       document.getElementById('hub-user-role').classList.add('text-primary', 'font-semibold');
     }
-    document.getElementById('hub-user-email').textContent = session.user.email || '';
+    document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
 
     await loadMembers();
   }

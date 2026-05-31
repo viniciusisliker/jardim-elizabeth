@@ -29,28 +29,30 @@ Acesso via ícone de perfil no canto superior direito. Anciãos e servos ministe
 
 ## Usuários (Supabase Auth)
 
+Login com **usuário e senha** (não usa e-mail na tela de entrada).
+
 Senha inicial para todos: `jdelizabeth123`
 
-| Nome | Função | E-mail |
-|------|--------|--------|
-| Denison Oliveira | Ancião | denison.oliveira@jardimelizabeth.org |
-| João Neves | Ancião | joao.neves@jardimelizabeth.org |
-| Edvan Dantas | Ancião | edvan.dantas@jardimelizabeth.org |
-| Marcelo Almeida | Ancião | marcelo.almeida@jardimelizabeth.org |
-| Marcelo Freire | Ancião | marcelo.freire@jardimelizabeth.org |
-| Arnaldo Isliker | Ancião | arnaldo.isliker@jardimelizabeth.org |
-| Vinícius Isliker | SuperUser (Desenvolvedor) | vinicius.isliker@jardimelizabeth.org |
-| Ademilson | Servo Ministerial | ademilson@jardimelizabeth.org |
-| Alexsezar Tenório | Servo Ministerial | alexsezar.tenorio@jardimelizabeth.org |
-| André Neves | Servo Ministerial | andre.neves@jardimelizabeth.org |
-| Lucas Dias | Servo Ministerial | lucas.dias@jardimelizabeth.org |
-| Rikael | Servo Ministerial | rikael@jardimelizabeth.org |
-| Cosme Silva | Servo Ministerial | cosme.silva@jardimelizabeth.org |
-| Aerton | Publicador | aerton@jardimelizabeth.org |
-| Fábio Buri | Publicador | fabio.buri@jardimelizabeth.org |
-| Rubens | Publicador | rubens@jardimelizabeth.org |
-| Fábio Souza | Publicador | fabio.souza@jardimelizabeth.org |
-| Ygor | Publicador | ygor@jardimelizabeth.org |
-| Matheus | Publicador | matheus@jardimelizabeth.org |
+| Nome | Função | Usuário |
+|------|--------|---------|
+| Denison Oliveira | Ancião | denison.oliveira |
+| João Neves | Ancião | joao.neves |
+| Edvan Dantas | Ancião | edvan.dantas |
+| Marcelo Almeida | Ancião | marcelo.almeida |
+| Marcelo Freire | Ancião | marcelo.freire |
+| Arnaldo Isliker | Ancião | arnaldo.isliker |
+| Vinícius Isliker | SuperUser (Desenvolvedor) | vinicius.isliker |
+| Ademilson | Servo Ministerial | ademilson |
+| Alexsezar Tenório | Servo Ministerial | alexsezar.tenorio |
+| André Neves | Servo Ministerial | andre.neves |
+| Lucas Dias | Servo Ministerial | lucas.dias |
+| Rikael | Servo Ministerial | rikael |
+| Cosme Silva | Servo Ministerial | cosme.silva |
+| Aerton | Publicador | aerton |
+| Fábio Buri | Publicador | fabio.buri |
+| Rubens | Publicador | rubens |
+| Fábio Souza | Publicador | fabio.souza |
+| Ygor | Publicador | ygor |
+| Matheus | Publicador | matheus |
 
 > **SuperUser** tem acesso total ao sistema. Anciãos e servos ministeriais acessam o hub administrativo. Publicadores podem fazer login, mas não acessam o hub.

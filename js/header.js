@@ -55,7 +55,7 @@
     });
   }
 
-  function renderUserMenu(profile, email) {
+  function renderUserMenu(profile) {
     const content = qs('profile-dropdown-content');
     if (!content || !profile) return;
 
@@ -68,7 +68,7 @@
       <div class="border-b border-outline-variant pb-3 mb-3">
         <p class="font-bold text-primary">${profile.full_name}</p>
         <p class="text-xs text-on-surface-variant mt-0.5">${roleLabel}</p>
-        ${email ? `<p class="text-xs text-outline mt-1 truncate">${email}</p>` : ''}
+        ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
       </div>
       ${isAdmin ? `
         <a href="hub.html" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
@@ -109,7 +109,7 @@
     }
 
     const profile = await window.JEAuth.getCurrentProfile();
-    renderUserMenu(profile, session.user.email);
+    renderUserMenu(profile);
   }
 
   function bindEvents() {
@@ -127,17 +127,17 @@
 
     qs('login-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = qs('login-email')?.value?.trim();
+      const username = qs('login-username')?.value?.trim();
       const password = qs('login-password')?.value;
       const errorEl = qs('login-error');
 
       try {
-        await window.JEAuth.signIn(email, password);
+        await window.JEAuth.signIn(username, password);
         hideLoginModal();
         await refreshProfileUI();
       } catch (err) {
         if (errorEl) {
-          errorEl.textContent = 'E-mail ou senha incorretos.';
+          errorEl.textContent = 'Usuário ou senha incorretos.';
           errorEl.classList.remove('hidden');
         }
       }

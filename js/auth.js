@@ -41,7 +41,7 @@
 
     const { data, error } = await client
       .from('profiles')
-      .select('id, full_name, role, designation')
+      .select('id, full_name, role, designation, username')
       .eq('id', userId)
       .maybeSingle();
 
@@ -70,9 +70,18 @@
     return currentProfile;
   }
 
-  async function signIn(email, password) {
+  async function signIn(username, password) {
     const client = getClient();
     if (!client) throw new Error('Supabase não configurado.');
+
+    const normalizedUsername = username?.trim();
+    if (!normalizedUsername) throw new Error('Usuário inválido.');
+
+    const { data: email, error: lookupError } = await client.rpc('get_login_email', {
+      p_username: normalizedUsername
+    });
+
+    if (lookupError || !email) throw new Error('Credenciais inválidas.');
 
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) throw error;
