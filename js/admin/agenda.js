@@ -1,13 +1,6 @@
 (function () {
-  const { guardAdmin, getClient, showToast, escapeHtml, adminBreadcrumb } = window.JEAdmin;
-
-  function formRow(label, input) {
-    return `<label class="block text-sm font-semibold text-primary mb-1">${label}${input}</label>`;
-  }
-
-  function inputCls() {
-    return 'w-full rounded-lg border-outline-variant text-sm focus:border-secondary focus:ring-secondary';
-  }
+  const { guardAdmin, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const H = window.JEAgendaHelpers;
 
   async function init() {
     const profile = await guardAdmin();
@@ -23,10 +16,21 @@
       renderList();
     }
 
+    function syncDerivedFields() {
+      const iso = document.getElementById('ev-event-date').value;
+      const future = document.getElementById('ev-future')?.checked;
+      const derived = H.deriveFieldsFromDate(iso, { futureGroup: future });
+      if (!derived) return;
+      document.getElementById('ev-date-display').value = derived.date_display;
+      document.getElementById('ev-date-label').value = derived.date_label;
+      document.getElementById('ev-month-key').value = derived.month_key;
+      document.getElementById('ev-month-label').value = derived.month_label;
+    }
+
     function renderList() {
       const list = document.getElementById('event-list');
       if (!events.length) {
-        list.innerHTML = '<p class="text-sm text-on-surface-variant py-4">Nenhum evento cadastrado.</p>';
+        list.innerHTML = '<p class="text-sm text-on-surface-variant py-4 px-4">Nenhum evento cadastrado.</p>';
         return;
       }
       list.innerHTML = events.map((ev) => `
@@ -57,11 +61,14 @@
       document.getElementById('ev-event-date').value = ev?.event_date || '';
       document.getElementById('ev-month-key').value = ev?.month_key || '';
       document.getElementById('ev-month-label').value = ev?.month_label || '';
-      document.getElementById('ev-time').value = ev?.event_time || '';
-      document.getElementById('ev-location').value = ev?.location || '';
+      document.getElementById('ev-time').value = ev?.event_time || H.DEFAULTS.event_time;
+      document.getElementById('ev-location').value = ev?.location || H.DEFAULTS.location;
       document.getElementById('ev-badge').value = ev?.badge_variant || 'default';
       document.getElementById('ev-highlight').checked = !!ev?.is_highlight;
       document.getElementById('ev-sort').value = ev?.sort_order ?? 0;
+      if (document.getElementById('ev-future')) {
+        document.getElementById('ev-future').checked = ev?.month_key === 'futuros';
+      }
       document.getElementById('form-title').textContent = ev ? 'Editar evento' : 'Novo evento';
     }
 
@@ -74,8 +81,12 @@
 
     document.getElementById('btn-new').addEventListener('click', () => openForm(null));
     document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('event-form').classList.add('hidden'));
+    document.getElementById('ev-event-date').addEventListener('change', syncDerivedFields);
+    document.getElementById('ev-future')?.addEventListener('change', syncDerivedFields);
+
     document.getElementById('event-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      syncDerivedFields();
       const id = document.getElementById('ev-id').value;
       const payload = {
         title: document.getElementById('ev-title').value.trim(),

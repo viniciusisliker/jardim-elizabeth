@@ -8,7 +8,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
   <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
-  <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}.tab-active{border-bottom:2px solid #0f3462;color:#0f3462;font-weight:600}</style>
+  <style>
+    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+    .tab-active{border-bottom:2px solid #0f3462;color:#0f3462;font-weight:600}
+    .entry-nav-btn{display:flex;flex-direction:column;align-items:flex-start;gap:0.125rem;width:100%;text-align:left;padding:0.625rem 0.75rem;border-radius:0.75rem;border:1px solid #c3c6d0;background:#fff;transition:all .15s}
+    .entry-nav-btn:hover{border-color:#3b5e97;background:#fbf9f8}
+    .entry-nav-btn.is-active{border-color:#0f3462;background:#0f3462;color:#fff;box-shadow:0 2px 8px rgba(15,52,98,.15)}
+    .entry-nav-btn.is-active .entry-nav-meta{color:rgba(255,255,255,.75)}
+    .entry-nav-btn.is-filled:not(.is-active){border-color:#3b5e97}
+    .entry-nav-meta{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#43474f}
+  </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
   <div id="header"></div>
@@ -25,6 +34,10 @@
         <label class="text-xs font-semibold text-primary">Mês do quadro
           <input type="month" id="board-month" class="block mt-1 rounded-lg border-outline-variant text-sm"/>
         </label>
+        <button type="button" id="btn-open-gcal-export" class="flex items-center gap-1.5 text-sm font-semibold text-primary border border-outline-variant px-4 py-2 rounded-lg hover:bg-white hover:border-secondary/50 transition-colors" title="Exportar designações para importar no Google Agenda">
+          <span class="material-symbols-outlined text-secondary" style="font-size:18px">calendar_month</span>
+          Google Agenda
+        </button>
         <button type="button" id="btn-new-board" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">Novo / Carregar</button>
       </div>
     </div>
@@ -35,7 +48,6 @@
       <button type="button" data-tab="mecanicas" class="tab-btn tab-active pb-2">Designações Mecânicas</button>
       <button type="button" data-tab="midweek" class="tab-btn pb-2 text-on-surface-variant">Vida e Ministério</button>
       <button type="button" data-tab="weekend" class="tab-btn pb-2 text-on-surface-variant">Final de Semana</button>
-      <button type="button" data-tab="export" class="tab-btn pb-2 text-on-surface-variant">Exportar CSV</button>
       <button type="button" data-tab="published" class="tab-btn pb-2 text-on-surface-variant">Publicados</button>
       <button type="button" data-tab="config" class="tab-btn pb-2 text-on-surface-variant">Configurações</button>
     </nav>
@@ -52,8 +64,9 @@
         </div>
       </div>
       <div id="editor-mecanicas" class="space-y-4"></div>
-      <div class="bg-white border border-outline-variant rounded-xl p-4">
-        <h3 class="font-bold text-primary text-sm mb-3">Limpeza mensal</h3>
+      <div class="bg-white border border-outline-variant rounded-xl p-4 mt-6">
+        <h3 class="font-bold text-primary text-sm mb-1">Limpeza mensal</h3>
+        <p class="text-xs text-on-surface-variant mb-3">Uma linha por vez — fim de semana e grupo responsável.</p>
         <div id="editor-limpeza" class="space-y-2"></div>
         <button type="button" id="btn-add-limpeza" class="mt-2 text-xs font-semibold text-secondary">+ Linha</button>
       </div>
@@ -87,12 +100,6 @@
       <div id="editor-weekend" class="space-y-4"></div>
     </div>
 
-    <div id="panel-export" class="tab-panel hidden space-y-4">
-      <p class="text-sm text-on-surface-variant">Exporta designações com data para importar no Google Calendar (Configurações → Importar).</p>
-      <textarea id="csv-preview" rows="12" class="w-full font-mono text-xs rounded-lg border-outline-variant" readonly></textarea>
-      <button type="button" id="btn-download-csv" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Baixar CSV</button>
-    </div>
-
     <div id="panel-published" class="tab-panel hidden">
       <div id="published-list" class="bg-white border border-outline-variant rounded-xl divide-y"></div>
     </div>
@@ -106,6 +113,50 @@
       </form>
     </div>
   </main>
+
+  <div id="gcal-export-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="gcal-export-title" aria-modal="true">
+    <button type="button" id="gcal-export-backdrop" class="absolute inset-0 bg-primary/40" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl border border-outline-variant shadow-xl">
+      <div class="sticky top-0 bg-white border-b border-outline-variant px-5 py-4 flex items-start justify-between gap-3 rounded-t-2xl">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:28px">event_upcoming</span>
+          <div>
+            <h2 id="gcal-export-title" class="font-bold text-primary text-lg leading-tight">Enviar para o Google Agenda</h2>
+            <p class="text-sm text-on-surface-variant mt-1">Baixe um arquivo CSV com as designações do mês e importe no calendário da congregação.</p>
+          </div>
+        </div>
+        <button type="button" id="gcal-export-close" class="text-on-surface-variant hover:text-primary p-1" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="px-5 py-4 space-y-4">
+        <div class="bg-background rounded-xl p-4 text-sm space-y-2 border border-outline-variant">
+          <p class="font-bold text-primary">Como importar no Google Agenda</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-on-surface-variant">
+            <li>Clique em <strong class="text-primary">Baixar CSV para Google Agenda</strong> abaixo.</li>
+            <li>Abra <a href="https://calendar.google.com" target="_blank" rel="noopener" class="text-secondary underline font-semibold">calendar.google.com</a> no calendário da congregação.</li>
+            <li>Menu <strong class="text-primary">⚙ Configurações</strong> → <strong class="text-primary">Importar e exportar</strong> → <strong class="text-primary">Importar</strong>.</li>
+            <li>Selecione o arquivo baixado e confirme — os eventos aparecerão no Google Agenda.</li>
+          </ol>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wide">Prévia do arquivo (formato Google Calendar)</p>
+          <textarea id="csv-preview" rows="10" class="w-full font-mono text-xs rounded-lg border-outline-variant bg-background" readonly></textarea>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 pt-1">
+          <button type="button" id="btn-download-csv" class="flex-1 flex items-center justify-center gap-2 bg-secondary text-white text-sm font-semibold px-4 py-3 rounded-lg hover:opacity-90">
+            <span class="material-symbols-outlined" style="font-size:20px">download</span>
+            Baixar CSV para Google Agenda
+          </button>
+          <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 text-sm font-semibold text-secondary border border-outline-variant px-4 py-3 rounded-lg hover:bg-background">
+            Abrir Google Agenda
+            <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="footer"></div>
   <script src="../js/config.js"></script>
   <script src="../js/auth.js?v=2026053116"></script>
@@ -116,6 +167,6 @@
   <script src="../js/admin/announcement-schemas.js"></script>
   <script src="../js/admin/anuncios-export.js"></script>
   <script src="../js/admin/anuncios-pdf.js"></script>
-  <script src="../js/admin/anuncios.js?v=2026053116"></script>
+  <script src="../js/admin/anuncios.js?v=2026053120"></script>
 </body>
 </html>

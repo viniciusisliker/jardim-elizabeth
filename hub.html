@@ -114,6 +114,92 @@
       </div>
 
       <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary">event</span>
+            <div>
+              <h2 class="font-bold text-primary">Agenda — Eventos</h2>
+              <p class="text-xs text-on-surface-variant mt-0.5">Publicados na home e na página Agenda.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="admin/agenda.html" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low">Editor completo</a>
+            <button type="button" id="hub-btn-new-event" class="bg-primary text-white text-xs font-semibold px-3 py-2 rounded-lg hover:opacity-90">+ Novo evento</button>
+          </div>
+        </div>
+        <p id="hub-events-toast" class="hidden text-sm px-5 pt-3"></p>
+        <div id="hub-events-list">
+          <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando eventos…</p>
+        </div>
+        <form id="hub-event-form" class="hidden border-t border-outline-variant p-5 space-y-4 bg-surface-container-low/40">
+          <h3 id="hub-event-form-title" class="font-bold text-primary">Novo evento</h3>
+          <input type="hidden" id="hub-ev-id"/>
+          <label class="block text-sm font-semibold text-primary">Usar evento existente como modelo
+            <select id="hub-ev-template" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+              <option value="">— Escolher evento existente como modelo —</option>
+            </select>
+          </label>
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="block text-sm font-semibold text-primary md:col-span-2">Título *
+              <input id="hub-ev-title" required class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Visita do Superintendente de Circuito"/>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Data *
+              <input id="hub-ev-date" type="date" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Categoria
+              <select id="hub-ev-category" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+                <option value="Especial">Especial</option>
+                <option value="Reuniões">Reuniões</option>
+                <option value="Assembleia">Assembleia</option>
+                <option value="Celebração">Celebração</option>
+                <option value="Escola">Escola</option>
+              </select>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Horário
+              <input id="hub-ev-time" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="19:30 hs"/>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Local
+              <input id="hub-ev-location" class="mt-1 w-full rounded-lg border-outline-variant text-sm" value="Salão do Reino"/>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Estilo do badge
+              <select id="hub-ev-badge" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+                <option value="default">Padrão</option>
+                <option value="primary">Azul (visitas especiais)</option>
+                <option value="gold">Dourado (destaques)</option>
+              </select>
+            </label>
+            <label class="block text-sm font-semibold text-primary">Ordem no mês
+              <input id="hub-ev-sort" type="number" value="0" min="0" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+            </label>
+          </div>
+          <label class="block text-sm font-semibold text-primary">Descrição
+            <textarea id="hub-ev-description" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Detalhes exibidos na agenda pública"></textarea>
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <input id="hub-ev-highlight" type="checkbox"/>
+            Destaque na home e sidebar da agenda
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <input id="hub-ev-future" type="checkbox"/>
+            Agrupar em <strong class="text-primary font-semibold">Eventos Futuros</strong> (como Celebração 2027, Escola de Pioneiros…)
+          </label>
+          <details class="text-sm">
+            <summary class="cursor-pointer font-semibold text-on-surface-variant">Campos de exibição (preenchidos automaticamente)</summary>
+            <div class="grid md:grid-cols-2 gap-3 mt-3">
+              <label class="block text-xs font-semibold text-primary">Dia exibido<input id="hub-ev-date-display" class="mt-1 w-full rounded-lg border-outline-variant text-sm" readonly/></label>
+              <label class="block text-xs font-semibold text-primary">Rótulo<input id="hub-ev-date-label" class="mt-1 w-full rounded-lg border-outline-variant text-sm" readonly/></label>
+              <label class="block text-xs font-semibold text-primary">Chave do mês<input id="hub-ev-month-key" class="mt-1 w-full rounded-lg border-outline-variant text-sm" readonly/></label>
+              <label class="block text-xs font-semibold text-primary">Mês exibido<input id="hub-ev-month-label" class="mt-1 w-full rounded-lg border-outline-variant text-sm" readonly/></label>
+            </div>
+          </details>
+          <div class="flex gap-3 pt-1">
+            <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar e publicar</button>
+            <button type="button" id="hub-btn-cancel-event" class="text-sm text-on-surface-variant">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
         <div class="px-5 py-4 border-b border-outline-variant flex items-center gap-3">
           <span class="material-symbols-outlined text-secondary">groups</span>
           <h2 class="font-bold text-primary">Membros com Acesso</h2>
@@ -132,6 +218,8 @@
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
+  <script src="js/agenda-helpers.js"></script>
+  <script src="js/hub-events.js"></script>
   <script src="js/hub.js"></script>
 </body>
 </html>

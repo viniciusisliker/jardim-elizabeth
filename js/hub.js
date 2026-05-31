@@ -11,7 +11,12 @@
   }
 
   async function guardHubAccess() {
-    const session = await window.JEAuth.getSession();
+    await window.JEAuth.getClient();
+    let session = await window.JEAuth.getSession();
+    if (!session) {
+      await new Promise((r) => setTimeout(r, 400));
+      session = await window.JEAuth.getSession();
+    }
     if (!session) {
       window.location.href = 'index.html';
       return null;
@@ -90,7 +95,11 @@
       }
       document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
 
-      await loadMembers();
+      const client = await window.JEAuth.getClient();
+      await Promise.all([
+        loadMembers(),
+        window.JEHubEvents?.initHubEvents(client)
+      ]);
     } catch (err) {
       console.warn('Hub init:', err);
       window.location.href = 'index.html';

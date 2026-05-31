@@ -9,6 +9,14 @@
   let entries = [];
   let client = null;
   let toastEl = null;
+  const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
+
+  const MIDWEEK_SECTIONS = {
+    header: 'Semana',
+    tesouros: 'Tesouros da Palavra de Deus',
+    ministerio: 'Faça seu melhor no ministério',
+    vida: 'Nossa vida cristã'
+  };
 
   function $(id) { return document.getElementById(id); }
 
@@ -20,13 +28,28 @@
     return entries.filter((e) => e.block === 'limpeza_mensal').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   }
 
+  function dayNum(iso) {
+    if (!iso) return '—';
+    return String(new Date(iso + 'T12:00:00').getDate()).padStart(2, '0');
+  }
+
+  function entryFilled(entry) {
+    return Object.values(entry.data || {}).some((v) => String(v || '').trim());
+  }
+
   function readFormIntoEntries() {
     document.querySelectorAll('[data-entry-id]').forEach((card) => {
       const id = card.dataset.entryId;
       const entry = entries.find((e) => e.id === id);
       if (!entry) return;
       const dateInput = card.querySelector('[data-field="event_date"]');
-      if (dateInput) entry.event_date = dateInput.value || null;
+      if (dateInput) {
+        entry.event_date = dateInput.value || null;
+        if (entry.event_date) {
+          const d = new Date(entry.event_date + 'T12:00:00');
+          entry.weekday_label = Dates.WEEKDAY_PT[d.getDay()];
+        }
+      }
       card.querySelectorAll('[data-data-key]').forEach((input) => {
         entry.data = entry.data || {};
         entry.data[input.dataset.dataKey] = input.value;
@@ -36,74 +59,165 @@
 
   function fieldInput(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
+    const inputCls = 'mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary';
+    const labelCls = 'block text-sm font-semibold text-primary';
     if (field.type === 'select') {
       const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
         `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
       ).join('');
-      return `<label class="block text-xs font-semibold text-on-surface-variant">${escapeHtml(field.label)}
-        <select data-data-key="${field.key}" class="mt-0.5 w-full rounded border-outline-variant text-sm"><option value=""></option>${opts}</select></label>`;
+      return `<label class="${labelCls}">${escapeHtml(field.label)}
+        <select data-data-key="${field.key}" class="${inputCls}"><option value=""></option>${opts}</select></label>`;
     }
-    return `<label class="block text-xs font-semibold text-on-surface-variant">${escapeHtml(field.label)}
-      <input data-data-key="${field.key}" value="${escapeHtml(val)}" class="mt-0.5 w-full rounded border-outline-variant text-sm"/></label>`;
+    return `<label class="${labelCls}">${escapeHtml(field.label)}
+      <input data-data-key="${field.key}" value="${escapeHtml(val)}" class="${inputCls}"/></label>`;
   }
 
-  function renderEntryCard(entry, fields, container) {
-    const card = document.createElement('div');
-    card.className = 'bg-white border border-outline-variant rounded-xl p-4';
-    card.dataset.entryId = entry.id;
-    const fieldsHtml = fields.map((f) => fieldInput(f, entry)).join('');
-    card.innerHTML = `
-      <div class="flex items-center justify-between gap-2 mb-3">
-        <label class="text-sm font-bold text-primary flex items-center gap-2">
-          Data <input type="date" data-field="event_date" value="${entry.event_date || ''}" class="rounded border-outline-variant text-sm font-normal"/>
-          <span class="text-xs text-on-surface-variant">${escapeHtml(entry.weekday_label || '')}</span>
-        </label>
-        <button type="button" data-remove-entry="${entry.id}" class="text-xs text-error font-semibold">Remover</button>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">${fieldsHtml}</div>`;
-    container.appendChild(card);
-    card.querySelector('[data-remove-entry]')?.addEventListener('click', () => {
-      if (!confirm('Remover esta linha?')) return;
+  function fieldsHtmlGrouped(fields, entry, block) {
+    if (block !== 'midweek') {
+      return `<div class="grid sm:grid-cols-2 gap-4">${fields.map((f) => fieldInput(f, entry)).join('')}</div>`;
+    }
+    const sections = ['header', 'tesouros', 'ministerio', 'vida'];
+    return sections.map((sec) => {
+      const secFields = fields.filter((f) => f.section === sec);
+      if (!secFields.length) return '';
+      return `
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-widest text-secondary border-b border-outline-variant pb-2">${escapeHtml(MIDWEEK_SECTIONS[sec])}</h4>
+          <div class="grid sm:grid-cols-2 gap-4">${secFields.map((f) => fieldInput(f, entry)).join('')}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function selectBlockEntry(block, index) {
+    readFormIntoEntries();
+    const list = entriesFor(block);
+    blockSelection[block] = Math.max(0, Math.min(index, list.length - 1));
+    if (block === 'limpeza_mensal') renderLimpezaEditor();
+    else renderBlockEditor(block, `editor-${block}`);
+  }
+
+  function bindEntryForm(container, block, list, idx) {
+    const entry = list[idx];
+    container.querySelector('[data-remove-entry]')?.addEventListener('click', () => {
+      if (!confirm('Remover esta data?')) return;
+      readFormIntoEntries();
       entries = entries.filter((e) => e.id !== entry.id);
+      blockSelection[block] = Math.min(blockSelection[block], entriesFor(block).length - 1);
       renderAllEditors();
+    });
+    container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
+    container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
+    container.querySelectorAll('[data-nav-index]').forEach((btn) => {
+      btn.addEventListener('click', () => selectBlockEntry(block, parseInt(btn.dataset.navIndex, 10)));
     });
   }
 
   function renderBlockEditor(block, containerId) {
     const container = $(containerId);
     if (!container) return;
-    container.innerHTML = '';
+    const list = entriesFor(block);
     const fields = Schemas.fieldsForBlock(block);
-    entriesFor(block).forEach((entry) => renderEntryCard(entry, fields, container));
+
+    if (!list.length) {
+      container.innerHTML = '<p class="text-sm text-on-surface-variant py-8 text-center bg-white rounded-xl border border-outline-variant">Nenhuma data — use <strong>+ Data</strong> ou <strong>Regenerar datas</strong>.</p>';
+      return;
+    }
+
+    let idx = blockSelection[block] ?? 0;
+    if (idx >= list.length) idx = list.length - 1;
+    blockSelection[block] = idx;
+    const entry = list[idx];
+    const dateTitle = entry.event_date ? Dates.formatDisplayDate(entry.event_date) : 'Sem data';
+
+    const navHtml = list.map((e, i) => {
+      const active = i === idx ? ' is-active' : '';
+      const filled = entryFilled(e) ? ' is-filled' : '';
+      return `
+        <button type="button" data-nav-index="${i}" class="entry-nav-btn${active}${filled}">
+          <span class="text-lg font-extrabold leading-none">${escapeHtml(dayNum(e.event_date))}</span>
+          <span class="entry-nav-meta">${escapeHtml(e.weekday_label || '')}${entryFilled(e) ? ' · ✓' : ''}</span>
+        </button>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="grid lg:grid-cols-[11rem_1fr] gap-4 items-start">
+        <div class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:max-h-[32rem] pb-1 lg:pb-0 shrink-0">
+          ${navHtml}
+        </div>
+        <div class="bg-white border border-outline-variant rounded-2xl p-5 sm:p-6 shadow-sm min-w-0" data-entry-id="${entry.id}">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b border-outline-variant">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-secondary mb-1">${idx + 1} de ${list.length}</p>
+              <h3 class="text-xl font-extrabold text-primary">${escapeHtml(dateTitle)}</h3>
+              <p class="text-sm text-on-surface-variant mt-0.5">${escapeHtml(entry.weekday_label || '')}</p>
+            </div>
+            <label class="text-sm font-semibold text-primary shrink-0">
+              Alterar data
+              <input type="date" data-field="event_date" value="${entry.event_date || ''}" class="mt-1 block rounded-lg border-outline-variant text-sm py-2 px-3"/>
+            </label>
+          </div>
+          <div class="space-y-6">${fieldsHtmlGrouped(fields, entry, block)}</div>
+          <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-4 border-t border-outline-variant">
+            <button type="button" data-prev-entry" ${idx === 0 ? 'disabled' : ''} class="text-sm font-semibold text-secondary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+              <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span> Anterior
+            </button>
+            <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover esta data</button>
+            <button type="button" data-next-entry" ${idx >= list.length - 1 ? 'disabled' : ''} class="text-sm font-semibold text-secondary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+              Próxima <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+    bindEntryForm(container, block, list, idx);
   }
 
   function renderLimpezaEditor() {
     const container = $('editor-limpeza');
     if (!container) return;
-    container.innerHTML = '';
-    limpezaEntries().forEach((entry) => {
-      const row = document.createElement('div');
-      row.className = 'grid sm:grid-cols-3 gap-2 items-end';
-      row.dataset.entryId = entry.id;
-      const d = entry.data || {};
-      row.innerHTML = `
-        <label class="text-xs font-semibold sm:col-span-1">Fim de semana<input data-data-key="fim_de_semana" value="${escapeHtml(d.fim_de_semana || '')}" class="mt-0.5 w-full rounded border-outline-variant text-sm"/></label>
-        <label class="text-xs font-semibold sm:col-span-1">Grupo
-          <select data-data-key="grupo" class="mt-0.5 w-full rounded border-outline-variant text-sm">
-            <option value=""></option>
-            ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
-          </select>
-        </label>
-        <button type="button" data-remove-entry="${entry.id}" class="text-xs text-error font-semibold pb-2">Remover</button>`;
-      container.appendChild(row);
-      row.querySelector('[data-remove-entry]')?.addEventListener('click', () => {
-        entries = entries.filter((e) => e.id !== entry.id);
-        renderLimpezaEditor();
-      });
-    });
-    if (!limpezaEntries().length) {
+    const list = limpezaEntries();
+
+    if (!list.length) {
       container.innerHTML = '<p class="text-xs text-on-surface-variant">Nenhuma linha — adicione abaixo.</p>';
+      return;
     }
+
+    let idx = blockSelection.limpeza_mensal ?? 0;
+    if (idx >= list.length) idx = list.length - 1;
+    blockSelection.limpeza_mensal = idx;
+    const entry = list[idx];
+    const d = entry.data || {};
+
+    const tabs = list.map((e, i) => {
+      const active = i === idx ? ' is-active' : '';
+      const filled = entryFilled(e) ? ' is-filled' : '';
+      return `<button type="button" data-nav-index="${i}" class="entry-nav-btn${active}${filled} px-4 py-2 !flex-row !items-center gap-2">
+        <span class="text-sm font-bold">Linha ${i + 1}</span>${entryFilled(e) ? '<span class="text-xs">✓</span>' : ''}
+      </button>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="space-y-3">
+        <div class="flex flex-wrap gap-2">${tabs}</div>
+        <div class="grid sm:grid-cols-2 gap-4 p-4 bg-background rounded-xl border border-outline-variant" data-entry-id="${entry.id}">
+          <label class="text-sm font-semibold text-primary">Fim de semana
+            <input data-data-key="fim_de_semana" value="${escapeHtml(d.fim_de_semana || '')}" class="mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3" placeholder="03 - 04 de Junho"/>
+          </label>
+          <label class="text-sm font-semibold text-primary">Grupo
+            <select data-data-key="grupo" class="mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3">
+              <option value=""></option>
+              ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
+            </select>
+          </label>
+          <div class="sm:col-span-2 flex justify-between items-center pt-2">
+            <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="text-xs font-semibold text-secondary disabled:opacity-40">← Anterior</button>
+            <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover</button>
+            <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="text-xs font-semibold text-secondary disabled:opacity-40">Próxima →</button>
+          </div>
+        </div>
+      </div>`;
+
+    bindEntryForm(container, 'limpeza_mensal', list, idx);
   }
 
   function renderAllEditors() {
@@ -131,6 +245,7 @@
       export_to_calendar: true
     };
     entries.push(entry);
+    blockSelection[block] = entriesFor(block).length - 1;
     renderAllEditors();
   }
 
@@ -144,6 +259,7 @@
     generated.forEach((g) => {
       entries.push({ ...g, id: newLocalId(), board_id: board.id, data: Schemas.emptyData(block) });
     });
+    blockSelection[block] = 0;
     renderAllEditors();
   }
 
@@ -337,6 +453,7 @@
   function setupTabs() {
     document.querySelectorAll('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
+        readFormIntoEntries();
         const tab = btn.dataset.tab;
         document.querySelectorAll('.tab-btn').forEach((b) => {
           b.classList.toggle('tab-active', b === btn);
@@ -344,10 +461,25 @@
         });
         document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
         $('panel-' + tab)?.classList.remove('hidden');
-        if (tab === 'export') refreshCsvPreview();
         if (tab === 'published') loadPublishedList();
       });
     });
+  }
+
+  function openGcalExportModal() {
+    if (!board) {
+      showToast(toastEl, 'Carregue um quadro do mês antes de exportar.', true);
+      return;
+    }
+    refreshCsvPreview();
+    const modal = $('gcal-export-modal');
+    modal?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeGcalExportModal() {
+    $('gcal-export-modal')?.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   async function init() {
@@ -384,13 +516,22 @@
         data: { fim_de_semana: '', grupo: '' },
         export_to_calendar: false
       });
+      blockSelection.limpeza_mensal = limpezaEntries().length - 1;
       renderLimpezaEditor();
     });
 
     $('btn-download-csv').addEventListener('click', () => {
       refreshCsvPreview();
       const label = board?.reference_label?.replace(/\s+/g, '-') || 'quadro';
-      Export.downloadCsv($('csv-preview').value, `calendario-${label}.csv`);
+      Export.downloadCsv($('csv-preview').value, `google-agenda-${label}.csv`);
+      showToast(toastEl, 'CSV baixado — importe em calendar.google.com → Configurações → Importar.');
+    });
+
+    $('btn-open-gcal-export').addEventListener('click', openGcalExportModal);
+    $('gcal-export-close').addEventListener('click', closeGcalExportModal);
+    $('gcal-export-backdrop').addEventListener('click', closeGcalExportModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !$('gcal-export-modal')?.classList.contains('hidden')) closeGcalExportModal();
     });
 
     $('history-form').addEventListener('submit', async (e) => {
