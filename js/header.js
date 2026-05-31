@@ -158,7 +158,14 @@
 
   window.initSiteHeader = function initSiteHeader() {
     bindEvents();
-    refreshProfileUI();
+    renderGuestMenu();
+
+    const syncAuth = () => { refreshProfileUI(); };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(syncAuth, { timeout: 1500 });
+    } else {
+      setTimeout(syncAuth, 150);
+    }
 
     if (window.JEAuth) {
       window.JEAuth.onAuthStateChange(() => refreshProfileUI());

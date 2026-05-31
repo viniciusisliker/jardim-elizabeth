@@ -450,8 +450,7 @@ gtag('config', 'G-PGXCZF9S9W');
   <!-- ══ SCRIPT: PRÓXIMOS EVENTOS da Agenda ══════════════════════════════ -->
   <script>
   (function carregarProximosEventos() {
-
-    // ── Mapeamento de variante → cores inline (espelha o CSS da agenda) ──
+    function run() {
     const variantStyle = {
       'variant-gold':    { bg:'rgba(200,169,110,0.12)', border:'1px solid #c8a96e', numColor:'#8a6a2a', lblColor:'#a07c35' },
       'variant-primary': { bg:'#0f3462',                border:'none',               numColor:'#ffffff',  lblColor:'rgba(255,255,255,0.7)' },
@@ -545,11 +544,17 @@ gtag('config', 'G-PGXCZF9S9W');
         lista.innerHTML = `<p class="px-5 py-4 text-sm text-on-surface-variant">Não foi possível carregar os eventos. <a href="agenda.html" class="text-secondary underline">Ver agenda</a></p>`;
         console.warn('Próximos Eventos:', err);
       });
+    }
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      setTimeout(run, 300);
+    }
   })();
   </script>
   <!-- ══ FIM: PRÓXIMOS EVENTOS ════════════════════════════════════════════ -->
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
