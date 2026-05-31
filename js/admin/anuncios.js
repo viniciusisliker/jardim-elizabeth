@@ -9,6 +9,7 @@
   let entries = [];
   let client = null;
   let toastEl = null;
+  let gcalExportBlock = 'mecanicas';
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
 
   const MIDWEEK_SECTIONS = {
@@ -57,36 +58,71 @@
     });
   }
 
-  function fieldInput(field, entry) {
+  function fieldCell(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
-    const inputCls = 'mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary';
-    const labelCls = 'block text-sm font-semibold text-primary';
     if (field.type === 'select') {
       const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
         `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
       ).join('');
-      return `<label class="${labelCls}">${escapeHtml(field.label)}
-        <select data-data-key="${field.key}" class="${inputCls}"><option value=""></option>${opts}</select></label>`;
+      return `<div class="qa-cell"><label>${escapeHtml(field.label)}</label>
+        <select data-data-key="${field.key}"><option value=""></option>${opts}</select></div>`;
     }
-    return `<label class="${labelCls}">${escapeHtml(field.label)}
-      <input data-data-key="${field.key}" value="${escapeHtml(val)}" class="${inputCls}"/></label>`;
+    return `<div class="qa-cell"><label>${escapeHtml(field.label)}</label>
+      <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></div>`;
+  }
+
+  function fieldInput(field, entry) {
+    const val = (entry.data && entry.data[field.key]) || '';
+    if (field.type === 'select') {
+      const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
+        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
+      ).join('');
+      return `<label class="qa-field">${escapeHtml(field.label)}
+        <select data-data-key="${field.key}"><option value=""></option>${opts}</select></label>`;
+    }
+    return `<label class="qa-field">${escapeHtml(field.label)}
+      <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></label>`;
+  }
+
+  function fieldsHtmlMecanicas(entry, fields) {
+    const byKey = (k) => fields.find((f) => f.key === k);
+    const row1 = ['portao', 'indicador', 'som'].map((k) => fieldCell(byKey(k), entry)).join('');
+    const row2 = ['microf_volantes_1', 'microf_volantes_2', 'limpeza_grupo'].map((k) => fieldCell(byKey(k), entry)).join('');
+    return `
+      <div class="qa-table-block">
+        <div class="qa-table-head"><span>Portão</span><span>Indicador</span><span>Som</span></div>
+        <div class="qa-table-row">${row1}</div>
+        <div class="qa-table-head"><span>Microf. volante 1</span><span>Microf. volante 2</span><span>Limpeza (grupo)</span></div>
+        <div class="qa-table-row">${row2}</div>
+      </div>`;
   }
 
   function fieldsHtmlGrouped(fields, entry, block) {
-    if (block !== 'midweek') {
-      return `<div class="grid sm:grid-cols-2 gap-4">${fields.map((f) => fieldInput(f, entry)).join('')}</div>`;
+    if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
+    if (block === 'weekend') {
+      return `
+        <div class="qa-section">
+          <div class="qa-section-title">Discurso público e estudo</div>
+          <div class="grid sm:grid-cols-2 gap-4">${fields.map((f) => fieldInput(f, entry)).join('')}</div>
+        </div>`;
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
       const secFields = fields.filter((f) => f.section === sec);
       if (!secFields.length) return '';
       return `
-        <div class="space-y-3">
-          <h4 class="text-xs font-bold uppercase tracking-widest text-secondary border-b border-outline-variant pb-2">${escapeHtml(MIDWEEK_SECTIONS[sec])}</h4>
+        <div class="qa-section">
+          <div class="qa-section-title">${escapeHtml(MIDWEEK_SECTIONS[sec])}</div>
           <div class="grid sm:grid-cols-2 gap-4">${secFields.map((f) => fieldInput(f, entry)).join('')}</div>
         </div>`;
     }).join('');
   }
+
+  const BLOCK_TITLES = {
+    mecanicas: 'Designações Mecânicas',
+    midweek: 'Nossa Vida e Ministério Cristão',
+    weekend: 'Discurso Público e Sentinela'
+  };
 
   function selectBlockEntry(block, index) {
     readFormIntoEntries();
@@ -144,25 +180,26 @@
         <div class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:max-h-[32rem] pb-1 lg:pb-0 shrink-0">
           ${navHtml}
         </div>
-        <div class="bg-white border border-outline-variant rounded-2xl p-5 sm:p-6 shadow-sm min-w-0" data-entry-id="${entry.id}">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b border-outline-variant">
+        <div class="qa-doc-panel min-w-0" data-entry-id="${entry.id}">
+          <div class="qa-doc-banner">
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest text-secondary mb-1">${idx + 1} de ${list.length}</p>
-              <h3 class="text-xl font-extrabold text-primary">${escapeHtml(dateTitle)}</h3>
-              <p class="text-sm text-on-surface-variant mt-0.5">${escapeHtml(entry.weekday_label || '')}</p>
+              <p class="qa-doc-banner-meta">${escapeHtml(BLOCK_TITLES[block] || block)} · ${idx + 1} de ${list.length}</p>
+              <h3>${escapeHtml(dateTitle)} <span style="opacity:.9;font-weight:600">(${escapeHtml(entry.weekday_label || '')})</span></h3>
             </div>
-            <label class="text-sm font-semibold text-primary shrink-0">
-              Alterar data
-              <input type="date" data-field="event_date" value="${entry.event_date || ''}" class="mt-1 block rounded-lg border-outline-variant text-sm py-2 px-3"/>
+            <label class="text-xs font-semibold shrink-0" style="opacity:.95">
+              Data
+              <input type="date" data-field="event_date" value="${entry.event_date || ''}" class="mt-1 block rounded border-0 text-[#002060] text-sm py-1.5 px-2"/>
             </label>
           </div>
-          <div class="space-y-6">${fieldsHtmlGrouped(fields, entry, block)}</div>
-          <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-4 border-t border-outline-variant">
-            <button type="button" data-prev-entry" ${idx === 0 ? 'disabled' : ''} class="text-sm font-semibold text-secondary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+          <div class="qa-doc-body">
+            ${fieldsHtmlGrouped(fields, entry, block)}
+          </div>
+          <div class="qa-doc-footer">
+            <button type="button" data-prev-entry" ${idx === 0 ? 'disabled' : ''} class="text-sm font-semibold text-primary disabled:opacity-40 flex items-center gap-1">
               <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span> Anterior
             </button>
             <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover esta data</button>
-            <button type="button" data-next-entry" ${idx >= list.length - 1 ? 'disabled' : ''} class="text-sm font-semibold text-secondary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+            <button type="button" data-next-entry" ${idx >= list.length - 1 ? 'disabled' : ''} class="text-sm font-semibold text-primary disabled:opacity-40 flex items-center gap-1">
               Próxima <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
             </button>
           </div>
@@ -199,21 +236,25 @@
     container.innerHTML = `
       <div class="space-y-3">
         <div class="flex flex-wrap gap-2">${tabs}</div>
-        <div class="grid sm:grid-cols-2 gap-4 p-4 bg-background rounded-xl border border-outline-variant" data-entry-id="${entry.id}">
-          <label class="text-sm font-semibold text-primary">Fim de semana
-            <input data-data-key="fim_de_semana" value="${escapeHtml(d.fim_de_semana || '')}" class="mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3" placeholder="03 - 04 de Junho"/>
-          </label>
-          <label class="text-sm font-semibold text-primary">Grupo
-            <select data-data-key="grupo" class="mt-1.5 w-full rounded-lg border-outline-variant text-sm py-2 px-3">
-              <option value=""></option>
-              ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
-            </select>
-          </label>
-          <div class="sm:col-span-2 flex justify-between items-center pt-2">
-            <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="text-xs font-semibold text-secondary disabled:opacity-40">← Anterior</button>
-            <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover</button>
-            <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="text-xs font-semibold text-secondary disabled:opacity-40">Próxima →</button>
+        <div class="qa-table-block" data-entry-id="${entry.id}">
+          <div class="qa-table-head"><span>Fim de semana</span><span>Grupo</span><span></span></div>
+          <div class="qa-table-row">
+            <div class="qa-cell"><label>Fim de semana</label>
+              <input data-data-key="fim_de_semana" value="${escapeHtml(d.fim_de_semana || '')}" placeholder="03 - 04 de Junho"/></div>
+            <div class="qa-cell"><label>Grupo</label>
+              <select data-data-key="grupo">
+                <option value=""></option>
+                ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
+              </select></div>
+            <div class="qa-cell flex items-end justify-end pb-2">
+              <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover</button>
+            </div>
           </div>
+        </div>
+        <div class="flex justify-between text-xs font-semibold text-primary px-1">
+          <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="disabled:opacity-40">← Linha anterior</button>
+          <span class="text-on-surface-variant">Linha ${idx + 1} de ${list.length}</span>
+          <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="disabled:opacity-40">Próxima linha →</button>
         </div>
       </div>`;
 
@@ -422,9 +463,32 @@
     }
   }
 
+  function activeEditorTab() {
+    const btn = document.querySelector('.tab-btn.tab-active[data-tab]');
+    const tab = btn?.dataset.tab;
+    return ['mecanicas', 'midweek', 'weekend'].includes(tab) ? tab : 'mecanicas';
+  }
+
+  function setGcalExportBlock(block) {
+    gcalExportBlock = block;
+    document.querySelectorAll('.gcal-block-btn').forEach((btn) => {
+      const active = btn.dataset.gcalBlock === block;
+      btn.classList.toggle('tab-active', active);
+      btn.classList.toggle('text-on-surface-variant', !active);
+    });
+    const meta = Export.BLOCK_EXPORT_META[block];
+    const titleEl = $('gcal-block-title');
+    const rulesEl = $('gcal-block-rules-list');
+    if (titleEl && meta) titleEl.textContent = meta.title;
+    if (rulesEl && meta) {
+      rulesEl.innerHTML = meta.rules.map((r) => `<li>${escapeHtml(r)}</li>`).join('');
+    }
+    refreshCsvPreview();
+  }
+
   function refreshCsvPreview() {
     readFormIntoEntries();
-    const csv = Export.buildCsvRows(entries.filter((e) => e.block !== 'limpeza_mensal'), '19:30');
+    const csv = Export.buildCsvForBlock(entries, gcalExportBlock);
     const el = $('csv-preview');
     if (el) el.value = csv;
   }
@@ -471,7 +535,7 @@
       showToast(toastEl, 'Carregue um quadro do mês antes de exportar.', true);
       return;
     }
-    refreshCsvPreview();
+    setGcalExportBlock(activeEditorTab());
     const modal = $('gcal-export-modal');
     modal?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -522,9 +586,14 @@
 
     $('btn-download-csv').addEventListener('click', () => {
       refreshCsvPreview();
-      const label = board?.reference_label?.replace(/\s+/g, '-') || 'quadro';
-      Export.downloadCsv($('csv-preview').value, `google-agenda-${label}.csv`);
+      const monthLabel = board?.reference_label?.replace(/\s+/g, '-') || 'quadro';
+      const blockSlug = Export.BLOCK_EXPORT_META[gcalExportBlock]?.filename || gcalExportBlock;
+      Export.downloadCsv($('csv-preview').value, `google-agenda-${blockSlug}-${monthLabel}.csv`);
       showToast(toastEl, 'CSV baixado — importe em calendar.google.com → Configurações → Importar.');
+    });
+
+    document.querySelectorAll('.gcal-block-btn').forEach((btn) => {
+      btn.addEventListener('click', () => setGcalExportBlock(btn.dataset.gcalBlock));
     });
 
     $('btn-open-gcal-export').addEventListener('click', openGcalExportModal);

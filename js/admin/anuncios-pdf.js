@@ -6,18 +6,26 @@
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  const T = window.JEAnnouncementTheme || {
+    header: '#002060', headerAlt: '#1F497D', headerText: '#FFFFFF',
+    accent: '#984806', sectionBg: '#EEECE1', rowAlt: '#D9E2F3', cream: '#F7F6F2', border: '#1F497D', text: '#1B1C1C'
+  };
+
   function pdfStyles() {
     return `
       <style>
-        body { font-family: Arial, sans-serif; font-size: 11pt; color: #1b1c1c; margin: 24px; }
-        h1 { color: #0f3462; font-size: 18pt; margin-bottom: 4px; }
-        h2 { color: #3b5e97; font-size: 13pt; margin: 20px 0 8px; border-bottom: 1px solid #c3c6d0; padding-bottom: 4px; }
-        h3 { color: #0f3462; font-size: 11pt; margin: 14px 0 6px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        th, td { border: 1px solid #c3c6d0; padding: 6px 8px; text-align: left; vertical-align: top; }
-        th { background: #f5f3f3; font-weight: 700; color: #0f3462; }
-        .meta { color: #43474f; font-size: 10pt; margin-bottom: 16px; }
-        .date-row { background: #f5f3f3; font-weight: 700; }
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: ${T.text}; margin: 20px; background: ${T.cream}; }
+        h1 { color: ${T.header}; font-size: 16pt; margin: 0 0 4px; font-weight: 700; }
+        h2 { color: ${T.header}; font-size: 12pt; margin: 18px 0 6px; padding: 6px 10px; background: ${T.sectionBg}; border-left: 4px solid ${T.accent}; }
+        h3 { color: ${T.header}; font-size: 11pt; margin: 12px 0 6px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; background: #fff; }
+        th, td { border: 1px solid ${T.border}; padding: 7px 9px; text-align: left; vertical-align: top; }
+        th { background: ${T.header}; color: ${T.headerText}; font-weight: 700; font-size: 10pt; text-transform: uppercase; letter-spacing: 0.03em; }
+        tr:nth-child(even) td { background: ${T.rowAlt}; }
+        .meta { color: #43474f; font-size: 10pt; margin-bottom: 14px; }
+        .date-badge { background: ${T.header}; color: #fff; font-weight: 700; }
+        .section-label { color: ${T.accent}; font-weight: 700; font-size: 9pt; text-transform: uppercase; }
+        .limpeza-title { background: ${T.accent}; color: #fff; padding: 6px 10px; font-weight: 700; margin-top: 12px; }
       </style>`;
   }
 
@@ -36,7 +44,7 @@
     body += '</tbody></table>';
 
     if (cleaningRows.length) {
-      body += '<h2>Limpeza mensal</h2><table><thead><tr><th>Fim de semana</th><th>Grupo</th></tr></thead><tbody>';
+      body += `<div class="limpeza-title">Limpeza mensal</div><table><thead><tr><th>Fim de semana</th><th>Grupo</th></tr></thead><tbody>`;
       cleaningRows.forEach((e) => {
         const d = e.data || {};
         body += `<tr><td>${esc(d.fim_de_semana)}</td><td>${esc(d.grupo)}</td></tr>`;
