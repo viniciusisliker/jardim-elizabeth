@@ -57,6 +57,17 @@
     .qa-subsection-head{display:flex;align-items:center;gap:0.375rem;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#002060;margin-bottom:0.875rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(31,73,125,.12)}
     .qa-subsection-head .material-symbols-outlined{font-size:1rem;color:#984806}
     .qa-subsection--optional{border-style:solid;border-color:rgba(152,72,6,.25);background:linear-gradient(180deg,#fff 0%,#F7F6F2 100%)}
+    .qa-doc-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;padding:1rem 1.25rem;background:#EEECE1;border-top:1px solid #D9E2F3}
+    .qa-doc-footer .qa-doc-nav-btn{display:inline-flex;align-items:center;gap:0.25rem;padding:0.5rem 0.75rem;border-radius:0.5rem;border:1px solid transparent;background:transparent;font-size:0.875rem;font-weight:600;line-height:1.25;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap}
+    .qa-doc-footer .qa-doc-nav-btn:disabled{opacity:.4;cursor:not-allowed}
+    .qa-doc-footer .qa-doc-nav-prev,.qa-doc-footer .qa-doc-nav-next{color:#002060;border-color:rgba(0,32,96,.15);background:#fff}
+    .qa-doc-footer .qa-doc-nav-prev:hover:not(:disabled),.qa-doc-footer .qa-doc-nav-next:hover:not(:disabled){border-color:#002060;background:#fff}
+    .qa-doc-footer .qa-doc-nav-remove{color:#C00000;border-color:rgba(192,0,0,.2);background:#fff;font-size:0.8125rem}
+    .qa-doc-footer .qa-doc-nav-remove:hover{border-color:#C00000;background:#fff5f5}
+    @media(max-width:520px){
+      .qa-doc-footer{display:grid;grid-template-columns:1fr 1fr;gap:0.625rem}
+      .qa-doc-footer .qa-doc-nav-remove{grid-column:1/-1;justify-content:center}
+    }
     .qa-limpeza-wrap{border:2px solid #984806;border-radius:0.75rem;overflow:hidden;background:#fff}
     .qa-limpeza-head{background:linear-gradient(135deg,#984806,#C8A96E);color:#fff;padding:0.75rem 1rem;font-weight:800;font-size:0.875rem;text-transform:uppercase;letter-spacing:.05em}
     .gcal-block-btn.tab-active{border-color:#002060;background:#002060;color:#fff}
@@ -235,6 +246,6 @@
   <script src="../js/admin/announcement-schemas.js"></script>
   <script src="../js/admin/anuncios-export.js"></script>
   <script src="../js/admin/anuncios-pdf.js"></script>
-  <script src="../js/admin/anuncios.js?v=2026053125"></script>
+  <script src="../js/admin/anuncios.js?v=2026053126"></script>
 </body>
 </html>
