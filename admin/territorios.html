@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Territórios | Jardim Elizabeth</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
+</head>
+<body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
+  <div id="header"></div>
+  <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
+    <div class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4"><a href="../hub.html" class="text-secondary">Hub</a> / <span class="text-primary">Territórios</span></div>
+    <h1 class="text-2xl font-extrabold text-primary mb-1">Gerenciar Territórios</h1>
+    <p class="text-sm text-on-surface-variant mb-6">Altere status, nomes e imagens dos 19 territórios.</p>
+    <p id="admin-toast" class="hidden text-sm mb-4"></p>
+    <div id="territory-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
+    <form id="terr-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+      <h2 class="font-bold text-primary">Editar território</h2>
+      <input type="hidden" id="terr-id"/>
+      <label class="block text-sm font-semibold text-primary">Número<input id="terr-num" readonly class="mt-1 w-full rounded-lg border-outline-variant text-sm bg-gray-50"/></label>
+      <label class="block text-sm font-semibold text-primary">Nome<input id="terr-name" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
+      <label class="block text-sm font-semibold text-primary">URL da imagem<input id="terr-image" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
+      <label class="block text-sm font-semibold text-primary">Status
+        <select id="terr-status" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+          <option value="disponivel">Disponível</option><option value="designado">Designado</option><option value="concluido">Concluído</option>
+        </select>
+      </label>
+      <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
+    </form>
+  </main>
+  <div id="footer"></div>
+  <script src="../js/config.js"></script><script src="../js/auth.js"></script><script src="../js/header.js"></script><script src="../js/site-loader.js"></script><script src="../js/admin-core.js"></script><script src="../js/admin/territorios.js"></script>
+</body>
+</html>

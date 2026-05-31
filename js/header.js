@@ -1,11 +1,20 @@
 (function () {
+  function siteBase() {
+    return /\/admin(\/|$)/.test(window.location.pathname) ? '..' : '.';
+  }
+
+  function siteUrl(path) {
+    const clean = path.replace(/^\.\//, '');
+    return `${siteBase()}/${clean}`.replace(/\/+/g, '/').replace(/^\.\//, '');
+  }
+
   function qs(id) {
     return document.getElementById(id);
   }
 
   function isHubPage() {
     const path = window.location.pathname.toLowerCase();
-    return path.includes('/hub') || path.endsWith('hub.html');
+    return path.includes('/hub') || path.endsWith('hub.html') || path.includes('/admin/');
   }
 
   function closeDropdown() {
@@ -55,7 +64,7 @@
     if (isAdmin && mobileMenu && !mobileHub) {
       mobileHub = document.createElement('a');
       mobileHub.id = 'mobile-hub-link';
-      mobileHub.href = 'hub.html';
+      mobileHub.href = siteUrl('hub.html');
       mobileHub.className = 'nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-semibold flex items-center gap-2';
       mobileHub.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">dashboard</span> Hub Administrativo';
       mobileMenu.querySelector('div')?.prepend(mobileHub);
@@ -104,7 +113,7 @@
         ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
       </div>
       ${isAdmin ? `
-        <a href="hub.html" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
+        <a href="${siteUrl('hub.html')}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
           <span class="material-symbols-outlined" style="font-size:20px">dashboard</span>
           Hub Administrativo
         </a>
@@ -124,7 +133,7 @@
       const iconEl = qs('profile-icon');
       if (iconEl) iconEl.textContent = 'account_circle';
       if (isHubPage()) {
-        window.location.href = 'index.html';
+        window.location.href = siteUrl('index.html');
       }
     });
   }
@@ -133,6 +142,11 @@
     if (!window.JEAuth) {
       renderGuestMenu();
       return;
+    }
+
+    const cached = window.JEAuth.getCachedProfile?.();
+    if (cached && window.JEAuth.hasLocalSession?.()) {
+      renderUserMenu(cached);
     }
 
     const session = await window.JEAuth.getSession();
@@ -169,7 +183,7 @@
         hideLoginModal();
 
         if (window.JEAuth.isAdminRole(profile?.role)) {
-          window.location.href = 'hub.html';
+          window.location.href = siteUrl('hub.html');
           return;
         }
 
@@ -197,14 +211,11 @@
 
   window.initSiteHeader = function initSiteHeader() {
     bindEvents();
-    renderGuestMenu();
 
-    const syncAuth = () => { refreshProfileUI(); };
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(syncAuth, { timeout: 1500 });
-    } else {
-      setTimeout(syncAuth, 150);
-    }
+    const hasFastAuth = window.JEAuth?.applyHeaderAuthFast?.();
+    if (!hasFastAuth) renderGuestMenu();
+
+    refreshProfileUI();
 
     if (window.JEAuth) {
       window.JEAuth.onAuthStateChange(() => refreshProfileUI());

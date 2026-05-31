@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quadro de Anúncios — Hub | Jardim Elizabeth</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
+  <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}.tab-active{border-bottom:2px solid #0f3462;color:#0f3462;font-weight:600}</style>
+</head>
+<body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
+  <div id="header"></div>
+  <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
+    <div class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+      <a href="../hub.html" class="text-secondary">Hub</a> / <span class="text-primary">Quadro de Anúncios</span>
+    </div>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-extrabold text-primary">Quadro de Anúncios</h1>
+        <p class="text-sm text-on-surface-variant mt-1">Preencha, gere PDF e publique no site — uma seção por vez.</p>
+      </div>
+      <div class="flex flex-wrap gap-2 items-end">
+        <label class="text-xs font-semibold text-primary">Mês do quadro
+          <input type="month" id="board-month" class="block mt-1 rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <button type="button" id="btn-new-board" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">Novo / Carregar</button>
+      </div>
+    </div>
+    <p id="board-label" class="text-sm font-semibold text-secondary mb-4">—</p>
+    <p id="admin-toast" class="hidden text-sm mb-4"></p>
+
+    <nav class="flex flex-wrap gap-4 border-b border-outline-variant mb-6 text-sm">
+      <button type="button" data-tab="mecanicas" class="tab-btn tab-active pb-2">Designações Mecânicas</button>
+      <button type="button" data-tab="midweek" class="tab-btn pb-2 text-on-surface-variant">Vida e Ministério</button>
+      <button type="button" data-tab="weekend" class="tab-btn pb-2 text-on-surface-variant">Final de Semana</button>
+      <button type="button" data-tab="export" class="tab-btn pb-2 text-on-surface-variant">Exportar CSV</button>
+      <button type="button" data-tab="published" class="tab-btn pb-2 text-on-surface-variant">Publicados</button>
+      <button type="button" data-tab="config" class="tab-btn pb-2 text-on-surface-variant">Configurações</button>
+    </nav>
+
+    <div id="panel-mecanicas" class="tab-panel space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-mecanicas" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar datas</button>
+          <button type="button" id="btn-add-mecanicas" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" id="btn-save-draft" class="text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-publish="mecanicas" class="btn-publish bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Gerar PDF e publicar</button>
+        </div>
+      </div>
+      <div id="editor-mecanicas" class="space-y-4"></div>
+      <div class="bg-white border border-outline-variant rounded-xl p-4">
+        <h3 class="font-bold text-primary text-sm mb-3">Limpeza mensal</h3>
+        <div id="editor-limpeza" class="space-y-2"></div>
+        <button type="button" id="btn-add-limpeza" class="mt-2 text-xs font-semibold text-secondary">+ Linha</button>
+      </div>
+    </div>
+
+    <div id="panel-midweek" class="tab-panel hidden space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-midweek" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar quartas</button>
+          <button type="button" id="btn-add-midweek" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-publish="midweek" class="btn-publish bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Gerar PDF e publicar</button>
+        </div>
+      </div>
+      <div id="editor-midweek" class="space-y-4"></div>
+    </div>
+
+    <div id="panel-weekend" class="tab-panel hidden space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-weekend" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar sábados</button>
+          <button type="button" id="btn-add-weekend" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-publish="weekend" class="btn-publish bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Gerar PDF e publicar</button>
+        </div>
+      </div>
+      <div id="editor-weekend" class="space-y-4"></div>
+    </div>
+
+    <div id="panel-export" class="tab-panel hidden space-y-4">
+      <p class="text-sm text-on-surface-variant">Exporta designações com data para importar no Google Calendar (Configurações → Importar).</p>
+      <textarea id="csv-preview" rows="12" class="w-full font-mono text-xs rounded-lg border-outline-variant" readonly></textarea>
+      <button type="button" id="btn-download-csv" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Baixar CSV</button>
+    </div>
+
+    <div id="panel-published" class="tab-panel hidden">
+      <div id="published-list" class="bg-white border border-outline-variant rounded-xl divide-y"></div>
+    </div>
+
+    <div id="panel-config" class="tab-panel hidden space-y-4">
+      <form id="history-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+        <h2 class="font-bold text-primary">Histórico (pasta Drive)</h2>
+        <label class="block text-sm font-semibold text-primary">URL da pasta<input id="history-url" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
+        <label class="block text-sm font-semibold text-primary">Descrição<textarea id="history-desc" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm"></textarea></label>
+        <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
+      </form>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js?v=2026053116"></script>
+  <script src="../js/header.js"></script>
+  <script src="../js/site-loader.js"></script>
+  <script src="../js/admin-core.js?v=2026053116"></script>
+  <script src="../js/admin/announcement-dates.js"></script>
+  <script src="../js/admin/announcement-schemas.js"></script>
+  <script src="../js/admin/anuncios-export.js"></script>
+  <script src="../js/admin/anuncios-pdf.js"></script>
+  <script src="../js/admin/anuncios.js?v=2026053116"></script>
+</body>
+</html>

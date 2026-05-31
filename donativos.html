@@ -90,7 +90,7 @@ gtag('config', 'G-PGXCZF9S9W');
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-3xl mx-auto px-6 py-14 fade-up-2">
+    <div id="je-donations-root" class="max-w-3xl mx-auto px-6 py-14 fade-up-2">
 
       <!-- Card PIX com QR Code ao lado -->
       <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-8 md:p-10 mb-8">
@@ -101,7 +101,7 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
           <div>
             <h2 class="text-xl font-extrabold text-primary tracking-tight">PIX da Congregação</h2>
-            <p class="text-on-surface-variant text-xs">Em nome do Irmão Marcelo Almeida</p>
+            <p data-je-subtitle class="text-on-surface-variant text-xs">Em nome do Irmão Marcelo Almeida</p>
           </div>
         </div>
 
@@ -110,15 +110,15 @@ gtag('config', 'G-PGXCZF9S9W');
           <!-- Chave PIX -->
           <div class="flex-1 w-full">
             <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Chave PIX — E-mail</p>
-              <p class="text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
-              <p class="text-xs text-on-surface-variant mt-2">Marcelo Branco Almeida · Santander</p>
+              <p data-je-pix-type class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Chave PIX — E-mail</p>
+              <p data-je-pix-key class="text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
+              <p data-je-pix-holder class="text-xs text-on-surface-variant mt-2">Marcelo Branco Almeida · Santander</p>
             </div>
           </div>
 
           <!-- QR Code ao lado -->
           <div class="flex-shrink-0 bg-white rounded-xl border border-outline-variant shadow-sm p-3 flex flex-col items-center">
-            <img src="img/qrcode.jpg"
+            <img data-je-qr src="img/qrcode.jpg"
                  alt="QR Code PIX Jardim Elizabeth"
                  class="w-40 h-40 object-contain"/>
             <p class="text-[9px] font-bold uppercase tracking-widest text-outline text-center mt-2">Escaneie para pagar</p>
@@ -130,7 +130,7 @@ gtag('config', 'G-PGXCZF9S9W');
       <!-- Aviso -->
       <div class="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex items-start gap-4 mb-6">
         <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:20px">info</span>
-        <p class="text-on-surface-variant text-sm leading-relaxed">
+        <p data-je-disclaimer class="text-on-surface-variant text-sm leading-relaxed">
           As contribuições são totalmente <strong class="text-primary">voluntárias</strong>. Nenhum membro está obrigado a contribuir. Agradecemos de coração o apoio de cada um.
         </p>
       </div>
@@ -146,6 +146,7 @@ gtag('config', 'G-PGXCZF9S9W');
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
-	  
+  <script src="js/content.js"></script>
+
 </body>
 </html>

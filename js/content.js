@@ -1,0 +1,311 @@
+(function () {
+  const esc = (t) => String(t ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  async function getClient() {
+    return window.JEAuth?.getClient?.();
+  }
+
+  async function fetchAgendaEvents() {
+    const client = await getClient();
+    if (!client) return null;
+    const { data, error } = await client
+      .from('agenda_events')
+      .select('*')
+      .eq('published', true)
+      .order('event_date', { ascending: false });
+    if (error || !data?.length) return null;
+    return data;
+  }
+
+  function badgeClass(variant) {
+    if (variant === 'primary') return 'variant-primary';
+    if (variant === 'gold') return 'variant-gold';
+    return 'variant-default';
+  }
+
+  function isLongDate(display) {
+    return display && (display.includes('/') || display.includes('–') && display.length > 4);
+  }
+
+  function renderEventRow(ev) {
+    const longCls = isLongDate(ev.date_display) ? ' date-long' : '';
+    const meta = [];
+    if (ev.event_time) meta.push(`<span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>${esc(ev.event_time)}</span>`);
+    if (ev.location) meta.push(`<span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>${esc(ev.location)}</span>`);
+    const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
+      ? 'text-secondary bg-secondary-fixed/50'
+      : 'text-[#7a5200] bg-[#c8a96e]/20';
+    return `
+      <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+        <div class="date-badge ${badgeClass(ev.badge_variant)}${longCls}">
+          <span class="date-num">${esc(ev.date_display)}</span>
+          <span class="date-lbl">${esc(ev.date_label)}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <span class="inline-block text-[10px] font-bold uppercase tracking-widest ${catCls} px-2 py-0.5 rounded mb-1">${esc(ev.category)}</span>
+          <h3 class="font-bold text-on-surface text-sm leading-snug">${esc(ev.title)}</h3>
+          ${ev.description ? `<p class="text-xs text-on-surface-variant mt-0.5">${esc(ev.description)}</p>` : ''}
+          ${meta.length ? `<div class="flex flex-wrap gap-4 mt-2">${meta.join('')}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function groupAgendaByMonth(events) {
+    const groups = new Map();
+    events.forEach((ev) => {
+      const key = ev.month_key || 'outros';
+      if (!groups.has(key)) groups.set(key, { label: ev.month_label, events: [] });
+      groups.get(key).events.push(ev);
+    });
+    groups.forEach((g) => g.events.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
+    const order = ['2026-04', '2026-03', '2026-02', '2026-01', 'futuros'];
+    const sorted = [];
+    order.forEach((k) => { if (groups.has(k)) sorted.push([k, groups.get(k)]); });
+    groups.forEach((v, k) => { if (!order.includes(k)) sorted.push([k, v]); });
+    return sorted;
+  }
+
+  function renderAgendaMonths(events, openFirst) {
+    const groups = groupAgendaByMonth(events);
+    return groups.map(([key, group], idx) => {
+      const dot = key === 'futuros' ? 'style="background:#c8a96e"' : '';
+      const openCls = openFirst && idx === 0 ? ' open' : '';
+      return `
+        <div class="month-block${openCls} bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
+            <div class="flex items-center gap-3">
+              <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0" ${dot}></div>
+              <span class="font-bold text-primary text-base">${esc(group.label)}</span>
+            </div>
+            <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
+          </div>
+          <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+            ${group.events.map(renderEventRow).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderHighlights(events) {
+    const highlights = events.filter((e) => e.is_highlight).slice(0, 6);
+    if (!highlights.length) return '';
+    return highlights.map((ev) => {
+      const d = ev.event_date ? new Date(ev.event_date + 'T12:00:00') : null;
+      const dateStr = d
+        ? `${String(d.getDate()).padStart(2, '0')} ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()]} ${d.getFullYear()}`
+        : `${ev.date_display} ${ev.date_label}`;
+      return `
+        <div class="flex gap-3">
+          <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+          <div>
+            <div class="text-[11px] font-bold text-secondary">${esc(dateStr)}</div>
+            <div class="text-xs text-on-surface-variant">${esc(ev.title)}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function loadAgenda() {
+    const root = document.getElementById('je-agenda-months');
+    const highlightsEl = document.getElementById('je-agenda-highlights');
+    if (!root) return;
+    const events = await fetchAgendaEvents();
+    if (!events) return;
+    root.innerHTML = renderAgendaMonths(events, true);
+    if (highlightsEl) highlightsEl.innerHTML = renderHighlights(events);
+  }
+
+  async function fetchAnnouncements() {
+    const client = await getClient();
+    if (!client) return null;
+    const [{ data: sections }, { data: settings }] = await Promise.all([
+      client.from('announcement_sections').select('*').eq('published', true).order('sort_order'),
+      client.from('announcement_settings').select('*').eq('id', 1).maybeSingle()
+    ]);
+    if (!sections?.length) return null;
+    return { sections, settings };
+  }
+
+  function renderAnnouncementCard(s) {
+    return `
+      <a href="${esc(s.document_url)}" target="_blank" rel="noopener"
+         class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <span class="material-symbols-outlined text-secondary" style="font-size:36px">${esc(s.icon || 'description')}</span>
+        </div>
+        <div>
+          <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">${esc(s.category_tag)}</span>
+          <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">${esc(s.title)}</h2>
+          ${s.description ? `<p class="text-on-surface-variant text-xs leading-relaxed">${esc(s.description)}</p>` : ''}
+        </div>
+        <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+          Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+        </span>
+      </a>`;
+  }
+
+  async function loadAnnouncements() {
+    const cardsEl = document.getElementById('je-announcement-cards');
+    const historyEl = document.getElementById('je-announcement-history');
+    if (!cardsEl) return;
+    const data = await fetchAnnouncements();
+    if (!data) return;
+    cardsEl.innerHTML = data.sections.map(renderAnnouncementCard).join('');
+    if (historyEl && data.settings?.history_folder_url) {
+      historyEl.href = data.settings.history_folder_url;
+      if (data.settings.history_description) {
+        const desc = historyEl.querySelector('[data-je-history-desc]');
+        if (desc) desc.textContent = data.settings.history_description;
+      }
+    }
+  }
+
+  async function fetchTerritories() {
+    const client = await getClient();
+    if (!client) return null;
+    const { data, error } = await client.from('territories').select('*').order('sort_order');
+    if (error || !data?.length) return null;
+    return data;
+  }
+
+  async function loadTerritories() {
+    const items = await fetchTerritories();
+    if (!items) return;
+    items.forEach((t) => {
+      const card = document.querySelector(`.territory-card[data-num="${t.num}"], article[data-num="${t.num}"]`);
+      if (!card) return;
+      card.dataset.status = t.status || 'disponivel';
+      if (t.display_name) {
+        const h3 = card.querySelector('h3');
+        if (h3) h3.textContent = t.display_name;
+      }
+      if (t.map_image_url) {
+        const img = card.querySelector('img');
+        if (img) {
+          img.src = t.map_image_url;
+          img.alt = `Mapa Território ${t.num} – ${t.display_name}`;
+        }
+      }
+      if (t.slug) card.dataset.nome = t.slug;
+    });
+  }
+
+  async function loadProximosEventos() {
+    const lista = document.getElementById('proxeventos-lista');
+    const mesEl = document.getElementById('proxeventos-mes');
+    if (!lista) return;
+
+    const events = await fetchAgendaEvents();
+    if (!events?.length) return;
+
+    const groups = groupAgendaByMonth(events);
+    const firstGroup = groups[0]?.[1];
+    if (!firstGroup) return;
+
+    if (mesEl) mesEl.textContent = '— ' + firstGroup.label;
+
+    const variantStyle = {
+      gold: { bg: 'rgba(200,169,110,0.12)', border: '1px solid #c8a96e', numColor: '#8a6a2a', lblColor: '#a07c35' },
+      primary: { bg: '#0f3462', border: 'none', numColor: '#ffffff', lblColor: 'rgba(255,255,255,0.7)' },
+      default: { bg: '#f5f3f3', border: '1px solid #c3c6d0', numColor: '#0f3462', lblColor: '#3b5e97' }
+    };
+
+    lista.innerHTML = firstGroup.events.map((ev) => {
+      const vs = variantStyle[ev.badge_variant] || variantStyle.default;
+      const isLong = isLongDate(ev.date_display);
+      const numSize = isLong ? '0.625rem' : '0.8125rem';
+      const extras = [ev.event_time, ev.location].filter(Boolean).join(' · ');
+      const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
+        ? 'color:#274d85;background:#d6e3ff80'
+        : 'color:#7a5200;background:rgba(200,169,110,0.15)';
+      return `
+        <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+          <div style="flex-shrink:0;width:3rem;text-align:center;border-radius:0.5rem;padding:0.5rem 0.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:${vs.bg};border:${vs.border}">
+            <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${esc(ev.date_display)}</span>
+            <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${esc(ev.date_label)}</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${catCls};padding:1px 6px;border-radius:4px;margin-bottom:4px">${esc(ev.category)}</span>
+            <h3 style="font-weight:700;font-size:0.875rem;color:#1b1c1c;line-height:1.4">${esc(ev.title)}</h3>
+            ${ev.description ? `<p style="font-size:0.75rem;color:#43474f;margin-top:2px">${esc(ev.description)}</p>` : ''}
+            ${extras ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${esc(extras)}</p>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function fetchDonations() {
+    const client = await getClient();
+    if (!client) return null;
+    const { data } = await client.from('site_settings').select('value').eq('key', 'donations').maybeSingle();
+    return data?.value || null;
+  }
+
+  async function loadDonations() {
+    const root = document.getElementById('je-donations-root');
+    if (!root) return;
+    const d = await fetchDonations();
+    if (!d) return;
+    const pixEl = root.querySelector('[data-je-pix-key]');
+    const holderEl = root.querySelector('[data-je-pix-holder]');
+    const typeEl = root.querySelector('[data-je-pix-type]');
+    const qrEl = root.querySelector('[data-je-qr]');
+    const disclaimerEl = root.querySelector('[data-je-disclaimer]');
+    const subtitleEl = root.querySelector('[data-je-subtitle]');
+    if (pixEl) pixEl.textContent = d.pix_key || '';
+    if (typeEl) typeEl.textContent = `Chave PIX — ${d.pix_key_type || 'E-mail'}`;
+    if (holderEl) holderEl.textContent = `${d.account_holder || ''}${d.bank ? ' · ' + d.bank : ''}`;
+    if (qrEl && d.qr_image_url) qrEl.src = d.qr_image_url;
+    if (disclaimerEl && d.disclaimer) disclaimerEl.innerHTML = d.disclaimer.replace(/voluntárias/i, '<strong class="text-primary">voluntárias</strong>');
+    if (subtitleEl && d.account_holder) subtitleEl.textContent = `Em nome do Irmão ${d.account_holder.split(' ').slice(-1)[0] === 'Almeida' ? d.account_holder : d.account_holder}`;
+  }
+
+  async function fetchEquipment(slugPrefix) {
+    const client = await getClient();
+    if (!client) return null;
+    let q = client.from('equipment_schedules').select('*').eq('published', true).order('sort_order');
+    if (slugPrefix) q = q.like('slug', slugPrefix + '%');
+    const { data, error } = await q;
+    if (error || !data?.length) return null;
+    return data;
+  }
+
+  async function loadEquipmentCalendars(containerId, slugPrefix) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const items = await fetchEquipment(slugPrefix);
+    if (!items) return;
+    el.innerHTML = items.map((item, i) => {
+      const sep = i > 0 ? '<div class="my-10 border-t border-[#0f3462]/20"></div>' : '';
+      return `${sep}<iframe src="${esc(item.calendar_embed_url)}" style="border:0" width="100%" height="600" frameborder="0" title="${esc(item.title)}"></iframe>`;
+    }).join('');
+  }
+
+  function boot() {
+    const run = () => {
+      loadAgenda();
+      loadAnnouncements();
+      loadTerritories();
+      loadDonations();
+      loadEquipmentCalendars('je-carrinhos-calendars', 'carrinho');
+      loadEquipmentCalendars('je-displays-calendars', 'display');
+      loadProximosEventos();
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2000 });
+    else setTimeout(run, 100);
+  }
+
+  window.JEContent = {
+    fetchAgendaEvents,
+    fetchAnnouncements,
+    fetchTerritories,
+    fetchDonations,
+    fetchEquipment,
+    loadAgenda,
+    boot
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();

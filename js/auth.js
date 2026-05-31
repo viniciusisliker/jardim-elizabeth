@@ -8,10 +8,81 @@
 
   const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   const SESSION_TIMEOUT_MS = 4000;
+  const PROFILE_CACHE_KEY = 'je_profile_cache';
 
   let supabaseClient = null;
   let supabaseLoadPromise = null;
   let currentProfile = null;
+
+  function getStorageKey() {
+    const ref = window.JE_CONFIG?.supabaseUrl?.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+    return ref ? `sb-${ref}-auth-token` : null;
+  }
+
+  function readCachedProfile() {
+    try {
+      const raw = sessionStorage.getItem(PROFILE_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeProfileCache(profile) {
+    if (!profile?.id) return;
+    try {
+      sessionStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({
+        id: profile.id,
+        full_name: profile.full_name,
+        role: profile.role,
+        designation: profile.designation,
+        username: profile.username
+      }));
+    } catch {
+      /* ignore quota errors */
+    }
+  }
+
+  function clearProfileCache() {
+    try {
+      sessionStorage.removeItem(PROFILE_CACHE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function hasLocalSession() {
+    try {
+      const key = getStorageKey();
+      if (!key) return false;
+      const raw = localStorage.getItem(key);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      const expiresAt = data?.expires_at;
+      if (typeof expiresAt === 'number') return expiresAt * 1000 > Date.now() + 5000;
+      return !!(data?.access_token || data?.currentSession?.access_token);
+    } catch {
+      return false;
+    }
+  }
+
+  /** Mostra hub/ícone de perfil antes do Supabase CDN carregar (sync). */
+  function applyHeaderAuthFast() {
+    const profile = readCachedProfile();
+    if (!profile || !hasLocalSession()) return false;
+
+    const hubBtn = document.getElementById('hub-nav-btn');
+    if (hubBtn && isAdminRole(profile.role)) {
+      hubBtn.classList.remove('hidden');
+      hubBtn.classList.add('flex');
+    }
+
+    const icon = document.getElementById('profile-icon');
+    if (icon) icon.textContent = 'person';
+
+    currentProfile = profile;
+    return true;
+  }
 
   function withTimeout(promise, ms = SESSION_TIMEOUT_MS) {
     return Promise.race([
@@ -83,6 +154,7 @@
       console.warn('Erro ao carregar perfil:', error.message);
       return null;
     }
+    if (data) writeProfileCache(data);
     return data;
   }
 
@@ -90,10 +162,19 @@
     try {
       const client = await getClient();
       if (!client) return null;
-      const { data } = await withTimeout(client.auth.getSession());
+      const timeoutMs = hasLocalSession() ? 10000 : SESSION_TIMEOUT_MS;
+      const { data } = await withTimeout(client.auth.getSession(), timeoutMs);
       return data.session;
     } catch {
-      return null;
+      if (!hasLocalSession()) return null;
+      try {
+        const client = await getClient();
+        if (!client) return null;
+        const { data } = await client.auth.getSession();
+        return data.session;
+      } catch {
+        return null;
+      }
     }
   }
 
@@ -104,7 +185,11 @@
       return null;
     }
     if (currentProfile?.id === session.user.id) return currentProfile;
-    currentProfile = await fetchProfile(session.user.id);
+    const cached = readCachedProfile();
+    if (cached?.id === session.user.id && cached.role) {
+      currentProfile = cached;
+    }
+    currentProfile = await fetchProfile(session.user.id) || currentProfile;
     return currentProfile;
   }
 
@@ -125,6 +210,7 @@
     if (error) throw error;
 
     currentProfile = await fetchProfile(data.user.id);
+    if (currentProfile) writeProfileCache(currentProfile);
     return { user: data.user, profile: currentProfile };
   }
 
@@ -133,13 +219,20 @@
     if (!client) return;
     await client.auth.signOut();
     currentProfile = null;
+    clearProfileCache();
   }
 
   function onAuthStateChange(callback) {
     getClient().then((client) => {
       if (!client) return;
       client.auth.onAuthStateChange(async (_event, session) => {
-        currentProfile = session?.user ? await fetchProfile(session.user.id) : null;
+        if (!session?.user) {
+          currentProfile = null;
+          clearProfileCache();
+          callback(session, null);
+          return;
+        }
+        currentProfile = await fetchProfile(session.user.id);
         callback(session, currentProfile);
       });
     });
@@ -149,6 +242,9 @@
     getClient,
     getSession,
     getCurrentProfile,
+    getCachedProfile: readCachedProfile,
+    hasLocalSession,
+    applyHeaderAuthFast,
     signIn,
     signOut,
     onAuthStateChange,
@@ -156,4 +252,8 @@
     isAdminRole,
     isSuperUser
   };
+
+  if (window.JE_CONFIG) {
+    ensureSupabaseLoaded().catch(() => {});
+  }
 })();

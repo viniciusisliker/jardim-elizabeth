@@ -1,4 +1,7 @@
 (function () {
+  const isAdminPath = /\/admin(\/|$)/.test(window.location.pathname);
+  const assetBase = isAdminPath ? '..' : '.';
+
   function loadComponent(url, targetId, afterLoad) {
     const target = document.getElementById(targetId);
     if (!target) return;
@@ -7,9 +10,19 @@
       .then((res) => res.text())
       .then((html) => {
         target.innerHTML = html;
+        if (isAdminPath) fixRelativeLinks(target, '../');
+        if (window.JEAuth?.applyHeaderAuthFast) window.JEAuth.applyHeaderAuthFast();
         if (afterLoad) afterLoad();
       })
       .catch((err) => console.warn(`Erro ao carregar ${url}:`, err));
+  }
+
+  function fixRelativeLinks(container, prefix) {
+    container.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('../') || href.startsWith('/')) return;
+      link.setAttribute('href', prefix + href);
+    });
   }
 
   function navSlugFromHref(href) {
@@ -39,10 +52,15 @@
     });
   }
 
-  loadComponent('components/header.html', 'header', () => {
+  loadComponent(`${assetBase}/components/header.html`, 'header', () => {
     highlightActiveNav();
     if (window.initSiteHeader) window.initSiteHeader();
   });
 
-  loadComponent('components/footer.html', 'footer');
+  loadComponent(`${assetBase}/components/footer.html`, 'footer', () => {
+    if (isAdminPath) {
+      const footer = document.getElementById('footer');
+      if (footer) fixRelativeLinks(footer, '../');
+    }
+  });
 })();
