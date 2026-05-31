@@ -157,6 +157,20 @@ gtag('config', 'G-PGXCZF9S9W');
       font-feature-settings: 'liga';
       line-height: 1;
     }
+    @media (max-width: 1023px) {
+      .je-index-hero { height: 400px !important; }
+      .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
+      .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
+      .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
+    }
+    @media (max-width: 767px) {
+      .je-index-hero { height: 340px !important; }
+      .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
+      .je-index-shortcut { padding: 1rem; gap: 0.75rem; }
+      .je-index-shortcut .w-14 { width: 3rem; height: 3rem; }
+      .je-index-shortcut .text-3xl { font-size: 1.5rem; }
+      .je-index-shortcut > span.font-bold { font-size: 0.8125rem; line-height: 1.2; }
+    }
   </style>
 
 </head>
@@ -178,10 +192,6 @@ gtag('config', 'G-PGXCZF9S9W');
   ══════════════════════════════════════════════════════════════════════════ -->
 <div id="header"></div>
   <main>
-  <!-- FIM DA NAVBAR ──────────────────────────────────────────────────────── -->
-
-
-  <main>
   <!--
     <main> agrupa o conteúdo principal da página.
     Tudo que o usuário interage fica aqui dentro.
@@ -192,7 +202,7 @@ gtag('config', 'G-PGXCZF9S9W');
       A grande imagem de destaque no topo da página com título e botão.
       Altura fixa: h-[550px] — altere o número para mudar a altura.
     ══════════════════════════════════════════════════════════════════════ -->
-    <section class="relative h-[550px] flex items-end overflow-hidden">
+    <section class="je-index-hero relative h-[550px] flex items-end overflow-hidden">
 
       <!-- IMAGEM DE FUNDO ──────────────────────────────────────────────────
         O atributo src="..." define o endereço da imagem.
@@ -256,7 +266,7 @@ gtag('config', 'G-PGXCZF9S9W');
       Os 5 cards com ícones que ficam sobrepostos à imagem hero.
       O -mt-12 faz os cards "subirem" sobre a imagem.
     ══════════════════════════════════════════════════════════════════════ -->
-    <section class="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
+    <section class="max-w-7xl mx-auto px-6 je-page-shell -mt-12 relative z-20">
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
 
         <!-- ATALHO 1: AGENDA ─────────────────────────────────────────────────
@@ -268,7 +278,7 @@ gtag('config', 'G-PGXCZF9S9W');
           Para ADICIONAR um novo atalho: copie um bloco <a> inteiro e cole ao lado.
           Para REMOVER: apague o bloco <a> completo.
         -->
-        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agenda.html">
+        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agenda.html">
           <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
             <span class="material-symbols-outlined text-primary text-3xl">calendar_month</span>
           </div>
@@ -276,7 +286,7 @@ gtag('config', 'G-PGXCZF9S9W');
         </a>
 
         <!-- ATALHO 2: AGENDAMENTOS -->
-        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agendamentos.html">
+        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agendamentos.html">
           <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
             <span class="material-symbols-outlined text-primary text-3xl">event_available</span>
           </div>
@@ -284,7 +294,7 @@ gtag('config', 'G-PGXCZF9S9W');
         </a>
 
         <!-- ATALHO 3: QUADRO DE ANÚNCIOS -->
-        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="quadrodeanuncios.html">
+        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="quadrodeanuncios.html">
           <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
             <span class="material-symbols-outlined text-primary text-3xl">campaign</span>
           </div>
@@ -292,7 +302,7 @@ gtag('config', 'G-PGXCZF9S9W');
         </a>
 
         <!-- ATALHO 4: TERRITÓRIOS -->
-        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="territorios.html">
+        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="territorios.html">
           <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
             <span class="material-symbols-outlined text-primary text-3xl">map</span>
           </div>
@@ -300,7 +310,7 @@ gtag('config', 'G-PGXCZF9S9W');
         </a>
 
         <!-- ATALHO 5: DONATIVOS -->
-        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="donativos.html">
+        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="donativos.html">
           <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
             <span class="material-symbols-outlined text-primary text-3xl">volunteer_activism</span>
           </div>
@@ -317,7 +327,7 @@ gtag('config', 'G-PGXCZF9S9W');
       Layout em duas colunas: sidebar à esquerda (3 colunas) e feed à direita (9 colunas).
       Em telas pequenas, empilha verticalmente (grid-cols-1).
     ══════════════════════════════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell py-12">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
 
@@ -326,7 +336,7 @@ gtag('config', 'G-PGXCZF9S9W');
           Em telas pequenas, aparece acima do conteúdo principal.
         -->
         <!-- ── LINHA: PRÓXIMA REUNIÃO + PRÓXIMOS EVENTOS lado a lado ─────── -->
-        <div class="lg:col-span-12 flex flex-col md:flex-row gap-6 items-start">
+        <div class="lg:col-span-12 flex flex-col md:flex-row gap-6 items-start je-home-widgets-row">
 
           <!-- WIDGET: PRÓXIMA REUNIÃO -->
           <div class="bg-primary-container text-on-primary-container p-6 rounded-xl w-full md:w-72 flex-shrink-0">

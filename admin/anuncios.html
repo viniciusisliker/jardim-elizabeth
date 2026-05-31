@@ -68,6 +68,12 @@
       .qa-doc-footer{display:grid;grid-template-columns:1fr 1fr;gap:0.625rem}
       .qa-doc-footer .qa-doc-nav-remove{grid-column:1/-1;justify-content:center}
     }
+    @media(max-width:767px){
+      .qa-table-block{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .qa-table-head,.qa-table-row{min-width:32rem}
+      .tab-btn,.tab-util-btn{min-height:2.75rem}
+      .board-action-btn{min-height:2.75rem}
+    }
     .qa-limpeza-wrap{border:2px solid #984806;border-radius:0.75rem;overflow:hidden;background:#fff}
     .qa-limpeza-head{background:linear-gradient(135deg,#984806,#C8A96E);color:#fff;padding:0.75rem 1rem;font-weight:800;font-size:0.875rem;text-transform:uppercase;letter-spacing:.05em}
     .gcal-block-btn.tab-active{border-color:#002060;background:#002060;color:#fff}

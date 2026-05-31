@@ -216,6 +216,20 @@
       font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
       padding:0.15rem 0.4375rem;border-radius:9999px;background:#f1f5f9;color:#475569;
     }
+    @media(max-width:1023px){
+      .hub-hero{padding-top:2.5rem;padding-bottom:3.5rem}
+      .hub-hero .max-w-7xl{padding-left:1rem;padding-right:1rem}
+      .hub-main{padding-left:1rem;padding-right:1rem}
+    }
+    @media(max-width:767px){
+      .hub-user-chip{width:100%;min-width:0}
+      .hub-changelog-btn{width:100%;justify-content:center}
+      .hub-module-card{min-height:3.25rem}
+      .hub-ev-action{min-height:2.75rem;padding:0.5rem 0.75rem}
+    }
+    @media(max-width:899px){
+      .hub-ev-preview-card{position:static;top:auto}
+    }
   </style>
 </head>
 
@@ -253,7 +267,7 @@
       </div>
     </section>
 
-    <div class="max-w-7xl mx-auto px-6 pb-12 hub-main">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell pb-12 hub-main">
 
       <div id="hub-view-home" class="hub-view">
         <div class="hub-modules-panel">

@@ -57,6 +57,9 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+    @media (max-width: 767px) {
+      .je-agendamentos-card { padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+    }
   </style>
 </head>
 
@@ -66,11 +69,9 @@ gtag('config', 'G-PGXCZF9S9W');
 <div id="header"></div>
   <main>
 
-  <main>
-
     <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
     <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-7xl mx-auto px-6 je-page-shell">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
 <a href="index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
           <a href="index.html">
@@ -93,7 +94,7 @@ gtag('config', 'G-PGXCZF9S9W');
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 py-12 fade-up-2">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell py-12 fade-up-2">
 
       <!-- Instrução — texto exato do site original -->
       <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
@@ -105,7 +106,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
         <!-- Carrinhos -->
         <a href="carrinhos.html"
-           class="group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
+           class="je-agendamentos-card group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
           <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <svg viewBox="0 0 64 80" width="44" height="54" fill="none" xmlns="http://www.w3.org/2000/svg">
               <!-- rodas -->
@@ -148,7 +149,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
         <!-- Displays -->
         <a href="displays.html"
-           class="group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
+           class="je-agendamentos-card group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
           <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <svg viewBox="0 0 64 64" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
               <!-- base do display -->

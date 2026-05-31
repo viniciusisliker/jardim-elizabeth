@@ -54,6 +54,10 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+    @media (max-width: 767px) {
+      .je-donations-pix-card { padding: 1.5rem; }
+      .je-donations-pix-key { word-break: break-all; }
+    }
   </style>
 </head>
 
@@ -63,11 +67,9 @@ gtag('config', 'G-PGXCZF9S9W');
 <div id="header"></div>
   <main>
 
-  <main>
-
     <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
     <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-7xl mx-auto px-6 je-page-shell">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
 <a href="index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
           <a href="index.html">
@@ -90,10 +92,10 @@ gtag('config', 'G-PGXCZF9S9W');
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div id="je-donations-root" class="max-w-3xl mx-auto px-6 py-14 fade-up-2">
+    <div id="je-donations-root" class="max-w-3xl mx-auto px-6 je-page-shell py-14 fade-up-2">
 
       <!-- Card PIX com QR Code ao lado -->
-      <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-8 md:p-10 mb-8">
+      <div class="je-donations-pix-card bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-8 md:p-10 mb-8">
 
         <div class="flex items-center gap-3 mb-6">
           <div class="w-10 h-10 rounded-xl bg-secondary-fixed/40 flex items-center justify-center">
@@ -111,7 +113,7 @@ gtag('config', 'G-PGXCZF9S9W');
           <div class="flex-1 w-full">
             <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant">
               <p data-je-pix-type class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Chave PIX — E-mail</p>
-              <p data-je-pix-key class="text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
+              <p data-je-pix-key class="je-donations-pix-key text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
               <p data-je-pix-holder class="text-xs text-on-surface-variant mt-2">Marcelo Branco Almeida · Santander</p>
             </div>
           </div>

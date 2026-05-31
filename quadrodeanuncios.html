@@ -53,6 +53,9 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+    @media (max-width: 767px) {
+      .je-qa-card { padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+    }
   </style>
 </head>
 
@@ -65,7 +68,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
     <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
     <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-7xl mx-auto px-6 je-page-shell">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
           <a href="index.html">
             <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
@@ -90,7 +93,7 @@ gtag('config', 'G-PGXCZF9S9W');
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 py-12 fade-up-2">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell py-12 fade-up-2">
 
       <!-- Instrução -->
       <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
@@ -102,7 +105,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
         <!-- Designações Mecânicas -->
         <a href="https://drive.google.com/file/d/1nkm7A_A-EkdH4OFHf5HiNISZLqni2PmY/view?usp=drive_link" target="_blank"
-           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+           class="je-qa-card group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
           <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <span class="material-symbols-outlined text-secondary" style="font-size:36px">build</span>
           </div>
@@ -118,7 +121,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
         <!-- Meio de Semana -->
         <a href="https://drive.google.com/file/d/17bi2jq430dhs5Xt_6Ulzju5g_W37yvvS/view?usp=drive_link" target="_blank"
-           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+           class="je-qa-card group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
           <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <span class="material-symbols-outlined text-secondary" style="font-size:36px">menu_book</span>
           </div>
@@ -134,7 +137,7 @@ gtag('config', 'G-PGXCZF9S9W');
 
         <!-- Final de Semana -->
         <a href="https://drive.google.com/file/d/1Dp0jOiiEM-d8flH4ahJD3l9osuH_RZ-l/view?usp=drive_link" target="_blank"
-           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+           class="je-qa-card group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
           <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <span class="material-symbols-outlined text-secondary" style="font-size:36px">record_voice_over</span>
           </div>

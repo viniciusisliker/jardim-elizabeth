@@ -79,6 +79,47 @@
       font-size: 0.875rem;
       color: rgba(15, 52, 98, 0.6);
     }
+
+    /* Tablet + mobile only — desktop (>=1024px) unchanged */
+    @media (max-width: 1023px) {
+      html, body { overflow-x: clip; }
+      body {
+        padding-left: env(safe-area-inset-left, 0);
+        padding-right: env(safe-area-inset-right, 0);
+      }
+      #header nav > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+      #mobile-menu-btn,
+      #profile-btn,
+      #hub-nav-btn.flex { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
+      #mobile-menu a.nav-link {
+        min-height: 2.75rem;
+        display: flex;
+        align-items: center;
+        padding-top: 0.625rem;
+        padding-bottom: 0.625rem;
+      }
+      #profile-dropdown { max-width: min(18rem, calc(100vw - 2rem)); }
+      .je-footer-info { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+      .je-footer-info > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+      .je-footer-info .grid { gap: 2rem; }
+      .je-footer-bar > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; padding-top: 2rem; padding-bottom: 2rem; }
+      .je-footer-map-btn { min-height: 2.75rem; padding: 0.375rem 0.625rem; }
+      main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
+      .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
+    }
+    @media (max-width: 767px) {
+      #header nav a.flex-shrink-0 > span {
+        font-size: 1rem;
+        max-width: 10rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+      }
+      #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
+      #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+      .je-footer-copy { text-align: center; line-height: 1.5; }
+    }
   `;
 
   function ensureMaterialSymbolsLoaded() {
