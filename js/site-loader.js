@@ -1,23 +1,79 @@
 (function () {
-  const isAdminPath = /\/admin(\/|$)/.test(window.location.pathname);
-  const assetBase = isAdminPath ? '..' : '.';
+  const SYMBOLS_HREF = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block';
+  const SYMBOLS_CSS = `
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined', sans-serif;
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: 'liga';
+    }
+  `;
 
-  function ensureMaterialSymbols() {
+  function ensureMaterialSymbolsLoaded() {
+    if (!document.querySelector('link[rel="preconnect"][href="https://fonts.googleapis.com"]')) {
+      const pre1 = document.createElement('link');
+      pre1.rel = 'preconnect';
+      pre1.href = 'https://fonts.googleapis.com';
+      document.head.appendChild(pre1);
+      const pre2 = document.createElement('link');
+      pre2.rel = 'preconnect';
+      pre2.href = 'https://fonts.gstatic.com';
+      pre2.crossOrigin = 'anonymous';
+      document.head.appendChild(pre2);
+    }
     if (!document.querySelector('link[href*="Material+Symbols+Outlined"]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
+      link.href = SYMBOLS_HREF;
       document.head.appendChild(link);
     }
     if (!document.getElementById('je-material-symbols-style')) {
       const style = document.createElement('style');
       style.id = 'je-material-symbols-style';
-      style.textContent = ".material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}";
+      style.textContent = SYMBOLS_CSS;
       document.head.appendChild(style);
     }
   }
 
-  ensureMaterialSymbols();
+  function materialSymbolsReady() {
+    ensureMaterialSymbolsLoaded();
+    if (!document.fonts?.load) return Promise.resolve();
+    return document.fonts.load("400 24px 'Material Symbols Outlined'").catch(() => {});
+  }
+
+  const isAdminPath = /\/admin(\/|$)/.test(window.location.pathname);
+  const assetBase = isAdminPath ? '..' : '.';
+
+  function ensureMaterialSymbols() {
+    ensureMaterialSymbolsLoaded();
+  }
+
+  async function boot() {
+    ensureMaterialSymbols();
+    await materialSymbolsReady();
+
+    loadComponent(`${assetBase}/components/header.html`, 'header', () => {
+      highlightActiveNav();
+      if (window.initSiteHeader) window.initSiteHeader();
+    });
+
+    loadComponent(`${assetBase}/components/footer.html`, 'footer', () => {
+      if (isAdminPath) {
+        const footer = document.getElementById('footer');
+        if (footer) fixRelativeLinks(footer, '../');
+      }
+    });
+  }
 
   function loadComponent(url, targetId, afterLoad) {
     const target = document.getElementById(targetId);
@@ -69,15 +125,5 @@
     });
   }
 
-  loadComponent(`${assetBase}/components/header.html`, 'header', () => {
-    highlightActiveNav();
-    if (window.initSiteHeader) window.initSiteHeader();
-  });
-
-  loadComponent(`${assetBase}/components/footer.html`, 'footer', () => {
-    if (isAdminPath) {
-      const footer = document.getElementById('footer');
-      if (footer) fixRelativeLinks(footer, '../');
-    }
-  });
+  boot();
 })();
