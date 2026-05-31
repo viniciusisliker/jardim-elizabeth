@@ -13,10 +13,10 @@
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
 
   const MIDWEEK_SECTIONS = {
-    header: 'Semana',
-    tesouros: 'Tesouros da Palavra de Deus',
-    ministerio: 'Faça seu melhor no ministério',
-    vida: 'Nossa vida cristã'
+    header: { title: 'Semana', icon: 'calendar_today' },
+    tesouros: { title: 'Tesouros da Palavra de Deus', icon: 'auto_stories' },
+    ministerio: { title: 'Faça seu melhor no ministério', icon: 'diversity_3' },
+    vida: { title: 'Nossa vida cristã', icon: 'favorite' }
   };
 
   function $(id) { return document.getElementById(id); }
@@ -71,17 +71,71 @@
       <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></div>`;
   }
 
-  function fieldInput(field, entry) {
+  function fieldInput(field, entry, extraClass) {
     const val = (entry.data && entry.data[field.key]) || '';
+    const optional = field.optional ? ' is-optional' : '';
+    const filled = trim(val) ? ' is-filled' : '';
+    const spanClass = extraClass || (field.fullWidth ? ' span-2' : '');
+    const badge = field.optional ? '<span class="qa-field-badge">Opcional</span>' : '';
+    const hint = field.hint ? `<p class="qa-field-hint">${escapeHtml(field.hint)}</p>` : '';
+
+    let control;
     if (field.type === 'select') {
       const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
         `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
       ).join('');
-      return `<label class="qa-field">${escapeHtml(field.label)}
-        <select data-data-key="${field.key}"><option value=""></option>${opts}</select></label>`;
+      control = `<select class="qa-field-control" data-data-key="${field.key}"><option value=""></option>${opts}</select>`;
+    } else {
+      control = `<input class="qa-field-control" data-data-key="${field.key}" value="${escapeHtml(val)}"${field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : ''}/>`;
     }
-    return `<label class="qa-field">${escapeHtml(field.label)}
-      <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></label>`;
+
+    return `
+      <div class="qa-field${optional}${filled}${spanClass}">
+        <div class="qa-field-head">
+          <span class="qa-field-tag">${escapeHtml(field.label)}</span>
+          ${badge}
+        </div>
+        ${control}
+        ${hint}
+      </div>`;
+  }
+
+  function trim(val) {
+    return String(val ?? '').trim();
+  }
+
+  function sectionShell(title, icon, bodyHtml, bodyClass) {
+    return `
+      <div class="qa-section">
+        <div class="qa-section-title">
+          <span class="material-symbols-outlined">${escapeHtml(icon)}</span>
+          ${escapeHtml(title)}
+        </div>
+        <div class="qa-section-body">
+          <div class="qa-fields-grid${bodyClass ? ' ' + bodyClass : ''}">${bodyHtml}</div>
+        </div>
+      </div>`;
+  }
+
+  function fieldsHtmlWeekend(fields, entry) {
+    const groups = Schemas.WEEKEND_GROUPS;
+    const order = ['discurso', 'sentinela', 'sala_b', 'especial'];
+    return order.map((gid) => {
+      const meta = groups[gid];
+      const groupFields = fields.filter((f) => f.group === gid);
+      if (!groupFields.length || !meta) return '';
+      const isSpecial = gid === 'especial';
+      const gridClass = isSpecial ? 'cols-1' : '';
+      const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, isSpecial ? ' span-2' : '')).join('');
+      return `
+        <div class="qa-subsection${isSpecial ? ' qa-subsection--optional' : ''}">
+          <div class="qa-subsection-head">
+            <span class="material-symbols-outlined">${escapeHtml(meta.icon)}</span>
+            ${escapeHtml(meta.title)}
+          </div>
+          <div class="qa-fields-grid${gridClass ? ' ' + gridClass : ''}">${fieldsHtml}</div>
+        </div>`;
+    }).join('');
   }
 
   function fieldsHtmlMecanicas(entry, fields) {
@@ -100,21 +154,15 @@
   function fieldsHtmlGrouped(fields, entry, block) {
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
-      return `
-        <div class="qa-section">
-          <div class="qa-section-title">Discurso público e estudo</div>
-          <div class="grid sm:grid-cols-2 gap-4">${fields.map((f) => fieldInput(f, entry)).join('')}</div>
-        </div>`;
+      return sectionShell('Discurso público e estudo', 'church', fieldsHtmlWeekend(fields, entry));
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
       const secFields = fields.filter((f) => f.section === sec);
       if (!secFields.length) return '';
-      return `
-        <div class="qa-section">
-          <div class="qa-section-title">${escapeHtml(MIDWEEK_SECTIONS[sec])}</div>
-          <div class="grid sm:grid-cols-2 gap-4">${secFields.map((f) => fieldInput(f, entry)).join('')}</div>
-        </div>`;
+      const meta = MIDWEEK_SECTIONS[sec];
+      const body = secFields.map((f) => fieldInput(f, entry)).join('');
+      return sectionShell(meta.title, meta.icon, body);
     }).join('');
   }
 
@@ -304,6 +352,13 @@
     renderAllEditors();
   }
 
+  function resetBlockSelection() {
+    blockSelection.mecanicas = 0;
+    blockSelection.midweek = 0;
+    blockSelection.weekend = 0;
+    blockSelection.limpeza_mensal = 0;
+  }
+
   async function loadOrCreateBoard() {
     const monthInput = $('board-month').value;
     if (!monthInput) {
@@ -314,7 +369,11 @@
     const referenceMonth = `${y}-${String(m).padStart(2, '0')}-01`;
     const referenceLabel = Dates.monthLabel(y, m - 1);
 
+    entries = [];
+    resetBlockSelection();
+
     let existing = null;
+    let removedOtherMonth = 0;
     try {
       const { data, error } = await client
         .from('announcement_boards')
@@ -330,7 +389,15 @@
     if (existing) {
       board = existing;
       const { data: rows } = await client.from('announcement_entries').select('*').eq('board_id', board.id).order('sort_order');
-      entries = (rows || []).map((r) => ({ ...r, data: r.data || {} }));
+      const raw = (rows || []).map((r) => ({ ...r, data: r.data || {} }));
+      const sanitized = Dates.sanitizeEntriesForMonth(raw, referenceMonth);
+      entries = sanitized;
+
+      if (sanitized.length < raw.length) {
+        removedOtherMonth = raw.length - sanitized.length;
+        await persistEntries(true);
+      }
+
       if (!entries.length) {
         ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
           Dates.generateEntriesForBoard(block, referenceMonth).forEach((g, i) => {
@@ -340,7 +407,7 @@
         [{ fim_de_semana: '', grupo: '' }, { fim_de_semana: '', grupo: '' }].forEach((d, i) => {
           entries.push({ id: newLocalId(), board_id: board.id, block: 'limpeza_mensal', sort_order: i + 1, data: d, export_to_calendar: false });
         });
-        await persistEntries();
+        await persistEntries(true);
       }
     } else {
       const { data: created, error } = await client.from('announcement_boards').insert({
@@ -371,20 +438,24 @@
           export_to_calendar: false
         });
       });
-      await persistEntries();
+      await persistEntries(true);
     }
 
     $('board-label').textContent = `${board.reference_label} — ${board.status === 'published' ? 'Publicado' : 'Rascunho'}`;
     renderAllEditors();
-    showToast(toastEl, existing ? 'Quadro carregado.' : 'Novo quadro criado com datas do mês.');
+    if (removedOtherMonth > 0) {
+      showToast(toastEl, `${removedOtherMonth} data(s) de outro mês removida(s) — quadro de ${board.reference_label} atualizado.`);
+    } else {
+      showToast(toastEl, existing ? 'Quadro carregado.' : 'Novo quadro criado com datas do mês.');
+    }
     } catch (err) {
       showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
       throw err;
     }
   }
 
-  async function persistEntries() {
-    readFormIntoEntries();
+  async function persistEntries(skipRead) {
+    if (!skipRead) readFormIntoEntries();
     if (!board?.id) return;
 
     const { error: delErr } = await client.from('announcement_entries').delete().eq('board_id', board.id);

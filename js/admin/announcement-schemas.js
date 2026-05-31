@@ -43,16 +43,23 @@
   ];
 
   const WEEKEND_FIELDS = [
-    { key: 'presidente', label: 'Presidente', type: 'text' },
-    { key: 'tema_discurso', label: 'Tema do discurso', type: 'text' },
-    { key: 'orador', label: 'Orador', type: 'text' },
-    { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text' },
-    { key: 'estudo_sentinela_tema', label: 'Estudo da Sentinela', type: 'text' },
-    { key: 'leitor_sentinela', label: 'Leitor', type: 'text' },
-    { key: 'oracao_final', label: 'Oração final', type: 'text' },
-    { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text' },
-    { key: 'evento_especial', label: 'Evento especial (opcional)', type: 'text' }
+    { key: 'presidente', label: 'Presidente', type: 'text', group: 'discurso' },
+    { key: 'tema_discurso', label: 'Tema do discurso', type: 'text', group: 'discurso' },
+    { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
+    { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text', group: 'discurso', hint: 'Se orador visitante' },
+    { key: 'estudo_sentinela_tema', label: 'Tema do estudo', type: 'text', group: 'sentinela' },
+    { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela' },
+    { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela' },
+    { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text', group: 'sala_b' },
+    { key: 'evento_especial', label: 'Evento especial', type: 'text', group: 'especial', optional: true, placeholder: 'Ex.: Assembleia de Circuito', hint: 'Quando preenchido, substitui o programa normal desta data' }
   ];
+
+  const WEEKEND_GROUPS = {
+    discurso: { title: 'Discurso público', icon: 'record_voice_over' },
+    sentinela: { title: 'Estudo da Sentinela', icon: 'menu_book' },
+    sala_b: { title: 'Sala B', icon: 'groups' },
+    especial: { title: 'Programa alternativo', icon: 'event' }
+  };
 
   const SECTION_SLUGS = {
     mecanicas: 'designacoes-mecanicas',
@@ -87,6 +94,7 @@
     MECANICAS_FIELDS,
     MIDWEEK_FIELDS,
     WEEKEND_FIELDS,
+    WEEKEND_GROUPS,
     SECTION_SLUGS,
     SECTION_TITLES,
     emptyData,

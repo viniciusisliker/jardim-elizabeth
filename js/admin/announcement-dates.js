@@ -60,6 +60,26 @@
     return dates.map((date, i) => entryFromDate(block, date, i + 1));
   }
 
+  function monthKeyFromReference(referenceMonth) {
+    return String(referenceMonth || '').slice(0, 7);
+  }
+
+  function entryInReferenceMonth(entry, referenceMonth) {
+    if (!entry?.event_date) return true;
+    return entry.event_date.slice(0, 7) === monthKeyFromReference(referenceMonth);
+  }
+
+  function sanitizeEntriesForMonth(rawEntries, referenceMonth) {
+    const ym = monthKeyFromReference(referenceMonth);
+    return (rawEntries || [])
+      .filter((e) => e.block === 'limpeza_mensal' || !e.event_date || e.event_date.slice(0, 7) === ym)
+      .map((e) => {
+        if (!e.event_date) return e;
+        const d = new Date(e.event_date + 'T12:00:00');
+        return { ...e, weekday_label: WEEKDAY_PT[d.getDay()] };
+      });
+  }
+
   window.JEAnnouncementDates = {
     WEEKDAY_PT,
     MONTHS_PT,
@@ -69,6 +89,9 @@
     getWeekdaysInMonth,
     datesForBlock,
     generateEntriesForBoard,
-    entryFromDate
+    entryFromDate,
+    monthKeyFromReference,
+    entryInReferenceMonth,
+    sanitizeEntriesForMonth
   };
 })();
