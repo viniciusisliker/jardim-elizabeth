@@ -44,16 +44,7 @@
   </script>
 
   <style>
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .hub-tab-btn{border:1px solid transparent;background:transparent;border-radius:9999px;padding:0.5rem 1.125rem}
-    .hub-tab-btn:hover{background:#fff;border-color:#c3c6d0;color:#0f3462}
-    .hub-tab-btn.hub-tab-active{background:#0f3462;color:#fff;border-color:#0f3462;box-shadow:0 4px 14px rgba(15,52,98,.25)}
-    .hub-ev-action{display:inline-flex;align-items:center;padding:0.375rem 0.625rem;border-radius:0.375rem;border:1px solid #c3c6d0;background:#fff;font-size:0.6875rem;font-weight:700;line-height:1;cursor:pointer;transition:all .15s}
-    .hub-ev-action:hover{border-color:#3b5e97;background:#f5f3f3}
-    .hub-ev-action--edit{color:#3b5e97}
-    .hub-ev-action--copy{color:#43474f}
-    .hub-ev-action--del{color:#ba1a1a;border-color:rgba(186,26,26,.25)}
-    .hub-ev-action--del:hover{background:#fff5f5;border-color:#ba1a1a}
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; font-family: 'Material Symbols Outlined', sans-serif; font-feature-settings: 'liga'; display: inline-block; line-height: 1; }
 
     .hub-hero{
       position:relative;overflow:hidden;
@@ -73,15 +64,16 @@
     }
     .hub-user-chip{
       background:rgba(255,255,255,.1);backdrop-filter:blur(12px);
-      border:1px solid rgba(255,255,255,.18);border-radius:1rem;
+      border:1px solid rgba(255,255,255,.18);border-radius:0.75rem;
     }
+    .hub-hero-row{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem 1.5rem;
+    }
+    .hub-hero-copy{flex:1;min-width:0;max-width:36rem}
     .hub-main{
-      position:relative;z-index:1;margin-top:-1.5rem;
+      position:relative;z-index:1;margin-top:-0.75rem;
     }
-    @media(max-width:1023px){.hub-main{margin-top:-1rem}}
-    .hub-tabs-nav{
-      position:relative;z-index:2;padding-top:0.25rem;margin-bottom:1rem;
-    }
+    @media(max-width:1023px){.hub-main{margin-top:-0.5rem}}
 
     .hub-modules-panel{
       background:#fff;border:1px solid #e2e6ef;border-radius:1rem;
@@ -91,8 +83,12 @@
     .hub-module-group:last-child{border-bottom:none}
     @media(min-width:768px){.hub-module-group{padding:1.375rem 1.75rem}}
     .hub-module-group-title{
+      display:flex;align-items:center;gap:0.375rem;
       font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;
       color:#3b5e97;margin-bottom:0.875rem;
+    }
+    .hub-module-group-icon{
+      font-size:1rem;color:#3b5e97;font-variation-settings:'FILL' 1,'wght' 500;
     }
     .hub-module-grid{
       display:grid;grid-template-columns:1fr;gap:0.625rem;
@@ -107,7 +103,6 @@
       text-align:left;cursor:pointer;text-decoration:none;color:inherit;
       transition:border-color .15s,background .15s,box-shadow .15s;
     }
-    button.hub-module-card{font-family:inherit;font-size:inherit}
     .hub-module-card:hover{
       border-color:#3b5e97;background:#fff;
       box-shadow:0 2px 8px rgba(15,52,98,.08);
@@ -152,47 +147,9 @@
     @media(min-width:768px){.hub-home-intro{padding:1.125rem 1.75rem}}
     .hub-home-intro p{font-size:0.8125rem;color:#43474f;line-height:1.5;max-width:42rem}
 
-    .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);border-top:2px solid #0f3462;padding:1.5rem}
-    @media(min-width:768px){.hub-ev-form{padding:1.75rem 2rem}}
-    .hub-ev-form-layout{display:grid;gap:1.5rem}
-    @media(min-width:900px){.hub-ev-form-layout{grid-template-columns:1fr 16rem;align-items:start}}
-    .hub-ev-section{background:#fff;border:1px solid #e2e6ef;border-radius:1rem;padding:1.25rem 1.375rem;margin-bottom:1rem}
-    .hub-ev-section:last-child{margin-bottom:0}
-    .hub-ev-section-title{font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#3b5e97;margin-bottom:1rem}
-    .hub-ev-field label{display:block;font-size:0.875rem;font-weight:700;color:#0f3462;margin-bottom:0.375rem}
-    .hub-ev-field .hub-ev-hint{font-size:0.75rem;font-weight:400;color:#43474f;margin-top:0.25rem}
-    .hub-ev-input{width:100%;border:1px solid #c3c6d0;border-radius:0.625rem;padding:0.625rem 0.875rem;font-size:0.9375rem;background:#fafafa}
-    .hub-ev-input:focus{outline:none;border-color:#0f3462;background:#fff;box-shadow:0 0 0 3px rgba(15,52,98,.1)}
-    .hub-ev-input--lg{font-size:1.0625rem;padding:0.75rem 1rem;font-weight:600}
-    .hub-ev-cats{display:flex;flex-wrap:wrap;gap:0.5rem}
-    .hub-ev-cat{position:absolute;opacity:0;pointer-events:none}
-    .hub-ev-cat-pill{
-      display:inline-block;padding:0.4375rem 0.875rem;border-radius:9999px;border:1.5px solid #c3c6d0;
-      font-size:0.8125rem;font-weight:700;color:#43474f;cursor:pointer;transition:all .15s;background:#fff;
-    }
-    .hub-ev-cat:checked+.hub-ev-cat-pill{border-color:#0f3462;background:#0f3462;color:#fff}
-    .hub-ev-toggle{
-      display:flex;align-items:flex-start;gap:0.75rem;padding:0.875rem 1rem;border-radius:0.75rem;
-      border:1.5px solid #e2e6ef;background:#fafafa;cursor:pointer;transition:border-color .15s,background .15s;
-    }
-    .hub-ev-toggle:has(input:checked){border-color:#3b5e97;background:#eff6ff}
-    .hub-ev-toggle input{margin-top:0.2rem;accent-color:#0f3462;flex-shrink:0}
-    .hub-ev-toggle strong{display:block;font-size:0.875rem;color:#0f3462}
-    .hub-ev-toggle span{font-size:0.75rem;color:#43474f;line-height:1.4}
-    .hub-ev-preview-card{
-      background:#fff;border:1px solid #e2e6ef;border-radius:1rem;padding:1.25rem;
-      box-shadow:0 4px 20px rgba(15,52,98,.08);position:sticky;top:1rem;
-    }
-    .hub-ev-preview-label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#43474f;margin-bottom:0.875rem}
-    .hub-ev-preview-mock{display:flex;gap:0.75rem;align-items:flex-start}
-    .hub-ev-form-actions{display:flex;flex-wrap:wrap;gap:0.75rem;padding-top:0.5rem}
-    .hub-ev-btn-primary{background:#0f3462;color:#fff;font-weight:700;padding:0.625rem 1.25rem;border-radius:0.625rem;font-size:0.875rem}
-    .hub-ev-btn-primary:hover{opacity:.92}
-    .hub-ev-btn-ghost{color:#43474f;font-weight:600;padding:0.625rem 1rem;font-size:0.875rem}
-
     .hub-changelog-btn{
-      display:inline-flex;align-items:center;gap:0.5rem;margin-top:1.25rem;
-      padding:0.5625rem 1rem;border-radius:9999px;font-size:0.8125rem;font-weight:700;
+      display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.75rem;
+      padding:0.4375rem 0.875rem;border-radius:9999px;font-size:0.75rem;font-weight:700;
       background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
       backdrop-filter:blur(8px);cursor:pointer;transition:background .2s,border-color .2s,transform .15s;
     }
@@ -222,259 +179,111 @@
   <div id="header"></div>
 
   <main class="flex-1">
-    <section class="hub-hero py-12 md:py-14 pb-16 md:pb-20">
+    <section class="hub-hero py-6 md:py-8 pb-10 md:pb-12">
       <div class="hub-hero-grid" aria-hidden="true"></div>
       <div class="max-w-7xl mx-auto px-6 relative">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60 mb-5">
+        <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-white/60 mb-3">
           <a href="index.html" class="hover:text-white transition-colors"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
           <a href="index.html" class="hover:text-white transition-colors">Jardim Elizabeth</a>
           <span>/</span>
           <span class="text-accent-gold">Hub</span>
         </div>
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-          <div class="max-w-xl">
-            <p class="text-accent-gold text-xs font-bold uppercase tracking-[0.2em] mb-2">Central administrativa</p>
-            <h1 class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
-            <p class="text-white/70 mt-3 text-sm md:text-base leading-relaxed">Gestão do site da congregação — publicações, campo, agenda e configurações em um só lugar.</p>
+        <div class="hub-hero-row">
+          <div class="hub-hero-copy">
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
+              <span class="text-accent-gold text-[10px] font-bold uppercase tracking-[0.18em]">Central administrativa</span>
+            </div>
+            <p class="text-white/65 mt-1.5 text-sm leading-snug max-w-lg">Publicações, campo, agenda e configurações em um só lugar.</p>
             <button type="button" id="hub-changelog-btn" class="hub-changelog-btn" aria-haspopup="dialog" aria-controls="hub-changelog-modal">
-              <span class="material-symbols-outlined" style="font-size:18px">new_releases</span>
-              Novidades do sistema
+              <span class="material-symbols-outlined" style="font-size:16px">new_releases</span>
+              Novidades
               <span id="hub-changelog-badge" class="hub-changelog-badge hidden">Novo</span>
             </button>
           </div>
-          <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
-            <p class="font-bold text-white" id="hub-user-name">—</p>
-            <p class="text-xs text-accent-gold font-semibold mt-0.5" id="hub-user-role">—</p>
-            <p class="text-xs text-white/50 mt-1" id="hub-user-username">—</p>
+          <div class="hub-user-chip px-4 py-2.5 text-sm shrink-0 flex items-center gap-3">
+            <div class="min-w-0">
+              <p class="font-bold text-white text-sm leading-tight truncate" id="hub-user-name">—</p>
+              <p class="text-[11px] text-white/50 truncate" id="hub-user-username">—</p>
+            </div>
+            <p class="text-[10px] text-accent-gold font-bold uppercase tracking-wide shrink-0" id="hub-user-role">—</p>
           </div>
         </div>
       </div>
     </section>
 
     <div class="max-w-7xl mx-auto px-6 pb-12 hub-main">
+      <div class="hub-modules-panel">
+        <div class="hub-home-intro">
+          <p>Selecione um módulo abaixo. Você só vê as áreas liberadas para o seu perfil ou designação.</p>
+        </div>
 
-      <nav class="hub-tabs-nav flex flex-wrap gap-2" aria-label="Seções do hub">
-        <button type="button" data-hub-tab="home" class="hub-tab-btn hub-tab-active text-sm font-semibold">Início</button>
-        <button type="button" data-hub-tab="agenda" data-hub-requires-permission="agenda" class="hub-tab-btn text-sm font-semibold text-on-surface-variant">Agenda</button>
-      </nav>
-
-      <div id="hub-view-home" class="hub-view">
-        <div class="hub-modules-panel">
-          <div class="hub-home-intro">
-            <p>Selecione um módulo abaixo. Você só vê as áreas liberadas para o seu perfil ou designação.</p>
+        <section class="hub-module-group">
+          <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Publicação</h3>
+          <div class="hub-module-grid">
+            <a href="admin/agenda.html" data-hub-requires-permission="agenda" class="hub-module-card hub-module-card--agenda">
+              <span class="hub-module-icon material-symbols-outlined">calendar_month</span>
+              <div class="hub-module-body">
+                <h4>Agenda</h4>
+                <p>Criar, editar e publicar eventos na home e na página Agenda.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
+            <a href="admin/anuncios.html" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
+              <span class="hub-module-icon material-symbols-outlined">campaign</span>
+              <div class="hub-module-body">
+                <h4>Quadro de Anúncios</h4>
+                <p>Editor por data, PDF e exportação para Google Agenda.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
           </div>
+        </section>
 
-          <section class="hub-module-group">
-            <h3 class="hub-module-group-title">Publicação</h3>
-            <div class="hub-module-grid">
-              <button type="button" data-hub-tab="agenda" data-hub-requires-permission="agenda" class="hub-module-card hub-module-card--agenda">
-                <span class="hub-module-icon material-symbols-outlined">calendar_month</span>
-                <div class="hub-module-body">
-                  <h4>Agenda</h4>
-                  <p>Criar, editar e publicar eventos na home e na página Agenda.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </button>
-              <a href="admin/anuncios.html" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
-                <span class="hub-module-icon material-symbols-outlined">campaign</span>
-                <div class="hub-module-body">
-                  <h4>Quadro de Anúncios</h4>
-                  <p>Editor por data, PDF e exportação para Google Agenda.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-            </div>
-          </section>
-
-          <section class="hub-module-group">
-            <h3 class="hub-module-group-title">Organização e campo</h3>
-            <div class="hub-module-grid">
-              <a href="admin/agendamentos.html" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
-                <span class="hub-module-icon material-symbols-outlined">event_available</span>
-                <div class="hub-module-body">
-                  <h4>Agendamentos</h4>
-                  <p>Calendários de carrinhos e displays.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-              <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
-                <span class="hub-module-icon material-symbols-outlined">map</span>
-                <div class="hub-module-body">
-                  <h4>Territórios</h4>
-                  <p>Status, nomes e mapas do serviço de campo.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-            </div>
-          </section>
-
-          <section class="hub-module-group">
-            <h3 class="hub-module-group-title">Contribuições e sistema</h3>
-            <div class="hub-module-grid">
-              <a href="admin/donativos.html" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
-                <span class="hub-module-icon material-symbols-outlined">volunteer_activism</span>
-                <div class="hub-module-body">
-                  <h4>Donativos</h4>
-                  <p>Chave PIX, QR code e textos da página de donativos.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-              <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
-                <span class="hub-module-icon material-symbols-outlined">settings</span>
-                <div class="hub-module-body">
-                  <h4>Configurações</h4>
-                  <p>Usuários, cargos, designações e permissões de acesso.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-            </div>
-          </section>
-        </div>
-      </div>
-
-      <div id="hub-view-agenda" class="hub-view hidden space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-1">Hub / Agenda</p>
-          <h2 class="text-2xl font-extrabold text-primary">Gerenciar Agenda</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Eventos publicados na home e na página Agenda.</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <a href="agenda.html" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low">
-            Ver página pública
-            <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>
-          </a>
-          <button type="button" id="hub-btn-new-event" class="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg hover:opacity-90">Novo evento</button>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
-        <div class="px-5 py-3 border-b border-outline-variant bg-surface-container-low/50">
-          <p class="text-xs text-on-surface-variant">Clique em <strong>Editar</strong> para alterar ou em <strong>Novo evento</strong> para adicionar.</p>
-        </div>
-        <p id="hub-events-toast" class="hidden text-sm px-5 pt-3"></p>
-        <div id="hub-events-list">
-          <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando eventos…</p>
-        </div>
-        <form id="hub-event-form" class="hidden hub-ev-form">
-          <input type="hidden" id="hub-ev-id"/>
-          <input type="hidden" id="hub-ev-date-display"/>
-          <input type="hidden" id="hub-ev-date-label"/>
-          <input type="hidden" id="hub-ev-month-key"/>
-          <input type="hidden" id="hub-ev-month-label"/>
-          <input type="hidden" id="hub-ev-badge" value="default"/>
-          <input type="hidden" id="hub-ev-sort" value="0"/>
-
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-            <h3 id="hub-event-form-title" class="text-xl font-extrabold text-primary" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Novo evento</h3>
-            <button type="button" id="hub-btn-cancel-event" class="hub-ev-btn-ghost self-start sm:self-center">Fechar</button>
+        <section class="hub-module-group">
+          <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Organização e campo</h3>
+          <div class="hub-module-grid">
+            <a href="admin/agendamentos.html" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
+              <span class="hub-module-icon material-symbols-outlined">event_available</span>
+              <div class="hub-module-body">
+                <h4>Agendamentos</h4>
+                <p>Calendários de carrinhos e displays.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
+            <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
+              <span class="hub-module-icon material-symbols-outlined">map</span>
+              <div class="hub-module-body">
+                <h4>Territórios</h4>
+                <p>Status, nomes e mapas do serviço de campo.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
           </div>
+        </section>
 
-          <div class="hub-ev-form-layout">
-            <div>
-              <div class="hub-ev-section">
-                <p class="hub-ev-section-title">Informações principais</p>
-                <div class="space-y-4">
-                  <div class="hub-ev-field">
-                    <label for="hub-ev-title">Nome do evento</label>
-                    <input id="hub-ev-title" required class="hub-ev-input hub-ev-input--lg" placeholder="Ex.: Celebração — 2027"/>
-                  </div>
-                  <div class="grid sm:grid-cols-2 gap-4">
-                    <div class="hub-ev-field">
-                      <label for="hub-ev-date">Data</label>
-                      <input id="hub-ev-date" type="date" required class="hub-ev-input"/>
-                      <p class="hub-ev-hint">O dia e o mês no site são preenchidos automaticamente.</p>
-                    </div>
-                    <div class="hub-ev-field">
-                      <label for="hub-ev-time">Horário</label>
-                      <input id="hub-ev-time" class="hub-ev-input" placeholder="19:30 hs"/>
-                    </div>
-                  </div>
-                  <div class="hub-ev-field">
-                    <label>Tipo</label>
-                    <div class="hub-ev-cats" id="hub-ev-categories">
-                      <input class="hub-ev-cat" type="radio" name="hub-ev-category" id="hub-ev-cat-especial" value="Especial" checked/>
-                      <label class="hub-ev-cat-pill" for="hub-ev-cat-especial">Especial</label>
-                      <input class="hub-ev-cat" type="radio" name="hub-ev-category" id="hub-ev-cat-reunioes" value="Reuniões"/>
-                      <label class="hub-ev-cat-pill" for="hub-ev-cat-reunioes">Reuniões</label>
-                      <input class="hub-ev-cat" type="radio" name="hub-ev-category" id="hub-ev-cat-assembleia" value="Assembleia"/>
-                      <label class="hub-ev-cat-pill" for="hub-ev-cat-assembleia">Assembleia</label>
-                      <input class="hub-ev-cat" type="radio" name="hub-ev-category" id="hub-ev-cat-celebracao" value="Celebração"/>
-                      <label class="hub-ev-cat-pill" for="hub-ev-cat-celebracao">Celebração</label>
-                      <input class="hub-ev-cat" type="radio" name="hub-ev-category" id="hub-ev-cat-escola" value="Escola"/>
-                      <label class="hub-ev-cat-pill" for="hub-ev-cat-escola">Escola</label>
-                    </div>
-                  </div>
-                </div>
+        <section class="hub-module-group">
+          <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
+          <div class="hub-module-grid">
+            <a href="admin/donativos.html" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
+              <span class="hub-module-icon material-symbols-outlined">volunteer_activism</span>
+              <div class="hub-module-body">
+                <h4>Donativos</h4>
+                <p>Chave PIX, QR code e textos da página de donativos.</p>
               </div>
-
-              <div class="hub-ev-section">
-                <p class="hub-ev-section-title">Opcional</p>
-                <div class="space-y-4">
-                  <div class="hub-ev-field">
-                    <label for="hub-ev-location">Local</label>
-                    <input id="hub-ev-location" class="hub-ev-input" value="Salão do Reino"/>
-                  </div>
-                  <div class="hub-ev-field">
-                    <label for="hub-ev-description">Observações <span class="font-normal text-on-surface-variant">(aparece na página da agenda)</span></label>
-                    <textarea id="hub-ev-description" rows="2" class="hub-ev-input" placeholder="Detalhes extras, se necessário"></textarea>
-                  </div>
-                </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
+            <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
+              <span class="hub-module-icon material-symbols-outlined">settings</span>
+              <div class="hub-module-body">
+                <h4>Configurações</h4>
+                <p>Usuários, cargos, designações e permissões de acesso.</p>
               </div>
-
-              <div class="hub-ev-section">
-                <p class="hub-ev-section-title">Como aparece no site</p>
-                <div class="space-y-3">
-                  <label class="hub-ev-toggle">
-                    <input id="hub-ev-future" type="checkbox"/>
-                    <div>
-                      <strong>Evento futuro</strong>
-                      <span>Use para Celebração 2027, Escola de Pioneiros e outros que ficam na seção “Eventos Futuros”.</span>
-                    </div>
-                  </label>
-                  <label class="hub-ev-toggle">
-                    <input id="hub-ev-highlight" type="checkbox"/>
-                    <div>
-                      <strong>Destaque na home</strong>
-                      <span>O evento aparece em destaque na página inicial e na barra lateral da agenda.</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <details class="text-sm mb-4">
-                <summary class="cursor-pointer font-semibold text-secondary py-2">Copiar de um evento existente</summary>
-                <label class="block mt-2 text-sm font-semibold text-primary">Escolher modelo
-                  <select id="hub-ev-template" class="mt-1 w-full hub-ev-input text-sm">
-                    <option value="">— Nenhum —</option>
-                  </select>
-                </label>
-              </details>
-
-              <div class="hub-ev-form-actions">
-                <button type="submit" class="hub-ev-btn-primary">Salvar e publicar no site</button>
-              </div>
-            </div>
-
-            <aside class="hub-ev-preview-card">
-              <p class="hub-ev-preview-label">Prévia na agenda</p>
-              <div class="hub-ev-preview-mock" id="hub-ev-preview">
-                <div class="text-center shrink-0 w-12">
-                  <p class="text-lg font-extrabold text-primary leading-none" id="hub-ev-preview-day">—</p>
-                  <p class="text-[10px] font-bold text-on-surface-variant uppercase" id="hub-ev-preview-label-d">—</p>
-                </div>
-                <div class="min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded mb-1 text-[#7a5200] bg-[#c8a96e]/20" id="hub-ev-preview-cat">Especial</span>
-                  <p class="font-bold text-primary text-sm leading-snug" id="hub-ev-preview-title">Nome do evento</p>
-                  <p class="text-xs text-on-surface-variant mt-0.5" id="hub-ev-preview-meta">—</p>
-                </div>
-              </div>
-            </aside>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </a>
           </div>
-        </form>
+        </section>
       </div>
-      </div>
-
     </div>
   </main>
 
@@ -507,8 +316,6 @@
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
-  <script src="js/agenda-helpers.js"></script>
-  <script src="js/hub-events.js?v=2026053130"></script>
   <script src="js/hub-changelog.js"></script>
   <script src="js/hub.js"></script>
 </body>
