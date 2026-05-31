@@ -2,6 +2,23 @@
   const isAdminPath = /\/admin(\/|$)/.test(window.location.pathname);
   const assetBase = isAdminPath ? '..' : '.';
 
+  function ensureMaterialSymbols() {
+    if (!document.querySelector('link[href*="Material+Symbols+Outlined"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
+      document.head.appendChild(link);
+    }
+    if (!document.getElementById('je-material-symbols-style')) {
+      const style = document.createElement('style');
+      style.id = 'je-material-symbols-style';
+      style.textContent = ".material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}";
+      document.head.appendChild(style);
+    }
+  }
+
+  ensureMaterialSymbols();
+
   function loadComponent(url, targetId, afterLoad) {
     const target = document.getElementById(targetId);
     if (!target) return;

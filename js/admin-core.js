@@ -5,6 +5,29 @@
     concluido: 'Concluído'
   };
 
+  async function guardPermission(permission) {
+    await window.JEAuth.getClient();
+    let session = await window.JEAuth.getSession();
+    if (!session) {
+      await new Promise((r) => setTimeout(r, 400));
+      session = await window.JEAuth.getSession();
+    }
+    if (!session) {
+      window.location.href = '../index.html';
+      return null;
+    }
+    const profile = await window.JEAuth.getCurrentProfile();
+    if (!profile || !window.JEAuth.hasPermission(profile, permission)) {
+      window.location.href = '../index.html';
+      return null;
+    }
+    return profile;
+  }
+
+  async function guardAnnouncements() {
+    return guardPermission('announcements');
+  }
+
   async function guardAdmin() {
     await window.JEAuth.getClient();
     let session = await window.JEAuth.getSession();
@@ -56,6 +79,8 @@
 
   window.JEAdmin = {
     guardAdmin,
+    guardAnnouncements,
+    guardPermission,
     getClient,
     showToast,
     escapeHtml,

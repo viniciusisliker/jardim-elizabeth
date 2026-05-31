@@ -1,5 +1,5 @@
 (function () {
-  const { guardAdmin, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const { guardAnnouncements, getClient, showToast, escapeHtml } = window.JEAdmin;
   const Dates = window.JEAnnouncementDates;
   const Schemas = window.JEAnnouncementSchemas;
   const Pdf = window.JEAnnouncementPdf;
@@ -10,6 +10,8 @@
   let client = null;
   let toastEl = null;
   let gcalExportBlock = 'mecanicas';
+  let savedBoards = [];
+  let boardListFilter = 'all';
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
 
   const MIDWEEK_SECTIONS = {
@@ -359,6 +361,103 @@
     blockSelection.limpeza_mensal = 0;
   }
 
+  function updateBoardLabel() {
+    const el = $('board-label');
+    if (!el) return;
+    if (!board) {
+      el.textContent = '—';
+      return;
+    }
+    el.textContent = `${board.reference_label} — ${board.status === 'published' ? 'Publicado' : 'Rascunho'}`;
+  }
+
+  function switchToEditorTab(tab) {
+    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    if (btn) btn.click();
+  }
+
+  function formatBoardDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return '';
+    }
+  }
+
+  async function hydrateBoardFromRecord(existing) {
+    const referenceMonth = existing.reference_month;
+    board = existing;
+    entries = [];
+    resetBlockSelection();
+
+    const { data: rows } = await client.from('announcement_entries').select('*').eq('board_id', board.id).order('sort_order');
+    const raw = (rows || []).map((r) => ({ ...r, data: r.data || {} }));
+    const sanitized = Dates.sanitizeEntriesForMonth(raw, referenceMonth);
+    entries = sanitized;
+
+    let removedOtherMonth = 0;
+    if (sanitized.length < raw.length) {
+      removedOtherMonth = raw.length - sanitized.length;
+      await persistEntries(true);
+    }
+
+    if (!entries.length) {
+      ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
+        Dates.generateEntriesForBoard(block, referenceMonth).forEach((g, i) => {
+          entries.push({ ...g, id: newLocalId(), board_id: board.id, sort_order: i + 1, data: Schemas.emptyData(block) });
+        });
+      });
+      [{ fim_de_semana: '', grupo: '' }, { fim_de_semana: '', grupo: '' }].forEach((d, i) => {
+        entries.push({ id: newLocalId(), board_id: board.id, block: 'limpeza_mensal', sort_order: i + 1, data: d, export_to_calendar: false });
+      });
+      await persistEntries(true);
+    }
+
+    updateBoardLabel();
+    renderAllEditors();
+    return removedOtherMonth;
+  }
+
+  async function loadBoardById(boardId) {
+    const { data: existing, error } = await client
+      .from('announcement_boards')
+      .select('*')
+      .eq('id', boardId)
+      .maybeSingle();
+    if (error || !existing) throw new Error('Quadro não encontrado.');
+
+    $('board-month').value = existing.reference_month.slice(0, 7);
+    await hydrateBoardFromRecord(existing);
+    switchToEditorTab('mecanicas');
+    renderPublishedList();
+  }
+
+  async function deleteBoard(boardId) {
+    const item = savedBoards.find((b) => b.id === boardId);
+    const label = item?.reference_label || 'este quadro';
+    const isDraft = item?.status === 'draft';
+    const message = isDraft
+      ? `Excluir o rascunho "${label}"?\n\nTodas as designações deste período serão apagadas. Esta ação não pode ser desfeita.`
+      : `Excluir "${label}"?\n\nO registro do quadro será removido. Os PDFs já publicados no site permanecem até você publicar outra versão.`;
+
+    if (!confirm(message)) return;
+
+    const { error } = await client.from('announcement_boards').delete().eq('id', boardId);
+    if (error) throw new Error(error.message);
+
+    if (board?.id === boardId) {
+      board = null;
+      entries = [];
+      resetBlockSelection();
+      updateBoardLabel();
+      renderAllEditors();
+    }
+
+    showToast(toastEl, isDraft ? 'Rascunho excluído.' : 'Quadro excluído.');
+    await loadPublishedList();
+  }
+
   async function loadOrCreateBoard() {
     const monthInput = $('board-month').value;
     if (!monthInput) {
@@ -373,7 +472,6 @@
     resetBlockSelection();
 
     let existing = null;
-    let removedOtherMonth = 0;
     try {
       const { data, error } = await client
         .from('announcement_boards')
@@ -387,27 +485,11 @@
       existing = data;
 
     if (existing) {
-      board = existing;
-      const { data: rows } = await client.from('announcement_entries').select('*').eq('board_id', board.id).order('sort_order');
-      const raw = (rows || []).map((r) => ({ ...r, data: r.data || {} }));
-      const sanitized = Dates.sanitizeEntriesForMonth(raw, referenceMonth);
-      entries = sanitized;
-
-      if (sanitized.length < raw.length) {
-        removedOtherMonth = raw.length - sanitized.length;
-        await persistEntries(true);
-      }
-
-      if (!entries.length) {
-        ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
-          Dates.generateEntriesForBoard(block, referenceMonth).forEach((g, i) => {
-            entries.push({ ...g, id: newLocalId(), board_id: board.id, sort_order: i + 1, data: Schemas.emptyData(block) });
-          });
-        });
-        [{ fim_de_semana: '', grupo: '' }, { fim_de_semana: '', grupo: '' }].forEach((d, i) => {
-          entries.push({ id: newLocalId(), board_id: board.id, block: 'limpeza_mensal', sort_order: i + 1, data: d, export_to_calendar: false });
-        });
-        await persistEntries(true);
+      const removedOtherMonth = await hydrateBoardFromRecord(existing);
+      if (removedOtherMonth > 0) {
+        showToast(toastEl, `${removedOtherMonth} data(s) de outro mês removida(s) — quadro de ${board.reference_label} atualizado.`);
+      } else {
+        showToast(toastEl, 'Quadro carregado.');
       }
     } else {
       const { data: created, error } = await client.from('announcement_boards').insert({
@@ -439,15 +521,11 @@
         });
       });
       await persistEntries(true);
+      updateBoardLabel();
+      renderAllEditors();
+      showToast(toastEl, 'Novo quadro criado com datas do mês.');
     }
-
-    $('board-label').textContent = `${board.reference_label} — ${board.status === 'published' ? 'Publicado' : 'Rascunho'}`;
-    renderAllEditors();
-    if (removedOtherMonth > 0) {
-      showToast(toastEl, `${removedOtherMonth} data(s) de outro mês removida(s) — quadro de ${board.reference_label} atualizado.`);
-    } else {
-      showToast(toastEl, existing ? 'Quadro carregado.' : 'Novo quadro criado com datas do mês.');
-    }
+    await loadPublishedList();
     } catch (err) {
       showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
       throw err;
@@ -525,7 +603,7 @@
       board[col] = pdfUrl;
       board.status = 'published';
       board.published_at = boardUpdate.published_at;
-      $('board-label').textContent = `${board.reference_label} — Publicado`;
+      updateBoardLabel();
       showToast(toastEl, `${Schemas.SECTION_TITLES[block]} publicado no site.`);
       loadPublishedList();
     } catch (err) {
@@ -564,17 +642,109 @@
     if (el) el.value = csv;
   }
 
-  async function loadPublishedList() {
-    const { data } = await client.from('announcement_boards').select('id, reference_label, status, published_at, pdf_mecanicas_url, pdf_midweek_url, pdf_weekend_url').order('reference_month', { ascending: false }).limit(12);
+  function renderPublishedList() {
     const list = $('published-list');
     if (!list) return;
-    list.innerHTML = (data || []).map((b) => `
-      <div class="px-4 py-3 text-sm">
-        <p class="font-bold text-primary">${escapeHtml(b.reference_label)} <span class="text-xs font-normal text-on-surface-variant">(${escapeHtml(b.status)})</span></p>
-        <p class="text-xs text-on-surface-variant mt-1">
-          ${b.pdf_mecanicas_url ? '✓ Mecânicas ' : ''}${b.pdf_midweek_url ? '✓ VMC ' : ''}${b.pdf_weekend_url ? '✓ Final de semana' : ''}
-        </p>
-      </div>`).join('') || '<p class="px-4 py-6 text-sm text-on-surface-variant">Nenhum quadro ainda.</p>';
+
+    const filtered = savedBoards.filter((b) => boardListFilter === 'all' || b.status === boardListFilter);
+
+    if (!filtered.length) {
+      const emptyMsg = boardListFilter === 'draft'
+        ? 'Nenhum rascunho. Crie um quadro pelo seletor de mês acima.'
+        : boardListFilter === 'published'
+          ? 'Nenhum quadro publicado ainda.'
+          : 'Nenhum quadro salvo. Use "Novo / Carregar" para começar.';
+      list.innerHTML = `<div class="board-card justify-center text-sm text-on-surface-variant py-8">${escapeHtml(emptyMsg)}</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map((b) => {
+      const isCurrent = board?.id === b.id;
+      const isDraft = b.status === 'draft';
+      const statusClass = isDraft ? 'board-status--draft' : 'board-status--published';
+      const statusLabel = isDraft ? 'Rascunho' : 'Publicado';
+      const pdfs = [
+        b.pdf_mecanicas_url ? 'Mecânicas' : null,
+        b.pdf_midweek_url ? 'VMC' : null,
+        b.pdf_weekend_url ? 'Final de semana' : null
+      ].filter(Boolean);
+      const pdfHtml = pdfs.length
+        ? pdfs.map((p) => `<span class="board-pdf-chip">${escapeHtml(p)}</span>`).join('')
+        : '<span class="text-xs text-on-surface-variant">Nenhuma seção publicada</span>';
+      const updated = formatBoardDate(b.updated_at || b.published_at);
+
+      return `
+        <article class="board-card${isCurrent ? ' is-current' : ''}" data-board-id="${b.id}">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="font-bold text-primary">${escapeHtml(b.reference_label)}</h3>
+              <span class="board-status ${statusClass}">${statusLabel}</span>
+              ${isCurrent ? '<span class="text-[10px] font-bold uppercase tracking-wider text-accent">Em edição</span>' : ''}
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-2">${pdfHtml}</div>
+            ${updated ? `<p class="text-xs text-on-surface-variant mt-2">Atualizado em ${escapeHtml(updated)}</p>` : ''}
+          </div>
+          <div class="flex flex-wrap gap-2 shrink-0">
+            <button type="button" data-board-edit="${b.id}" class="board-action-btn board-action-btn--edit">
+              <span class="material-symbols-outlined" style="font-size:16px">edit</span>
+              Editar
+            </button>
+            <button type="button" data-board-delete="${b.id}" class="board-action-btn board-action-btn--delete">
+              <span class="material-symbols-outlined" style="font-size:16px">${isDraft ? 'delete' : 'delete_forever'}</span>
+              ${isDraft ? 'Excluir' : 'Excluir'}
+            </button>
+          </div>
+        </article>`;
+    }).join('');
+
+    list.querySelectorAll('[data-board-edit]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await loadBoardById(btn.dataset.boardEdit);
+          showToast(toastEl, 'Quadro aberto para edição.');
+        } catch (err) {
+          showToast(toastEl, err.message || 'Erro ao abrir quadro.', true);
+        }
+      });
+    });
+
+    list.querySelectorAll('[data-board-delete]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await deleteBoard(btn.dataset.boardDelete);
+        } catch (err) {
+          showToast(toastEl, err.message || 'Erro ao excluir.', true);
+        }
+      });
+    });
+  }
+
+  async function loadPublishedList() {
+    const { data, error } = await client
+      .from('announcement_boards')
+      .select('id, reference_label, reference_month, status, published_at, updated_at, pdf_mecanicas_url, pdf_midweek_url, pdf_weekend_url')
+      .neq('status', 'archived')
+      .order('reference_month', { ascending: false })
+      .limit(24);
+    if (error) {
+      const list = $('published-list');
+      if (list) list.innerHTML = `<p class="text-error text-sm px-4 py-6">${escapeHtml(error.message)}</p>`;
+      return;
+    }
+    savedBoards = data || [];
+    renderPublishedList();
+  }
+
+  function setupPublishedFilters() {
+    document.querySelectorAll('[data-board-filter]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        boardListFilter = btn.dataset.boardFilter || 'all';
+        document.querySelectorAll('[data-board-filter]').forEach((b) => {
+          b.classList.toggle('is-active', b === btn);
+        });
+        renderPublishedList();
+      });
+    });
   }
 
   async function loadHistorySettings() {
@@ -618,7 +788,7 @@
   }
 
   async function init() {
-    if (!(await guardAdmin())) return;
+    if (!(await guardAnnouncements())) return;
     toastEl = $('admin-toast');
     client = await getClient();
 
@@ -626,6 +796,7 @@
     $('board-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     setupTabs();
+    setupPublishedFilters();
     await loadHistorySettings();
     await loadPublishedList();
 

@@ -12,12 +12,24 @@
     }
 
     const profile = await window.JEAuth.getCurrentProfile();
-    if (!profile || !window.JEAuth.isAdminRole(profile.role)) {
+    if (!profile || !window.JEAuth.canAccessHub(profile)) {
       window.location.href = 'index.html';
       return null;
     }
 
     return { session, profile };
+  }
+
+  function applyHubModuleVisibility(profile) {
+    document.querySelectorAll('[data-hub-requires-permission]').forEach((el) => {
+      const perm = el.dataset.hubRequiresPermission;
+      el.classList.toggle('hidden', !window.JEAuth.hasPermission(profile, perm));
+    });
+
+    document.querySelectorAll('.hub-module-group').forEach((group) => {
+      const visibleCards = group.querySelectorAll('.hub-module-card:not(.hidden)');
+      group.classList.toggle('hidden', visibleCards.length === 0);
+    });
   }
 
   async function initHub() {
@@ -36,6 +48,8 @@
       document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
 
       setupHubTabs();
+      applyHubModuleVisibility(profile);
+      window.JEHubChangelog?.init();
 
       const client = await window.JEAuth.getClient();
       await window.JEHubEvents?.initHubEvents(client);

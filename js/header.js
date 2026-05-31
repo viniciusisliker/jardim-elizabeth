@@ -51,24 +51,24 @@
 
   function updateHubAccess(profile) {
     const hubBtn = qs('hub-nav-btn');
-    const isAdmin = profile && window.JEAuth?.isAdminRole(profile.role);
+    const canHub = profile && window.JEAuth?.canAccessHub(profile);
 
     if (hubBtn) {
-      hubBtn.classList.toggle('hidden', !isAdmin);
-      hubBtn.classList.toggle('flex', !!isAdmin);
+      hubBtn.classList.toggle('hidden', !canHub);
+      hubBtn.classList.toggle('flex', !!canHub);
     }
 
     const mobileMenu = qs('mobile-menu');
     let mobileHub = qs('mobile-hub-link');
 
-    if (isAdmin && mobileMenu && !mobileHub) {
+    if (canHub && mobileMenu && !mobileHub) {
       mobileHub = document.createElement('a');
       mobileHub.id = 'mobile-hub-link';
       mobileHub.href = siteUrl('hub.html');
       mobileHub.className = 'nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-semibold flex items-center gap-2';
       mobileHub.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">dashboard</span> Hub Administrativo';
       mobileMenu.querySelector('div')?.prepend(mobileHub);
-    } else if (!isAdmin && mobileHub) {
+    } else if (!canHub && mobileHub) {
       mobileHub.remove();
     }
   }
@@ -102,7 +102,7 @@
     updateHubAccess(profile);
 
     const roleLabel = window.JEAuth.getRoleLabel(profile);
-    const isAdmin = window.JEAuth.isAdminRole(profile.role);
+    const canHub = window.JEAuth.canAccessHub(profile);
     const icon = qs('profile-icon');
     if (icon) icon.textContent = 'person';
 
@@ -112,7 +112,7 @@
         <p class="text-xs text-on-surface-variant mt-0.5">${roleLabel}</p>
         ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
       </div>
-      ${isAdmin ? `
+      ${canHub ? `
         <a href="${siteUrl('hub.html')}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
           <span class="material-symbols-outlined" style="font-size:20px">dashboard</span>
           Hub Administrativo
@@ -182,7 +182,7 @@
         const { profile } = await window.JEAuth.signIn(username, password);
         hideLoginModal();
 
-        if (window.JEAuth.isAdminRole(profile?.role)) {
+        if (window.JEAuth.canAccessHub(profile)) {
           window.location.href = siteUrl('hub.html');
           return;
         }

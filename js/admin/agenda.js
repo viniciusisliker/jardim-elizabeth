@@ -1,9 +1,9 @@
 (function () {
-  const { guardAdmin, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const { guardAdmin, guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
   const H = window.JEAgendaHelpers;
 
   async function init() {
-    const profile = await guardAdmin();
+    const profile = await guardPermission('agenda');
     if (!profile) return;
 
     const toast = document.getElementById('admin-toast');

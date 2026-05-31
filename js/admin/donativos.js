@@ -1,8 +1,8 @@
 (function () {
-  const { guardAdmin, getClient, showToast } = window.JEAdmin;
+  const { guardPermission, getClient, showToast } = window.JEAdmin;
 
   async function init() {
-    const profile = await guardAdmin();
+    const profile = await guardPermission('donativos');
     if (!profile) return;
     const toast = document.getElementById('admin-toast');
     const client = await getClient();

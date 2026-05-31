@@ -28,6 +28,34 @@
     }
   }
 
+  const PROFILE_SELECT = `id, full_name, role, designation, username, can_announcements,
+    profile_access_designations (
+      access_designations ( id, slug, label, permissions, is_active )
+    )`;
+
+  function enrichProfile(data) {
+    if (!data) return null;
+    const designations = [];
+    const permissionSet = new Set();
+    (data.profile_access_designations || []).forEach((row) => {
+      const d = row?.access_designations;
+      if (!d || d.is_active === false) return;
+      designations.push({
+        id: d.id,
+        slug: d.slug,
+        label: d.label,
+        permissions: d.permissions || []
+      });
+      (d.permissions || []).forEach((p) => permissionSet.add(p));
+    });
+    const { profile_access_designations: _pad, ...rest } = data;
+    return {
+      ...rest,
+      designations,
+      permissions: [...permissionSet]
+    };
+  }
+
   function writeProfileCache(profile) {
     if (!profile?.id) return;
     try {
@@ -36,7 +64,10 @@
         full_name: profile.full_name,
         role: profile.role,
         designation: profile.designation,
-        username: profile.username
+        username: profile.username,
+        can_announcements: !!profile.can_announcements,
+        designations: profile.designations || [],
+        permissions: profile.permissions || []
       }));
     } catch {
       /* ignore quota errors */
@@ -72,7 +103,7 @@
     if (!profile || !hasLocalSession()) return false;
 
     const hubBtn = document.getElementById('hub-nav-btn');
-    if (hubBtn && isAdminRole(profile.role)) {
+    if (hubBtn && canAccessHub(profile)) {
       hubBtn.classList.remove('hidden');
       hubBtn.classList.add('flex');
     }
@@ -129,7 +160,10 @@
 
   function getRoleLabel(roleOrProfile, designation) {
     const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
-    const extra = typeof roleOrProfile === 'object' ? roleOrProfile?.designation : designation;
+    const profile = typeof roleOrProfile === 'object' ? roleOrProfile : null;
+    const extra = profile
+      ? (profile.designation || (profile.designations || []).map((d) => d.label).join(', ') || '')
+      : (designation || '');
     const base = ROLE_LABELS[role] || role;
     return extra ? `${base} (${extra})` : base;
   }
@@ -142,20 +176,42 @@
     return window.JE_CONFIG?.adminRoles?.includes(role);
   }
 
+  function hasPermission(profile, permission) {
+    if (!profile || !permission) return false;
+    if (isSuperUser(profile.role)) return true;
+    if (permission !== 'settings' && isAdminRole(profile.role)) return true;
+    if ((profile.permissions || []).includes(permission)) return true;
+    if (permission === 'announcements' && profile.can_announcements) return true;
+    return false;
+  }
+
+  function canManageAnnouncements(profile) {
+    return hasPermission(profile, 'announcements');
+  }
+
+  function canAccessHub(profile) {
+    if (!profile) return false;
+    if (isSuperUser(profile.role) || isAdminRole(profile.role)) return true;
+    if ((profile.permissions || []).includes('hub')) return true;
+    if (window.JEAccess?.MODULE_PERMISSIONS?.some((p) => hasPermission(profile, p))) return true;
+    return !!profile.can_announcements;
+  }
+
   async function fetchProfile(userId) {
     const client = await getClient();
     if (!client || !userId) return null;
 
     const { data, error } = await withTimeout(
-      client.from('profiles').select('id, full_name, role, designation, username').eq('id', userId).maybeSingle()
+      client.from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle()
     );
 
     if (error) {
       console.warn('Erro ao carregar perfil:', error.message);
       return null;
     }
-    if (data) writeProfileCache(data);
-    return data;
+    const profile = enrichProfile(data);
+    if (profile) writeProfileCache(profile);
+    return profile;
   }
 
   async function getSession() {
@@ -250,7 +306,10 @@
     onAuthStateChange,
     getRoleLabel,
     isAdminRole,
-    isSuperUser
+    isSuperUser,
+    hasPermission,
+    canManageAnnouncements,
+    canAccessHub
   };
 
   if (window.JE_CONFIG) {

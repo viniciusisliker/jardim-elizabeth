@@ -75,89 +75,82 @@
       background:rgba(255,255,255,.1);backdrop-filter:blur(12px);
       border:1px solid rgba(255,255,255,.18);border-radius:1rem;
     }
-    .hub-bento{
-      display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;
-      margin-top:-2.5rem;position:relative;z-index:1;
+    .hub-main{
+      position:relative;z-index:1;margin-top:-1.5rem;
     }
-    @media(max-width:1023px){.hub-bento{grid-template-columns:repeat(2,1fr);margin-top:-1.5rem}}
-    @media(max-width:639px){.hub-bento{grid-template-columns:1fr}}
-
-    .hub-tile{
-      position:relative;display:flex;flex-direction:column;justify-content:space-between;
-      min-height:9.5rem;padding:1.375rem 1.5rem;border-radius:1.25rem;
-      border:1px solid rgba(255,255,255,.65);background:#fff;
-      box-shadow:0 1px 2px rgba(15,52,98,.06),0 8px 24px rgba(15,52,98,.06);
-      overflow:hidden;text-align:left;cursor:pointer;
-      transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s, border-color .2s;
+    @media(max-width:1023px){.hub-main{margin-top:-1rem}}
+    .hub-tabs-nav{
+      position:relative;z-index:2;padding-top:0.25rem;margin-bottom:1rem;
     }
-    a.hub-tile{text-decoration:none;color:inherit}
-    .hub-tile::after{
-      content:'';position:absolute;top:0;right:0;width:7rem;height:7rem;border-radius:50%;
-      transform:translate(30%,-30%);opacity:.12;transition:transform .35s,opacity .35s;
+
+    .hub-modules-panel{
+      background:#fff;border:1px solid #e2e6ef;border-radius:1rem;
+      box-shadow:0 1px 3px rgba(15,52,98,.06);overflow:hidden;
     }
-    .hub-tile:hover{
-      transform:translateY(-4px);
-      box-shadow:0 4px 8px rgba(15,52,98,.08),0 20px 40px rgba(15,52,98,.12);
-      border-color:rgba(59,94,151,.35);
+    .hub-module-group{padding:1.25rem 1.5rem;border-bottom:1px solid #eef0f4}
+    .hub-module-group:last-child{border-bottom:none}
+    @media(min-width:768px){.hub-module-group{padding:1.375rem 1.75rem}}
+    .hub-module-group-title{
+      font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;
+      color:#3b5e97;margin-bottom:0.875rem;
     }
-    .hub-tile:hover::after{transform:translate(20%,-20%) scale(1.15);opacity:.2}
-    .hub-tile:hover .hub-tile-arrow{opacity:1;transform:translate(2px,-2px)}
-
-    .hub-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem}
-    .hub-tile-icon{
-      display:flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;
-      border-radius:0.875rem;font-size:1.5rem;flex-shrink:0;
+    .hub-module-grid{
+      display:grid;grid-template-columns:1fr;gap:0.625rem;
     }
-    .hub-tile-arrow{
-      opacity:0;color:#3b5e97;transition:opacity .2s,transform .2s;font-size:1.25rem;
+    @media(min-width:640px){.hub-module-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:1024px){.hub-module-grid{grid-template-columns:repeat(3,1fr)}}
+
+    .hub-module-card{
+      display:flex;align-items:center;gap:0.875rem;width:100%;
+      padding:0.875rem 1rem;border-radius:0.75rem;
+      border:1px solid #e2e6ef;background:#fafbfc;
+      text-align:left;cursor:pointer;text-decoration:none;color:inherit;
+      transition:border-color .15s,background .15s,box-shadow .15s;
     }
-    .hub-tile-tag{
-      font-size:0.5625rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-      padding:0.2rem 0.5rem;border-radius:9999px;margin-bottom:0.625rem;display:inline-block;
+    button.hub-module-card{font-family:inherit;font-size:inherit}
+    .hub-module-card:hover{
+      border-color:#3b5e97;background:#fff;
+      box-shadow:0 2px 8px rgba(15,52,98,.08);
     }
-    .hub-tile-title{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.125rem;font-weight:800;color:#0f3462;line-height:1.2}
-    .hub-tile-desc{font-size:0.8125rem;color:#43474f;line-height:1.45;margin-top:0.375rem;max-width:28ch}
-
-    .hub-tile--featured{grid-column:span 7;min-height:11.5rem}
-    .hub-tile--featured .hub-tile-title{font-size:1.5rem}
-    .hub-tile--featured .hub-tile-desc{max-width:36ch;font-size:0.875rem}
-    .hub-tile--featured::before{
-      content:'';position:absolute;inset:0;pointer-events:none;
-      background:linear-gradient(145deg,rgba(15,52,98,.04) 0%,transparent 55%);
+    .hub-module-icon{
+      display:flex;align-items:center;justify-content:center;
+      width:2.5rem;height:2.5rem;border-radius:0.625rem;flex-shrink:0;
+      font-size:1.375rem;
     }
-    @media(max-width:1023px){.hub-tile--featured{grid-column:span 2}}
-    @media(max-width:639px){.hub-tile--featured{grid-column:span 1}}
+    .hub-module-body{flex:1;min-width:0}
+    .hub-module-body h4{
+      font-family:'Plus Jakarta Sans',Inter,sans-serif;
+      font-size:0.9375rem;font-weight:800;color:#0f3462;line-height:1.2;
+    }
+    .hub-module-body p{
+      font-size:0.75rem;color:#43474f;line-height:1.4;margin-top:0.2rem;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    }
+    .hub-module-chevron{
+      color:#c3c6d0;font-size:1.25rem;flex-shrink:0;
+      transition:color .15s,transform .15s;
+    }
+    .hub-module-card:hover .hub-module-chevron{color:#3b5e97;transform:translateX(2px)}
 
-    .hub-tile--compact{grid-column:span 4;min-height:8.5rem}
-    @media(max-width:1023px){.hub-tile--compact{grid-column:span 1}}
-    .hub-tile--anuncios[style]{grid-column:span 5}
-    @media(max-width:1023px){.hub-tile--anuncios[style]{grid-column:span 1}}
-    .hub-tile--half{grid-column:span 6}
-    @media(max-width:1023px){.hub-tile--half{grid-column:span 1}}
+    .hub-module-card--agenda .hub-module-icon{background:#dbeafe;color:#1d4ed8}
+    .hub-module-card--agenda:hover{border-color:#93c5fd}
+    .hub-module-card--anuncios .hub-module-icon{background:#fef3c7;color:#b45309}
+    .hub-module-card--anuncios:hover{border-color:#fcd34d}
+    .hub-module-card--agendamentos .hub-module-icon{background:#d1fae5;color:#047857}
+    .hub-module-card--agendamentos:hover{border-color:#6ee7b7}
+    .hub-module-card--territorios .hub-module-icon{background:#e0e7ff;color:#4338ca}
+    .hub-module-card--territorios:hover{border-color:#a5b4fc}
+    .hub-module-card--donativos .hub-module-icon{background:#fce7f3;color:#be185d}
+    .hub-module-card--donativos:hover{border-color:#f9a8d4}
+    .hub-module-card--config .hub-module-icon{background:#f1f5f9;color:#475569}
+    .hub-module-card--config:hover{border-color:#cbd5e1}
 
-    .hub-tile--agenda .hub-tile-icon{background:linear-gradient(135deg,#dbeafe,#eff6ff);color:#1d4ed8}
-    .hub-tile--agenda::after{background:#3b82f6}
-    .hub-tile--agenda .hub-tile-tag{background:#dbeafe;color:#1e40af}
-
-    .hub-tile--anuncios .hub-tile-icon{background:linear-gradient(135deg,#fef3c7,#fffbeb);color:#b45309}
-    .hub-tile--anuncios::after{background:#f59e0b}
-    .hub-tile--anuncios .hub-tile-tag{background:#fef3c7;color:#92400e}
-
-    .hub-tile--agendamentos .hub-tile-icon{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:#047857}
-    .hub-tile--agendamentos::after{background:#10b981}
-    .hub-tile--agendamentos .hub-tile-tag{background:#d1fae5;color:#065f46}
-
-    .hub-tile--territorios .hub-tile-icon{background:linear-gradient(135deg,#e0e7ff,#eef2ff);color:#4338ca}
-    .hub-tile--territorios::after{background:#6366f1}
-    .hub-tile--territorios .hub-tile-tag{background:#e0e7ff;color:#3730a3}
-
-    .hub-tile--donativos .hub-tile-icon{background:linear-gradient(135deg,#fce7f3,#fdf2f8);color:#be185d}
-    .hub-tile--donativos::after{background:#ec4899}
-    .hub-tile--donativos .hub-tile-tag{background:#fce7f3;color:#9d174d}
-
-    .hub-tile--config .hub-tile-icon{background:linear-gradient(135deg,#f1f5f9,#f8fafc);color:#475569}
-    .hub-tile--config::after{background:#64748b}
-    .hub-tile--config .hub-tile-tag{background:#f1f5f9;color:#334155}
+    .hub-home-intro{
+      padding:1rem 1.5rem;background:linear-gradient(180deg,#f5f8fc 0%,#fff 100%);
+      border-bottom:1px solid #eef0f4;
+    }
+    @media(min-width:768px){.hub-home-intro{padding:1.125rem 1.75rem}}
+    .hub-home-intro p{font-size:0.8125rem;color:#43474f;line-height:1.5;max-width:42rem}
 
     .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);border-top:2px solid #0f3462;padding:1.5rem}
     @media(min-width:768px){.hub-ev-form{padding:1.75rem 2rem}}
@@ -196,6 +189,31 @@
     .hub-ev-btn-primary{background:#0f3462;color:#fff;font-weight:700;padding:0.625rem 1.25rem;border-radius:0.625rem;font-size:0.875rem}
     .hub-ev-btn-primary:hover{opacity:.92}
     .hub-ev-btn-ghost{color:#43474f;font-weight:600;padding:0.625rem 1rem;font-size:0.875rem}
+
+    .hub-changelog-btn{
+      display:inline-flex;align-items:center;gap:0.5rem;margin-top:1.25rem;
+      padding:0.5625rem 1rem;border-radius:9999px;font-size:0.8125rem;font-weight:700;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
+      backdrop-filter:blur(8px);cursor:pointer;transition:background .2s,border-color .2s,transform .15s;
+    }
+    .hub-changelog-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(200,169,110,.55);transform:translateY(-1px)}
+    .hub-changelog-badge{
+      font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+      padding:0.15rem 0.4375rem;border-radius:9999px;background:#c8a96e;color:#0a2847;
+    }
+    .hub-changelog-item{
+      display:flex;gap:0.875rem;padding:1rem 0;border-bottom:1px solid #e2e6ef;
+    }
+    .hub-changelog-item:last-child{border-bottom:none;padding-bottom:0}
+    .hub-changelog-item-icon{
+      display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;flex-shrink:0;
+      border-radius:0.75rem;background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#0f3462;
+    }
+    .hub-changelog-item-icon .material-symbols-outlined{font-size:1.25rem;font-variation-settings:'FILL' 1,'wght' 500}
+    .hub-changelog-tag{
+      font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+      padding:0.15rem 0.4375rem;border-radius:9999px;background:#f1f5f9;color:#475569;
+    }
   </style>
 </head>
 
@@ -218,6 +236,11 @@
             <p class="text-accent-gold text-xs font-bold uppercase tracking-[0.2em] mb-2">Central administrativa</p>
             <h1 class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
             <p class="text-white/70 mt-3 text-sm md:text-base leading-relaxed">Gestão do site da congregação — publicações, campo, agenda e configurações em um só lugar.</p>
+            <button type="button" id="hub-changelog-btn" class="hub-changelog-btn" aria-haspopup="dialog" aria-controls="hub-changelog-modal">
+              <span class="material-symbols-outlined" style="font-size:18px">new_releases</span>
+              Novidades do sistema
+              <span id="hub-changelog-badge" class="hub-changelog-badge hidden">Novo</span>
+            </button>
           </div>
           <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
             <p class="font-bold text-white" id="hub-user-name">—</p>
@@ -228,89 +251,85 @@
       </div>
     </section>
 
-    <div class="max-w-7xl mx-auto px-6 pb-12">
+    <div class="max-w-7xl mx-auto px-6 pb-12 hub-main">
 
-      <nav class="flex flex-wrap gap-2 mb-6 pt-2" aria-label="Seções do hub">
+      <nav class="hub-tabs-nav flex flex-wrap gap-2" aria-label="Seções do hub">
         <button type="button" data-hub-tab="home" class="hub-tab-btn hub-tab-active text-sm font-semibold">Início</button>
-        <button type="button" data-hub-tab="agenda" class="hub-tab-btn text-sm font-semibold text-on-surface-variant">Agenda</button>
+        <button type="button" data-hub-tab="agenda" data-hub-requires-permission="agenda" class="hub-tab-btn text-sm font-semibold text-on-surface-variant">Agenda</button>
       </nav>
 
       <div id="hub-view-home" class="hub-view">
-      <div class="hub-bento">
-
-        <button type="button" data-hub-tab="agenda" class="hub-tile hub-tile--featured hub-tile--agenda">
-          <div>
-            <span class="hub-tile-tag">Publicação</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">calendar_month</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
-            </div>
-            <h2 class="hub-tile-title mt-4">Agenda</h2>
-            <p class="hub-tile-desc">Criar, editar e publicar eventos na home e na página Agenda — com modelos e cópia rápida.</p>
+        <div class="hub-modules-panel">
+          <div class="hub-home-intro">
+            <p>Selecione um módulo abaixo. Você só vê as áreas liberadas para o seu perfil ou designação.</p>
           </div>
-        </button>
 
-        <a href="admin/anuncios.html" class="hub-tile hub-tile--compact hub-tile--anuncios" style="grid-column:span 5">
-          <div>
-            <span class="hub-tile-tag">Publicação</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">campaign</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+          <section class="hub-module-group">
+            <h3 class="hub-module-group-title">Publicação</h3>
+            <div class="hub-module-grid">
+              <button type="button" data-hub-tab="agenda" data-hub-requires-permission="agenda" class="hub-module-card hub-module-card--agenda">
+                <span class="hub-module-icon material-symbols-outlined">calendar_month</span>
+                <div class="hub-module-body">
+                  <h4>Agenda</h4>
+                  <p>Criar, editar e publicar eventos na home e na página Agenda.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <a href="admin/anuncios.html" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
+                <span class="hub-module-icon material-symbols-outlined">campaign</span>
+                <div class="hub-module-body">
+                  <h4>Quadro de Anúncios</h4>
+                  <p>Editor por data, PDF e exportação para Google Agenda.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </a>
             </div>
-            <h2 class="hub-tile-title mt-3">Quadro de Anúncios</h2>
-            <p class="hub-tile-desc">Editor por data, PDF e exportação Google Agenda.</p>
-          </div>
-        </a>
+          </section>
 
-        <a href="admin/agendamentos.html" class="hub-tile hub-tile--compact hub-tile--agendamentos">
-          <div>
-            <span class="hub-tile-tag">Organização</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">event_available</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+          <section class="hub-module-group">
+            <h3 class="hub-module-group-title">Organização e campo</h3>
+            <div class="hub-module-grid">
+              <a href="admin/agendamentos.html" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
+                <span class="hub-module-icon material-symbols-outlined">event_available</span>
+                <div class="hub-module-body">
+                  <h4>Agendamentos</h4>
+                  <p>Calendários de carrinhos e displays.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </a>
+              <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
+                <span class="hub-module-icon material-symbols-outlined">map</span>
+                <div class="hub-module-body">
+                  <h4>Territórios</h4>
+                  <p>Status, nomes e mapas do serviço de campo.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </a>
             </div>
-            <h2 class="hub-tile-title mt-3">Agendamentos</h2>
-            <p class="hub-tile-desc">Calendários de carrinhos e displays.</p>
-          </div>
-        </a>
+          </section>
 
-        <a href="admin/territorios.html" class="hub-tile hub-tile--compact hub-tile--territorios">
-          <div>
-            <span class="hub-tile-tag">Campo</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">map</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
+          <section class="hub-module-group">
+            <h3 class="hub-module-group-title">Contribuições e sistema</h3>
+            <div class="hub-module-grid">
+              <a href="admin/donativos.html" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
+                <span class="hub-module-icon material-symbols-outlined">volunteer_activism</span>
+                <div class="hub-module-body">
+                  <h4>Donativos</h4>
+                  <p>Chave PIX, QR code e textos da página de donativos.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </a>
+              <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
+                <span class="hub-module-icon material-symbols-outlined">settings</span>
+                <div class="hub-module-body">
+                  <h4>Configurações</h4>
+                  <p>Usuários, cargos, designações e permissões de acesso.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </a>
             </div>
-            <h2 class="hub-tile-title mt-3">Territórios</h2>
-            <p class="hub-tile-desc">Status, nomes e mapas.</p>
-          </div>
-        </a>
-
-        <a href="admin/donativos.html" class="hub-tile hub-tile--half hub-tile--donativos">
-          <div>
-            <span class="hub-tile-tag">Contribuições</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">volunteer_activism</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
-            </div>
-            <h2 class="hub-tile-title mt-3">Donativos</h2>
-            <p class="hub-tile-desc">Chave PIX, QR code e textos da página de donativos.</p>
-          </div>
-        </a>
-
-        <a href="admin/configuracoes.html" class="hub-tile hub-tile--half hub-tile--config">
-          <div>
-            <span class="hub-tile-tag">Sistema</span>
-            <div class="hub-tile-top">
-              <span class="hub-tile-icon material-symbols-outlined">settings</span>
-              <span class="material-symbols-outlined hub-tile-arrow">north_east</span>
-            </div>
-            <h2 class="hub-tile-title mt-3">Configurações</h2>
-            <p class="hub-tile-desc">Usuários, cargos e permissões de acesso.</p>
-          </div>
-        </a>
-
-      </div>
+          </section>
+        </div>
       </div>
 
       <div id="hub-view-agenda" class="hub-view hidden space-y-4">
@@ -461,12 +480,36 @@
 
   <div id="footer"></div>
 
+  <div id="hub-changelog-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="hub-changelog-title" aria-modal="true">
+    <button type="button" id="hub-changelog-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-lg max-h-[85vh] overflow-hidden bg-white rounded-2xl border border-outline-variant shadow-2xl flex flex-col">
+      <div class="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-3 shrink-0">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:28px;font-variation-settings:'FILL' 1">celebration</span>
+          <div>
+            <h2 id="hub-changelog-title" class="font-extrabold text-primary text-lg leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Novidades do sistema</h2>
+            <p class="text-sm text-on-surface-variant mt-0.5">O que mudou recentemente no Hub e no site.</p>
+          </div>
+        </div>
+        <button type="button" id="hub-changelog-close" class="text-on-surface-variant hover:text-primary p-1 rounded-lg" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="hub-changelog-list" class="px-5 py-2 overflow-y-auto flex-1"></div>
+      <div class="px-5 py-3 border-t border-outline-variant bg-surface-container-low shrink-0">
+        <p class="text-[11px] text-on-surface-variant text-center">Atualizado em maio de 2026 · Jardim Elizabeth</p>
+      </div>
+    </div>
+  </div>
+
   <script src="js/config.js"></script>
+  <script src="js/access-permissions.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js"></script>
   <script src="js/hub-events.js?v=2026053130"></script>
+  <script src="js/hub-changelog.js"></script>
   <script src="js/hub.js"></script>
 </body>
 </html>

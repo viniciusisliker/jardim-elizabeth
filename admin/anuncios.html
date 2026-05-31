@@ -75,6 +75,20 @@
     .tab-util-btn:hover{border-color:#002060;background:#EEECE1;color:#002060}
     .tab-util-btn.tab-active{border:1px solid #002060;border-bottom:1px solid #002060;background:#002060;color:#fff;font-weight:700}
     .tab-util-btn.tab-active .material-symbols-outlined{color:#fff}
+    .board-card{border:1px solid #1F497D;border-radius:0.75rem;background:#fff;padding:1rem 1.125rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.875rem;transition:box-shadow .15s,border-color .15s}
+    .board-card:hover{border-color:#002060;box-shadow:0 4px 14px rgba(0,32,96,.08)}
+    .board-card.is-current{border-color:#984806;background:linear-gradient(180deg,#fff 0%,#F7F6F2 100%)}
+    .board-status{display:inline-flex;align-items:center;gap:0.25rem;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.2rem 0.5rem;border-radius:9999px}
+    .board-status--draft{background:rgba(152,72,6,.12);color:#984806}
+    .board-status--published{background:rgba(0,32,96,.1);color:#002060}
+    .board-pdf-chip{font-size:0.625rem;font-weight:700;color:#1F497D;background:#EEECE1;border:1px solid rgba(31,73,125,.2);padding:0.125rem 0.4375rem;border-radius:9999px}
+    .board-filter-btn{font-size:0.75rem;font-weight:600;padding:0.375rem 0.75rem;border-radius:9999px;border:1px solid #1F497D;background:#fff;color:#43474f}
+    .board-filter-btn.is-active{background:#002060;border-color:#002060;color:#fff}
+    .board-action-btn{display:inline-flex;align-items:center;gap:0.25rem;font-size:0.75rem;font-weight:700;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:1px solid transparent;cursor:pointer;transition:all .15s}
+    .board-action-btn--edit{color:#002060;border-color:rgba(0,32,96,.2);background:#fff}
+    .board-action-btn--edit:hover{border-color:#002060;background:#EEECE1}
+    .board-action-btn--delete{color:#C00000;border-color:rgba(192,0,0,.25);background:#fff}
+    .board-action-btn--delete:hover{border-color:#C00000;background:#fff5f5}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -109,9 +123,9 @@
         <button type="button" data-tab="weekend" class="tab-btn pb-2 text-on-surface-variant">Final de Semana</button>
       </nav>
       <div class="flex gap-2 pb-2 shrink-0">
-        <button type="button" data-tab="published" class="tab-btn tab-util-btn text-on-surface-variant" title="Quadros publicados">
+        <button type="button" data-tab="published" class="tab-btn tab-util-btn text-on-surface-variant" title="Quadros salvos">
           <span class="material-symbols-outlined" style="font-size:18px">inventory_2</span>
-          Publicados
+          Quadros
         </button>
         <button type="button" data-tab="config" class="tab-btn tab-util-btn text-on-surface-variant" title="Configurações" aria-label="Configurações">
           <span class="material-symbols-outlined" style="font-size:20px">settings</span>
@@ -170,7 +184,18 @@
     </div>
 
     <div id="panel-published" class="tab-panel hidden">
-      <div id="published-list" class="bg-white border border-outline-variant rounded-xl divide-y"></div>
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-bold text-primary text-lg">Quadros salvos</h2>
+          <p class="text-sm text-on-surface-variant mt-0.5">Edite um período, exclua rascunhos ou continue um quadro publicado.</p>
+        </div>
+        <div class="flex flex-wrap gap-2" id="published-filter" role="tablist" aria-label="Filtrar quadros">
+          <button type="button" data-board-filter="all" class="board-filter-btn is-active">Todos</button>
+          <button type="button" data-board-filter="draft" class="board-filter-btn">Rascunhos</button>
+          <button type="button" data-board-filter="published" class="board-filter-btn">Publicados</button>
+        </div>
+      </div>
+      <div id="published-list" class="space-y-3"></div>
     </div>
 
     <div id="panel-config" class="tab-panel hidden space-y-4">
