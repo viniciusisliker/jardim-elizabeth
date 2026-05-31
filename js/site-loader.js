@@ -19,6 +19,68 @@
     }
   `;
 
+  const CHROME_CSS = `
+    .je-footer-info { background-color: #eae8e7; }
+    .je-footer-icon {
+      font-family: 'Material Symbols Outlined', sans-serif;
+      font-size: 2.25rem;
+      line-height: 1;
+      color: #3b5e97;
+      display: block;
+      margin-bottom: 1rem;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+      font-feature-settings: 'liga';
+    }
+    .je-footer-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #0f3462;
+      margin: 0 0 0.5rem;
+    }
+    .je-footer-text {
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: #43474f;
+      margin: 0;
+    }
+    .je-footer-link {
+      color: #43474f;
+      text-decoration: none;
+    }
+    .je-footer-link:hover { text-decoration: underline; }
+    .je-footer-map-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.375rem;
+      font-size: 10px;
+      font-weight: 500;
+      color: #374151;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: box-shadow 0.15s;
+    }
+    .je-footer-map-btn:hover { box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .je-footer-bar {
+      background: #eae8e7;
+      width: 100%;
+      border-top: 1px solid rgba(15, 52, 98, 0.1);
+    }
+    .je-footer-brand {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #0f3462;
+    }
+    .je-footer-copy {
+      font-size: 0.875rem;
+      color: rgba(15, 52, 98, 0.6);
+    }
+  `;
+
   function ensureMaterialSymbolsLoaded() {
     if (!document.querySelector('link[rel="preconnect"][href="https://fonts.googleapis.com"]')) {
       const pre1 = document.createElement('link');
@@ -40,7 +102,7 @@
     if (!document.getElementById('je-material-symbols-style')) {
       const style = document.createElement('style');
       style.id = 'je-material-symbols-style';
-      style.textContent = SYMBOLS_CSS;
+      style.textContent = SYMBOLS_CSS + CHROME_CSS;
       document.head.appendChild(style);
     }
   }
