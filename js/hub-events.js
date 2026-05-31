@@ -21,6 +21,55 @@
 
     let events = [];
 
+    function getCategory() {
+      const checked = form.querySelector('input[name="hub-ev-category"]:checked');
+      return checked?.value || 'Especial';
+    }
+
+    function setCategory(value) {
+      const cat = value || 'Especial';
+      form.querySelectorAll('input[name="hub-ev-category"]').forEach((input) => {
+        input.checked = input.value === cat;
+      });
+    }
+
+    function syncDerivedFields() {
+      const iso = $('hub-ev-date').value;
+      const future = $('hub-ev-future').checked;
+      const derived = H.deriveFieldsFromDate(iso, { futureGroup: future });
+      if (!derived) return;
+      $('hub-ev-date-display').value = derived.date_display;
+      $('hub-ev-date-label').value = derived.date_label;
+      $('hub-ev-month-key').value = derived.month_key;
+      $('hub-ev-month-label').value = derived.month_label;
+    }
+
+    function updatePreview() {
+      syncDerivedFields();
+      const title = $('hub-ev-title').value.trim() || 'Nome do evento';
+      const category = getCategory();
+      const time = $('hub-ev-time').value.trim();
+      const future = $('hub-ev-future').checked;
+      const highlight = $('hub-ev-highlight').checked;
+
+      $('hub-ev-preview-title').textContent = title;
+      $('hub-ev-preview-cat').textContent = category;
+      $('hub-ev-preview-cat').className = `inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded mb-1 ${H.categoryBadgeClass(category)}`;
+
+      const day = $('hub-ev-date-display').value || '—';
+      const label = $('hub-ev-date-label').value || '—';
+      const month = $('hub-ev-month-label').value || '—';
+
+      $('hub-ev-preview-day').textContent = day;
+      $('hub-ev-preview-label-d').textContent = label;
+
+      let meta = month;
+      if (time) meta += ` · ${time}`;
+      if (highlight) meta += ' · ★ destaque';
+      if (future) meta = 'Eventos Futuros' + (time ? ` · ${time}` : '');
+      $('hub-ev-preview-meta').textContent = meta;
+    }
+
     async function reload() {
       const { data, error } = await client
         .from('agenda_events')
@@ -37,7 +86,7 @@
 
     function renderList() {
       if (!events.length) {
-        list.innerHTML = '<p class="px-4 py-6 text-sm text-on-surface-variant">Nenhum evento cadastrado.</p>';
+        list.innerHTML = '<p class="px-4 py-6 text-sm text-on-surface-variant">Nenhum evento cadastrado. Clique em <strong>Novo evento</strong> para começar.</p>';
         return;
       }
       list.innerHTML = events.map((ev) => `
@@ -75,31 +124,21 @@
       const sel = $('hub-ev-template');
       if (!sel) return;
       const current = sel.value;
-      sel.innerHTML = '<option value="">— Escolher evento existente como modelo —</option>'
+      sel.innerHTML = '<option value="">— Nenhum —</option>'
         + events.map((ev) => `<option value="${ev.id}">${esc(ev.title)} (${esc(ev.month_label)})</option>`).join('');
       if (current && events.some((e) => e.id === current)) sel.value = current;
     }
 
-    function syncDerivedFields() {
-      const iso = $('hub-ev-date').value;
-      const future = $('hub-ev-future').checked;
-      const derived = H.deriveFieldsFromDate(iso, { futureGroup: future });
-      if (!derived) return;
-      $('hub-ev-date-display').value = derived.date_display;
-      $('hub-ev-date-label').value = derived.date_label;
-      $('hub-ev-month-key').value = derived.month_key;
-      $('hub-ev-month-label').value = derived.month_label;
-    }
-
     function openForm(ev, templateEv) {
       form.classList.remove('hidden');
+      list.classList.add('hidden');
       const base = ev || (templateEv ? { ...templateEv, id: null, title: '' } : null);
       const tpl = templateEv && !ev ? H.templateFromEvent(templateEv) : null;
 
       $('hub-ev-id').value = ev?.id || '';
       $('hub-ev-title').value = base?.title || '';
       $('hub-ev-description').value = base?.description || '';
-      $('hub-ev-category').value = base?.category || tpl?.category || 'Especial';
+      setCategory(base?.category || tpl?.category || 'Especial');
       $('hub-ev-date').value = base?.event_date || '';
       $('hub-ev-future').checked = base?.month_key === 'futuros' || !!tpl?.futureGroup;
       $('hub-ev-time').value = base?.event_time ?? tpl?.event_time ?? H.DEFAULTS.event_time;
@@ -116,12 +155,14 @@
         $('hub-ev-month-label').value = base.month_label;
       }
 
-      $('hub-event-form-title').textContent = ev ? 'Editar evento' : (templateEv ? 'Novo evento (a partir de modelo)' : 'Novo evento');
+      $('hub-event-form-title').textContent = ev ? 'Editar evento' : (templateEv ? 'Novo evento (copiado)' : 'Novo evento');
+      updatePreview();
       form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function closeForm() {
       form.classList.add('hidden');
+      list.classList.remove('hidden');
       $('hub-ev-template').value = '';
     }
 
@@ -134,8 +175,14 @@
 
     $('hub-btn-new-event')?.addEventListener('click', () => openForm(null));
     $('hub-btn-cancel-event')?.addEventListener('click', closeForm);
-    $('hub-ev-date')?.addEventListener('change', syncDerivedFields);
-    $('hub-ev-future')?.addEventListener('change', syncDerivedFields);
+    $('hub-ev-date')?.addEventListener('change', updatePreview);
+    $('hub-ev-future')?.addEventListener('change', updatePreview);
+    $('hub-ev-title')?.addEventListener('input', updatePreview);
+    $('hub-ev-time')?.addEventListener('input', updatePreview);
+    $('hub-ev-highlight')?.addEventListener('change', updatePreview);
+    form.querySelectorAll('input[name="hub-ev-category"]').forEach((input) => {
+      input.addEventListener('change', updatePreview);
+    });
     $('hub-ev-template')?.addEventListener('change', (e) => {
       const ev = events.find((x) => x.id === e.target.value);
       if (ev) openForm(null, ev);
@@ -148,7 +195,7 @@
       const payload = {
         title: $('hub-ev-title').value.trim(),
         description: $('hub-ev-description').value.trim() || null,
-        category: $('hub-ev-category').value,
+        category: getCategory(),
         event_date: $('hub-ev-date').value || null,
         date_display: $('hub-ev-date-display').value.trim(),
         date_label: $('hub-ev-date-label').value.trim(),
@@ -156,13 +203,13 @@
         month_label: $('hub-ev-month-label').value.trim(),
         event_time: $('hub-ev-time').value.trim() || null,
         location: $('hub-ev-location').value.trim() || null,
-        badge_variant: $('hub-ev-badge').value,
+        badge_variant: $('hub-ev-badge').value || 'default',
         is_highlight: $('hub-ev-highlight').checked,
         sort_order: parseInt($('hub-ev-sort').value, 10) || 0,
         published: true
       };
       if (!payload.title || !payload.event_date) {
-        showToast(toast, 'Preencha título e data.', true);
+        showToast(toast, 'Preencha o nome e a data do evento.', true);
         return;
       }
       const q = id
@@ -171,7 +218,7 @@
       const { error } = await q;
       if (error) showToast(toast, error.message, true);
       else {
-        showToast(toast, id ? 'Evento atualizado.' : 'Evento publicado no site.');
+        showToast(toast, id ? 'Evento atualizado no site.' : 'Evento publicado no site.');
         closeForm();
         await reload();
       }
