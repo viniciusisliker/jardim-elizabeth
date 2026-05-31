@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<!-- 
+  <!DOCTYPE html> avisa ao navegador que este é um arquivo HTML5 moderno.
+  Sempre deve ser a primeira linha do arquivo.
+-->
+
+<html class="light" lang="pt-BR">
+<!--
+  <html> é a tag raiz que envolve TODO o conteúdo da página.
+  - lang="pt-BR" diz ao navegador e leitores de tela que o idioma é português do Brasil.
+  - class="light" ativa o tema claro (existe suporte para tema escuro via class="dark").
+-->
+
+<head>
+<!--
+  ============================================================
+  CABEÇALHO (<head>)
+  Tudo aqui é "invisível" para o usuário — são configurações,
+  links de fontes, estilos e scripts que o navegador precisa
+  para montar a página corretamente.
+  ============================================================
+-->
+
+  <meta charset="utf-8">
+  <!-- Define que o arquivo usa codificação UTF-8, o que permite acentos e caracteres especiais (ã, ç, é...) -->
+
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <!-- Faz a página se adaptar automaticamente a telas de celular e tablet (design responsivo) -->
+
+  <title>Jardim Elizabeth - Painel da Congregação</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PGXCZF9S9W"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-PGXCZF9S9W');
+</script>
+
+  <!-- ── TAILWIND CSS ─────────────────────────────────────────────────────────
+    Tailwind é uma biblioteca de estilos (CSS). Em vez de escrever CSS manual,
+    você usa classes prontas diretamente no HTML (ex: p-6 = padding de 6 unidades,
+    text-xl = texto grande, flex = layout flexível).
+    O script abaixo carrega o Tailwind pela internet — sem ele a página perde toda a aparência.
+  -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- ── FONTES DO GOOGLE ─────────────────────────────────────────────────────
+    Carrega a fonte "Inter" (os textos da página usam ela).
+    Para trocar a fonte, substitua "Inter" por outra disponível em fonts.google.com
+    e atualize também o font-family dentro do <script> de configuração abaixo.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ── ÍCONES MATERIAL SYMBOLS ──────────────────────────────────────────────
+    Carrega a biblioteca de ícones do Google (Material Symbols).
+    Os ícones são usados assim: <span class="material-symbols-outlined">nome_do_icone</span>
+    Para descobrir nomes de ícones: fonts.google.com/icons
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <!-- ── CONFIGURAÇÃO DE CORES E TEMA (Tailwind Config) ───────────────────────
+    Este bloco define TODAS as cores customizadas usadas no site.
+    As cores têm nomes semânticos como "primary" (cor principal), "secondary",
+    "background", "surface", etc.
+
+    COMO TROCAR CORES:
+    Cada linha segue o padrão: "nome-da-cor": "#codigohex"
+    Exemplo: "primary": "#0f3462"  ← isso é um azul escuro
+    Você pode substituir os valores hexadecimais para mudar as cores.
+    Use ferramentas como coolors.co ou color.adobe.com para escolher paletas.
+
+    DICA: As cores mais importantes para alterar são:
+      - "primary": cor principal (azul escuro agora)
+      - "secondary": cor secundária (azul médio agora)
+      - "background": cor de fundo da página (quase branco agora)
+  -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-container": "#83c0ff",
+            "primary-container": "#2b4b7a",    /* Fundo de cards em destaque */
+            "surface-variant": "#e4e2e2",
+            "on-primary-fixed": "#001b3d",
+            "on-primary-container": "#9dbcf2",  /* Texto sobre primary-container */
+            "on-error-container": "#93000a",
+            "on-primary": "#ffffff",             /* Texto sobre a cor primária */
+            "on-secondary-container": "#274d85",
+            "on-secondary-fixed-variant": "#20467e",
+            "tertiary-fixed": "#d0e4ff",
+            "on-error": "#ffffff",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",             /* COR SECUNDÁRIA — azul médio */
+            "secondary-fixed": "#d6e3ff",
+            "error": "#ba1a1a",                 /* Cor de erros e alertas */
+            "secondary-fixed-dim": "#aac7ff",
+            "surface-bright": "#fbf9f8",
+            "inverse-on-surface": "#f2f0f0",
+            "primary": "#0f3462",               /* COR PRINCIPAL — azul escuro */
+            "surface-tint": "#405f8f",
+            "background": "#fbf9f8",            /* COR DE FUNDO da página */
+            "on-surface-variant": "#43474f",    /* Texto secundário (cinza) */
+            "inverse-surface": "#303030",
+            "outline-variant": "#c3c6d0",
+            "on-tertiary": "#ffffff",
+            "on-background": "#1b1c1c",         /* Cor do texto principal */
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "tertiary-fixed-dim": "#9bcbff",
+            "surface-dim": "#dbd9d9",
+            "on-secondary-fixed": "#001b3e",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#a9c8fe",
+            "on-tertiary-fixed-variant": "#004a79",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface": "#fbf9f8",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed": "#001d34",
+            "surface-container-lowest": "#ffffff", /* Branco puro — fundo de cards */
+            "tertiary": "#00375c",
+            "secondary-container": "#9cbffe",
+            "tertiary-container": "#004e80",
+            "inverse-primary": "#a9c8fe",
+            "primary-fixed": "#d6e3ff",
+            "on-primary-fixed-variant": "#274776"
+          },
+          fontFamily: {
+            /* Para trocar a fonte: substitua "Inter" pelo nome da fonte carregada no <link> acima */
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {
+            /* Controla o arredondamento dos cantos dos elementos */
+            "DEFAULT": "0.5rem",  /* Padrão */
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"       /* Totalmente redondo (círculo/pílula) */
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* Define o estilo padrão dos ícones Material Symbols */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+<!--
+  <body> contém tudo que o usuário VÊ na página.
+  As classes definem:
+    - bg-background: cor de fundo da página
+    - text-on-background: cor padrão do texto
+    - font-body: fonte padrão (Inter)
+    - selection:...: cores quando o usuário seleciona um texto com o mouse
+-->
+
+  <!-- ══════════════════════════════════════════════════════════════════════════
+    BARRA DE NAVEGAÇÃO SUPERIOR (TopNavBar)
+    Fica fixada no topo da página (sticky) enquanto o usuário rola a página.
+    Contém: logo, links de navegação e botões de notificação/perfil.
+  ══════════════════════════════════════════════════════════════════════════ -->
+<div id="header"></div>
+  <main>
+  <!-- FIM DA NAVBAR ──────────────────────────────────────────────────────── -->
+
+
+  <main>
+  <!--
+    <main> agrupa o conteúdo principal da página.
+    Tudo que o usuário interage fica aqui dentro.
+  -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+      SEÇÃO HERO (Banner Principal)
+      A grande imagem de destaque no topo da página com título e botão.
+      Altura fixa: h-[550px] — altere o número para mudar a altura.
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="relative h-[550px] flex items-end overflow-hidden">
+
+      <!-- IMAGEM DE FUNDO ──────────────────────────────────────────────────
+        O atributo src="..." define o endereço da imagem.
+        PARA TROCAR A IMAGEM: substitua a URL dentro de src="..." por:
+          - Um link de uma imagem na internet, OU
+          - O caminho de uma imagem no seu computador (ex: src="imagens/foto.jpg")
+        O atributo alt="..." é o texto descritivo para acessibilidade (leitores de tela).
+      -->
+<div class="absolute inset-0 z-0">
+  <div
+    style="
+      width: 100%;
+      height: 100%;
+      background-image: url('https://raw.githubusercontent.com/viniciusisliker/jardim-elizabeth/main/img/cong.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+    "
+  ></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+</div>
+
+      <!-- CONTEÚDO SOBRE A IMAGEM (título e botão) ───────────────────────── -->
+      <div class="max-w-7xl mx-auto px-6 relative z-10 w-full mt-auto pb-16">
+        <div class="max-w-2xl">
+
+          <!-- TÍTULO PRINCIPAL ─────────────────────────────────────────────
+            Altere o texto entre as tags <h1> para mudar o título do banner.
+          -->
+          <h1 class="text-white text-2xl md:text-3xl font-extrabold tracking-tight mb-4 leading-tight">
+            Congregação Jardim Elizabeth
+          </h1>
+
+          <!-- SUBTÍTULO ────────────────────────────────────────────────────
+            Altere o texto entre as tags <p> para mudar o subtítulo. (Se quiser adicionar)
+          -->
+          <p class="text-base md:text-lg font-light mb-6 leading-relaxed text-white/90">
+          </p>
+
+          <!-- BOTÃO DE CHAMADA (Call to Action) ───────────────────────────
+            Altere o texto "Quadro de Anúncios" para qualquer outro texto.
+            Para linkar a uma página, adicione href="..." ao botão ou envolva-o em um <a>.
+          -->
+<div class="flex flex-wrap gap-4">
+  <a href="https://viniciusisliker.github.io/jardim-elizabeth/quadrodeanuncios.html"
+     class="bg-primary-fixed text-on-primary-fixed px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 transition-all flex items-center gap-2">
+    
+    Quadro de anúncios
+    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+  
+  </a>
+</div>
+        </div>
+      </div>
+    </section>
+    <!-- FIM DA SEÇÃO HERO ─────────────────────────────────────────────────── -->
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+      GRADE DE ATALHOS RÁPIDOS
+      Os 5 cards com ícones que ficam sobrepostos à imagem hero.
+      O -mt-12 faz os cards "subirem" sobre a imagem.
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+        <!-- ATALHO 1: AGENDA ─────────────────────────────────────────────────
+          Cada atalho é um link (<a>) com ícone e texto.
+          Para mudar:
+            - href="#": coloque o endereço da página de destino
+            - O ícone: troque "calendar_month" por outro nome de ícone
+            - O texto: troque "Agenda" pelo texto desejado
+          Para ADICIONAR um novo atalho: copie um bloco <a> inteiro e cole ao lado.
+          Para REMOVER: apague o bloco <a> completo.
+        -->
+        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">calendar_month</span>
+          </div>
+          <span class="font-bold text-primary">Agenda</span>
+        </a>
+
+        <!-- ATALHO 2: AGENDAMENTOS -->
+        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="https://viniciusisliker.github.io/jardim-elizabeth/agendamentos.html">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">event_available</span>
+          </div>
+          <span class="font-bold text-primary">Agendamentos</span>
+        </a>
+
+        <!-- ATALHO 3: QUADRO DE ANÚNCIOS -->
+        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="https://viniciusisliker.github.io/jardim-elizabeth/quadrodeanuncios.html">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">campaign</span>
+          </div>
+          <span class="font-bold text-primary">Quadro de Anúncios</span>
+        </a>
+
+        <!-- ATALHO 4: TERRITÓRIOS -->
+        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="https://viniciusisliker.github.io/jardim-elizabeth/territorios.html">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">map</span>
+          </div>
+          <span class="font-bold text-primary">Territórios</span>
+        </a>
+
+        <!-- ATALHO 5: DONATIVOS -->
+        <a class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="https://viniciusisliker.github.io/jardim-elizabeth/donativos.html">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
+            <span class="material-symbols-outlined text-primary text-3xl">volunteer_activism</span>
+          </div>
+          <span class="font-bold text-primary">Donativos</span>
+        </a>
+
+      </div>
+    </section>
+    <!-- FIM DOS ATALHOS RÁPIDOS ──────────────────────────────────────────── -->
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+      GRADE DE CONTEÚDO PRINCIPAL
+      Layout em duas colunas: sidebar à esquerda (3 colunas) e feed à direita (9 colunas).
+      Em telas pequenas, empilha verticalmente (grid-cols-1).
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+
+        <!-- ── COLUNA LATERAL (Sidebar) ─────────────────────────────────────
+          Ocupa 3 das 12 colunas da grid em telas grandes.
+          Em telas pequenas, aparece acima do conteúdo principal.
+        -->
+        <!-- ── LINHA: PRÓXIMA REUNIÃO + PRÓXIMOS EVENTOS lado a lado ─────── -->
+        <div class="lg:col-span-12 flex flex-col md:flex-row gap-6 items-start">
+
+          <!-- WIDGET: PRÓXIMA REUNIÃO -->
+          <div class="bg-primary-container text-on-primary-container p-6 rounded-xl w-full md:w-72 flex-shrink-0">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-on-primary-container">info</span>
+              <h3 class="font-bold uppercase text-xs tracking-tighter">Próxima Reunião</h3>
+            </div>
+            <p class="text-lg font-bold mb-1" id="proxima-reuniao-dia"></p>
+            <p class="text-sm opacity-80 mb-4">Salão do Reino<br>
+                    Rua Professor Orestes Rosólia, 164<br>
+                    Jardim Rosana, São Paulo – SP<br>
+            </p>
+          </div>
+
+          <!-- ══ PRÓXIMOS EVENTOS (lidos automaticamente da agenda.html) ══ -->
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden w-full md:w-96 flex-shrink-0">
+
+            <!-- Cabeçalho do bloco -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-size:20px">event</span>
+                <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Próximos Eventos</h3>
+                <span id="proxeventos-mes" class="text-xs text-on-surface-variant font-normal ml-1"></span>
+              </div>
+            </div>
+            <div class="px-4 py-2 border-b border-outline-variant">
+              <a href="https://viniciusisliker.github.io/jardim-elizabeth/agenda.html"
+                 class="text-xs font-semibold text-secondary hover:underline flex items-center gap-1">
+                Ver agenda completa
+                <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+              </a>
+            </div>
+
+            <!-- Lista de eventos (preenchida via JS) -->
+            <div id="proxeventos-lista" class="divide-y divide-outline-variant">
+              <div id="proxeventos-loading" class="flex items-center gap-3 px-5 py-4 text-on-surface-variant text-sm">
+                <span class="material-symbols-outlined animate-spin" style="font-size:18px">progress_activity</span>
+                Carregando eventos…
+              </div>
+            </div>
+
+          </div>
+          <!-- FIM: PRÓXIMOS EVENTOS ─────────────────────────────────────── -->
+
+<!-- ══ NOVIDADES DO SITE ══════════════════════════════════════════════════ -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden w-full md:w-64 flex-shrink-0">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-center gap-2 px-5 py-4 border-b border-outline-variant">
+    <span class="material-symbols-outlined text-secondary" style="font-size:20px">new_releases</span>
+    <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Novidades do Site</h3>
+  </div>
+
+  <!-- Lista de novidades -->
+  <ul class="divide-y divide-outline-variant">
+
+    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+      <span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
+      <p class="text-xs text-on-surface">Seções 'Próxima Reunião, Próximos Eventos, Novidades' adicionadas na página inicial</p>
+    </li>
+
+    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+	<span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
+      <p class="text-xs text-on-surface">Links de navegação adicionados no rodapé 'Localização'</p>
+    </li>
+
+  </ul>
+</div>
+<!-- ══ FIM: NOVIDADES DO SITE ════════════════════════════════════════════ -->
+			
+        </div>
+        <!-- FIM DA LINHA ───────────────────────────────────────────────── -->
+
+
+        <!-- ── FEED PRINCIPAL ───────────────────────────────────────────────
+          Ocupa 9 das 12 colunas em telas grandes.
+        -->
+        <div class="lg:col-span-9 space-y-8">
+
+          <!-- LINHA 1: reservado para futuro uso -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          </div>
+          <!-- FIM DA LINHA 1 ─────────────────────────────────────────────── -->
+
+
+          <!-- ── LINHA 2: WIDGET DE PROGRESSO DE LEITURA [REMOVIDO] ─────────────────── -->
+          <!--
+            Card grande com fundo azul escuro (primary).
+            Mostra o progresso de leitura do publicação atual.
+            Altere os textos e porcentagens conforme necessário.
+          -->
+
+          <!-- FIM: WIDGET DE PROGRESSO ──────────────────────────────────── -->
+
+        </div>
+        <!-- FIM DO FEED PRINCIPAL ─────────────────────────────────────────── -->
+
+      </div>
+    </div>
+    <!-- FIM DA GRADE DE CONTEÚDO PRINCIPAL ──────────────────────────────── -->
+
+  </main>
+  <!-- FIM DO CONTEÚDO PRINCIPAL (<main>) ───────────────────────────────── -->
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+    RODAPÉ (Footer)
+    Barra inferior com logo, links legais e copyright.
+    Altere os textos e links conforme necessário.
+  ══════════════════════════════════════════════════════════════════════ -->
+<div id="footer"></div>
+  <!-- FIM DO RODAPÉ ────────────────────────────────────────────────────── -->
+
+  <script>
+    function toggleMonth(header) {
+      header.closest('.month-block').classList.toggle('open');
+    }
+
+    const dia = new Date().getDay();
+    const texto = [0, 1, 2, 3].includes(dia) ? 'Quarta-feira, 19h30' : 'Sábado, 19h30';
+    document.getElementById('proxima-reuniao-dia').textContent = texto;
+  </script>
+
+  <!-- ══ SCRIPT: PRÓXIMOS EVENTOS da Agenda ══════════════════════════════ -->
+  <script>
+  (function carregarProximosEventos() {
+
+    // ── Mapeamento de variante → cores inline (espelha o CSS da agenda) ──
+    const variantStyle = {
+      'variant-gold':    { bg:'rgba(200,169,110,0.12)', border:'1px solid #c8a96e', numColor:'#8a6a2a', lblColor:'#a07c35' },
+      'variant-primary': { bg:'#0f3462',                border:'none',               numColor:'#ffffff',  lblColor:'rgba(255,255,255,0.7)' },
+      'variant-default': { bg:'#f5f3f3',                border:'1px solid #c3c6d0', numColor:'#0f3462',  lblColor:'#3b5e97' },
+    };
+
+    // ── Mapeamento de classe de tag → cores ──────────────────────────────
+    function tagStyle(classList) {
+      if (classList.includes('bg-[#c8a96e]/20'))   return 'color:#7a5200;background:rgba(200,169,110,0.15)';
+      if (classList.includes('bg-secondary-fixed')) return 'color:#274d85;background:#d6e3ff80';
+      return 'color:#3b5e97;background:#d6e3ff80';
+    }
+
+    fetch('agenda.html')
+      .then(r => {
+        if (!r.ok) throw new Error('Não foi possível carregar a agenda.');
+        return r.text();
+      })
+      .then(html => {
+        const parser  = new DOMParser();
+        const doc     = parser.parseFromString(html, 'text/html');
+
+        // Pega o PRIMEIRO month-block (o mais recente = aberto)
+        const firstBlock = doc.querySelector('.month-block');
+        if (!firstBlock) throw new Error('Nenhum bloco de mês encontrado.');
+
+        // Título do mês
+        const mesLabel = firstBlock.querySelector('.month-header span.font-bold')?.textContent?.trim() || '';
+        document.getElementById('proxeventos-mes').textContent = '— ' + mesLabel;
+
+        // Todos os eventos dentro desse bloco
+        const eventRows = firstBlock.querySelectorAll('.month-body > div.flex');
+
+        const lista = document.getElementById('proxeventos-lista');
+        lista.innerHTML = ''; // remove loading
+
+        if (!eventRows.length) {
+          lista.innerHTML = '<p class="px-5 py-4 text-sm text-on-surface-variant">Nenhum evento cadastrado neste mês.</p>';
+          return;
+        }
+
+        eventRows.forEach(row => {
+          // ── Badge de data ──────────────────────────────────────────────
+          const badge   = row.querySelector('.date-badge');
+          const dateNum = badge?.querySelector('.date-num')?.textContent?.trim() || '';
+          const dateLbl = badge?.querySelector('.date-lbl')?.textContent?.trim() || '';
+
+          // detecta variante
+          let vs = variantStyle['variant-default'];
+          if (badge?.classList.contains('variant-gold'))    vs = variantStyle['variant-gold'];
+          if (badge?.classList.contains('variant-primary')) vs = variantStyle['variant-primary'];
+          const isLong = badge?.classList.contains('date-long');
+
+          // ── Conteúdo do evento ─────────────────────────────────────────
+          const tagEl    = row.querySelector('span.inline-block');
+          const tagText  = tagEl?.textContent?.trim() || '';
+          const tagCls   = tagEl?.className || '';
+          const title    = row.querySelector('h3')?.textContent?.trim() || '';
+          const desc     = row.querySelector('p.text-xs')?.textContent?.trim() || '';
+
+          // Infos extras (horário / local)
+          const extras = [...row.querySelectorAll('.flex.flex-wrap span.flex, .flex.gap-4 span.flex')]
+            .map(s => s.textContent.trim()).filter(Boolean).join(' · ');
+
+          // ── Monta o HTML do evento ─────────────────────────────────────
+          const numSize = isLong ? '0.625rem' : '0.8125rem';
+          const item = document.createElement('div');
+          item.className = 'flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors';
+          item.innerHTML = `
+            <div style="
+              flex-shrink:0; width:3rem; text-align:center; border-radius:0.5rem;
+              padding:0.5rem 0.25rem; display:flex; flex-direction:column;
+              align-items:center; justify-content:center; gap:2px;
+              background:${vs.bg}; border:${vs.border};
+            ">
+              <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${dateNum}</span>
+              <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${dateLbl}</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              ${tagText ? `<span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${tagStyle(tagCls)};padding:1px 6px;border-radius:4px;margin-bottom:4px">${tagText}</span>` : ''}
+              <h3 style="font-weight:700;font-size:0.875rem;color:#1b1c1c;line-height:1.4">${title}</h3>
+              ${desc    ? `<p style="font-size:0.75rem;color:#43474f;margin-top:2px">${desc}</p>` : ''}
+              ${extras  ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${extras}</p>` : ''}
+            </div>
+          `;
+          lista.appendChild(item);
+        });
+      })
+      .catch(err => {
+        const lista = document.getElementById('proxeventos-lista');
+        lista.innerHTML = `<p class="px-5 py-4 text-sm text-on-surface-variant">Não foi possível carregar os eventos. <a href="agenda.html" class="text-secondary underline">Ver agenda</a></p>`;
+        console.warn('Próximos Eventos:', err);
+      });
+  })();
+  </script>
+  <!-- ══ FIM: PRÓXIMOS EVENTOS ════════════════════════════════════════════ -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/site-loader.js"></script>
+	  
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hub Administrativo – Jardim Elizabeth</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PGXCZF9S9W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PGXCZF9S9W');
+  </script>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "secondary": "#3b5e97",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-low": "#f5f3f3",
+            "surface-container-lowest": "#ffffff",
+            "error": "#ba1a1a",
+          },
+          fontFamily: { "body": ["Inter"] },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col" style="font-family:'Inter',sans-serif;">
+
+  <div id="header"></div>
+
+  <main class="flex-1">
+    <section class="bg-surface-container-low border-b border-outline-variant py-10">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <a href="index.html"><span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span></a>
+          <a href="index.html"><span class="text-secondary">Jardim Elizabeth</span></a>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Hub Administrativo</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight">Hub Administrativo</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Central de gestão da congregação. Acesso restrito a anciãos e servos ministeriais.</p>
+          </div>
+          <div class="bg-white border border-outline-variant rounded-xl px-4 py-3 text-sm">
+            <p class="font-bold text-primary" id="hub-user-name">—</p>
+            <p class="text-xs text-secondary" id="hub-user-role">—</p>
+            <p class="text-xs text-outline mt-1" id="hub-user-email">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-6 py-10 space-y-8">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <a href="agenda.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
+          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">calendar_month</span>
+          <h2 class="font-bold text-primary">Agenda</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Gerenciar eventos e programação da congregação.</p>
+        </a>
+
+        <a href="agendamentos.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
+          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">event_available</span>
+          <h2 class="font-bold text-primary">Agendamentos</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Carrinhos, displays e reservas de equipamentos.</p>
+        </a>
+
+        <a href="quadrodeanuncios.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
+          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">campaign</span>
+          <h2 class="font-bold text-primary">Quadro de Anúncios</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Publicar avisos e comunicados internos.</p>
+        </a>
+
+        <a href="territorios.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
+          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">map</span>
+          <h2 class="font-bold text-primary">Territórios</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Acompanhar territórios e designações de pregação.</p>
+        </a>
+
+        <a href="donativos.html" class="group bg-white rounded-xl border border-outline-variant p-6 hover:shadow-md hover:border-secondary/40 transition-all">
+          <span class="material-symbols-outlined text-secondary mb-3" style="font-size:32px">volunteer_activism</span>
+          <h2 class="font-bold text-primary">Donativos</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Informações sobre contribuições da congregação.</p>
+        </a>
+
+        <div class="bg-white rounded-xl border border-outline-variant p-6 opacity-80">
+          <span class="material-symbols-outlined text-outline mb-3" style="font-size:32px">settings</span>
+          <h2 class="font-bold text-primary">Configurações</h2>
+          <p class="text-sm text-on-surface-variant mt-1">Em breve: permissões, relatórios e integrações.</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant flex items-center gap-3">
+          <span class="material-symbols-outlined text-secondary">groups</span>
+          <h2 class="font-bold text-primary">Membros com Acesso</h2>
+        </div>
+        <div id="members-list" class="divide-y divide-outline-variant">
+          <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando membros…</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/site-loader.js"></script>
+  <script src="js/hub.js"></script>
+</body>
+</html>

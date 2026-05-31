@@ -1,0 +1,77 @@
+<nav class="sticky top-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between h-16 gap-4">
+
+      <a href="index.html" class="flex-shrink-0">
+        <span class="text-xl font-extrabold text-primary tracking-tight">Jardim Elizabeth</span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-7 text-sm font-medium text-secondary">
+        <a href="index.html" class="nav-link hover:text-primary transition-colors">Home</a>
+        <a href="agenda.html" class="nav-link hover:text-primary transition-colors">Agenda</a>
+        <a href="agendamentos.html" class="nav-link hover:text-primary transition-colors">Agendamentos</a>
+        <a href="donativos.html" class="nav-link hover:text-primary transition-colors">Donativos</a>
+        <a href="quadrodeanuncios.html" class="nav-link hover:text-primary transition-colors">Quadro de Anúncios</a>
+        <a href="territorios.html" class="nav-link hover:text-primary transition-colors">Territórios</a>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="mobile-menu-btn" type="button" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low text-primary" aria-label="Abrir menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+
+        <div class="relative" id="profile-menu-container">
+          <button id="profile-btn" type="button" class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container-low text-primary transition-colors" aria-label="Perfil" aria-expanded="false" aria-haspopup="true">
+            <span class="material-symbols-outlined" id="profile-icon">account_circle</span>
+          </button>
+
+          <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl border border-outline-variant shadow-lg overflow-hidden z-50">
+            <div id="profile-dropdown-content" class="p-4 text-sm text-on-surface-variant">
+              Carregando…
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden pb-4 border-t border-outline-variant mt-1 pt-3">
+      <div class="flex flex-col gap-2 text-sm font-medium text-secondary">
+        <a href="index.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Home</a>
+        <a href="agenda.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Agenda</a>
+        <a href="agendamentos.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Agendamentos</a>
+        <a href="donativos.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Donativos</a>
+        <a href="quadrodeanuncios.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Quadro de Anúncios</a>
+        <a href="territorios.html" class="nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low">Territórios</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Modal de login -->
+<div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+  <div id="login-modal-backdrop" class="absolute inset-0 bg-black/50"></div>
+  <div class="relative bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-primary">Entrar</h2>
+      <button id="login-modal-close" type="button" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant" aria-label="Fechar">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label for="login-email" class="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1">E-mail</label>
+        <input id="login-email" type="email" required autocomplete="email" class="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="seu.email@jardimelizabeth.org"/>
+      </div>
+      <div>
+        <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1">Senha</label>
+        <input id="login-password" type="password" required autocomplete="current-password" class="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="••••••••"/>
+      </div>
+      <p id="login-error" class="hidden text-sm text-error"></p>
+      <button type="submit" class="w-full bg-primary text-white font-semibold rounded-lg py-2.5 hover:bg-primary-container transition-colors">
+        Entrar
+      </button>
+    </form>
+    <p class="text-xs text-on-surface-variant mt-4 text-center">Acesso restrito aos responsáveis da congregação.</p>
+  </div>
+</div>

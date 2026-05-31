@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quadro de Anúncios – Jardim Elizabeth</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PGXCZF9S9W"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-PGXCZF9S9W');
+</script>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "surface-container": "#f0eded",
+            "secondary": "#3b5e97",
+            "secondary-fixed": "#d6e3ff",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
+            "outline-variant": "#c3c6d0",
+            "on-background": "#1b1c1c",
+            "surface-container-low": "#f5f3f3",
+            "on-surface": "#1b1c1c",
+            "outline": "#747780",
+            "surface-container-high": "#eae8e7",
+            "surface-container-highest": "#e4e2e2",
+            "surface-container-lowest": "#ffffff",
+          },
+          fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up  { animation: fadeUp 0.4s ease both; }
+    .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+  </style>
+</head>
+
+<body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
+
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+  <div id="header"></div>
+
+  <main>
+
+    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
+    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+          <a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">
+            <span class="material-symbols-outlined text-secondary" style="font-size:15px">home</span>
+          </a>
+          <a href="https://viniciusisliker.github.io/jardim-elizabeth/index.html">
+            <span class="text-secondary">Jardim Elizabeth</span>
+          </a>
+          <span class="text-outline">/</span>
+          <span class="text-primary">Quadro de Anúncios</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Quadro de Anúncios</h1>
+            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Mantenha-se atualizado com designações, programações e informações importantes da congregação.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
+    <div class="max-w-7xl mx-auto px-6 py-12 fade-up-2">
+
+      <!-- Instrução -->
+      <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
+        Para prosseguir clique na seção desejada
+      </p>
+
+      <!-- 3 Cards clicáveis -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+
+        <!-- Designações Mecânicas -->
+        <a href="https://drive.google.com/file/d/1nkm7A_A-EkdH4OFHf5HiNISZLqni2PmY/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">build</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Organização</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Designações Mecânicas</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Limpeza, som, indicadores e manutenção do Salão.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+        <!-- Meio de Semana -->
+        <a href="https://drive.google.com/file/d/17bi2jq430dhs5Xt_6Ulzju5g_W37yvvS/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">menu_book</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Meio de Semana</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Reunião de Meio de Semana</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Vida e Ministério Cristão — partes e designações.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+        <!-- Final de Semana -->
+        <a href="https://drive.google.com/file/d/1Dp0jOiiEM-d8flH4ahJD3l9osuH_RZ-l/view?usp=drive_link" target="_blank"
+           class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <span class="material-symbols-outlined text-secondary" style="font-size:36px">record_voice_over</span>
+          </div>
+          <div>
+            <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">Final de Semana</span>
+            <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">Reunião de Final de Semana</h2>
+            <p class="text-on-surface-variant text-xs leading-relaxed">Discurso Público e Estudo de A Sentinela.</p>
+          </div>
+          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
+            Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </span>
+        </a>
+
+      </div>
+
+      <!-- ══ HISTÓRICO ═══════════════════════════════════════════ -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="material-symbols-outlined text-secondary">history</span>
+        <h2 class="text-xl font-bold text-primary tracking-tight">Histórico</h2>
+        <div class="flex-1 h-px bg-outline-variant"></div>
+      </div>
+
+      <div class="w-full bg-surface-container-lowest rounded-2xl border border-outline-variant px-10 py-14 flex flex-col items-center gap-6 text-center">
+
+        <!-- Ícone Google Drive -->
+        <div class="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center">
+          <svg width="32" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+            <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+            <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+            <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+            <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+            <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+          </svg>
+        </div>
+
+        <!-- Texto -->
+        <div>
+          <p class="text-base font-semibold text-primary mb-1">O histórico completo está disponível no Google Drive</p>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Acesse todos os meses anteriores — designações mecânicas, meio de semana e final de semana — organizados em pastas por período.</p>
+        </div>
+
+        <!-- Botão -->
+        <a href="https://drive.google.com/drive/folders/1-YO6Qi61D_Nay6RbKuynxgLvJyao0Yim?usp=sharing" target="_blank"
+           class="flex items-center gap-2.5 px-5 py-2.5 bg-white border border-outline-variant rounded-lg text-sm font-semibold text-on-background hover:bg-surface-container transition-colors">
+          <svg width="16" height="14" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+            <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+            <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+            <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+            <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+            <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+          </svg>
+          Abrir no Google Drive
+          <span class="material-symbols-outlined text-outline" style="font-size:14px">open_in_new</span>
+        </a>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
+  <div id="footer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/site-loader.js"></script>
+
+</body>
+</html>
