@@ -154,7 +154,7 @@
   function fieldsHtmlGrouped(fields, entry, block) {
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
-      return sectionShell('Discurso público e estudo', 'church', fieldsHtmlWeekend(fields, entry));
+      return sectionShell('Discurso público e estudo', 'weekend', fieldsHtmlWeekend(fields, entry));
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
