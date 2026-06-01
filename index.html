@@ -157,77 +157,91 @@ gtag('config', 'G-PGXCZF9S9W');
       font-feature-settings: 'liga';
       line-height: 1;
     }
+    /* ── Atalhos rápidos (home) ───────────────────────────────────────── */
+    .je-index-shortcuts-section { position: relative; z-index: 20; margin-top: -3rem; }
+    .je-index-shortcuts-eyebrow {
+      font-size: 0.625rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #3b5e97; margin-bottom: 0.5rem; padding-left: 0.25rem;
+    }
+    .je-index-shortcuts-panel {
+      background: #fff; border: 1px solid #e2e6ef; border-radius: 1rem;
+      box-shadow: 0 8px 28px rgba(15, 52, 98, 0.1);
+      padding: 1rem; overflow: hidden;
+    }
+    .je-index-shortcuts-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .je-index-shortcut {
+      display: flex; align-items: center; gap: 0.875rem;
+      padding: 0.875rem 1rem; border-radius: 0.875rem;
+      border: 1px solid #e2e6ef; background: #fafbfc;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .je-index-shortcut:hover {
+      border-color: #3b5e97; background: #fff;
+      box-shadow: 0 4px 14px rgba(15, 52, 98, 0.08);
+      transform: translateY(-1px);
+    }
+    .je-index-shortcut-icon {
+      flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 0.625rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.375rem; }
+    .je-index-shortcut-text { flex: 1; min-width: 0; text-align: left; }
+    .je-index-shortcut-title { display: block; font-size: 0.9375rem; font-weight: 700; color: #0f3462; line-height: 1.25; }
+    .je-index-shortcut-desc { display: block; font-size: 0.75rem; color: #43474f; line-height: 1.35; margin-top: 0.125rem; }
+    .je-index-shortcut-chevron {
+      flex-shrink: 0; font-size: 1.125rem !important; color: #c3c6d0;
+      transition: color 0.15s, transform 0.15s;
+    }
+    .je-index-shortcut:hover .je-index-shortcut-chevron { color: #3b5e97; transform: translateX(2px); }
+    .je-index-shortcut--agenda .je-index-shortcut-icon { background: #dbeafe; color: #1d4ed8; }
+    .je-index-shortcut--agenda:hover { border-color: #93c5fd; }
+    .je-index-shortcut--agendamentos .je-index-shortcut-icon { background: #d1fae5; color: #047857; }
+    .je-index-shortcut--agendamentos:hover { border-color: #6ee7b7; }
+    .je-index-shortcut--anuncios .je-index-shortcut-icon { background: #fef3c7; color: #b45309; }
+    .je-index-shortcut--anuncios:hover { border-color: #fcd34d; }
+    .je-index-shortcut--territorios .je-index-shortcut-icon { background: #e0e7ff; color: #4338ca; }
+    .je-index-shortcut--territorios:hover { border-color: #a5b4fc; }
+    .je-index-shortcut--donativos .je-index-shortcut-icon { background: #fce7f3; color: #be185d; }
+    .je-index-shortcut--donativos:hover { border-color: #f9a8d4; }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .je-index-shortcuts-panel { padding: 1.125rem; }
+      .je-index-shortcuts-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.625rem;
+      }
+      .je-index-shortcut--donativos { grid-column: 1 / -1; max-width: 22rem; justify-self: center; width: 100%; }
+    }
+
+    @media (min-width: 1024px) {
+      .je-index-shortcuts-section { margin-top: -3.5rem; }
+      .je-index-shortcuts-panel { padding: 1.375rem 1.5rem; }
+      .je-index-shortcuts-grid {
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.875rem;
+      }
+      .je-index-shortcut {
+        flex-direction: column; align-items: center; text-align: center;
+        padding: 1.25rem 0.875rem; gap: 0.75rem; min-height: 8.5rem;
+      }
+      .je-index-shortcut-icon { width: 3.25rem; height: 3.25rem; border-radius: 0.75rem; }
+      .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.625rem; }
+      .je-index-shortcut-text { text-align: center; }
+      .je-index-shortcut-desc { font-size: 0.6875rem; line-height: 1.4; }
+      .je-index-shortcut-chevron { display: none; }
+      .je-index-shortcut--donativos { grid-column: auto; max-width: none; justify-self: stretch; }
+    }
+
     @media (max-width: 1023px) {
       .je-index-hero { height: 400px !important; }
       .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
       .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
       .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
     }
-    /* Tablet only — não aplicar no mobile */
-    @media (min-width: 768px) and (max-width: 1023px) {
-      .je-index-shortcuts-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 0.75rem;
-        width: 100%;
-        max-width: 100%;
-      }
-      .je-index-shortcuts-grid .je-index-shortcut:nth-child(-n+3) {
-        grid-column: span 2;
-      }
-      .je-index-shortcuts-grid .je-index-shortcut:nth-child(4) {
-        grid-column: 2 / span 2;
-      }
-      .je-index-shortcuts-grid .je-index-shortcut:nth-child(5) {
-        grid-column: 4 / span 2;
-      }
-      .je-index-shortcut {
-        padding: 1rem 0.75rem;
-        gap: 0.625rem;
-      }
-      .je-index-shortcut .w-14 { width: 3rem; height: 3rem; }
-      .je-index-shortcut .text-3xl { font-size: 1.5rem; }
-      .je-index-shortcut > span.font-bold {
-        font-size: 0.8125rem;
-        line-height: 1.25;
-      }
-    }
     @media (max-width: 767px) {
       .je-index-hero { height: 340px !important; }
       .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
-      .je-index-shortcuts-grid {
-        display: flex !important;
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        max-width: 100%;
-      }
-      .je-index-shortcuts-grid .je-index-shortcut {
-        grid-column: unset !important;
-        width: 100%;
-        max-width: 100%;
-        flex-direction: row !important;
-        align-items: center;
-        justify-content: flex-start;
-        text-align: left;
-        padding: 0.875rem 1rem;
-        gap: 1rem;
-        min-height: 3.25rem;
-      }
-      .je-index-shortcut .w-14 {
-        width: 2.75rem;
-        height: 2.75rem;
-        flex-shrink: 0;
-        margin: 0;
-      }
-      .je-index-shortcut .text-3xl { font-size: 1.375rem; }
-      .je-index-shortcut > span.font-bold {
-        font-size: 0.9375rem;
-        line-height: 1.3;
-        flex: 1;
-        min-width: 0;
-        white-space: normal;
-      }
+      .je-index-shortcuts-section { margin-top: -2rem; }
+      .je-index-shortcut-desc { display: none; }
     }
   </style>
 
@@ -315,57 +329,67 @@ gtag('config', 'G-PGXCZF9S9W');
       Os 5 cards com ícones que ficam sobrepostos à imagem hero.
       O -mt-12 faz os cards "subirem" sobre a imagem.
     ══════════════════════════════════════════════════════════════════════ -->
-    <section class="max-w-7xl mx-auto px-6 je-page-shell -mt-12 relative z-20">
-      <div class="je-index-shortcuts-grid gap-4 lg:grid lg:grid-cols-5">
+    <section class="max-w-7xl mx-auto px-6 je-page-shell je-index-shortcuts-section">
+      <p class="je-index-shortcuts-eyebrow">Acesso rápido</p>
+      <div class="je-index-shortcuts-panel">
+        <div class="je-index-shortcuts-grid">
 
-        <!-- ATALHO 1: AGENDA ─────────────────────────────────────────────────
-          Cada atalho é um link (<a>) com ícone e texto.
-          Para mudar:
-            - href="#": coloque o endereço da página de destino
-            - O ícone: troque "calendar_month" por outro nome de ícone
-            - O texto: troque "Agenda" pelo texto desejado
-          Para ADICIONAR um novo atalho: copie um bloco <a> inteiro e cole ao lado.
-          Para REMOVER: apague o bloco <a> completo.
-        -->
-        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agenda.html">
-          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-primary text-3xl">calendar_month</span>
-          </div>
-          <span class="font-bold text-primary">Agenda</span>
-        </a>
+          <a class="je-index-shortcut je-index-shortcut--agenda" href="agenda.html">
+            <span class="je-index-shortcut-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">calendar_month</span>
+            </span>
+            <span class="je-index-shortcut-text">
+              <span class="je-index-shortcut-title">Agenda</span>
+              <span class="je-index-shortcut-desc">Eventos e reuniões</span>
+            </span>
+            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
+          </a>
 
-        <!-- ATALHO 2: AGENDAMENTOS -->
-        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="agendamentos.html">
-          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-primary text-3xl">event_available</span>
-          </div>
-          <span class="font-bold text-primary">Agendamentos</span>
-        </a>
+          <a class="je-index-shortcut je-index-shortcut--agendamentos" href="agendamentos.html">
+            <span class="je-index-shortcut-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">event_available</span>
+            </span>
+            <span class="je-index-shortcut-text">
+              <span class="je-index-shortcut-title">Agendamentos</span>
+              <span class="je-index-shortcut-desc">Carrinhos e displays</span>
+            </span>
+            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
+          </a>
 
-        <!-- ATALHO 3: QUADRO DE ANÚNCIOS -->
-        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="quadrodeanuncios.html">
-          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-primary text-3xl">campaign</span>
-          </div>
-          <span class="font-bold text-primary">Quadro de Anúncios</span>
-        </a>
+          <a class="je-index-shortcut je-index-shortcut--anuncios" href="quadrodeanuncios.html">
+            <span class="je-index-shortcut-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">campaign</span>
+            </span>
+            <span class="je-index-shortcut-text">
+              <span class="je-index-shortcut-title">Quadro de Anúncios</span>
+              <span class="je-index-shortcut-desc">Avisos da congregação</span>
+            </span>
+            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
+          </a>
 
-        <!-- ATALHO 4: TERRITÓRIOS -->
-        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="territorios.html">
-          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-primary text-3xl">map</span>
-          </div>
-          <span class="font-bold text-primary">Territórios</span>
-        </a>
+          <a class="je-index-shortcut je-index-shortcut--territorios" href="territorios.html">
+            <span class="je-index-shortcut-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">map</span>
+            </span>
+            <span class="je-index-shortcut-text">
+              <span class="je-index-shortcut-title">Territórios</span>
+              <span class="je-index-shortcut-desc">Mapas do serviço de campo</span>
+            </span>
+            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
+          </a>
 
-        <!-- ATALHO 5: DONATIVOS -->
-        <a class="je-index-shortcut bg-surface-container-lowest p-6 rounded-xl shadow-md border-b-4 border-secondary hover:-translate-y-1 transition-transform flex flex-col items-center text-center gap-4 group" href="donativos.html">
-          <div class="w-14 h-14 rounded-full bg-secondary-fixed/50 flex items-center justify-center group-hover:bg-secondary-fixed transition-colors">
-            <span class="material-symbols-outlined text-primary text-3xl">volunteer_activism</span>
-          </div>
-          <span class="font-bold text-primary">Donativos</span>
-        </a>
+          <a class="je-index-shortcut je-index-shortcut--donativos" href="donativos.html">
+            <span class="je-index-shortcut-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">volunteer_activism</span>
+            </span>
+            <span class="je-index-shortcut-text">
+              <span class="je-index-shortcut-title">Donativos</span>
+              <span class="je-index-shortcut-desc">Contribuições via PIX</span>
+            </span>
+            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
+          </a>
 
+        </div>
       </div>
     </section>
     <!-- FIM DOS ATALHOS RÁPIDOS ──────────────────────────────────────────── -->
