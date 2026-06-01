@@ -162,14 +162,65 @@ gtag('config', 'G-PGXCZF9S9W');
       .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
       .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
       .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
+      /* Tablet: 3 + 2 centralizado (evita 5 colunas estreitas) */
+      .je-index-shortcuts-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.75rem;
+      }
+      .je-index-shortcuts-grid .je-index-shortcut:nth-child(-n+3) {
+        grid-column: span 2;
+      }
+      .je-index-shortcuts-grid .je-index-shortcut:nth-child(4) {
+        grid-column: 2 / span 2;
+      }
+      .je-index-shortcuts-grid .je-index-shortcut:nth-child(5) {
+        grid-column: 4 / span 2;
+      }
+      .je-index-shortcut {
+        padding: 1rem 0.75rem;
+        gap: 0.625rem;
+      }
+      .je-index-shortcut .w-14 { width: 3rem; height: 3rem; }
+      .je-index-shortcut .text-3xl { font-size: 1.5rem; }
+      .je-index-shortcut > span.font-bold {
+        font-size: 0.8125rem;
+        line-height: 1.25;
+        hyphens: auto;
+      }
     }
     @media (max-width: 767px) {
       .je-index-hero { height: 340px !important; }
       .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
-      .je-index-shortcut { padding: 1rem; gap: 0.75rem; }
-      .je-index-shortcut .w-14 { width: 3rem; height: 3rem; }
-      .je-index-shortcut .text-3xl { font-size: 1.5rem; }
-      .je-index-shortcut > span.font-bold { font-size: 0.8125rem; line-height: 1.2; }
+      /* Mobile: lista horizontal (sem card órfão no grid 2 colunas) */
+      .je-index-shortcuts-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .je-index-shortcuts-grid .je-index-shortcut {
+        grid-column: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 0.875rem 1rem;
+        gap: 1rem;
+        min-height: 3.25rem;
+      }
+      .je-index-shortcut .w-14 {
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-shrink: 0;
+        margin: 0;
+      }
+      .je-index-shortcut .text-3xl { font-size: 1.375rem; }
+      .je-index-shortcut > span.font-bold {
+        font-size: 0.9375rem;
+        line-height: 1.3;
+        flex: 1;
+        min-width: 0;
+      }
     }
   </style>
 
@@ -246,15 +297,6 @@ gtag('config', 'G-PGXCZF9S9W');
             Altere o texto "Quadro de Anúncios" para qualquer outro texto.
             Para linkar a uma página, adicione href="..." ao botão ou envolva-o em um <a>.
           -->
-<div class="flex flex-wrap gap-4">
-  <a href="quadrodeanuncios.html"
-     class="bg-primary-fixed text-on-primary-fixed px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 transition-all flex items-center gap-2">
-    
-    Quadro de anúncios
-    <span class="material-symbols-outlined text-sm">arrow_forward</span>
-  
-  </a>
-</div>
         </div>
       </div>
     </section>
@@ -267,7 +309,7 @@ gtag('config', 'G-PGXCZF9S9W');
       O -mt-12 faz os cards "subirem" sobre a imagem.
     ══════════════════════════════════════════════════════════════════════ -->
     <section class="max-w-7xl mx-auto px-6 je-page-shell -mt-12 relative z-20">
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="je-index-shortcuts-grid grid gap-4 lg:grid-cols-5">
 
         <!-- ATALHO 1: AGENDA ─────────────────────────────────────────────────
           Cada atalho é um link (<a>) com ícone e texto.
