@@ -25,6 +25,16 @@
       .join('');
   }
 
+  function permissionSummary(permissions) {
+    const perms = permissions || [];
+    if (!perms.length) {
+      return '<span class="text-xs text-on-surface-variant">Nenhum módulo — expanda para configurar</span>';
+    }
+    return perms
+      .map((p) => `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary mr-1">${escapeHtml(PERMISSION_LABELS[p] || p)}</span>`)
+      .join('');
+  }
+
   async function init() {
     const profile = await guardAdmin();
     if (!profile) return;
@@ -34,6 +44,7 @@
     const isSuper = window.JEAuth.isSuperUser(profile.role);
     let members = [];
     let catalog = [];
+    let expandedDesignationId = null;
 
     document.getElementById('cfg-role-note').textContent = isSuper
       ? 'Como SuperUser, você gerencia designações de acesso, cargos e atribuições da equipe.'
@@ -80,50 +91,83 @@
       }
 
       root.innerHTML = catalog.map((d) => {
+        const expanded = expandedDesignationId === d.id;
         const permChecks = MODULE_PERMISSIONS.map((p) => {
           const checked = (d.permissions || []).includes(p);
           return isSuper
-            ? `<label class="inline-flex items-center gap-1 text-xs mr-3 mb-1"><input type="checkbox" data-des-perm="${d.id}" data-perm="${p}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(PERMISSION_LABELS[p])}</span></label>`
-            : (checked ? `<span class="text-xs text-on-surface-variant mr-2">${escapeHtml(PERMISSION_LABELS[p])}</span>` : '');
+            ? `<label class="inline-flex items-center gap-1.5 text-xs"><input type="checkbox" data-des-perm="${d.id}" data-perm="${p}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(PERMISSION_LABELS[p])}</span></label>`
+            : (checked ? `<span class="text-xs text-on-surface-variant">${escapeHtml(PERMISSION_LABELS[p])}</span>` : '');
         }).join('');
 
         const hubChecked = (d.permissions || []).includes('hub');
         const hubLabel = isSuper
-          ? `<label class="inline-flex items-center gap-1 text-xs mr-3 mb-1 font-semibold text-primary"><input type="checkbox" data-des-perm="${d.id}" data-perm="hub" ${hubChecked ? 'checked' : ''} class="rounded border-outline-variant"/><span>Hub</span></label>`
-          : (hubChecked ? '<span class="text-xs font-semibold text-primary mr-2">Hub</span>' : '');
+          ? `<label class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary"><input type="checkbox" data-des-perm="${d.id}" data-perm="hub" ${hubChecked ? 'checked' : ''} class="rounded border-outline-variant"/><span>Hub</span></label>`
+          : (hubChecked ? '<span class="text-xs font-semibold text-primary">Hub</span>' : '');
 
-        return `
-          <article class="bg-white border border-outline-variant rounded-xl p-4 ${d.is_active ? '' : 'opacity-60'}">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <input type="text" value="${escapeHtml(d.label)}" data-des-label="${d.id}" ${isSuper ? '' : 'readonly'}
-                    class="font-bold text-primary text-sm bg-transparent border-0 border-b border-transparent focus:border-secondary focus:outline-none min-w-[10rem]"/>
-                  ${!d.is_active ? '<span class="text-[10px] uppercase font-bold text-error">Inativa</span>' : ''}
-                </div>
+        const panelContent = expanded
+          ? `
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Nome</label>
+                <input type="text" value="${escapeHtml(d.label)}" data-des-label="${d.id}" ${isSuper ? '' : 'readonly'}
+                  class="w-full font-bold text-primary text-sm rounded-lg border border-outline-variant px-3 py-2 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"/>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Descrição</label>
                 <input type="text" value="${escapeHtml(d.description || '')}" placeholder="Descrição opcional" data-des-desc="${d.id}" ${isSuper ? '' : 'readonly'}
-                  class="mt-1 w-full text-xs text-on-surface-variant bg-transparent border-0 border-b border-outline-variant/40 focus:border-secondary focus:outline-none"/>
-                <div class="mt-3 flex flex-wrap items-center gap-1">
-                  ${hubLabel}${permChecks}
-                </div>
+                  class="w-full text-sm text-on-surface-variant rounded-lg border border-outline-variant px-3 py-2 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"/>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-2">Módulos permitidos</p>
+                <div class="cfg-des-perm-grid">${hubLabel}${permChecks}</div>
               </div>
               ${isSuper ? `
-                <div class="flex flex-wrap gap-2 shrink-0">
-                  <button type="button" data-des-save="${d.id}" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-secondary text-white">Salvar</button>
-                  <button type="button" data-des-toggle="${d.id}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-outline-variant">${d.is_active ? 'Desativar' : 'Ativar'}</button>
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <button type="button" data-des-save="${d.id}" class="text-xs font-semibold px-4 py-2 rounded-lg bg-secondary text-white hover:opacity-90">Salvar</button>
+                  <button type="button" data-des-toggle="${d.id}" class="text-xs font-semibold px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-low">${d.is_active ? 'Desativar' : 'Ativar'}</button>
                 </div>
-              ` : `<div class="text-xs">${permissionBadges(d.permissions)}</div>`}
-            </div>
+              ` : `<div class="text-xs pt-1">${permissionBadges(d.permissions)}</div>`}
+            </div>`
+          : '';
+
+        return `
+          <article class="cfg-des-card ${expanded ? 'cfg-des-card--open' : ''} ${d.is_active ? '' : 'opacity-60'}">
+            <button type="button" class="cfg-des-header" data-des-select="${d.id}" aria-expanded="${expanded ? 'true' : 'false'}">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-bold text-primary text-sm">${escapeHtml(d.label)}</span>
+                  ${!d.is_active ? '<span class="text-[10px] uppercase font-bold text-error">Inativa</span>' : ''}
+                </div>
+                ${d.description ? `<p class="text-xs text-on-surface-variant mt-0.5 line-clamp-2">${escapeHtml(d.description)}</p>` : ''}
+                ${!expanded ? `<div class="mt-2">${permissionSummary(d.permissions)}</div>` : ''}
+              </div>
+              <span class="material-symbols-outlined cfg-des-chevron" aria-hidden="true">${expanded ? 'expand_less' : 'expand_more'}</span>
+            </button>
+            ${expanded ? `<div class="cfg-des-panel">${panelContent}</div>` : ''}
           </article>`;
       }).join('');
+
+      root.querySelectorAll('[data-des-select]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.desSelect;
+          expandedDesignationId = expandedDesignationId === id ? null : id;
+          renderCatalog();
+        });
+      });
 
       if (!isSuper) return;
 
       root.querySelectorAll('[data-des-save]').forEach((btn) =>
-        btn.addEventListener('click', async () => saveDesignation(btn.dataset.desSave))
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await saveDesignation(btn.dataset.desSave);
+        })
       );
       root.querySelectorAll('[data-des-toggle]').forEach((btn) =>
-        btn.addEventListener('click', async () => toggleDesignation(btn.dataset.desToggle))
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await toggleDesignation(btn.dataset.desToggle);
+        })
       );
     }
 
@@ -250,14 +294,15 @@
       let slug = slugify(label);
       const existing = catalog.some((d) => d.slug === slug);
       if (existing) slug = `${slug}_${Date.now().toString(36).slice(-4)}`;
-      const { error } = await client.from('access_designations').insert({
+      const { data: created, error } = await client.from('access_designations').insert({
         slug,
         label: label.trim(),
         permissions: ['hub'],
         sort_order: (catalog.length + 1) * 10
-      });
+      }).select('id').single();
       if (error) showToast(toast, error.message, true);
       else {
+        expandedDesignationId = created?.id || null;
         showToast(toast, 'Designação criada. Ajuste as permissões e salve.');
         await reloadCatalog();
       }

@@ -49,6 +49,55 @@
     if (form) form.reset();
   }
 
+  function isMobileMenuOpen() {
+    return qs('mobile-menu')?.classList.contains('is-open');
+  }
+
+  function openMobileMenu() {
+    const menu = qs('mobile-menu');
+    const backdrop = qs('mobile-menu-backdrop');
+    const btn = qs('mobile-menu-btn');
+    if (!menu || !backdrop) return;
+
+    closeDropdown();
+    menu.classList.add('is-open');
+    backdrop.classList.add('is-open');
+    menu.removeAttribute('inert');
+    menu.setAttribute('aria-hidden', 'false');
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('je-menu-open');
+    if (btn) {
+      btn.setAttribute('aria-expanded', 'true');
+      btn.setAttribute('aria-label', 'Fechar menu');
+      btn.classList.add('is-open');
+    }
+    qs('mobile-menu-close')?.focus();
+  }
+
+  function closeMobileMenu() {
+    const menu = qs('mobile-menu');
+    const backdrop = qs('mobile-menu-backdrop');
+    const btn = qs('mobile-menu-btn');
+    if (!menu || !backdrop) return;
+
+    menu.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+    menu.setAttribute('inert', '');
+    menu.setAttribute('aria-hidden', 'true');
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('je-menu-open');
+    if (btn) {
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', 'Abrir menu');
+      btn.classList.remove('is-open');
+    }
+  }
+
+  function toggleMobileMenu() {
+    if (isMobileMenuOpen()) closeMobileMenu();
+    else openMobileMenu();
+  }
+
   function updateHubAccess(profile) {
     const hubBtn = qs('hub-nav-btn');
     const canHub = profile && window.JEAuth?.canAccessHub(profile);
@@ -58,16 +107,25 @@
       hubBtn.classList.toggle('flex', !!canHub);
     }
 
-    const mobileMenu = qs('mobile-menu');
+    const hubSlot = qs('mobile-menu-hub-slot');
     let mobileHub = qs('mobile-hub-link');
 
-    if (canHub && mobileMenu && !mobileHub) {
+    if (canHub && hubSlot && !mobileHub) {
       mobileHub = document.createElement('a');
       mobileHub.id = 'mobile-hub-link';
       mobileHub.href = siteUrl('hub.html');
-      mobileHub.className = 'nav-link px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-semibold flex items-center gap-2';
-      mobileHub.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">dashboard</span> Hub Administrativo';
-      mobileMenu.querySelector('div')?.prepend(mobileHub);
+      mobileHub.className = 'je-mobile-nav-item je-mobile-nav-item--hub nav-link';
+      mobileHub.innerHTML = `
+        <span class="je-mobile-nav-icon je-mobile-nav-icon--hub" aria-hidden="true">
+          <span class="material-symbols-outlined">dashboard</span>
+        </span>
+        <span class="je-mobile-nav-label">
+          <span class="je-mobile-nav-hub-tag">Administrativo</span>
+          Hub Administrativo
+        </span>
+        <span class="material-symbols-outlined je-mobile-nav-chevron" aria-hidden="true">arrow_forward</span>
+      `;
+      hubSlot.appendChild(mobileHub);
     } else if (!canHub && mobileHub) {
       mobileHub.remove();
     }
@@ -165,8 +223,11 @@
       toggleDropdown();
     });
 
-    qs('mobile-menu-btn')?.addEventListener('click', () => {
-      qs('mobile-menu')?.classList.toggle('hidden');
+    qs('mobile-menu-btn')?.addEventListener('click', () => toggleMobileMenu());
+    qs('mobile-menu-close')?.addEventListener('click', () => closeMobileMenu());
+    qs('mobile-menu-backdrop')?.addEventListener('click', () => closeMobileMenu());
+    qs('mobile-menu')?.querySelectorAll('.je-mobile-nav-item').forEach((link) => {
+      link.addEventListener('click', () => closeMobileMenu());
     });
 
     qs('login-modal-close')?.addEventListener('click', hideLoginModal);
@@ -203,6 +264,7 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (isMobileMenuOpen()) closeMobileMenu();
         closeDropdown();
         hideLoginModal();
       }

@@ -6,10 +6,29 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .cfg-des-card { background: #fff; border: 1px solid #c3c6d0; border-radius: 0.75rem; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+    .cfg-des-card--open { border-color: #3b5e97; box-shadow: 0 4px 16px rgba(15, 52, 98, 0.08); }
+    .cfg-des-header {
+      display: flex; align-items: center; gap: 0.75rem; width: 100%;
+      padding: 1rem 1.125rem; background: transparent; border: 0; cursor: pointer;
+      text-align: left; font-family: inherit;
+    }
+    .cfg-des-header:hover { background: rgba(59, 94, 151, 0.05); }
+    .cfg-des-card--open .cfg-des-header { background: rgba(59, 94, 151, 0.06); border-bottom: 1px solid #e2e6ef; }
+    .cfg-des-chevron { color: #3b5e97; flex-shrink: 0; transition: transform 0.2s; }
+    .cfg-des-panel { padding: 1rem 1.125rem 1.125rem; }
+    .cfg-des-perm-grid {
+      display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+      padding: 0.875rem; border-radius: 0.625rem; background: #f5f8fc; border: 1px solid #e2e6ef;
+    }
+    .cfg-des-perm-grid label { cursor: pointer; }
     @media (max-width: 767px) {
       #members-table .grid { gap: 0.5rem; }
       #members-table input, #members-table select { min-height: 2.75rem; font-size: 1rem; }
+      .cfg-des-header { padding: 0.875rem 1rem; min-height: 3.25rem; }
     }
   </style>
 </head>
