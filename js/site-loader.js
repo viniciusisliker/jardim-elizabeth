@@ -48,23 +48,48 @@
       text-decoration: none;
     }
     .je-footer-link:hover { text-decoration: underline; }
-    .je-footer-map-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      flex-shrink: 0;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.375rem;
-      padding: 0.25rem 0.375rem;
-      font-size: 10px;
-      font-weight: 500;
-      color: #374151;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: box-shadow 0.15s;
+    .je-footer-map-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
-    .je-footer-map-btn:hover { box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .je-footer-map-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.625rem;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #e2e6ef;
+      border-radius: 0.625rem;
+      padding: 0.625rem 0.875rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #0f3462;
+      text-decoration: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .je-footer-map-btn svg { flex-shrink: 0; width: 1.125rem; height: 1.125rem; }
+    .je-footer-map-btn:hover {
+      border-color: #3b5e97;
+      background: #f5f8fc;
+      box-shadow: 0 2px 8px rgba(15, 52, 98, 0.08);
+    }
+    .je-footer-map-btn-label { flex: 1; min-width: 0; }
+    @media (min-width: 640px) {
+      .je-footer-map-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.625rem;
+      }
+      .je-footer-map-btn {
+        width: auto;
+        flex: 1 1 calc(33.333% - 0.5rem);
+        min-width: 8.5rem;
+        max-width: 100%;
+      }
+    }
     .je-footer-bar {
       background: #eae8e7;
       width: 100%;
@@ -276,7 +301,7 @@
       .je-footer-info > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-footer-info .grid { gap: 2rem; }
       .je-footer-bar > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; padding-top: 2rem; padding-bottom: 2rem; }
-      .je-footer-map-btn { min-height: 2.75rem; padding: 0.375rem 0.625rem; }
+      .je-footer-map-btn { min-height: 2.75rem; }
       main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
       .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
     }
