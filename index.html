@@ -166,12 +166,12 @@ gtag('config', 'G-PGXCZF9S9W');
     .je-index-shortcuts-panel {
       background: #fff; border: 1px solid #e2e6ef; border-radius: 1rem;
       box-shadow: 0 8px 28px rgba(15, 52, 98, 0.1);
-      padding: 1rem; overflow: hidden;
+      padding: 0.75rem; overflow: hidden;
     }
-    .je-index-shortcuts-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .je-index-shortcuts-grid { display: flex; flex-direction: column; gap: 0.375rem; }
     .je-index-shortcut {
-      display: flex; align-items: center; gap: 0.875rem;
-      padding: 0.875rem 1rem; border-radius: 0.875rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.625rem 0.75rem; border-radius: 0.75rem;
       border: 1px solid #e2e6ef; background: #fafbfc;
       text-decoration: none; color: inherit;
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
@@ -182,13 +182,13 @@ gtag('config', 'G-PGXCZF9S9W');
       transform: translateY(-1px);
     }
     .je-index-shortcut-icon {
-      flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 0.625rem;
+      flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 0.5rem;
       display: flex; align-items: center; justify-content: center;
     }
-    .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.375rem; }
+    .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.25rem; }
     .je-index-shortcut-text { flex: 1; min-width: 0; text-align: left; }
-    .je-index-shortcut-title { display: block; font-size: 0.9375rem; font-weight: 700; color: #0f3462; line-height: 1.25; }
-    .je-index-shortcut-desc { display: block; font-size: 0.75rem; color: #43474f; line-height: 1.35; margin-top: 0.125rem; }
+    .je-index-shortcut-title { display: block; font-size: 0.875rem; font-weight: 700; color: #0f3462; line-height: 1.2; }
+    .je-index-shortcut-desc { display: block; font-size: 0.6875rem; color: #43474f; line-height: 1.3; margin-top: 0.1rem; }
     .je-index-shortcut-chevron {
       flex-shrink: 0; font-size: 1.125rem !important; color: #c3c6d0;
       transition: color 0.15s, transform 0.15s;
@@ -206,27 +206,41 @@ gtag('config', 'G-PGXCZF9S9W');
     .je-index-shortcut--donativos:hover { border-color: #f9a8d4; }
 
     @media (min-width: 768px) and (max-width: 1023px) {
-      .je-index-shortcuts-panel { padding: 1.125rem; }
+      .je-index-shortcuts-panel { padding: 0.875rem; }
       .je-index-shortcuts-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.625rem;
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;
       }
-      .je-index-shortcut--donativos { grid-column: 1 / -1; max-width: 22rem; justify-self: center; width: 100%; }
+      .je-index-shortcut--donativos { grid-column: 1 / -1; max-width: 18rem; justify-self: center; width: 100%; }
     }
 
     @media (min-width: 1024px) {
       .je-index-shortcuts-section { margin-top: -3.5rem; }
-      .je-index-shortcuts-panel { padding: 1.375rem 1.5rem; }
+      .je-index-shortcuts-panel { padding: 0.875rem 1rem; }
       .je-index-shortcuts-grid {
-        display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.875rem;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.5rem;
       }
       .je-index-shortcut {
-        flex-direction: column; align-items: center; text-align: center;
-        padding: 1.25rem 0.875rem; gap: 0.75rem; min-height: 8.5rem;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0.625rem 0.375rem;
+        gap: 0.375rem;
+        min-height: 0;
       }
-      .je-index-shortcut-icon { width: 3.25rem; height: 3.25rem; border-radius: 0.75rem; }
-      .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.625rem; }
-      .je-index-shortcut-text { text-align: center; }
-      .je-index-shortcut-desc { font-size: 0.6875rem; line-height: 1.4; }
+      .je-index-shortcut-icon { width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; }
+      .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.125rem; }
+      .je-index-shortcut-text { text-align: center; width: 100%; }
+      .je-index-shortcut-title { font-size: 0.8125rem; }
+      .je-index-shortcut-desc {
+        font-size: 0.625rem;
+        line-height: 1.25;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
       .je-index-shortcut-chevron { display: none; }
       .je-index-shortcut--donativos { grid-column: auto; max-width: none; justify-self: stretch; }
     }
