@@ -162,11 +162,15 @@ gtag('config', 'G-PGXCZF9S9W');
       .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
       .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
       .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
-      /* Tablet: 3 + 2 centralizado (evita 5 colunas estreitas) */
+    }
+    /* Tablet only — não aplicar no mobile */
+    @media (min-width: 768px) and (max-width: 1023px) {
       .je-index-shortcuts-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 0.75rem;
+        width: 100%;
+        max-width: 100%;
       }
       .je-index-shortcuts-grid .je-index-shortcut:nth-child(-n+3) {
         grid-column: span 2;
@@ -186,21 +190,23 @@ gtag('config', 'G-PGXCZF9S9W');
       .je-index-shortcut > span.font-bold {
         font-size: 0.8125rem;
         line-height: 1.25;
-        hyphens: auto;
       }
     }
     @media (max-width: 767px) {
       .je-index-hero { height: 340px !important; }
       .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
-      /* Mobile: lista horizontal (sem card órfão no grid 2 colunas) */
       .je-index-shortcuts-grid {
-        display: flex;
+        display: flex !important;
         flex-direction: column;
         gap: 0.5rem;
+        width: 100%;
+        max-width: 100%;
       }
       .je-index-shortcuts-grid .je-index-shortcut {
-        grid-column: auto;
-        flex-direction: row;
+        grid-column: unset !important;
+        width: 100%;
+        max-width: 100%;
+        flex-direction: row !important;
         align-items: center;
         justify-content: flex-start;
         text-align: left;
@@ -220,6 +226,7 @@ gtag('config', 'G-PGXCZF9S9W');
         line-height: 1.3;
         flex: 1;
         min-width: 0;
+        white-space: normal;
       }
     }
   </style>
@@ -309,7 +316,7 @@ gtag('config', 'G-PGXCZF9S9W');
       O -mt-12 faz os cards "subirem" sobre a imagem.
     ══════════════════════════════════════════════════════════════════════ -->
     <section class="max-w-7xl mx-auto px-6 je-page-shell -mt-12 relative z-20">
-      <div class="je-index-shortcuts-grid grid gap-4 lg:grid-cols-5">
+      <div class="je-index-shortcuts-grid gap-4 lg:grid lg:grid-cols-5">
 
         <!-- ATALHO 1: AGENDA ─────────────────────────────────────────────────
           Cada atalho é um link (<a>) com ícone e texto.
