@@ -95,19 +95,29 @@
       }
       .pdf-mecanicas-pages { display: block; }
       .pdf-mecanicas-sheet {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
         padding-bottom: 4mm;
+      }
+      .pdf-mecanicas-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
       }
       .pdf-card {
         break-inside: avoid;
         page-break-inside: avoid;
-        margin-bottom: 8px;
+        margin: 0;
+        flex-shrink: 0;
       }
-      .pdf-mecanicas-sheet .pdf-card {
-        margin-bottom: 20px;
-      }
-      .pdf-mecanicas-sheet .pdf-card:last-child {
-        margin-bottom: 0;
+      .pdf-card-gap {
+        display: block;
+        height: 18px;
+        min-height: 18px;
+        width: 100%;
+        background: #ffffff;
+        flex-shrink: 0;
       }
       .html2pdf__page-break {
         display: block;
@@ -683,10 +693,13 @@
       if (sheetIdx === 0) {
         body += pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
       }
-      sheetEntries.forEach((e) => {
+      body += '<div class="pdf-mecanicas-cards">';
+      sheetEntries.forEach((e, i) => {
+        if (i > 0) body += '<div class="pdf-card-gap" aria-hidden="true"></div>';
         body += pdfMecanicasCard(e, cardIndex, list.length);
         cardIndex += 1;
       });
+      body += '</div>';
       body += '</div>';
     });
 
