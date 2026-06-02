@@ -2,23 +2,16 @@
   const { formatDisplayDate } = window.JEAnnouncementDates;
   const {
     SECTION_TITLES,
-    MECANICAS_FIELDS,
     MIDWEEK_FIELDS,
     WEEKEND_FIELDS,
     WEEKEND_GROUPS
   } = window.JEAnnouncementSchemas;
 
   const MIDWEEK_SECTIONS = {
-    header: { title: 'Semana', icon: 'calendar_today' },
-    tesouros: { title: 'Tesouros da Palavra de Deus', icon: 'auto_stories' },
-    ministerio: { title: 'Faça seu melhor no ministério', icon: 'diversity_3' },
-    vida: { title: 'Nossa vida cristã', icon: 'favorite' }
-  };
-
-  const BLOCK_TITLES = {
-    mecanicas: 'Designações Mecânicas',
-    midweek: 'Nossa Vida e Ministério Cristão',
-    weekend: 'Discurso Público e Sentinela'
+    header: 'Semana',
+    tesouros: 'Tesouros da Palavra de Deus',
+    ministerio: 'Faça seu melhor no ministério',
+    vida: 'Nossa vida cristã'
   };
 
   function esc(s) {
@@ -26,99 +19,97 @@
   }
 
   const T = window.JEAnnouncementTheme || {
-    header: '#002060', headerAlt: '#1F497D', headerText: '#FFFFFF',
-    accent: '#984806', sectionBg: '#EEECE1', rowAlt: '#D9E2F3', cream: '#F7F6F2', border: '#1F497D', text: '#1B1C1C'
+    header: '#002060', headerAlt: '#1F497D', accent: '#984806',
+    sectionBg: '#EEECE1', cream: '#F7F6F2', border: '#1F497D', text: '#1B1C1C'
   };
 
-  function editorMirrorCss() {
+  function hasValue(v) {
+    return String(v ?? '').trim().length > 0;
+  }
+
+  function pdfCss() {
     return `
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; background: #fff; }
       .pdf-doc {
         width: 186mm;
         max-width: 186mm;
-        margin: 0;
-        padding: 0;
         font-family: Inter, Calibri, Arial, sans-serif;
+        font-size: 8pt;
+        line-height: 1.3;
         color: ${T.text};
-        background: ${T.cream};
+        background: #fff;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
       .pdf-cover {
-        margin-bottom: 14px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid ${T.header};
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 4px 12px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1.5px solid ${T.header};
       }
       .pdf-cover h1 {
         color: ${T.header};
-        font-size: 17pt;
+        font-size: 12pt;
         font-weight: 800;
-        margin: 0 0 4px;
-        line-height: 1.2;
+        margin: 0;
       }
       .pdf-cover p {
         margin: 0;
         color: #43474f;
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 600;
+      }
+      .pdf-cards-flow {
+        column-count: 2;
+        column-gap: 8px;
       }
       .pdf-card {
-        margin-bottom: 14px;
-        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 8px;
       }
+      .pdf-full-width { column-span: all; }
       .qa-doc-panel {
-        border: 2px solid ${T.header};
-        border-radius: 0.75rem;
+        border: 1px solid rgba(31,73,125,.28);
+        border-radius: 6px;
         overflow: hidden;
         background: #fff;
-        box-shadow: 0 4px 14px rgba(0,32,96,.08);
       }
-      .qa-doc-banner {
-        background: ${T.header};
-        color: #fff;
-        padding: 0.875rem 1.25rem;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
+      .qa-doc-banner--lite {
+        background: ${T.sectionBg};
+        border-left: 3px solid ${T.header};
+        padding: 4px 8px;
       }
-      .qa-doc-banner h3 {
-        font-size: 13pt;
+      .qa-doc-banner--lite h3 {
+        font-size: 8.5pt;
         font-weight: 800;
+        color: ${T.header};
         margin: 0;
-        line-height: 1.2;
+        line-height: 1.25;
       }
-      .qa-doc-banner h3 .weekday { opacity: 0.9; font-weight: 600; }
-      .qa-doc-banner-meta {
-        font-size: 7.5pt;
-        opacity: 0.85;
+      .qa-doc-banner--lite .weekday {
+        color: ${T.headerAlt};
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin: 0 0 3px;
       }
-      .qa-doc-body { padding: 1rem 1.125rem; background: ${T.cream}; }
-      .qa-table-block {
-        border: 1px solid ${T.border};
-        border-radius: 0.5rem;
-        overflow: hidden;
-        background: #fff;
-      }
+      .qa-doc-body--flush { padding: 0; background: #fff; }
+      .qa-table-block { border: none; border-radius: 0; }
       .qa-table-head {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         background: ${T.header};
         color: #fff;
-        font-size: 7pt;
+        font-size: 5.5pt;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
       }
       .qa-table-head span {
-        padding: 0.45rem 0.65rem;
-        border-right: 1px solid rgba(255,255,255,.15);
+        padding: 3px 5px;
+        border-right: 1px solid rgba(255,255,255,.12);
       }
       .qa-table-head span:last-child { border-right: none; }
       .qa-table-row {
@@ -127,132 +118,90 @@
         border-top: 1px solid #D9E2F3;
       }
       .qa-table-row .qa-cell {
-        padding: 0.55rem 0.65rem;
+        padding: 3px 5px;
         border-right: 1px solid #D9E2F3;
+        min-height: 1.35rem;
       }
       .qa-table-row .qa-cell:last-child { border-right: none; }
-      .qa-table-row .qa-cell label {
-        font-size: 6.5pt;
+      .qa-value-txt {
+        font-size: 7.5pt;
+        font-weight: 500;
+        color: ${T.text};
+        word-wrap: break-word;
+        line-height: 1.25;
+      }
+      .qa-value-txt.is-empty { color: #b8bcc6; }
+      .qa-section-compact { margin-bottom: 5px; }
+      .qa-section-compact:last-child { margin-bottom: 0; }
+      .qa-section-compact-title {
+        font-size: 5.5pt;
         font-weight: 800;
-        color: ${T.headerAlt};
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        margin-bottom: 0.3rem;
+        color: ${T.headerAlt};
+        margin: 0 0 3px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #D9E2F3;
       }
-      .qa-table-row .qa-cell label::before {
-        content: '';
-        width: 2px;
-        height: 0.55rem;
-        border-radius: 1px;
-        background: ${T.accent};
+      .qa-inline-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px 8px;
       }
-      .qa-value {
-        border: 1px solid #c3c6d0;
-        border-radius: 0.375rem;
-        padding: 0.45rem 0.55rem;
-        font-size: 9pt;
-        font-weight: 500;
-        background: #fff;
-        color: ${T.text};
-        min-height: 1.75rem;
-        line-height: 1.35;
-        word-wrap: break-word;
+      .qa-inline-grid.cols-1 { grid-template-columns: 1fr; }
+      .qa-inline-item {
+        font-size: 7pt;
+        line-height: 1.3;
+        margin: 0;
       }
-      .qa-value.is-empty { color: #9aa0ab; font-style: italic; }
-      .qa-section {
-        background: #fff;
-        border: 1px solid rgba(31,73,125,.35);
-        border-radius: 0.625rem;
-        margin-bottom: 0.75rem;
+      .qa-inline-item strong {
+        color: ${T.headerAlt};
+        font-weight: 700;
+        font-size: 6pt;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .qa-doc-panel--stacked .qa-doc-body { padding: 6px 8px; background: #fff; }
+      .qa-limpeza-compact {
+        border: 1px solid rgba(152,72,6,.35);
+        border-radius: 6px;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,32,96,.06);
+        margin-top: 6px;
+        break-inside: avoid;
       }
-      .qa-section:last-child { margin-bottom: 0; }
-      .qa-section-title {
+      .qa-limpeza-compact-head {
+        background: ${T.sectionBg};
+        border-left: 3px solid ${T.accent};
+        padding: 4px 8px;
         font-size: 7pt;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: ${T.header};
-        background: linear-gradient(180deg, ${T.sectionBg} 0%, #e8e6df 100%);
-        padding: 0.55rem 0.875rem;
-        border-bottom: 1px solid #D9E2F3;
-      }
-      .qa-section-body { padding: 0.75rem 0.875rem; background: #fff; }
-      .qa-fields-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.65rem;
-      }
-      .qa-fields-grid.cols-1 { grid-template-columns: 1fr; }
-      .qa-field { display: flex; flex-direction: column; gap: 0.25rem; }
-      .qa-field.span-2 { grid-column: 1 / -1; }
-      .qa-field-tag {
-        font-size: 6.5pt;
-        font-weight: 800;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: ${T.headerAlt};
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
-      .qa-field-tag::before {
-        content: '';
-        width: 2px;
-        height: 0.7rem;
-        border-radius: 1px;
-        background: linear-gradient(180deg, ${T.header} 0%, ${T.accent} 100%);
-      }
-      .qa-subsection {
-        border: 1px dashed rgba(31,73,125,.25);
-        border-radius: 0.5rem;
-        padding: 0.75rem;
-        background: ${T.cream};
-        margin-bottom: 0.65rem;
-      }
-      .qa-subsection:last-child { margin-bottom: 0; }
-      .qa-subsection-head {
-        font-size: 6.5pt;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: ${T.header};
-        margin-bottom: 0.55rem;
-        padding-bottom: 0.35rem;
-        border-bottom: 1px solid rgba(31,73,125,.12);
-      }
-      .qa-limpeza-wrap {
-        border: 2px solid ${T.accent};
-        border-radius: 0.75rem;
-        overflow: hidden;
-        background: #fff;
-        margin-top: 14px;
-        page-break-inside: avoid;
-      }
-      .qa-limpeza-head {
-        background: linear-gradient(135deg, ${T.accent}, #C8A96E);
-        color: #fff;
-        padding: 0.65rem 0.875rem;
-        font-weight: 800;
-        font-size: 8.5pt;
-        text-transform: uppercase;
         letter-spacing: 0.05em;
+        color: ${T.accent};
       }
-      .qa-limpeza-body { padding: 0.75rem; background: ${T.cream}; }
-      .qa-limpeza-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.65rem;
+      .qa-limpeza-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 7.5pt;
+      }
+      .qa-limpeza-table th,
+      .qa-limpeza-table td {
+        border: 1px solid #D9E2F3;
+        padding: 3px 6px;
+        text-align: left;
+      }
+      .qa-limpeza-table th {
+        background: ${T.header};
+        color: #fff;
+        font-size: 5.5pt;
+        text-transform: uppercase;
+        font-weight: 700;
       }
     `;
   }
 
   function wrapPdfDocument(inner) {
-    return `<style>${editorMirrorCss()}</style><div class="pdf-doc">${inner}</div>`;
+    return `<style>${pdfCss()}</style><div class="pdf-doc">${inner}</div>`;
   }
 
   function pdfCover(title, subtitle) {
@@ -263,68 +212,54 @@
       </header>`;
   }
 
-  function pdfValue(label, value, span2) {
+  function pdfCellValue(value) {
     const raw = String(value ?? '').trim();
-    const emptyClass = raw ? '' : ' is-empty';
-    const display = raw || '—';
-    return `
-      <div class="qa-field${span2 ? ' span-2' : ''}">
-        <span class="qa-field-tag">${esc(label)}</span>
-        <div class="qa-value${emptyClass}">${esc(display)}</div>
-      </div>`;
-  }
-
-  function pdfCell(label, value) {
-    const raw = String(value ?? '').trim();
-    const emptyClass = raw ? '' : ' is-empty';
-    const display = raw || '—';
-    return `
-      <div class="qa-cell">
-        <label>${esc(label)}</label>
-        <div class="qa-value${emptyClass}">${esc(display)}</div>
-      </div>`;
-  }
-
-  function pdfDocPanel(meta, title, weekday, bodyHtml) {
-    return `
-      <article class="qa-doc-panel pdf-card">
-        <div class="qa-doc-banner">
-          <div>
-            <p class="qa-doc-banner-meta">${esc(meta)}</p>
-            <h3>${esc(title)}${weekday ? ` <span class="weekday">(${esc(weekday)})</span>` : ''}</h3>
-          </div>
-        </div>
-        <div class="qa-doc-body">${bodyHtml}</div>
-      </article>`;
+    return `<div class="qa-cell"><div class="qa-value-txt${raw ? '' : ' is-empty'}">${raw ? esc(raw) : '·'}</div></div>`;
   }
 
   function pdfMecanicasGrid(d) {
-    const cell = (key) => {
-      const field = MECANICAS_FIELDS.find((f) => f.key === key);
-      return pdfCell(field?.label || key, d[key]);
-    };
     return `
       <div class="qa-table-block">
         <div class="qa-table-head"><span>Portão</span><span>Indicador</span><span>Som</span></div>
-        <div class="qa-table-row">${cell('portao')}${cell('indicador')}${cell('som')}</div>
-        <div class="qa-table-head"><span>Microf. volante 1</span><span>Microf. volante 2</span><span>Limpeza (grupo)</span></div>
-        <div class="qa-table-row">${cell('microf_volantes_1')}${cell('microf_volantes_2')}${cell('limpeza_grupo')}</div>
+        <div class="qa-table-row">${pdfCellValue(d.portao)}${pdfCellValue(d.indicador)}${pdfCellValue(d.som)}</div>
+        <div class="qa-table-head"><span>Mic. 1</span><span>Mic. 2</span><span>Limpeza</span></div>
+        <div class="qa-table-row">${pdfCellValue(d.microf_volantes_1)}${pdfCellValue(d.microf_volantes_2)}${pdfCellValue(d.limpeza_grupo)}</div>
       </div>`;
+  }
+
+  function pdfDateTitle(iso, weekday) {
+    const date = iso ? formatDisplayDate(iso) : 'Sem data';
+    return weekday
+      ? `${esc(date)} <span class="weekday">· ${esc(weekday)}</span>`
+      : esc(date);
+  }
+
+  function pdfMecanicasCard(entry) {
+    const d = entry.data || {};
+    return `
+      <article class="qa-doc-panel pdf-card">
+        <div class="qa-doc-banner qa-doc-banner--lite">
+          <h3>${pdfDateTitle(entry.event_date, entry.weekday_label)}</h3>
+        </div>
+        <div class="qa-doc-body qa-doc-body--flush">${pdfMecanicasGrid(d)}</div>
+      </article>`;
+  }
+
+  function pdfInlineField(label, value) {
+    if (!hasValue(value)) return '';
+    return `<p class="qa-inline-item"><strong>${esc(label)}:</strong> ${esc(value)}</p>`;
   }
 
   function pdfMidweekBody(d) {
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
       const secFields = MIDWEEK_FIELDS.filter((f) => f.section === sec);
-      if (!secFields.length) return '';
-      const meta = MIDWEEK_SECTIONS[sec];
-      const fieldsHtml = secFields.map((f) => pdfValue(f.label, d[f.key])).join('');
+      const items = secFields.map((f) => pdfInlineField(f.label, d[f.key])).filter(Boolean).join('');
+      if (!items) return '';
       return `
-        <div class="qa-section">
-          <div class="qa-section-title">${esc(meta.title)}</div>
-          <div class="qa-section-body">
-            <div class="qa-fields-grid">${fieldsHtml}</div>
-          </div>
+        <div class="qa-section-compact">
+          <p class="qa-section-compact-title">${esc(MIDWEEK_SECTIONS[sec])}</p>
+          <div class="qa-inline-grid">${items}</div>
         </div>`;
     }).join('');
   }
@@ -335,73 +270,80 @@
       const meta = WEEKEND_GROUPS[gid];
       const groupFields = WEEKEND_FIELDS.filter((f) => f.group === gid);
       if (!groupFields.length || !meta) return '';
-      const isSpecial = gid === 'especial';
-      const fieldsHtml = groupFields.map((f) => pdfValue(f.label, d[f.key], isSpecial)).join('');
+      const items = groupFields.map((f) => pdfInlineField(f.label, d[f.key])).filter(Boolean).join('');
+      if (!items) return '';
+      const gridClass = gid === 'especial' ? ' cols-1' : '';
       return `
-        <div class="qa-subsection">
-          <div class="qa-subsection-head">${esc(meta.title)}</div>
-          <div class="qa-fields-grid${isSpecial ? ' cols-1' : ''}">${fieldsHtml}</div>
+        <div class="qa-section-compact">
+          <p class="qa-section-compact-title">${esc(meta.title)}</p>
+          <div class="qa-inline-grid${gridClass}">${items}</div>
         </div>`;
     }).join('');
+  }
+
+  function pdfStackedCard(entry, bodyHtml, extraTitle) {
+    const title = extraTitle || pdfDateTitle(entry.event_date, entry.weekday_label);
+    return `
+      <article class="qa-doc-panel qa-doc-panel--stacked pdf-card">
+        <div class="qa-doc-banner qa-doc-banner--lite">
+          <h3>${title}</h3>
+        </div>
+        <div class="qa-doc-body">${bodyHtml || '<p class="qa-inline-item" style="color:#b8bcc6">Sem designações preenchidas</p>'}</div>
+      </article>`;
+  }
+
+  function pdfLimpezaBlock(cleaningRows) {
+    if (!cleaningRows.length) return '';
+    const rows = cleaningRows.map((e) => {
+      const d = e.data || {};
+      return `<tr><td>${esc(d.fim_de_semana) || '·'}</td><td>${esc(d.grupo) || '·'}</td></tr>`;
+    }).join('');
+    return `
+      <div class="qa-limpeza-compact pdf-full-width">
+        <div class="qa-limpeza-compact-head">Limpeza mensal</div>
+        <table class="qa-limpeza-table">
+          <thead><tr><th>Fim de semana</th><th>Grupo</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   function renderMecanicasHtml(board, entries, cleaningRows) {
     const month = board.reference_label || '';
     const list = entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
-    let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Congregação Jardim Elizabeth`);
-
-    list.forEach((e, idx) => {
-      const d = e.data || {};
-      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
-      const meta = `${BLOCK_TITLES.mecanicas} · ${idx + 1} de ${list.length}`;
-      body += pdfDocPanel(meta, dateTitle, e.weekday_label || '', pdfMecanicasGrid(d));
-    });
-
-    if (cleaningRows.length) {
-      body += `<div class="qa-limpeza-wrap">
-        <div class="qa-limpeza-head">Limpeza mensal</div>
-        <div class="qa-limpeza-body">`;
-      cleaningRows.forEach((e, idx) => {
-        const d = e.data || {};
-        body += `
-          <div class="qa-limpeza-row" style="margin-bottom:${idx < cleaningRows.length - 1 ? '0.65rem' : '0'}">
-            ${pdfValue('Fim de semana', d.fim_de_semana)}
-            ${pdfValue('Grupo', d.grupo)}
-          </div>`;
-      });
-      body += '</div></div>';
-    }
+    let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
+    body += '<div class="pdf-cards-flow">';
+    list.forEach((e) => { body += pdfMecanicasCard(e); });
+    body += pdfLimpezaBlock(cleaningRows);
+    body += '</div>';
 
     return wrapPdfDocument(body);
   }
 
   function renderMidweekHtml(board, entries) {
     const list = entries.filter((e) => e.block === 'midweek').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    let body = pdfCover(SECTION_TITLES.midweek, `${board.reference_label || ''} — Congregação Jardim Elizabeth`);
-
-    list.forEach((e, idx) => {
+    let body = pdfCover(SECTION_TITLES.midweek, `${board.reference_label || ''} — Jardim Elizabeth`);
+    body += '<div class="pdf-cards-flow">';
+    list.forEach((e) => {
       const d = e.data || {};
-      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
-      const subtitle = d.leitura_biblica ? `${dateTitle} — ${d.leitura_biblica}` : dateTitle;
-      const meta = `${BLOCK_TITLES.midweek} · ${idx + 1} de ${list.length}`;
-      body += pdfDocPanel(meta, subtitle, e.weekday_label || '', pdfMidweekBody(d));
+      const reading = hasValue(d.leitura_biblica) ? ` — ${esc(d.leitura_biblica)}` : '';
+      const title = `${pdfDateTitle(e.event_date, e.weekday_label)}${reading}`;
+      const inner = pdfMidweekBody(d);
+      body += pdfStackedCard(e, inner, title);
     });
-
+    body += '</div>';
     return wrapPdfDocument(body);
   }
 
   function renderWeekendHtml(board, entries) {
     const list = entries.filter((e) => e.block === 'weekend').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    let body = pdfCover(SECTION_TITLES.weekend, `${board.reference_label || ''} — Congregação Jardim Elizabeth`);
-
-    list.forEach((e, idx) => {
-      const d = e.data || {};
-      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
-      const meta = `${BLOCK_TITLES.weekend} · ${idx + 1} de ${list.length}`;
-      body += pdfDocPanel(meta, dateTitle, e.weekday_label || '', pdfWeekendBody(d));
+    let body = pdfCover(SECTION_TITLES.weekend, `${board.reference_label || ''} — Jardim Elizabeth`);
+    body += '<div class="pdf-cards-flow">';
+    list.forEach((e) => {
+      body += pdfStackedCard(e, pdfWeekendBody(e.data || {}));
     });
-
+    body += '</div>';
     return wrapPdfDocument(body);
   }
 
@@ -439,9 +381,9 @@
 
     try {
       return await window.html2pdf().set({
-        margin: [10, 10, 10, 10],
+        margin: [8, 8, 8, 8],
         filename: 'quadro.pdf',
-        image: { type: 'jpeg', quality: 0.96 },
+        image: { type: 'jpeg', quality: 0.94 },
         html2canvas: {
           scale: 2,
           useCORS: true,
