@@ -2,20 +2,27 @@
   const { formatDisplayDate } = window.JEAnnouncementDates;
   const {
     SECTION_TITLES,
-    MIDWEEK_FIELDS,
     WEEKEND_FIELDS,
     WEEKEND_GROUPS
   } = window.JEAnnouncementSchemas;
 
-  const MIDWEEK_SECTIONS = {
-    header: 'Semana',
-    tesouros: 'Tesouros da Palavra de Deus',
-    ministerio: 'Faça seu melhor no ministério',
-    vida: 'Nossa vida cristã'
+  const MIDWEEK_THEME = {
+    tesouros: { color: '#4A7190', icon: '◆', title: 'Tesouros da Palavra de Deus' },
+    ministerio: { color: '#8F7344', icon: '❋', title: 'Faça seu melhor no ministério' },
+    vida: { color: '#9B4545', icon: '●', title: 'Nossa vida cristã' }
   };
+
+  function val(v) {
+    return String(v ?? '').trim();
+  }
 
   function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function valOrDot(v) {
+    const s = val(v);
+    return s ? esc(s) : '<span class="mw-empty">·</span>';
   }
 
   const T = window.JEAnnouncementTheme || {
@@ -197,6 +204,115 @@
         text-transform: uppercase;
         font-weight: 700;
       }
+      .pdf-midweek-list { display: flex; flex-direction: column; gap: 12px; }
+      .mw-week-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        background: #fff;
+      }
+      .mw-week-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #E8EEF5;
+        border: 1px solid #C5D4E8;
+        border-radius: 8px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+      }
+      .mw-week-bar-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #C5D4E8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        flex-shrink: 0;
+      }
+      .mw-week-bar-title {
+        font-size: 9.5pt;
+        font-weight: 800;
+        color: ${T.header};
+        margin: 0;
+        line-height: 1.2;
+      }
+      .mw-week-meta {
+        text-align: center;
+        font-size: 7.5pt;
+        color: #43474f;
+        margin: 0 0 10px;
+        line-height: 1.4;
+      }
+      .mw-week-meta strong { color: ${T.header}; font-weight: 700; }
+      .mw-section { margin-bottom: 10px; }
+      .mw-section:last-child { margin-bottom: 0; }
+      .mw-section-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .mw-section-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .mw-section-title {
+        font-size: 6.5pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .mw-rows { display: flex; flex-direction: column; gap: 3px; }
+      .mw-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: start;
+        font-size: 7.5pt;
+        line-height: 1.35;
+      }
+      .mw-row--solo { grid-template-columns: 1fr; }
+      .mw-row-main { color: ${T.text}; }
+      .mw-row-main .mw-num { font-weight: 800; margin-right: 2px; }
+      .mw-row-main strong { font-weight: 700; }
+      .mw-row-side {
+        text-align: right;
+        font-size: 6.5pt;
+        color: #43474f;
+        min-width: 38%;
+        max-width: 42%;
+        line-height: 1.35;
+      }
+      .mw-row-side strong { color: ${T.headerAlt}; font-weight: 700; }
+      .mw-row-sub {
+        font-size: 6.5pt;
+        color: #43474f;
+        margin-top: 1px;
+        padding-left: 1.1em;
+      }
+      .mw-footer {
+        margin-top: 8px;
+        text-align: right;
+        font-size: 7.5pt;
+        color: #9B4545;
+      }
+      .mw-footer strong { font-weight: 800; }
+      .mw-section--tesouros .mw-row-main { color: #4A7190; }
+      .mw-section--ministerio .mw-row-main { color: #8F7344; }
+      .mw-section--vida .mw-row-main { color: #9B4545; }
+      .mw-empty { color: #b8bcc6; }
     `;
   }
 
@@ -250,18 +366,96 @@
     return `<p class="qa-inline-item"><strong>${esc(label)}:</strong> ${esc(value)}</p>`;
   }
 
-  function pdfMidweekBody(d) {
-    const sections = ['header', 'tesouros', 'ministerio', 'vida'];
-    return sections.map((sec) => {
-      const secFields = MIDWEEK_FIELDS.filter((f) => f.section === sec);
-      const items = secFields.map((f) => pdfInlineField(f.label, d[f.key])).filter(Boolean).join('');
-      if (!items) return '';
-      return `
-        <div class="qa-section-compact">
-          <p class="qa-section-compact-title">${esc(MIDWEEK_SECTIONS[sec])}</p>
-          <div class="qa-inline-grid">${items}</div>
-        </div>`;
+  function pdfMidweekRow(num, mainHtml, sideHtml, solo) {
+    const side = sideHtml
+      ? `<div class="mw-row-side">${sideHtml}</div>`
+      : '';
+    return `
+      <div class="mw-row${solo || !sideHtml ? ' mw-row--solo' : ''}">
+        <div class="mw-row-main"><span class="mw-num">${num}.</span> ${mainHtml}</div>
+        ${side}
+      </div>`;
+  }
+
+  function pdfMidweekSection(themeKey, rowsHtml) {
+    if (!rowsHtml) return '';
+    const theme = MIDWEEK_THEME[themeKey];
+    return `
+      <section class="mw-section mw-section--${themeKey}">
+        <div class="mw-section-head">
+          <span class="mw-section-icon" style="background:${theme.color}">${theme.icon}</span>
+          <h4 class="mw-section-title" style="color:${theme.color}">${esc(theme.title)}</h4>
+        </div>
+        <div class="mw-rows">${rowsHtml}</div>
+      </section>`;
+  }
+
+  function pdfMidweekMeeting(entry) {
+    const d = entry.data || {};
+    const datePart = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
+    const reading = val(d.leitura_biblica);
+    const weekTitle = reading
+      ? `${esc(datePart)} – ${esc(reading.toUpperCase())}`
+      : esc(datePart);
+
+    const tesourosRows = [
+      pdfMidweekRow(1, `<strong>${valOrDot(d.tesouros_titulo)}</strong> – ${valOrDot(d.tesouros_designado)}`, '', true),
+      pdfMidweekRow(2, `Joias espirituais – ${valOrDot(d.joias_designado)}`, '', true),
+      pdfMidweekRow(
+        3,
+        `Leitura da Bíblia – ${valOrDot(d.leitura_biblia)}`,
+        [
+          val(d.dirigente_sala_b) ? `<div><strong>Dirigente Sala B:</strong> ${esc(d.dirigente_sala_b)}</div>` : '',
+          val(d.leitura_biblia_sala_b) ? `<div><strong>Sala B:</strong> ${esc(d.leitura_biblia_sala_b)}</div>` : ''
+        ].filter(Boolean).join('') || ''
+      )
+    ].join('');
+
+    const ministerioRows = [1, 2, 3].map((i) => {
+      const tipo = d[`ministerio_${i}_tipo`];
+      const designados = d[`ministerio_${i}_designados`];
+      const salaB = d[`ministerio_${i}_sala_b`];
+      const label = val(tipo) || 'Designação';
+      const side = val(salaB) ? `<div><strong>Sala B:</strong> ${esc(salaB)}</div>` : '';
+      return pdfMidweekRow(i + 3, `<strong>${esc(label)}</strong> – ${valOrDot(designados)}`, side);
     }).join('');
+
+    const item8 = `
+      <div class="mw-item-group">
+        ${pdfMidweekRow(8, 'Estudo bíblico de congregação', '', true)}
+        ${val(d.leitor_sentinela) ? `<div class="mw-row-sub"><strong>Leitor:</strong> ${esc(d.leitor_sentinela)}</div>` : ''}
+      </div>`;
+
+    const vidaRows = [
+      pdfMidweekRow(7, `<strong>${valOrDot(d.vida_crista_titulo)}</strong> – ${valOrDot(d.vida_crista_designado)}`, '', true),
+      item8
+    ].join('');
+
+    const metaParts = [];
+    if (val(d.cantico)) metaParts.push(`<strong>Cântico:</strong> ${esc(d.cantico)}`);
+    if (val(d.presidente)) metaParts.push(`<strong>Presidente</strong> – ${esc(d.presidente)}`);
+    const metaHtml = metaParts.length
+      ? `<p class="mw-week-meta">${metaParts.join(' &nbsp;|&nbsp; ')}</p>`
+      : '';
+
+    const oracaoHtml = val(d.oracao_final)
+      ? `<div class="mw-footer"><strong>Oração final</strong> – ${esc(d.oracao_final)}</div>`
+      : '';
+
+    return `
+      <article class="mw-week-card pdf-card">
+        <div class="mw-week-bar">
+          <span class="mw-week-bar-icon" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A7190" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </span>
+          <h3 class="mw-week-bar-title">${weekTitle}</h3>
+        </div>
+        ${metaHtml}
+        ${pdfMidweekSection('tesouros', tesourosRows)}
+        ${pdfMidweekSection('ministerio', ministerioRows)}
+        ${pdfMidweekSection('vida', vidaRows)}
+        ${oracaoHtml}
+      </article>`;
   }
 
   function pdfWeekendBody(d) {
@@ -324,14 +518,8 @@
   function renderMidweekHtml(board, entries) {
     const list = entries.filter((e) => e.block === 'midweek').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     let body = pdfCover(SECTION_TITLES.midweek, `${board.reference_label || ''} — Jardim Elizabeth`);
-    body += '<div class="pdf-cards-flow">';
-    list.forEach((e) => {
-      const d = e.data || {};
-      const reading = hasValue(d.leitura_biblica) ? ` — ${esc(d.leitura_biblica)}` : '';
-      const title = `${pdfDateTitle(e.event_date, e.weekday_label)}${reading}`;
-      const inner = pdfMidweekBody(d);
-      body += pdfStackedCard(e, inner, title);
-    });
+    body += '<div class="pdf-midweek-list">';
+    list.forEach((e) => { body += pdfMidweekMeeting(e); });
     body += '</div>';
     return wrapPdfDocument(body);
   }
