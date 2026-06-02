@@ -4,6 +4,11 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   function showToast(el, message, isError) {
+    if (el) el.classList.add('hidden');
+    if (window.JEToast?.show) {
+      window.JEToast.show(message, { error: !!isError });
+      return;
+    }
     if (!el) return;
     el.textContent = message;
     el.classList.remove('hidden', 'text-error', 'text-green-700');
