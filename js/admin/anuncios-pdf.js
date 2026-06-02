@@ -93,21 +93,30 @@
         column-count: 2;
         column-gap: 8px;
       }
-      .pdf-mecanicas-flow {
-        column-count: 1;
-        column-gap: 0;
+      .pdf-mecanicas-pages { display: block; }
+      .pdf-mecanicas-sheet {
+        display: block;
+        padding-bottom: 4mm;
       }
       .pdf-card {
         break-inside: avoid;
+        page-break-inside: avoid;
         margin-bottom: 8px;
       }
-      .pdf-mecanicas-flow .pdf-card {
-        margin-bottom: 14px;
+      .pdf-mecanicas-sheet .pdf-card {
+        margin-bottom: 20px;
       }
-      .pdf-page-break {
-        break-after: page;
-        page-break-after: always;
+      .pdf-mecanicas-sheet .pdf-card:last-child {
+        margin-bottom: 0;
+      }
+      .html2pdf__page-break {
+        display: block;
         height: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+        page-break-before: always;
+        break-before: page;
       }
       .pdf-full-width { column-span: all; }
       .qa-doc-panel {
@@ -654,19 +663,39 @@
       </div>`;
   }
 
+  function chunkEntries(list, size) {
+    const chunks = [];
+    for (let i = 0; i < list.length; i += size) chunks.push(list.slice(i, i + size));
+    return chunks;
+  }
+
   function renderMecanicasHtml(board, entries, cleaningRows) {
     const month = board.reference_label || '';
     const list = entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    const sheets = chunkEntries(list, 3);
 
-    let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
-    body += '<div class="pdf-cards-flow pdf-mecanicas-flow">';
-    list.forEach((e, idx) => {
-      body += pdfMecanicasCard(e, idx, list.length);
-      if (idx % 3 === 2 && idx < list.length - 1) body += '<div class="pdf-page-break"></div>';
+    let body = '<div class="pdf-mecanicas-pages">';
+    let cardIndex = 0;
+
+    sheets.forEach((sheetEntries, sheetIdx) => {
+      if (sheetIdx > 0) body += '<div class="html2pdf__page-break"></div>';
+      body += '<div class="pdf-mecanicas-sheet">';
+      if (sheetIdx === 0) {
+        body += pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
+      }
+      sheetEntries.forEach((e) => {
+        body += pdfMecanicasCard(e, cardIndex, list.length);
+        cardIndex += 1;
+      });
+      body += '</div>';
     });
-    body += pdfLimpezaBlock(cleaningRows);
-    body += '</div>';
 
+    if (cleaningRows.length) {
+      body += '<div class="html2pdf__page-break"></div>';
+      body += `<div class="pdf-mecanicas-sheet">${pdfLimpezaBlock(cleaningRows)}</div>`;
+    }
+
+    body += '</div>';
     return wrapPdfDocument(body);
   }
 
@@ -734,7 +763,11 @@
           scrollX: 0,
           scrollY: 0
         },
-        pagebreak: { mode: ['css', 'legacy'] },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy'],
+          before: '.html2pdf__page-break',
+          avoid: ['.pdf-card', '.qa-doc-panel--editor', '.pdf-mecanicas-sheet']
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).from(target).output('blob');
     } finally {
