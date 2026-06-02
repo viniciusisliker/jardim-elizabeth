@@ -93,9 +93,21 @@
         column-count: 2;
         column-gap: 8px;
       }
+      .pdf-mecanicas-flow {
+        column-count: 1;
+        column-gap: 0;
+      }
       .pdf-card {
         break-inside: avoid;
         margin-bottom: 8px;
+      }
+      .pdf-mecanicas-flow .pdf-card {
+        margin-bottom: 14px;
+      }
+      .pdf-page-break {
+        break-after: page;
+        page-break-after: always;
+        height: 0;
       }
       .pdf-full-width { column-span: all; }
       .qa-doc-panel {
@@ -647,8 +659,11 @@
     const list = entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
     let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
-    body += '<div class="pdf-cards-flow">';
-    list.forEach((e, idx) => { body += pdfMecanicasCard(e, idx, list.length); });
+    body += '<div class="pdf-cards-flow pdf-mecanicas-flow">';
+    list.forEach((e, idx) => {
+      body += pdfMecanicasCard(e, idx, list.length);
+      if (idx % 3 === 2 && idx < list.length - 1) body += '<div class="pdf-page-break"></div>';
+    });
     body += pdfLimpezaBlock(cleaningRows);
     body += '</div>';
 
