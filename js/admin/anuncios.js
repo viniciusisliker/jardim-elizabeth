@@ -13,6 +13,8 @@
   let savedBoards = [];
   let boardListFilter = 'all';
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
+  const pendingPdfs = {};
+  let pdfPreviewBlock = null;
 
   const MIDWEEK_SECTIONS = {
     header: { title: 'Semana', icon: 'calendar_today' },
@@ -351,6 +353,7 @@
       entries.push({ ...g, id: newLocalId(), board_id: board.id, data: Schemas.emptyData(block) });
     });
     blockSelection[block] = 0;
+    revokePendingPdf(block);
     renderAllEditors();
   }
 
@@ -386,6 +389,7 @@
   }
 
   async function hydrateBoardFromRecord(existing) {
+    clearAllPendingPdfs();
     const referenceMonth = existing.reference_month;
     board = existing;
     entries = [];
@@ -450,6 +454,7 @@
       board = null;
       entries = [];
       resetBlockSelection();
+      clearAllPendingPdfs();
       updateBoardLabel();
       renderAllEditors();
     }
@@ -470,6 +475,7 @@
 
     entries = [];
     resetBlockSelection();
+    clearAllPendingPdfs();
 
     let existing = null;
     try {
@@ -561,20 +567,91 @@
       readFormIntoEntries();
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
       await persistEntries();
+      clearAllPendingPdfs();
       showToast(toastEl, 'Rascunho salvo.');
     } catch (err) {
       showToast(toastEl, err.message, true);
     }
   }
 
-  async function publishBlock(block) {
+  function revokePendingPdf(block) {
+    if (pendingPdfs[block]?.objectUrl) {
+      URL.revokeObjectURL(pendingPdfs[block].objectUrl);
+    }
+    delete pendingPdfs[block];
+    updatePublishButtonsState();
+  }
+
+  function clearAllPendingPdfs() {
+    Object.keys(pendingPdfs).forEach((block) => revokePendingPdf(block));
+  }
+
+  function updatePublishButtonsState() {
+    document.querySelectorAll('.btn-publish-block').forEach((btn) => {
+      const block = btn.dataset.publishBlock;
+      const ready = !!pendingPdfs[block]?.blob;
+      btn.disabled = !ready;
+      btn.title = ready ? 'Publica o PDF revisado no site' : 'Gere o PDF antes de publicar';
+    });
+  }
+
+  function openPdfPreviewModal(block) {
+    const pending = pendingPdfs[block];
+    if (!pending?.objectUrl) return;
+    pdfPreviewBlock = block;
+    const frame = $('pdf-preview-frame');
+    const title = $('pdf-preview-title');
+    const openTab = $('pdf-preview-open-tab');
+    if (title) title.textContent = `Prévia — ${Schemas.SECTION_TITLES[block]}`;
+    if (frame) frame.src = pending.objectUrl;
+    if (openTab) openTab.href = pending.objectUrl;
+    $('pdf-preview-modal')?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePdfPreviewModal() {
+    $('pdf-preview-modal')?.classList.add('hidden');
+    const frame = $('pdf-preview-frame');
+    if (frame) frame.src = 'about:blank';
+    document.body.style.overflow = '';
+    pdfPreviewBlock = null;
+  }
+
+  async function generatePdfBlock(block) {
     try {
       readFormIntoEntries();
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
       await persistEntries();
 
+      showToast(toastEl, 'Gerando PDF…');
       const html = Pdf.renderHtml(block, board, entries);
       const blob = await Pdf.htmlToPdfBlob(html);
+
+      revokePendingPdf(block);
+      const objectUrl = URL.createObjectURL(blob);
+      pendingPdfs[block] = { blob, objectUrl };
+      updatePublishButtonsState();
+      openPdfPreviewModal(block);
+      showToast(toastEl, `${Schemas.SECTION_TITLES[block]} — PDF pronto para revisão.`);
+    } catch (err) {
+      showToast(toastEl, err.message || 'Erro ao gerar PDF.', true);
+      console.error(err);
+    }
+  }
+
+  async function publishBlock(block) {
+    try {
+      const pending = pendingPdfs[block];
+      if (!pending?.blob) {
+        showToast(toastEl, 'Gere e revise o PDF antes de publicar.', true);
+        return;
+      }
+      if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
+
+      readFormIntoEntries();
+      await persistEntries();
+
+      const blob = pending.blob;
       const path = `${board.id}/${block}-${Date.now()}.pdf`;
 
       const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
@@ -603,6 +680,8 @@
       board[col] = pdfUrl;
       board.status = 'published';
       board.published_at = boardUpdate.published_at;
+      revokePendingPdf(block);
+      closePdfPreviewModal();
       updateBoardLabel();
       showToast(toastEl, `${Schemas.SECTION_TITLES[block]} publicado no site.`);
       loadPublishedList();
@@ -803,7 +882,18 @@
     $('btn-new-board').addEventListener('click', loadOrCreateBoard);
     $('btn-save-draft').addEventListener('click', saveDraft);
     document.querySelectorAll('.btn-save-draft').forEach((b) => b.addEventListener('click', saveDraft));
-    document.querySelectorAll('.btn-publish').forEach((b) => b.addEventListener('click', () => publishBlock(b.dataset.publish)));
+    document.querySelectorAll('.btn-generate-pdf').forEach((b) => b.addEventListener('click', () => generatePdfBlock(b.dataset.generatePdf)));
+    document.querySelectorAll('.btn-publish-block').forEach((b) => b.addEventListener('click', () => publishBlock(b.dataset.publishBlock)));
+
+    $('pdf-preview-close')?.addEventListener('click', closePdfPreviewModal);
+    $('pdf-preview-backdrop')?.addEventListener('click', closePdfPreviewModal);
+    $('pdf-preview-open-tab')?.addEventListener('click', (e) => {
+      const pending = pdfPreviewBlock && pendingPdfs[pdfPreviewBlock];
+      if (!pending?.objectUrl) e.preventDefault();
+    });
+    $('pdf-preview-publish')?.addEventListener('click', () => {
+      if (pdfPreviewBlock) publishBlock(pdfPreviewBlock);
+    });
 
     $('btn-regen-mecanicas').addEventListener('click', () => regenerateBlock('mecanicas'));
     $('btn-regen-midweek').addEventListener('click', () => regenerateBlock('midweek'));
@@ -842,7 +932,9 @@
     $('gcal-export-close').addEventListener('click', closeGcalExportModal);
     $('gcal-export-backdrop').addEventListener('click', closeGcalExportModal);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !$('gcal-export-modal')?.classList.contains('hidden')) closeGcalExportModal();
+      if (e.key !== 'Escape') return;
+      if (!$('gcal-export-modal')?.classList.contains('hidden')) closeGcalExportModal();
+      else if (!$('pdf-preview-modal')?.classList.contains('hidden')) closePdfPreviewModal();
     });
 
     $('history-form').addEventListener('submit', async (e) => {
@@ -858,6 +950,7 @@
 
     try {
       await loadOrCreateBoard();
+      updatePublishButtonsState();
     } catch (err) {
       showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
       console.error(err);
