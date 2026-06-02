@@ -7,9 +7,27 @@
   } = window.JEAnnouncementSchemas;
 
   const MIDWEEK_THEME = {
-    tesouros: { color: '#4A7190', icon: '◆', title: 'Tesouros da Palavra de Deus' },
-    ministerio: { color: '#8F7344', icon: '❋', title: 'Faça seu melhor no ministério' },
-    vida: { color: '#9B4545', icon: '●', title: 'Nossa vida cristã' }
+    tesouros: {
+      color: '#4A7190',
+      bg: '#EEF3F8',
+      border: 'rgba(74,113,144,.25)',
+      title: 'Tesouros da Palavra de Deus',
+      icon: '<svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M6 2h12a2 2 0 0 1 2 2v16l-7-3.5L6 20V4a2 2 0 0 1 2-2z"/></svg>'
+    },
+    ministerio: {
+      color: '#8F7344',
+      bg: '#F9F5EE',
+      border: 'rgba(143,115,68,.28)',
+      title: 'Faça seu melhor no ministério',
+      icon: '<svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>'
+    },
+    vida: {
+      color: '#9B4545',
+      bg: '#FAF0F0',
+      border: 'rgba(155,69,69,.25)',
+      title: 'Nossa vida cristã',
+      icon: '<svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+    }
   };
 
   function val(v) {
@@ -244,115 +262,180 @@
         text-transform: uppercase;
         font-weight: 700;
       }
-      .pdf-midweek-list { display: flex; flex-direction: column; gap: 12px; }
+      .pdf-midweek-list { display: flex; flex-direction: column; gap: 14px; }
       .mw-week-card {
         break-inside: avoid;
         page-break-inside: avoid;
         background: #fff;
+        border: 1px solid #C5D4E8;
+        border-radius: 10px;
+        padding: 10px 12px 12px;
+        box-shadow: 0 2px 12px rgba(0,32,96,.07);
       }
       .mw-week-bar {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: #E8EEF5;
+        gap: 10px;
+        background: linear-gradient(180deg, #EEF3F8 0%, #E8EEF5 100%);
         border: 1px solid #C5D4E8;
-        border-radius: 8px;
-        padding: 6px 10px;
-        margin-bottom: 6px;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
       }
       .mw-week-bar-icon {
-        width: 22px;
-        height: 22px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         background: #fff;
         border: 1px solid #C5D4E8;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
         flex-shrink: 0;
+        box-shadow: 0 1px 4px rgba(0,32,96,.08);
       }
       .mw-week-bar-title {
-        font-size: 9.5pt;
+        font-size: 10.5pt;
         font-weight: 800;
         color: ${T.header};
         margin: 0;
-        line-height: 1.2;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+      }
+      .mw-week-bar-sub {
+        font-size: 6.5pt;
+        font-weight: 600;
+        color: ${T.headerAlt};
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 2px 0 0;
+        opacity: 0.85;
       }
       .mw-week-meta {
-        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 10px;
+        margin: 0 0 10px;
+      }
+      .mw-meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid #D9E2F3;
+        border-radius: 999px;
+        padding: 4px 11px;
         font-size: 7.5pt;
         color: #43474f;
-        margin: 0 0 10px;
-        line-height: 1.4;
+        line-height: 1.2;
       }
-      .mw-week-meta strong { color: ${T.header}; font-weight: 700; }
-      .mw-section { margin-bottom: 10px; }
-      .mw-section:last-child { margin-bottom: 0; }
+      .mw-meta-chip strong {
+        color: ${T.header};
+        font-weight: 800;
+        font-size: 6.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .mw-section {
+        margin-bottom: 8px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,.05);
+      }
+      .mw-section:last-of-type { margin-bottom: 0; }
+      .mw-section--tesouros { background: #EEF3F8; border-color: rgba(74,113,144,.22); }
+      .mw-section--ministerio { background: #F9F5EE; border-color: rgba(143,115,68,.22); }
+      .mw-section--vida { background: #FAF0F0; border-color: rgba(155,69,69,.22); }
       .mw-section-head {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-bottom: 4px;
+        gap: 7px;
+        padding: 5px 9px;
+        border-bottom: 1px solid rgba(0,0,0,.06);
       }
+      .mw-section--tesouros .mw-section-head { background: rgba(74,113,144,.1); }
+      .mw-section--ministerio .mw-section-head { background: rgba(143,115,68,.1); }
+      .mw-section--vida .mw-section-head { background: rgba(155,69,69,.1); }
       .mw-section-icon {
-        width: 16px;
-        height: 16px;
-        border-radius: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 8px;
-        color: #fff;
         flex-shrink: 0;
       }
       .mw-section-title {
-        font-size: 6.5pt;
+        font-size: 7pt;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.07em;
         margin: 0;
         line-height: 1.2;
       }
-      .mw-rows { display: flex; flex-direction: column; gap: 3px; }
+      .mw-section-body { padding: 5px 8px 6px; }
+      .mw-rows { display: flex; flex-direction: column; gap: 0; }
       .mw-row {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 10px;
+        gap: 8px;
         align-items: start;
         font-size: 7.5pt;
-        line-height: 1.35;
+        line-height: 1.4;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(0,0,0,.05);
       }
+      .mw-row:last-child { border-bottom: none; padding-bottom: 0; }
       .mw-row--solo { grid-template-columns: 1fr; }
-      .mw-row-main { color: ${T.text}; }
-      .mw-row-main .mw-num { font-weight: 800; margin-right: 2px; }
-      .mw-row-main strong { font-weight: 700; }
+      .mw-row-main .mw-num {
+        font-weight: 800;
+        margin-right: 3px;
+        opacity: 0.75;
+      }
+      .mw-row-main strong { font-weight: 800; }
+      .mw-section--tesouros .mw-row-main { color: #3A5F7A; }
+      .mw-section--ministerio .mw-row-main { color: #7A6238; }
+      .mw-section--vida .mw-row-main { color: #8A3A3A; }
       .mw-row-side {
         text-align: right;
         font-size: 6.5pt;
         color: #43474f;
-        min-width: 38%;
-        max-width: 42%;
+        min-width: 36%;
+        max-width: 44%;
         line-height: 1.35;
+        background: rgba(255,255,255,.75);
+        border: 1px solid rgba(31,73,125,.1);
+        border-radius: 5px;
+        padding: 3px 7px;
       }
-      .mw-row-side strong { color: ${T.headerAlt}; font-weight: 700; }
+      .mw-row-side strong {
+        color: ${T.headerAlt};
+        font-weight: 800;
+        font-size: 6pt;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .mw-item-group { padding: 0; }
       .mw-row-sub {
         font-size: 6.5pt;
         color: #43474f;
-        margin-top: 1px;
-        padding-left: 1.1em;
+        margin: -2px 0 4px 1.15em;
+        padding-left: 0;
       }
+      .mw-row-sub strong { color: #8A3A3A; font-weight: 800; }
       .mw-footer {
-        margin-top: 8px;
+        margin-top: 10px;
         text-align: right;
         font-size: 7.5pt;
         color: #9B4545;
+        background: #FAF0F0;
+        border-radius: 6px;
+        padding: 6px 10px;
+        border-left: 3px solid #9B4545;
       }
       .mw-footer strong { font-weight: 800; }
-      .mw-section--tesouros .mw-row-main { color: #4A7190; }
-      .mw-section--ministerio .mw-row-main { color: #8F7344; }
-      .mw-section--vida .mw-row-main { color: #9B4545; }
-      .mw-empty { color: #b8bcc6; }
+      .mw-empty { color: #b8bcc6; font-style: italic; }
     `;
   }
 
@@ -420,6 +503,14 @@
       </div>`;
   }
 
+  function pdfMidweekAssign(num, label, assignee, sideHtml) {
+    const assigneeHtml = val(assignee)
+      ? `<strong>${esc(assignee)}</strong>`
+      : valOrDot(assignee);
+    const main = `${esc(label)} – ${assigneeHtml}`;
+    return pdfMidweekRow(num, main, sideHtml, !sideHtml);
+  }
+
   function pdfMidweekSection(themeKey, rowsHtml) {
     if (!rowsHtml) return '';
     const theme = MIDWEEK_THEME[themeKey];
@@ -429,28 +520,31 @@
           <span class="mw-section-icon" style="background:${theme.color}">${theme.icon}</span>
           <h4 class="mw-section-title" style="color:${theme.color}">${esc(theme.title)}</h4>
         </div>
-        <div class="mw-rows">${rowsHtml}</div>
+        <div class="mw-section-body">
+          <div class="mw-rows">${rowsHtml}</div>
+        </div>
       </section>`;
   }
 
   function pdfMidweekMeeting(entry) {
     const d = entry.data || {};
     const datePart = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
+    const weekday = val(entry.weekday_label);
     const reading = val(d.leitura_biblica);
     const weekTitle = reading
       ? `${esc(datePart)} – ${esc(reading.toUpperCase())}`
       : esc(datePart);
 
     const tesourosRows = [
-      pdfMidweekRow(1, `<strong>${valOrDot(d.tesouros_titulo)}</strong> – ${valOrDot(d.tesouros_designado)}`, '', true),
-      pdfMidweekRow(2, `Joias espirituais – ${valOrDot(d.joias_designado)}`, '', true),
+      pdfMidweekAssign(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, ''),
+      pdfMidweekAssign(2, 'Joias espirituais', d.joias_designado, ''),
       pdfMidweekRow(
         3,
         `Leitura da Bíblia – ${valOrDot(d.leitura_biblia)}`,
         [
           val(d.dirigente_sala_b) ? `<div><strong>Dirigente Sala B:</strong> ${esc(d.dirigente_sala_b)}</div>` : '',
           val(d.leitura_biblia_sala_b) ? `<div><strong>Sala B:</strong> ${esc(d.leitura_biblia_sala_b)}</div>` : ''
-        ].filter(Boolean).join('') || ''
+        ].filter(Boolean).join('')
       )
     ].join('');
 
@@ -458,9 +552,9 @@
       const tipo = d[`ministerio_${i}_tipo`];
       const designados = d[`ministerio_${i}_designados`];
       const salaB = d[`ministerio_${i}_sala_b`];
-      const label = val(tipo) || 'Designação';
+      const label = val(tipo) || `Parte ${i}`;
       const side = val(salaB) ? `<div><strong>Sala B:</strong> ${esc(salaB)}</div>` : '';
-      return pdfMidweekRow(i + 3, `<strong>${esc(label)}</strong> – ${valOrDot(designados)}`, side);
+      return pdfMidweekAssign(i + 3, label, designados, side);
     }).join('');
 
     const item8 = `
@@ -470,16 +564,16 @@
       </div>`;
 
     const vidaRows = [
-      pdfMidweekRow(7, `<strong>${valOrDot(d.vida_crista_titulo)}</strong> – ${valOrDot(d.vida_crista_designado)}`, '', true),
+      pdfMidweekAssign(7, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, ''),
       item8
     ].join('');
 
-    const metaParts = [];
-    if (val(d.cantico)) metaParts.push(`<strong>Cântico:</strong> ${esc(d.cantico)}`);
-    if (val(d.presidente)) metaParts.push(`<strong>Presidente</strong> – ${esc(d.presidente)}`);
-    const metaHtml = metaParts.length
-      ? `<p class="mw-week-meta">${metaParts.join(' &nbsp;|&nbsp; ')}</p>`
-      : '';
+    const metaHtml = [
+      val(d.cantico) ? `<span class="mw-meta-chip"><strong>Cântico</strong> ${esc(d.cantico)}</span>` : '',
+      val(d.presidente) ? `<span class="mw-meta-chip"><strong>Presidente</strong> ${esc(d.presidente)}</span>` : ''
+    ].filter(Boolean).join('');
+
+    const metaBlock = metaHtml ? `<div class="mw-week-meta">${metaHtml}</div>` : '';
 
     const oracaoHtml = val(d.oracao_final)
       ? `<div class="mw-footer"><strong>Oração final</strong> – ${esc(d.oracao_final)}</div>`
@@ -489,11 +583,14 @@
       <article class="mw-week-card pdf-card">
         <div class="mw-week-bar">
           <span class="mw-week-bar-icon" aria-hidden="true">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A7190" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A7190" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           </span>
-          <h3 class="mw-week-bar-title">${weekTitle}</h3>
+          <div>
+            <h3 class="mw-week-bar-title">${weekTitle}</h3>
+            ${weekday ? `<p class="mw-week-bar-sub">Reunião de meio de semana · ${esc(weekday)}</p>` : ''}
+          </div>
         </div>
-        ${metaHtml}
+        ${metaBlock}
         ${pdfMidweekSection('tesouros', tesourosRows)}
         ${pdfMidweekSection('ministerio', ministerioRows)}
         ${pdfMidweekSection('vida', vidaRows)}
