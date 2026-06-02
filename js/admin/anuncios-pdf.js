@@ -150,7 +150,7 @@
     const dateLine = entry.weekday_label ? `${dateStr} · ${entry.weekday_label}` : dateStr;
 
     return {
-      margin: [0, 0, 0, 18],
+      margin: [0, 0, 0, 12],
       table: {
         widths: ['*'],
         body: [[{
@@ -226,7 +226,7 @@
   function buildMecanicasDoc(board, entries, cleaningRows) {
     const month = board.reference_label || '';
     const list = entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    const sheets = chunkEntries(list, 3);
+    const sheets = chunkEntries(list, 4);
     const content = [];
     let cardIndex = 0;
 
