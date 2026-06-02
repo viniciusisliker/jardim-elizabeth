@@ -1,6 +1,25 @@
 (function () {
   const { formatDisplayDate } = window.JEAnnouncementDates;
-  const { SECTION_TITLES } = window.JEAnnouncementSchemas;
+  const {
+    SECTION_TITLES,
+    MECANICAS_FIELDS,
+    MIDWEEK_FIELDS,
+    WEEKEND_FIELDS,
+    WEEKEND_GROUPS
+  } = window.JEAnnouncementSchemas;
+
+  const MIDWEEK_SECTIONS = {
+    header: { title: 'Semana', icon: 'calendar_today' },
+    tesouros: { title: 'Tesouros da Palavra de Deus', icon: 'auto_stories' },
+    ministerio: { title: 'Faça seu melhor no ministério', icon: 'diversity_3' },
+    vida: { title: 'Nossa vida cristã', icon: 'favorite' }
+  };
+
+  const BLOCK_TITLES = {
+    mecanicas: 'Designações Mecânicas',
+    midweek: 'Nossa Vida e Ministério Cristão',
+    weekend: 'Discurso Público e Sentinela'
+  };
 
   function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -11,7 +30,7 @@
     accent: '#984806', sectionBg: '#EEECE1', rowAlt: '#D9E2F3', cream: '#F7F6F2', border: '#1F497D', text: '#1B1C1C'
   };
 
-  function pdfCss() {
+  function editorMirrorCss() {
     return `
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; background: #fff; }
@@ -20,222 +39,369 @@
         max-width: 186mm;
         margin: 0;
         padding: 0;
-        font-family: Calibri, Arial, sans-serif;
-        font-size: 9pt;
-        line-height: 1.35;
+        font-family: Inter, Calibri, Arial, sans-serif;
         color: ${T.text};
         background: ${T.cream};
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-      .pdf-header { margin-bottom: 10px; }
-      .pdf-header h1 {
+      .pdf-cover {
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid ${T.header};
+      }
+      .pdf-cover h1 {
         color: ${T.header};
-        font-size: 15pt;
-        margin: 0 0 3px;
-        font-weight: 700;
+        font-size: 17pt;
+        font-weight: 800;
+        margin: 0 0 4px;
         line-height: 1.2;
       }
-      .pdf-header .meta {
-        color: #43474f;
-        font-size: 9.5pt;
+      .pdf-cover p {
         margin: 0;
+        color: #43474f;
+        font-size: 10pt;
+        font-weight: 600;
       }
-      .pdf-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 12px;
-        background: #fff;
-        table-layout: fixed;
-      }
-      .pdf-table th,
-      .pdf-table td {
-        border: 1px solid ${T.border};
-        padding: 5px 6px;
-        text-align: left;
-        vertical-align: top;
-        word-wrap: break-word;
-        overflow-wrap: anywhere;
-        hyphens: auto;
-      }
-      .pdf-table th {
-        background: ${T.header};
-        color: ${T.headerText};
-        font-weight: 700;
-        font-size: 7pt;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
-        line-height: 1.25;
-      }
-      .pdf-table td { font-size: 8.5pt; }
-      .pdf-table tbody tr:nth-child(even) td { background: ${T.rowAlt}; }
-      .pdf-table--mecanicas .col-date { width: 17%; }
-      .pdf-table--mecanicas .col-field { width: 11%; }
-      .pdf-table--mecanicas .col-microf { width: 22%; }
-      .pdf-table--mecanicas .col-limpeza { width: 28%; }
-      .pdf-table--weekend .col-date { width: 14%; }
-      .pdf-table--weekend .col-pres { width: 14%; }
-      .pdf-table--weekend .col-tema { width: 32%; }
-      .pdf-table--weekend .col-sent { width: 22%; }
-      .pdf-table--weekend .col-oracao { width: 18%; }
-      .pdf-table--limpeza .col-weekend { width: 45%; }
-      .pdf-table--limpeza .col-grupo { width: 55%; }
-      .pdf-section-title {
-        background: ${T.accent};
-        color: #fff;
-        padding: 6px 8px;
-        font-weight: 700;
-        font-size: 9pt;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin: 10px 0 0;
-      }
-      .pdf-day-block {
-        background: #fff;
-        border: 1px solid ${T.border};
-        border-radius: 4px;
-        padding: 10px 12px;
-        margin-bottom: 10px;
+      .pdf-card {
+        margin-bottom: 14px;
         page-break-inside: avoid;
       }
-      .pdf-day-block h3 {
+      .qa-doc-panel {
+        border: 2px solid ${T.header};
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0,32,96,.08);
+      }
+      .qa-doc-banner {
+        background: ${T.header};
+        color: #fff;
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+      .qa-doc-banner h3 {
+        font-size: 13pt;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .qa-doc-banner h3 .weekday { opacity: 0.9; font-weight: 600; }
+      .qa-doc-banner-meta {
+        font-size: 7.5pt;
+        opacity: 0.85;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 3px;
+      }
+      .qa-doc-body { padding: 1rem 1.125rem; background: ${T.cream}; }
+      .qa-table-block {
+        border: 1px solid ${T.border};
+        border-radius: 0.5rem;
+        overflow: hidden;
+        background: #fff;
+      }
+      .qa-table-head {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        background: ${T.header};
+        color: #fff;
+        font-size: 7pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .qa-table-head span {
+        padding: 0.45rem 0.65rem;
+        border-right: 1px solid rgba(255,255,255,.15);
+      }
+      .qa-table-head span:last-child { border-right: none; }
+      .qa-table-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid #D9E2F3;
+      }
+      .qa-table-row .qa-cell {
+        padding: 0.55rem 0.65rem;
+        border-right: 1px solid #D9E2F3;
+      }
+      .qa-table-row .qa-cell:last-child { border-right: none; }
+      .qa-table-row .qa-cell label {
+        font-size: 6.5pt;
+        font-weight: 800;
+        color: ${T.headerAlt};
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-bottom: 0.3rem;
+      }
+      .qa-table-row .qa-cell label::before {
+        content: '';
+        width: 2px;
+        height: 0.55rem;
+        border-radius: 1px;
+        background: ${T.accent};
+      }
+      .qa-value {
+        border: 1px solid #c3c6d0;
+        border-radius: 0.375rem;
+        padding: 0.45rem 0.55rem;
+        font-size: 9pt;
+        font-weight: 500;
+        background: #fff;
+        color: ${T.text};
+        min-height: 1.75rem;
+        line-height: 1.35;
+        word-wrap: break-word;
+      }
+      .qa-value.is-empty { color: #9aa0ab; font-style: italic; }
+      .qa-section {
+        background: #fff;
+        border: 1px solid rgba(31,73,125,.35);
+        border-radius: 0.625rem;
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,32,96,.06);
+      }
+      .qa-section:last-child { margin-bottom: 0; }
+      .qa-section-title {
+        font-size: 7pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
         color: ${T.header};
-        font-size: 10pt;
-        margin: 0 0 8px;
-        padding-bottom: 6px;
-        border-bottom: 2px solid ${T.sectionBg};
+        background: linear-gradient(180deg, ${T.sectionBg} 0%, #e8e6df 100%);
+        padding: 0.55rem 0.875rem;
+        border-bottom: 1px solid #D9E2F3;
       }
-      .pdf-day-block p {
-        margin: 0 0 5px;
+      .qa-section-body { padding: 0.75rem 0.875rem; background: #fff; }
+      .qa-fields-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+      }
+      .qa-fields-grid.cols-1 { grid-template-columns: 1fr; }
+      .qa-field { display: flex; flex-direction: column; gap: 0.25rem; }
+      .qa-field.span-2 { grid-column: 1 / -1; }
+      .qa-field-tag {
+        font-size: 6.5pt;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: ${T.headerAlt};
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      .qa-field-tag::before {
+        content: '';
+        width: 2px;
+        height: 0.7rem;
+        border-radius: 1px;
+        background: linear-gradient(180deg, ${T.header} 0%, ${T.accent} 100%);
+      }
+      .qa-subsection {
+        border: 1px dashed rgba(31,73,125,.25);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        background: ${T.cream};
+        margin-bottom: 0.65rem;
+      }
+      .qa-subsection:last-child { margin-bottom: 0; }
+      .qa-subsection-head {
+        font-size: 6.5pt;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: ${T.header};
+        margin-bottom: 0.55rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid rgba(31,73,125,.12);
+      }
+      .qa-limpeza-wrap {
+        border: 2px solid ${T.accent};
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #fff;
+        margin-top: 14px;
+        page-break-inside: avoid;
+      }
+      .qa-limpeza-head {
+        background: linear-gradient(135deg, ${T.accent}, #C8A96E);
+        color: #fff;
+        padding: 0.65rem 0.875rem;
+        font-weight: 800;
         font-size: 8.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-      .pdf-day-block p:last-child { margin-bottom: 0; }
+      .qa-limpeza-body { padding: 0.75rem; background: ${T.cream}; }
+      .qa-limpeza-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+      }
     `;
   }
 
   function wrapPdfDocument(inner) {
-    return `<style>${pdfCss()}</style><div class="pdf-doc">${inner}</div>`;
+    return `<style>${editorMirrorCss()}</style><div class="pdf-doc">${inner}</div>`;
   }
 
-  function pdfHeader(title, subtitle) {
+  function pdfCover(title, subtitle) {
     return `
-      <header class="pdf-header">
+      <header class="pdf-cover">
         <h1>${esc(title)}</h1>
-        <p class="meta">${esc(subtitle)}</p>
+        <p>${esc(subtitle)}</p>
       </header>`;
+  }
+
+  function pdfValue(label, value, span2) {
+    const raw = String(value ?? '').trim();
+    const emptyClass = raw ? '' : ' is-empty';
+    const display = raw || '—';
+    return `
+      <div class="qa-field${span2 ? ' span-2' : ''}">
+        <span class="qa-field-tag">${esc(label)}</span>
+        <div class="qa-value${emptyClass}">${esc(display)}</div>
+      </div>`;
+  }
+
+  function pdfCell(label, value) {
+    const raw = String(value ?? '').trim();
+    const emptyClass = raw ? '' : ' is-empty';
+    const display = raw || '—';
+    return `
+      <div class="qa-cell">
+        <label>${esc(label)}</label>
+        <div class="qa-value${emptyClass}">${esc(display)}</div>
+      </div>`;
+  }
+
+  function pdfDocPanel(meta, title, weekday, bodyHtml) {
+    return `
+      <article class="qa-doc-panel pdf-card">
+        <div class="qa-doc-banner">
+          <div>
+            <p class="qa-doc-banner-meta">${esc(meta)}</p>
+            <h3>${esc(title)}${weekday ? ` <span class="weekday">(${esc(weekday)})</span>` : ''}</h3>
+          </div>
+        </div>
+        <div class="qa-doc-body">${bodyHtml}</div>
+      </article>`;
+  }
+
+  function pdfMecanicasGrid(d) {
+    const cell = (key) => {
+      const field = MECANICAS_FIELDS.find((f) => f.key === key);
+      return pdfCell(field?.label || key, d[key]);
+    };
+    return `
+      <div class="qa-table-block">
+        <div class="qa-table-head"><span>Portão</span><span>Indicador</span><span>Som</span></div>
+        <div class="qa-table-row">${cell('portao')}${cell('indicador')}${cell('som')}</div>
+        <div class="qa-table-head"><span>Microf. volante 1</span><span>Microf. volante 2</span><span>Limpeza (grupo)</span></div>
+        <div class="qa-table-row">${cell('microf_volantes_1')}${cell('microf_volantes_2')}${cell('limpeza_grupo')}</div>
+      </div>`;
+  }
+
+  function pdfMidweekBody(d) {
+    const sections = ['header', 'tesouros', 'ministerio', 'vida'];
+    return sections.map((sec) => {
+      const secFields = MIDWEEK_FIELDS.filter((f) => f.section === sec);
+      if (!secFields.length) return '';
+      const meta = MIDWEEK_SECTIONS[sec];
+      const fieldsHtml = secFields.map((f) => pdfValue(f.label, d[f.key])).join('');
+      return `
+        <div class="qa-section">
+          <div class="qa-section-title">${esc(meta.title)}</div>
+          <div class="qa-section-body">
+            <div class="qa-fields-grid">${fieldsHtml}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function pdfWeekendBody(d) {
+    const order = ['discurso', 'sentinela', 'sala_b', 'especial'];
+    return order.map((gid) => {
+      const meta = WEEKEND_GROUPS[gid];
+      const groupFields = WEEKEND_FIELDS.filter((f) => f.group === gid);
+      if (!groupFields.length || !meta) return '';
+      const isSpecial = gid === 'especial';
+      const fieldsHtml = groupFields.map((f) => pdfValue(f.label, d[f.key], isSpecial)).join('');
+      return `
+        <div class="qa-subsection">
+          <div class="qa-subsection-head">${esc(meta.title)}</div>
+          <div class="qa-fields-grid${isSpecial ? ' cols-1' : ''}">${fieldsHtml}</div>
+        </div>`;
+    }).join('');
   }
 
   function renderMecanicasHtml(board, entries, cleaningRows) {
     const month = board.reference_label || '';
-    let body = pdfHeader(SECTION_TITLES.mecanicas, `${month} — Congregação Jardim Elizabeth`);
+    const list = entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
-    body += `
-      <table class="pdf-table pdf-table--mecanicas">
-        <colgroup>
-          <col class="col-date"/>
-          <col class="col-field"/><col class="col-field"/><col class="col-field"/>
-          <col class="col-microf"/>
-          <col class="col-limpeza"/>
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Portão</th>
-            <th>Indicador</th>
-            <th>Som</th>
-            <th>Microfones</th>
-            <th>Limpeza</th>
-          </tr>
-        </thead>
-        <tbody>`;
+    let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Congregação Jardim Elizabeth`);
 
-    entries.filter((e) => e.block === 'mecanicas').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach((e) => {
+    list.forEach((e, idx) => {
       const d = e.data || {};
-      const microf = [d.microf_volantes_1, d.microf_volantes_2].filter((v) => String(v || '').trim()).join(' · ');
-      body += `<tr>
-        <td>${esc(formatDisplayDate(e.event_date))}${e.weekday_label ? ` (${esc(e.weekday_label)})` : ''}</td>
-        <td>${esc(d.portao)}</td>
-        <td>${esc(d.indicador)}</td>
-        <td>${esc(d.som)}</td>
-        <td>${esc(microf)}</td>
-        <td>${esc(d.limpeza_grupo)}</td>
-      </tr>`;
+      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
+      const meta = `${BLOCK_TITLES.mecanicas} · ${idx + 1} de ${list.length}`;
+      body += pdfDocPanel(meta, dateTitle, e.weekday_label || '', pdfMecanicasGrid(d));
     });
 
-    body += '</tbody></table>';
-
     if (cleaningRows.length) {
-      body += `<div class="pdf-section-title">Limpeza mensal</div>
-        <table class="pdf-table pdf-table--limpeza">
-          <colgroup><col class="col-weekend"/><col class="col-grupo"/></colgroup>
-          <thead><tr><th>Fim de semana</th><th>Grupo</th></tr></thead><tbody>`;
-      cleaningRows.forEach((e) => {
+      body += `<div class="qa-limpeza-wrap">
+        <div class="qa-limpeza-head">Limpeza mensal</div>
+        <div class="qa-limpeza-body">`;
+      cleaningRows.forEach((e, idx) => {
         const d = e.data || {};
-        body += `<tr><td>${esc(d.fim_de_semana)}</td><td>${esc(d.grupo)}</td></tr>`;
+        body += `
+          <div class="qa-limpeza-row" style="margin-bottom:${idx < cleaningRows.length - 1 ? '0.65rem' : '0'}">
+            ${pdfValue('Fim de semana', d.fim_de_semana)}
+            ${pdfValue('Grupo', d.grupo)}
+          </div>`;
       });
-      body += '</tbody></table>';
+      body += '</div></div>';
     }
 
     return wrapPdfDocument(body);
   }
 
   function renderMidweekHtml(board, entries) {
-    let body = pdfHeader(SECTION_TITLES.midweek, board.reference_label || '');
+    const list = entries.filter((e) => e.block === 'midweek').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    let body = pdfCover(SECTION_TITLES.midweek, `${board.reference_label || ''} — Congregação Jardim Elizabeth`);
 
-    entries.filter((e) => e.block === 'midweek').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach((e) => {
+    list.forEach((e, idx) => {
       const d = e.data || {};
-      body += `<div class="pdf-day-block">
-        <h3>${esc(formatDisplayDate(e.event_date))}${d.leitura_biblica ? ` — ${esc(d.leitura_biblica)}` : ''}</h3>
-        <p><strong>Cântico:</strong> ${esc(d.cantico)} &nbsp;·&nbsp; <strong>Presidente:</strong> ${esc(d.presidente)}</p>
-        <p><strong>Tesouros:</strong> ${esc(d.tesouros_titulo)} — ${esc(d.tesouros_designado)}</p>
-        <p><strong>Joias:</strong> ${esc(d.joias_designado)} &nbsp;·&nbsp; <strong>Leitura:</strong> ${esc(d.leitura_biblia)} (Sala B: ${esc(d.leitura_biblia_sala_b)})</p>`;
-      for (let i = 1; i <= 3; i++) {
-        if (d[`ministerio_${i}_tipo`] || d[`ministerio_${i}_designados`]) {
-          body += `<p><strong>${esc(d[`ministerio_${i}_tipo`])}:</strong> ${esc(d[`ministerio_${i}_designados`])} (Sala B: ${esc(d[`ministerio_${i}_sala_b`])})</p>`;
-        }
-      }
-      body += `<p><strong>Nossa vida cristã:</strong> ${esc(d.vida_crista_titulo)} — ${esc(d.vida_crista_designado)}</p>
-        <p><strong>Leitor:</strong> ${esc(d.leitor_sentinela)} &nbsp;·&nbsp; <strong>Oração final:</strong> ${esc(d.oracao_final)}</p>
-      </div>`;
+      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
+      const subtitle = d.leitura_biblica ? `${dateTitle} — ${d.leitura_biblica}` : dateTitle;
+      const meta = `${BLOCK_TITLES.midweek} · ${idx + 1} de ${list.length}`;
+      body += pdfDocPanel(meta, subtitle, e.weekday_label || '', pdfMidweekBody(d));
     });
 
     return wrapPdfDocument(body);
   }
 
   function renderWeekendHtml(board, entries) {
-    let body = pdfHeader(SECTION_TITLES.weekend, board.reference_label || '');
+    const list = entries.filter((e) => e.block === 'weekend').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    let body = pdfCover(SECTION_TITLES.weekend, `${board.reference_label || ''} — Congregação Jardim Elizabeth`);
 
-    body += `
-      <table class="pdf-table pdf-table--weekend">
-        <colgroup>
-          <col class="col-date"/><col class="col-pres"/><col class="col-tema"/>
-          <col class="col-sent"/><col class="col-oracao"/>
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Presidente</th>
-            <th>Tema / Orador</th>
-            <th>Sentinela</th>
-            <th>Oração</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-    entries.filter((e) => e.block === 'weekend').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach((e) => {
+    list.forEach((e, idx) => {
       const d = e.data || {};
-      const tema = d.evento_especial || [d.tema_discurso, d.orador].filter(Boolean).join(' — ')
-        + (d.congregacao_orador ? ` (${d.congregacao_orador})` : '');
-      body += `<tr>
-        <td>${esc(formatDisplayDate(e.event_date))}</td>
-        <td>${esc(d.presidente)}</td>
-        <td>${esc(tema)}</td>
-        <td>${esc(d.estudo_sentinela_tema)}${d.leitor_sentinela ? ` / ${esc(d.leitor_sentinela)}` : ''}</td>
-        <td>${esc(d.oracao_final)}</td>
-      </tr>`;
+      const dateTitle = e.event_date ? formatDisplayDate(e.event_date) : 'Sem data';
+      const meta = `${BLOCK_TITLES.weekend} · ${idx + 1} de ${list.length}`;
+      body += pdfDocPanel(meta, dateTitle, e.weekday_label || '', pdfWeekendBody(d));
     });
 
-    body += '</tbody></table>';
     return wrapPdfDocument(body);
   }
 
@@ -273,7 +439,7 @@
 
     try {
       return await window.html2pdf().set({
-        margin: [12, 12, 12, 12],
+        margin: [10, 10, 10, 10],
         filename: 'quadro.pdf',
         image: { type: 'jpeg', quality: 0.96 },
         html2canvas: {
