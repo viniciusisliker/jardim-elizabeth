@@ -86,6 +86,36 @@
         overflow: hidden;
         background: #fff;
       }
+      .qa-doc-panel--editor {
+        border: 2px solid ${T.header};
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,32,96,.1);
+      }
+      .qa-doc-banner {
+        background: ${T.header};
+        color: #fff;
+        padding: 5px 8px;
+      }
+      .qa-doc-banner-meta {
+        font-size: 5.5pt;
+        opacity: 0.88;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 2px;
+      }
+      .qa-doc-banner h3 {
+        font-size: 8.5pt;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1.2;
+        color: #fff;
+      }
+      .qa-doc-banner h3 .weekday { opacity: 0.92; font-weight: 600; }
+      .qa-doc-body {
+        padding: 6px;
+        background: ${T.cream};
+      }
       .qa-doc-banner--lite {
         background: ${T.sectionBg};
         border-left: 3px solid ${T.header};
@@ -103,7 +133,12 @@
         font-weight: 600;
       }
       .qa-doc-body--flush { padding: 0; background: #fff; }
-      .qa-table-block { border: none; border-radius: 0; }
+      .qa-table-block {
+        border: 1px solid ${T.border};
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+      }
       .qa-table-head {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -132,10 +167,15 @@
       .qa-table-row .qa-cell:last-child { border-right: none; }
       .qa-value-txt {
         font-size: 7.5pt;
-        font-weight: 500;
+        font-weight: 600;
         color: ${T.text};
         word-wrap: break-word;
         line-height: 1.25;
+        border: 1px solid #c3c6d0;
+        border-radius: 4px;
+        padding: 3px 5px;
+        background: #fff;
+        min-height: 1.2rem;
       }
       .qa-value-txt.is-empty { color: #b8bcc6; }
       .qa-section-compact { margin-bottom: 5px; }
@@ -350,14 +390,17 @@
       : esc(date);
   }
 
-  function pdfMecanicasCard(entry) {
+  function pdfMecanicasCard(entry, idx, total) {
     const d = entry.data || {};
     return `
-      <article class="qa-doc-panel pdf-card">
-        <div class="qa-doc-banner qa-doc-banner--lite">
-          <h3>${pdfDateTitle(entry.event_date, entry.weekday_label)}</h3>
+      <article class="qa-doc-panel qa-doc-panel--editor pdf-card">
+        <div class="qa-doc-banner">
+          <div>
+            <p class="qa-doc-banner-meta">Designações Mecânicas · ${idx + 1} de ${total}</p>
+            <h3>${pdfDateTitle(entry.event_date, entry.weekday_label)}</h3>
+          </div>
         </div>
-        <div class="qa-doc-body qa-doc-body--flush">${pdfMecanicasGrid(d)}</div>
+        <div class="qa-doc-body">${pdfMecanicasGrid(d)}</div>
       </article>`;
   }
 
@@ -508,7 +551,7 @@
 
     let body = pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
     body += '<div class="pdf-cards-flow">';
-    list.forEach((e) => { body += pdfMecanicasCard(e); });
+    list.forEach((e, idx) => { body += pdfMecanicasCard(e, idx, list.length); });
     body += pdfLimpezaBlock(cleaningRows);
     body += '</div>';
 
