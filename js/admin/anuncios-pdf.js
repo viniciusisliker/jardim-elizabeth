@@ -100,23 +100,45 @@
 
   async function htmlToPdfBlob(html) {
     await ensureHtml2Pdf();
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    wrap.style.position = 'fixed';
-    wrap.style.left = '-9999px';
-    wrap.style.width = '210mm';
-    document.body.appendChild(wrap);
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;left:0;top:0;width:794px;height:1123px;border:0;opacity:0;pointer-events:none;z-index:-1';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"></head><body style="margin:0;background:#fff">${html}</body></html>`);
+    doc.close();
+
+    await new Promise((resolve) => {
+      const ready = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (iframe.contentWindow?.document?.readyState === 'complete') ready();
+      else iframe.addEventListener('load', ready, { once: true });
+    });
+
+    const target = doc.body;
+    iframe.style.height = `${Math.max(target.scrollHeight, 1123)}px`;
+
     try {
-      const blob = await window.html2pdf().set({
+      return await window.html2pdf().set({
         margin: 10,
         filename: 'quadro.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: target.scrollWidth,
+          width: target.scrollWidth,
+          height: target.scrollHeight
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(wrap).output('blob');
-      return blob;
+      }).from(target).output('blob');
     } finally {
-      wrap.remove();
+      iframe.remove();
     }
   }
 

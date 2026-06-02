@@ -621,11 +621,12 @@
     try {
       readFormIntoEntries();
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
-      await persistEntries();
 
       showToast(toastEl, 'Gerando PDF…');
       const html = Pdf.renderHtml(block, board, entries);
       const blob = await Pdf.htmlToPdfBlob(html);
+
+      await persistEntries(true);
 
       revokePendingPdf(block);
       const objectUrl = URL.createObjectURL(blob);
