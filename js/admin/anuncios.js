@@ -623,8 +623,7 @@
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
 
       showToast(toastEl, 'Gerando PDF…');
-      const html = Pdf.renderHtml(block, board, entries);
-      const blob = await Pdf.htmlToPdfBlob(html);
+      const blob = await Pdf.blockToPdfBlob(block, board, entries);
 
       await persistEntries(true);
 
