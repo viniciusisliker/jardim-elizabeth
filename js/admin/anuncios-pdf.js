@@ -95,29 +95,33 @@
       }
       .pdf-mecanicas-pages { display: block; }
       .pdf-mecanicas-sheet {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
+        display: block;
         padding-bottom: 4mm;
       }
       .pdf-mecanicas-cards {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
+        display: block;
+        width: 100%;
+      }
+      .pdf-card-slot {
+        display: block;
+        width: 100%;
+        margin: 0 0 24px 0;
+        padding: 0 0 2px 0;
+        background: #ffffff;
+        overflow: hidden;
+      }
+      .pdf-card-slot:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+      .pdf-mecanicas-cards .qa-doc-panel--editor {
+        box-shadow: none;
+        margin: 0;
       }
       .pdf-card {
         break-inside: avoid;
         page-break-inside: avoid;
         margin: 0;
-        flex-shrink: 0;
-      }
-      .pdf-card-gap {
-        display: block;
-        height: 18px;
-        min-height: 18px;
-        width: 100%;
-        background: #ffffff;
-        flex-shrink: 0;
       }
       .html2pdf__page-break {
         display: block;
@@ -507,15 +511,17 @@
   function pdfMecanicasCard(entry, idx, total) {
     const d = entry.data || {};
     return `
-      <article class="qa-doc-panel qa-doc-panel--editor pdf-card">
-        <div class="qa-doc-banner">
-          <div>
-            <p class="qa-doc-banner-meta">Designações Mecânicas · ${idx + 1} de ${total}</p>
-            <h3>${pdfDateTitle(entry.event_date, entry.weekday_label)}</h3>
+      <div class="pdf-card-slot">
+        <article class="qa-doc-panel qa-doc-panel--editor pdf-card">
+          <div class="qa-doc-banner">
+            <div>
+              <p class="qa-doc-banner-meta">Designações Mecânicas · ${idx + 1} de ${total}</p>
+              <h3>${pdfDateTitle(entry.event_date, entry.weekday_label)}</h3>
+            </div>
           </div>
-        </div>
-        <div class="qa-doc-body">${pdfMecanicasGrid(d)}</div>
-      </article>`;
+          <div class="qa-doc-body">${pdfMecanicasGrid(d)}</div>
+        </article>
+      </div>`;
   }
 
   function pdfInlineField(label, value) {
@@ -694,8 +700,7 @@
         body += pdfCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`);
       }
       body += '<div class="pdf-mecanicas-cards">';
-      sheetEntries.forEach((e, i) => {
-        if (i > 0) body += '<div class="pdf-card-gap" aria-hidden="true"></div>';
+      sheetEntries.forEach((e) => {
         body += pdfMecanicasCard(e, cardIndex, list.length);
         cardIndex += 1;
       });
@@ -779,7 +784,7 @@
         pagebreak: {
           mode: ['avoid-all', 'css', 'legacy'],
           before: '.html2pdf__page-break',
-          avoid: ['.pdf-card', '.qa-doc-panel--editor', '.pdf-mecanicas-sheet']
+          avoid: ['.pdf-card-slot', '.pdf-card', '.qa-doc-panel--editor']
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).from(target).output('blob');
