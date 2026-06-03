@@ -186,8 +186,13 @@
 
   function bindEntryForm(container, block, list, idx) {
     const entry = list[idx];
-    container.querySelector('[data-remove-entry]')?.addEventListener('click', () => {
-      if (!confirm('Remover esta data?')) return;
+    container.querySelector('[data-remove-entry]')?.addEventListener('click', async () => {
+      if (!await window.JEDialog.confirm({
+        title: 'Remover data',
+        message: 'Remover esta data?',
+        confirmLabel: 'Remover',
+        danger: true
+      })) return;
       readFormIntoEntries();
       entries = entries.filter((e) => e.id !== entry.id);
       blockSelection[block] = Math.min(blockSelection[block], entriesFor(block).length - 1);
@@ -345,7 +350,11 @@
   async function regenerateBlock(block) {
     if (!board) return;
     if (entriesFor(block).some((e) => Object.values(e.data || {}).some((v) => String(v).trim()))) {
-      if (!confirm('Regenerar apaga linhas desta seção e recria as datas do mês. Continuar?')) return;
+      if (!await window.JEDialog.confirm({
+        title: 'Regenerar datas',
+        message: 'Regenerar apaga linhas desta seção e recria as datas do mês. Continuar?',
+        confirmLabel: 'Regenerar'
+      })) return;
     }
     entries = entries.filter((e) => e.block !== block);
     const generated = Dates.generateEntriesForBoard(block, board.reference_month);
@@ -445,7 +454,12 @@
       ? `Excluir o rascunho "${label}"?\n\nTodas as designações deste período serão apagadas. Esta ação não pode ser desfeita.`
       : `Excluir "${label}"?\n\nO registro do quadro será removido. Os PDFs já publicados no site permanecem até você publicar outra versão.`;
 
-    if (!confirm(message)) return;
+    if (!await window.JEDialog.confirm({
+      title: isDraft ? 'Excluir rascunho' : 'Excluir quadro',
+      message,
+      confirmLabel: 'Excluir',
+      danger: true
+    })) return;
 
     const { error } = await client.from('announcement_boards').delete().eq('id', boardId);
     if (error) throw new Error(error.message);

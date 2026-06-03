@@ -289,7 +289,12 @@
     }
 
     document.getElementById('cfg-add-designation')?.addEventListener('click', async () => {
-      const label = window.prompt('Nome da designação (ex.: Coordenador do Quadro de Anúncios):');
+      const label = await window.JEDialog.prompt({
+        title: 'Nova designação',
+        message: 'Informe o nome da designação.',
+        placeholder: 'Coordenador do Quadro de Anúncios',
+        confirmLabel: 'Criar'
+      });
       if (!label?.trim()) return;
       let slug = slugify(label);
       const existing = catalog.some((d) => d.slug === slug);

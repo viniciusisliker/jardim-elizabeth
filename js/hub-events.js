@@ -172,7 +172,12 @@
     }
 
     async function removeEvent(id) {
-      if (!confirm('Excluir este evento?')) return;
+      if (!await window.JEDialog.confirm({
+        title: 'Excluir evento',
+        message: 'Excluir este evento?',
+        confirmLabel: 'Excluir',
+        danger: true
+      })) return;
       const { error } = await client.from('agenda_events').delete().eq('id', id);
       if (error) showToast(toast, error.message, true);
       else { showToast(toast, 'Evento excluído.'); await reload(); }

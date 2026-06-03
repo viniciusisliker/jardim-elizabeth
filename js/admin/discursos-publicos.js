@@ -154,8 +154,13 @@
       : '<tr><td colspan="7" class="text-center text-on-surface-variant py-6">Nenhuma linha — use Regenerar sábados ou + Discurso.</td></tr>';
 
     tbody.querySelectorAll('[data-remove]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (!confirm('Remover esta linha?')) return;
+      btn.addEventListener('click', async () => {
+        if (!await window.JEDialog.confirm({
+          title: 'Remover linha',
+          message: 'Remover esta linha?',
+          confirmLabel: 'Remover',
+          danger: true
+        })) return;
         readFormIntoEntries();
         entries = entries.filter((e) => e.id !== btn.dataset.remove);
         reindex(direction);
@@ -183,9 +188,13 @@
     $('panel-send').classList.toggle('hidden', tab !== 'send');
   }
 
-  function regenerateSaturdays() {
+  async function regenerateSaturdays() {
     if (!board) return;
-    if (!confirm('Substituir os discursos (sábados) desta aba? Congressos, visitas e notas serão mantidos.')) return;
+    if (!await window.JEDialog.confirm({
+      title: 'Regenerar sábados',
+      message: 'Substituir os discursos (sábados) desta aba? Congressos, visitas e notas serão mantidos.',
+      confirmLabel: 'Regenerar'
+    })) return;
     readFormIntoEntries();
     const direction = activeTab;
     const kept = entries.filter((e) =>
