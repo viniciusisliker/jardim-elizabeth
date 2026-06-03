@@ -127,20 +127,31 @@
     return { sections, settings };
   }
 
+  function announcementCardModifier(slug) {
+    if (slug === 'designacoes-mecanicas') return 'org';
+    if (slug === 'meio-de-semana') return 'midweek';
+    if (slug === 'final-de-semana') return 'weekend';
+    return 'default';
+  }
+
   function renderAnnouncementCard(s) {
+    const mod = announcementCardModifier(s.slug);
     return `
       <a href="${esc(s.document_url)}" target="_blank" rel="noopener"
-         class="group flex flex-col items-center justify-center gap-5 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-8 py-12 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          <span class="material-symbols-outlined text-secondary" style="font-size:36px">${esc(s.icon || 'description')}</span>
+         class="je-qa-card je-qa-card--${mod} group">
+        <div class="je-qa-card-top">
+          <div class="je-qa-card-icon">
+            <span class="material-symbols-outlined">${esc(s.icon || 'description')}</span>
+          </div>
+          <span class="je-qa-card-tag">${esc(s.category_tag)}</span>
         </div>
         <div>
-          <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-2">${esc(s.category_tag)}</span>
-          <h2 class="text-lg font-extrabold text-primary tracking-tight mb-1">${esc(s.title)}</h2>
-          ${s.description ? `<p class="text-on-surface-variant text-xs leading-relaxed">${esc(s.description)}</p>` : ''}
+          <h2 class="je-qa-card-title">${esc(s.title)}</h2>
+          ${s.description ? `<p class="je-qa-card-desc">${esc(s.description)}</p>` : ''}
         </div>
-        <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all">
-          Abrir <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+        <span class="je-qa-card-cta">
+          Abrir PDF
+          <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
         </span>
       </a>`;
   }
@@ -155,7 +166,7 @@
     if (historyEl && data.settings?.history_folder_url) {
       historyEl.href = data.settings.history_folder_url;
       if (data.settings.history_description) {
-        const desc = historyEl.querySelector('[data-je-history-desc]');
+        const desc = document.querySelector('[data-je-history-desc]');
         if (desc) desc.textContent = data.settings.history_description;
       }
     }
