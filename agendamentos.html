@@ -11,7 +11,6 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-
 gtag('config', 'G-PGXCZF9S9W');
 </script>
 
@@ -27,11 +26,9 @@ gtag('config', 'G-PGXCZF9S9W');
           colors: {
             "primary-container": "#2b4b7a",
             "on-primary-container": "#9dbcf2",
-            "on-primary": "#ffffff",
             "surface-container": "#f0eded",
             "secondary": "#3b5e97",
             "secondary-fixed": "#d6e3ff",
-            "surface-bright": "#fbf9f8",
             "primary": "#0f3462",
             "background": "#fbf9f8",
             "on-surface-variant": "#43474f",
@@ -41,9 +38,7 @@ gtag('config', 'G-PGXCZF9S9W');
             "on-surface": "#1b1c1c",
             "outline": "#747780",
             "surface-container-high": "#eae8e7",
-            "surface": "#fbf9f8",
             "surface-container-lowest": "#ffffff",
-            "primary-fixed": "#d6e3ff",
           },
           fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
           borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
@@ -57,128 +52,316 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+
+    .je-sch-hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a2847 0%, #0f3462 45%, #1a4a7a 100%);
+      color: #fff;
+    }
+    .je-sch-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 100% 0%, rgba(200,169,110,.25) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59,94,151,.35) 0%, transparent 50%);
+    }
+    .je-sch-hero-inner { position: relative; z-index: 1; }
+    .je-sch-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .je-sch-status-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 3px rgba(74,222,128,.25);
+    }
+
+    .je-sch-intro {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.125rem;
+      margin-bottom: 1.75rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #faf6ef 0%, #fff 100%);
+      border: 1px solid rgba(200,169,110,.35);
+      font-size: 0.8125rem;
+      color: #43474f;
+      line-height: 1.45;
+    }
+    .je-sch-intro-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 9999px;
+      background: rgba(15,52,98,.08);
+      color: #0f3462;
+      flex-shrink: 0;
+    }
+
+    .je-sch-steps {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 640px) {
+      .je-sch-steps { grid-template-columns: repeat(3, 1fr); }
+    }
+    .je-sch-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.875rem;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      font-size: 0.8125rem;
+      color: #43474f;
+      line-height: 1.4;
+    }
+    .je-sch-step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: #0f3462;
+      color: #fff;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .je-sch-grid {
+      display: grid;
+      gap: 1.25rem;
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+    @media (min-width: 768px) {
+      .je-sch-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .je-sch-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.5rem 1.375rem 1.375rem;
+      border-radius: 1.25rem;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .je-sch-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+    }
+    .je-sch-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(15,52,98,.12);
+      border-color: rgba(59,94,151,.28);
+    }
+    .je-sch-card--carrinhos::before { background: linear-gradient(90deg, #0f3462, #3b5e97); }
+    .je-sch-card--displays::before { background: linear-gradient(90deg, #0a2847, #c8a96e); }
+
+    .je-sch-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .je-sch-card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 1.125rem;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .je-sch-card:hover .je-sch-card-icon { transform: scale(1.05); }
+    .je-sch-card--carrinhos .je-sch-card-icon { background: #eff6ff; }
+    .je-sch-card--displays .je-sch-card-icon { background: linear-gradient(135deg, #eff6ff, #faf6ef); }
+    .je-sch-card-tag {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.5625rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .je-sch-card--carrinhos .je-sch-card-tag { background: #dbeafe; color: #0f3462; }
+    .je-sch-card--displays .je-sch-card-tag { background: #faf6ef; color: #0f3462; }
+
+    .je-sch-card-title {
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: #0f3462;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0 0 0.375rem;
+    }
+    .je-sch-card-desc {
+      font-size: 0.8125rem;
+      color: #43474f;
+      line-height: 1.45;
+      margin: 0;
+    }
+    .je-sch-card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      margin-top: auto;
+      padding-top: 0.875rem;
+      border-top: 1px solid rgba(15,52,98,.08);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #3b5e97;
+      transition: gap .2s;
+    }
+    .je-sch-card:hover .je-sch-card-cta { gap: 0.625rem; }
+
     @media (max-width: 767px) {
-      .je-agendamentos-card { padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+      .je-sch-intro { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 
 <body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
 
-  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
-<div id="header"></div>
+  <div id="header"></div>
+
   <main>
 
-    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
-    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6 je-page-shell">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-<a href="index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
-          <a href="index.html">
-			  <span class="text-secondary">Jardim Elizabeth</span>
-		  </a>
-          <span class="text-outline">/</span>
-          <span class="text-primary">Agendamentos</span>
-        </div>
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <section class="je-sch-hero border-b border-outline-variant py-12 md:py-14 fade-up">
+      <div class="max-w-4xl mx-auto px-6 je-page-shell je-sch-hero-inner">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
           <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Agendamentos</h1>
-            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Organize sua participação no testemunho público de forma simples e harmoniosa.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/70 mb-4">
+              <a href="index.html" class="text-white/90 hover:text-white"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+              <a href="index.html" class="text-white/90 hover:text-white">Jardim Elizabeth</a>
+              <span class="text-white/40">/</span>
+              <span class="text-[#c8a96e]">Agendamentos</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Agendamentos</h1>
+            <p class="text-white/80 mt-3 text-sm md:text-base max-w-lg leading-relaxed">
+              Organize sua participação no testemunho público de forma simples e harmoniosa.
+            </p>
           </div>
-          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
-            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          <div class="je-sch-status self-start">
+            <span class="je-sch-status-dot" aria-hidden="true"></span>
+            <span>Calendários online</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 je-page-shell py-12 fade-up-2">
+    <div class="max-w-4xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
 
-      <!-- Instrução — texto exato do site original -->
-      <p class="text-center text-on-surface-variant text-sm font-semibold uppercase tracking-widest mb-10">
-        Para prosseguir clique no equipamento desejado
-      </p>
+      <div class="je-sch-intro">
+        <span class="je-sch-intro-icon" aria-hidden="true">
+          <span class="material-symbols-outlined" style="font-size:20px">touch_app</span>
+        </span>
+        <p><strong class="text-primary">Escolha o equipamento</strong> abaixo para abrir o calendário e reservar seu turno.</p>
+      </div>
 
-      <!-- Dois cards clicáveis — Carrinhos e Displays -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div class="je-sch-steps">
+        <div class="je-sch-step"><span class="je-sch-step-num">1</span><span>Selecione Carrinhos ou Displays</span></div>
+        <div class="je-sch-step"><span class="je-sch-step-num">2</span><span>Consulte as datas disponíveis no calendário</span></div>
+        <div class="je-sch-step"><span class="je-sch-step-num">3</span><span>Confirme seu agendamento no Google Calendar</span></div>
+      </div>
 
-        <!-- Carrinhos -->
-        <a href="carrinhos.html"
-           class="je-agendamentos-card group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
-          <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <svg viewBox="0 0 64 80" width="44" height="54" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- rodas -->
-              <circle cx="20" cy="72" r="4" fill="#3b5e97"/>
-              <circle cx="44" cy="72" r="4" fill="#3b5e97"/>
-              <!-- base/chassi -->
-              <rect x="12" y="62" width="40" height="6" rx="3" fill="#3b5e97"/>
-              <!-- corpo do carrinho -->
-              <rect x="10" y="22" width="44" height="42" rx="3" fill="#3b5e97"/>
-              <!-- prateleira inferior -->
-              <rect x="10" y="50" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
-              <!-- prateleira meio -->
-              <rect x="10" y="36" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
-              <!-- publicações prateleira de cima -->
-              <rect x="14" y="24" width="16" height="11" rx="1" fill="#9dbcf2"/>
-              <rect x="33" y="24" width="16" height="11" rx="1" fill="#aac7ff"/>
-              <!-- publicações prateleira do meio -->
-              <rect x="14" y="39" width="16" height="10" rx="1" fill="#d6e3ff"/>
-              <rect x="33" y="39" width="16" height="10" rx="1" fill="#9cbffe"/>
-              <!-- caixas embaixo -->
-              <rect x="13" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
-              <rect x="26" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
-              <rect x="39" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
-              <!-- folheto/publicação em cima -->
-              <rect x="18" y="6" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
-              <rect x="18" y="2" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
-              <rect x="22" y="6" width="10" height="7" rx="1" fill="#d6e3ff"/>
-              <line x1="22" y1="16" x2="34" y2="16" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
-              <line x1="22" y1="19" x2="30" y2="19" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
+      <div class="je-sch-grid">
+
+        <a href="carrinhos.html" class="je-sch-card je-sch-card--carrinhos group">
+          <div class="je-sch-card-top">
+            <div class="je-sch-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 80" width="44" height="54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="72" r="4" fill="#3b5e97"/>
+                <circle cx="44" cy="72" r="4" fill="#3b5e97"/>
+                <rect x="12" y="62" width="40" height="6" rx="3" fill="#3b5e97"/>
+                <rect x="10" y="22" width="44" height="42" rx="3" fill="#3b5e97"/>
+                <rect x="10" y="50" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
+                <rect x="10" y="36" width="44" height="3" rx="1.5" fill="#2b4b7a"/>
+                <rect x="14" y="24" width="16" height="11" rx="1" fill="#9dbcf2"/>
+                <rect x="33" y="24" width="16" height="11" rx="1" fill="#aac7ff"/>
+                <rect x="14" y="39" width="16" height="10" rx="1" fill="#d6e3ff"/>
+                <rect x="33" y="39" width="16" height="10" rx="1" fill="#9cbffe"/>
+                <rect x="13" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+                <rect x="26" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+                <rect x="39" y="53" width="11" height="8" rx="1" fill="#c8a96e"/>
+                <rect x="18" y="6" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
+                <rect x="18" y="2" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/>
+                <rect x="22" y="6" width="10" height="7" rx="1" fill="#d6e3ff"/>
+                <line x1="22" y1="16" x2="34" y2="16" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
+                <line x1="22" y1="19" x2="30" y2="19" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="je-sch-card-tag">Móvel</span>
           </div>
           <div>
-            <h2 class="text-2xl font-extrabold text-primary tracking-tight mb-2">Carrinhos</h2>
-            <p class="text-on-surface-variant text-sm leading-relaxed">Testemunho público móvel em pontos estratégicos da cidade.</p>
+            <h2 class="je-sch-card-title">Carrinhos</h2>
+            <p class="je-sch-card-desc">Testemunho público móvel em pontos estratégicos da cidade.</p>
           </div>
-          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all mt-2">
-            Agendar <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+          <span class="je-sch-card-cta">
+            Abrir calendário
+            <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
           </span>
         </a>
 
-        <!-- Displays -->
-        <a href="displays.html"
-           class="je-agendamentos-card group flex flex-col items-center justify-center gap-6 bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm hover:shadow-xl hover:border-secondary transition-all duration-300 px-10 py-14 text-center">
-          <div class="w-20 h-20 rounded-2xl bg-secondary-fixed/40 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <svg viewBox="0 0 64 64" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- base do display -->
-              <rect x="8" y="52" width="48" height="5" rx="2.5" fill="#3b5e97"/>
-              <!-- estrutura vertical esquerda -->
-              <rect x="8" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
-              <!-- estrutura vertical direita -->
-              <rect x="51" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
-              <!-- prateleira topo -->
-              <rect x="8" y="12" width="48" height="4" rx="2" fill="#3b5e97"/>
-              <!-- prateleira meio -->
-              <rect x="8" y="34" width="48" height="4" rx="2" fill="#2b4b7a"/>
-              <!-- publicações topo -->
-              <rect x="14" y="14" width="16" height="18" rx="1.5" fill="#9dbcf2"/>
-              <rect x="33" y="14" width="16" height="18" rx="1.5" fill="#aac7ff"/>
-              <!-- publicações baixo -->
-              <rect x="14" y="38" width="16" height="13" rx="1.5" fill="#d6e3ff"/>
-              <rect x="33" y="38" width="16" height="13" rx="1.5" fill="#9cbffe"/>
-              <!-- detalhe nas publicações -->
-              <rect x="16" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
-              <rect x="35" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
-            </svg>
+        <a href="displays.html" class="je-sch-card je-sch-card--displays group">
+          <div class="je-sch-card-top">
+            <div class="je-sch-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="52" width="48" height="5" rx="2.5" fill="#3b5e97"/>
+                <rect x="8" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
+                <rect x="51" y="12" width="5" height="42" rx="2" fill="#3b5e97"/>
+                <rect x="8" y="12" width="48" height="4" rx="2" fill="#3b5e97"/>
+                <rect x="8" y="34" width="48" height="4" rx="2" fill="#2b4b7a"/>
+                <rect x="14" y="14" width="16" height="18" rx="1.5" fill="#9dbcf2"/>
+                <rect x="33" y="14" width="16" height="18" rx="1.5" fill="#aac7ff"/>
+                <rect x="14" y="38" width="16" height="13" rx="1.5" fill="#d6e3ff"/>
+                <rect x="33" y="38" width="16" height="13" rx="1.5" fill="#9cbffe"/>
+                <rect x="16" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
+                <rect x="35" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/>
+              </svg>
+            </div>
+            <span class="je-sch-card-tag">Fixo</span>
           </div>
           <div>
-            <h2 class="text-2xl font-extrabold text-primary tracking-tight mb-2">Displays</h2>
-            <p class="text-on-surface-variant text-sm leading-relaxed">Expositores de mesa e publicações em locais fixos permitidos.</p>
+            <h2 class="je-sch-card-title">Displays</h2>
+            <p class="je-sch-card-desc">Expositores de mesa e publicações em locais fixos permitidos.</p>
           </div>
-          <span class="flex items-center gap-2 text-secondary font-semibold text-sm group-hover:gap-4 transition-all mt-2">
-            Agendar <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+          <span class="je-sch-card-cta">
+            Abrir calendário
+            <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
           </span>
         </a>
 
@@ -188,13 +371,12 @@ gtag('config', 'G-PGXCZF9S9W');
 
   </main>
 
-  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
-<div id="footer"></div>
+  <div id="footer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
-	  
+
 </body>
 </html>
