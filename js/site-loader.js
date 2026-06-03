@@ -274,13 +274,23 @@
       color: inherit;
       min-width: 0;
     }
-    .je-site-brand-logo {
+    .je-site-brand-mark {
       display: block;
-      height: 2.75rem;
-      width: auto;
-      max-width: min(11rem, 42vw);
-      object-fit: contain;
-      object-position: left center;
+      width: 2.5rem;
+      height: 2.5rem;
+      flex-shrink: 0;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 14px rgba(15, 52, 98, 0.22);
+    }
+    .je-site-brand-name {
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: #0f3462;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
     .je-site-nav-wrap {
       display: none;
@@ -424,12 +434,30 @@
       padding: 1.25rem 1.25rem 1rem;
       color: #fff;
     }
-    .je-mobile-menu-logo {
+    .je-mobile-menu-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .je-mobile-menu-mark {
       display: block;
-      height: 2.5rem;
-      width: auto;
-      max-width: 10rem;
-      object-fit: contain;
+      width: 2.25rem;
+      height: 2.25rem;
+      flex-shrink: 0;
+      border-radius: 0.625rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .je-mobile-menu-title {
+      display: block;
+      font-size: 1.125rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .je-mobile-menu-close {
       flex-shrink: 0;
@@ -557,7 +585,8 @@
       #header nav > .max-w-7xl,
       #header .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-site-header-inner { min-height: 3.75rem; }
-      .je-site-brand-logo { height: 2.35rem; max-width: min(9.5rem, 38vw); }
+      .je-site-brand-name { font-size: 1rem; max-width: 10rem; }
+      .je-site-brand-mark { width: 2.25rem; height: 2.25rem; }
       #mobile-menu-btn,
       #profile-btn,
       .je-site-icon-btn { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
@@ -609,7 +638,12 @@
       .je-footer-headline { font-size: 1.5rem; }
     }
     @media (max-width: 767px) {
-      .je-site-brand-logo { max-width: min(9rem, 36vw); }
+      .je-site-brand-name {
+        max-width: 10rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
       #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
       .je-footer-info {
@@ -685,19 +719,31 @@
   const assetBase = isAdminPath ? '..' : '.';
 
   function ensureFavicon() {
-    const iconHref = `${assetBase}/img/favicon.png`;
-    if (!document.querySelector('link[rel="icon"]')) {
-      const link = document.createElement('link');
-      link.rel = 'icon';
-      link.type = 'image/png';
-      link.href = iconHref;
-      document.head.appendChild(link);
+    const svgHref = `${assetBase}/img/icon.svg`;
+    const png32Href = `${assetBase}/img/favicon-32.png`;
+    const png180Href = `${assetBase}/img/favicon-180.png`;
+
+    if (!document.querySelector('link[rel="icon"][type="image/svg+xml"]')) {
+      const svgLink = document.createElement('link');
+      svgLink.rel = 'icon';
+      svgLink.type = 'image/svg+xml';
+      svgLink.href = svgHref;
+      document.head.appendChild(svgLink);
+    }
+    if (!document.querySelector('link[rel="icon"][type="image/png"]')) {
+      const pngLink = document.createElement('link');
+      pngLink.rel = 'icon';
+      pngLink.type = 'image/png';
+      pngLink.sizes = '32x32';
+      pngLink.href = png32Href;
+      document.head.appendChild(pngLink);
     }
     if (!document.querySelector('link[rel="apple-touch-icon"]')) {
-      const link = document.createElement('link');
-      link.rel = 'apple-touch-icon';
-      link.href = iconHref;
-      document.head.appendChild(link);
+      const touchLink = document.createElement('link');
+      touchLink.rel = 'apple-touch-icon';
+      touchLink.sizes = '180x180';
+      touchLink.href = png180Href;
+      document.head.appendChild(touchLink);
     }
     if (!document.querySelector('link[rel="manifest"]')) {
       const link = document.createElement('link');

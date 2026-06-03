@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jardim Elizabeth">
+  <defs>
+    <linearGradient id="je-bg" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0a2847"/>
+      <stop offset="1" stop-color="#1a4a7a"/>
+    </linearGradient>
+    <linearGradient id="je-gold" x1="14" y1="18" x2="50" y2="46" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f2e6cc"/>
+      <stop offset="1" stop-color="#c8a96e"/>
+    </linearGradient>
+    <filter id="je-shadow" x="-15%" y="-10%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#061628" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#je-bg)" filter="url(#je-shadow)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" fill="none" stroke="#c8a96e" stroke-opacity="0.42" stroke-width="1"/>
+  <text
+    x="32"
+    y="41"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="24"
+    font-weight="700"
+    fill="url(#je-gold)"
+    letter-spacing="0.06em"
+  >JE</text>
+</svg>
