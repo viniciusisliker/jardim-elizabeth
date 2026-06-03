@@ -20,7 +20,95 @@
   `;
 
   const CHROME_CSS = `
-    .je-footer-info { background-color: #eae8e7; }
+    .je-footer-info {
+      position: relative;
+      overflow: hidden;
+      padding: 3.5rem 0 2.5rem;
+      background: linear-gradient(165deg, #f5f8fc 0%, #eae8e7 48%, #f0ece6 100%);
+    }
+    .je-footer-info::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      background:
+        radial-gradient(ellipse 70% 50% at 100% 0%, rgba(200, 169, 110, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59, 94, 151, 0.12) 0%, transparent 50%);
+    }
+    .je-footer-shell { position: relative; z-index: 1; }
+    .je-footer-intro { margin-bottom: 1.75rem; max-width: 28rem; }
+    .je-footer-kicker {
+      margin: 0 0 0.375rem;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3b5e97;
+    }
+    .je-footer-headline {
+      margin: 0;
+      font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+      font-weight: 800;
+      line-height: 1.2;
+      color: #0f3462;
+    }
+    .je-footer-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .je-footer-grid {
+        grid-template-columns: 1.4fr 1fr 1fr;
+        align-items: stretch;
+      }
+    }
+    .je-footer-card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(15, 52, 98, 0.1);
+      border-radius: 1rem;
+      padding: 1.25rem 1.375rem;
+      box-shadow: 0 4px 20px rgba(15, 52, 98, 0.06);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .je-footer-card:hover {
+      border-color: rgba(59, 94, 151, 0.28);
+      box-shadow: 0 8px 28px rgba(15, 52, 98, 0.1);
+      transform: translateY(-2px);
+    }
+    .je-footer-card--location { border-top: 3px solid #3b5e97; }
+    .je-footer-card--meetings { border-top: 3px solid #984806; }
+    .je-footer-card--contact { border-top: 3px solid #c8a96e; }
+    .je-footer-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.875rem;
+    }
+    .je-footer-card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      color: #0f3462;
+      flex-shrink: 0;
+    }
+    .je-footer-card-icon .material-symbols-outlined {
+      font-size: 1.375rem;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .je-footer-card--meetings .je-footer-card-icon {
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      color: #984806;
+    }
+    .je-footer-card--contact .je-footer-card-icon {
+      background: linear-gradient(135deg, #faf6ef 0%, #f3ead8 100%);
+      color: #8a6d3b;
+    }
     .je-footer-icon {
       font-family: 'Material Symbols Outlined', sans-serif;
       font-size: 2.25rem;
@@ -32,16 +120,17 @@
       font-feature-settings: 'liga';
     }
     .je-footer-title {
-      font-size: 1.125rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 800;
       color: #0f3462;
-      margin: 0 0 0.5rem;
+      margin: 0;
+      line-height: 1.2;
     }
     .je-footer-text {
       font-size: 0.875rem;
-      line-height: 1.5;
+      line-height: 1.6;
       color: #43474f;
-      margin: 0;
+      margin: 0 0 1rem;
     }
     .je-footer-link {
       color: #43474f;
@@ -50,59 +139,112 @@
     .je-footer-link:hover { text-decoration: underline; }
     .je-footer-map-links {
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
       gap: 0.5rem;
-      margin-top: 1rem;
     }
     .je-footer-map-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: flex-start;
-      gap: 0.625rem;
-      width: 100%;
-      background: #fff;
+      justify-content: center;
+      gap: 0.5rem;
+      flex: 1 1 calc(33.333% - 0.35rem);
+      min-width: 7.5rem;
+      background: #f8fafc;
       border: 1px solid #e2e6ef;
-      border-radius: 0.625rem;
-      padding: 0.625rem 0.875rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
+      border-radius: 9999px;
+      padding: 0.5rem 0.875rem;
+      font-size: 0.75rem;
+      font-weight: 700;
       color: #0f3462;
       text-decoration: none;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
     .je-footer-map-btn svg { flex-shrink: 0; width: 1.125rem; height: 1.125rem; }
     .je-footer-map-btn:hover {
       border-color: #3b5e97;
-      background: #f5f8fc;
-      box-shadow: 0 2px 8px rgba(15, 52, 98, 0.08);
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(15, 52, 98, 0.12);
+      transform: translateY(-1px);
     }
-    .je-footer-map-btn-label { flex: 1; min-width: 0; }
-    @media (min-width: 640px) {
-      .je-footer-map-links {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 0.625rem;
-      }
-      .je-footer-map-btn {
-        width: auto;
-        flex: 1 1 calc(33.333% - 0.5rem);
-        min-width: 8.5rem;
-        max-width: 100%;
-      }
+    .je-footer-map-btn-label { flex: 0 1 auto; min-width: 0; white-space: nowrap; }
+    .je-footer-schedule {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+    .je-footer-schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.75rem;
+      background: #f8fafc;
+      border: 1px solid #eef0f4;
+    }
+    .je-footer-schedule-day {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.25rem;
+      padding: 0.25rem 0.375rem;
+      border-radius: 0.5rem;
+      background: #0f3462;
+      color: #fff;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .je-footer-schedule-detail {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #43474f;
+      line-height: 1.35;
+    }
+    .je-footer-email {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #0f3462 0%, #1a4a7a 100%);
+      color: #fff;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-decoration: none;
+      word-break: break-all;
+      transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(15, 52, 98, 0.22);
+    }
+    .je-footer-email .material-symbols-outlined {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      font-variation-settings: 'FILL' 0, 'wght' 500;
+    }
+    .je-footer-email:hover {
+      opacity: 0.94;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(15, 52, 98, 0.28);
     }
     .je-footer-bar {
-      background: #eae8e7;
+      background: linear-gradient(135deg, #0a2847 0%, #0f3462 100%);
       width: 100%;
-      border-top: 1px solid rgba(15, 52, 98, 0.1);
+      border-top: 3px solid #c8a96e;
     }
     .je-footer-brand {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: #0f3462;
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.02em;
     }
     .je-footer-copy {
-      font-size: 0.875rem;
-      color: rgba(15, 52, 98, 0.6);
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.72);
+      text-align: center;
     }
 
     /* Menu mobile — drawer lateral (oculto no desktop via lg:hidden no HTML) */
@@ -297,11 +439,12 @@
       #profile-btn,
       #hub-nav-btn.flex { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
       #profile-dropdown { max-width: min(18rem, calc(100vw - 2rem)); }
-      .je-footer-info { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+      .je-footer-info { padding-top: 2.5rem; padding-bottom: 2rem; }
+      .je-footer-info > .je-footer-shell,
       .je-footer-info > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
-      .je-footer-info .grid { gap: 2rem; }
-      .je-footer-bar > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; padding-top: 2rem; padding-bottom: 2rem; }
-      .je-footer-map-btn { min-height: 2.75rem; }
+      .je-footer-grid { gap: 0.875rem; }
+      .je-footer-bar > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      .je-footer-map-btn { min-height: 2.75rem; flex: 1 1 100%; }
       main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
       .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
     }

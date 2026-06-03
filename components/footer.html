@@ -1,10 +1,19 @@
-<section class="je-footer-info py-16">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid md:grid-cols-3 gap-12 items-start">
-      <div>
-        <span class="material-symbols-outlined je-footer-icon" aria-hidden="true">location_on</span>
-        <h4 class="je-footer-title">Localização</h4>
-        <p class="je-footer-text mb-4">
+<section class="je-footer-info">
+  <div class="je-footer-shell max-w-7xl mx-auto px-6">
+    <div class="je-footer-intro">
+      <p class="je-footer-kicker">Encontre-nos</p>
+      <h3 class="je-footer-headline">Estamos prontos para recebê-lo</h3>
+    </div>
+
+    <div class="je-footer-grid">
+      <article class="je-footer-card je-footer-card--location">
+        <header class="je-footer-card-head">
+          <span class="je-footer-card-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">location_on</span>
+          </span>
+          <h4 class="je-footer-title">Localização</h4>
+        </header>
+        <p class="je-footer-text">
           Rua Professor Orestes Rosólia, 164<br>
           Jardim Rosana, São Paulo – SP<br>
           CEP 05795-300
@@ -51,28 +60,45 @@
             <span class="je-footer-map-btn-label">Waze</span>
           </a>
         </div>
-      </div>
-      <div>
-        <span class="material-symbols-outlined je-footer-icon" aria-hidden="true">schedule</span>
-        <h4 class="je-footer-title">Reuniões</h4>
-        <p class="je-footer-text">
-          Quartas-feiras às 19h30<br>
-          Sábados às 19h30
-        </p>
-      </div>
-      <div>
-        <span class="material-symbols-outlined je-footer-icon" aria-hidden="true">alternate_email</span>
-        <h4 class="je-footer-title">Contato</h4>
-        <p class="je-footer-text">
-          <a href="mailto:elizabeth49577@gmail.com" class="je-footer-link">elizabeth49577@gmail.com</a>
-        </p>
-      </div>
+      </article>
+
+      <article class="je-footer-card je-footer-card--meetings">
+        <header class="je-footer-card-head">
+          <span class="je-footer-card-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">schedule</span>
+          </span>
+          <h4 class="je-footer-title">Reuniões</h4>
+        </header>
+        <ul class="je-footer-schedule">
+          <li class="je-footer-schedule-item">
+            <span class="je-footer-schedule-day">Qua</span>
+            <span class="je-footer-schedule-detail">Quartas-feiras às 19h30</span>
+          </li>
+          <li class="je-footer-schedule-item">
+            <span class="je-footer-schedule-day">Sáb</span>
+            <span class="je-footer-schedule-detail">Sábados às 19h30</span>
+          </li>
+        </ul>
+      </article>
+
+      <article class="je-footer-card je-footer-card--contact">
+        <header class="je-footer-card-head">
+          <span class="je-footer-card-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">alternate_email</span>
+          </span>
+          <h4 class="je-footer-title">Contato</h4>
+        </header>
+        <a href="mailto:elizabeth49577@gmail.com" class="je-footer-email">
+          <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+          <span>elizabeth49577@gmail.com</span>
+        </a>
+      </article>
     </div>
   </div>
 </section>
 
 <footer class="je-footer-bar">
-  <div class="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+  <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
     <div class="je-footer-brand">Jardim Elizabeth</div>
     <div class="je-footer-copy">© 2026 Jardim Elizabeth. Todos os direitos reservados.</div>
   </div>
