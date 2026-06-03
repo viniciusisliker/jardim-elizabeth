@@ -54,9 +54,203 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+
+    .je-don-hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a2847 0%, #0f3462 45%, #1a4a7a 100%);
+      color: #fff;
+    }
+    .je-don-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 100% 0%, rgba(200,169,110,.25) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59,94,151,.35) 0%, transparent 50%);
+    }
+    .je-don-hero-inner { position: relative; z-index: 1; }
+
+    .je-don-pix-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      border-radius: 1.25rem;
+      box-shadow: 0 8px 32px rgba(15,52,98,.1);
+      overflow: hidden;
+    }
+    .je-don-pix-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0f3462, #c8a96e, #3b5e97);
+    }
+    .je-don-pix-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem 1.5rem 0;
+    }
+    .je-don-pix-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      color: #0f3462;
+      flex-shrink: 0;
+    }
+    .je-don-pix-icon .material-symbols-outlined {
+      font-size: 1.5rem;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
+    .je-don-pix-body {
+      display: grid;
+      gap: 1.25rem;
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .je-don-pix-body { grid-template-columns: 1fr auto; align-items: center; }
+    }
+    .je-don-key-panel {
+      background: linear-gradient(180deg, #f5f8fc 0%, #fff 100%);
+      border: 1px solid #e2e6ef;
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+    .je-don-key-label {
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3b5e97;
+      margin-bottom: 0.5rem;
+    }
+    .je-don-key-value {
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
+      font-weight: 800;
+      color: #0f3462;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .je-don-key-holder {
+      font-size: 0.8125rem;
+      color: #43474f;
+      margin-top: 0.625rem;
+    }
+    .je-don-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(15,52,98,.15);
+      background: #fff;
+      color: #0f3462;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .je-don-copy-btn:hover {
+      border-color: #0f3462;
+      background: #0f3462;
+      color: #fff;
+    }
+    .je-don-copy-btn.is-copied {
+      border-color: #1a7f4b;
+      background: #e8f5ee;
+      color: #1a7f4b;
+    }
+    .je-don-qr-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e6ef;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(15,52,98,.06);
+    }
+    .je-don-qr-panel img {
+      width: 9.5rem;
+      height: 9.5rem;
+      object-fit: contain;
+    }
+    .je-don-qr-caption {
+      margin-top: 0.625rem;
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #747780;
+      text-align: center;
+    }
+    .je-don-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+      padding: 1.125rem 1.25rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #faf6ef 0%, #fff 100%);
+      border: 1px solid rgba(200,169,110,.35);
+    }
+    .je-don-note-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 9999px;
+      background: rgba(15,52,98,.08);
+      color: #0f3462;
+      flex-shrink: 0;
+    }
+    .je-don-steps {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 640px) {
+      .je-don-steps { grid-template-columns: repeat(3, 1fr); }
+    }
+    .je-don-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.875rem;
+      background: #fff;
+      border: 1px solid #e2e6ef;
+      font-size: 0.8125rem;
+      color: #43474f;
+      line-height: 1.4;
+    }
+    .je-don-step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 9999px;
+      background: #0f3462;
+      color: #fff;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
     @media (max-width: 767px) {
-      .je-donations-pix-card { padding: 1.5rem; }
-      .je-donations-pix-key { word-break: break-all; }
+      .je-don-pix-head { padding: 1.25rem 1.25rem 0; }
+      .je-don-pix-body { padding: 1rem 1.25rem 1.25rem; }
+      .je-don-qr-panel { width: 100%; }
+      .je-don-qr-panel img { width: 8.5rem; height: 8.5rem; }
+      .je-don-copy-btn { width: 100%; justify-content: center; min-height: 2.75rem; }
     }
   </style>
 </head>
@@ -68,70 +262,63 @@ gtag('config', 'G-PGXCZF9S9W');
   <main>
 
     <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
-    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6 je-page-shell">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-<a href="index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
-          <a href="index.html">
-			      <span class="text-secondary">Jardim Elizabeth</span>
-		      </a>
-          <span class="text-outline">/</span>
-          <span class="text-primary">Donativos</span>
+    <section class="je-don-hero border-b border-outline-variant py-12 md:py-14 fade-up">
+      <div class="max-w-3xl mx-auto px-6 je-page-shell je-don-hero-inner">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/70 mb-4">
+          <a href="index.html" class="text-white/90 hover:text-white"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+          <a href="index.html" class="text-white/90 hover:text-white">Jardim Elizabeth</a>
+          <span class="text-white/40">/</span>
+          <span class="text-[#c8a96e]">Donativos</span>
         </div>
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Donativos</h1>
-            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Esta página foi criada com o objetivo de facilitar o PIX para a congregação.</p>
-          </div>
-          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
-            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
-          </div>
-        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Donativos</h1>
+        <p class="text-white/80 mt-3 text-sm md:text-base max-w-lg leading-relaxed">
+          Contribua com a congregação de forma simples e segura via PIX.
+        </p>
       </div>
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div id="je-donations-root" class="max-w-3xl mx-auto px-6 je-page-shell py-14 fade-up-2">
+    <div id="je-donations-root" class="max-w-3xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
 
-      <!-- Card PIX com QR Code ao lado -->
-      <div class="je-donations-pix-card bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm p-8 md:p-10 mb-8">
+      <div class="je-don-steps">
+        <div class="je-don-step"><span class="je-don-step-num">1</span><span>Copie a chave ou escaneie o QR Code</span></div>
+        <div class="je-don-step"><span class="je-don-step-num">2</span><span>Abra o app do seu banco e escolha PIX</span></div>
+        <div class="je-don-step"><span class="je-don-step-num">3</span><span>Confirme o valor e finalize o pagamento</span></div>
+      </div>
 
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 rounded-xl bg-secondary-fixed/40 flex items-center justify-center">
-            <span class="material-symbols-outlined text-secondary" style="font-size:24px">volunteer_activism</span>
+      <article class="je-don-pix-card mb-6">
+        <header class="je-don-pix-head">
+          <div class="je-don-pix-icon">
+            <span class="material-symbols-outlined">volunteer_activism</span>
           </div>
           <div>
             <h2 class="text-xl font-extrabold text-primary tracking-tight">PIX da Congregação</h2>
-            <p data-je-subtitle class="text-on-surface-variant text-xs">Em nome do Irmão Marcelo Almeida</p>
+            <p data-je-subtitle class="text-on-surface-variant text-sm mt-0.5">Em nome do Irmão Marcelo Almeida</p>
+          </div>
+        </header>
+
+        <div class="je-don-pix-body">
+          <div class="je-don-key-panel">
+            <p data-je-pix-type class="je-don-key-label">Chave PIX — E-mail</p>
+            <p data-je-pix-key class="je-don-key-value">elizabeth49577@gmail.com</p>
+            <p data-je-pix-holder class="je-don-key-holder">Marcelo Branco Almeida · Santander</p>
+            <button type="button" id="je-copy-pix" class="je-don-copy-btn">
+              <span class="material-symbols-outlined" style="font-size:18px">content_copy</span>
+              <span id="je-copy-pix-label">Copiar chave PIX</span>
+            </button>
+          </div>
+
+          <div class="je-don-qr-panel">
+            <img data-je-qr src="img/qrcode.jpg" alt="QR Code PIX Jardim Elizabeth"/>
+            <p class="je-don-qr-caption">Escaneie para pagar</p>
           </div>
         </div>
+      </article>
 
-        <div class="flex flex-col md:flex-row items-center gap-8">
-
-          <!-- Chave PIX -->
-          <div class="flex-1 w-full">
-            <div class="bg-surface-container-low rounded-xl p-5 border border-outline-variant">
-              <p data-je-pix-type class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Chave PIX — E-mail</p>
-              <p data-je-pix-key class="je-donations-pix-key text-base font-bold text-primary font-mono">elizabeth49577@gmail.com</p>
-              <p data-je-pix-holder class="text-xs text-on-surface-variant mt-2">Marcelo Branco Almeida · Santander</p>
-            </div>
-          </div>
-
-          <!-- QR Code ao lado -->
-          <div class="flex-shrink-0 bg-white rounded-xl border border-outline-variant shadow-sm p-3 flex flex-col items-center">
-            <img data-je-qr src="img/qrcode.jpg"
-                 alt="QR Code PIX Jardim Elizabeth"
-                 class="w-40 h-40 object-contain"/>
-            <p class="text-[9px] font-bold uppercase tracking-widest text-outline text-center mt-2">Escaneie para pagar</p>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Aviso -->
-      <div class="bg-surface-container-low border border-outline-variant rounded-xl p-5 flex items-start gap-4 mb-6">
-        <span class="material-symbols-outlined text-secondary mt-0.5" style="font-size:20px">info</span>
+      <div class="je-don-note">
+        <span class="je-don-note-icon" aria-hidden="true">
+          <span class="material-symbols-outlined" style="font-size:20px">favorite</span>
+        </span>
         <p data-je-disclaimer class="text-on-surface-variant text-sm leading-relaxed">
           As contribuições são totalmente <strong class="text-primary">voluntárias</strong>. Nenhum membro está obrigado a contribuir. Agradecemos de coração o apoio de cada um.
         </p>
@@ -149,6 +336,25 @@ gtag('config', 'G-PGXCZF9S9W');
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
   <script src="js/content.js"></script>
+  <script>
+    document.getElementById('je-copy-pix')?.addEventListener('click', async () => {
+      const key = document.querySelector('[data-je-pix-key]')?.textContent?.trim();
+      const btn = document.getElementById('je-copy-pix');
+      const label = document.getElementById('je-copy-pix-label');
+      if (!key || !btn) return;
+      try {
+        await navigator.clipboard.writeText(key);
+        btn.classList.add('is-copied');
+        if (label) label.textContent = 'Chave copiada!';
+        setTimeout(() => {
+          btn.classList.remove('is-copied');
+          if (label) label.textContent = 'Copiar chave PIX';
+        }, 2200);
+      } catch {
+        if (window.JEToast?.show) window.JEToast.show('Não foi possível copiar. Selecione a chave manualmente.', { error: true });
+      }
+    });
+  </script>
 
 </body>
 </html>
