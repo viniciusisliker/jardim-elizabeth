@@ -31,6 +31,13 @@
     .dp-table{width:100%;min-width:52rem;border-collapse:collapse;font-size:0.8125rem}
     .dp-table th{background:#002060;color:#fff;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:0.5rem 0.625rem;text-align:left;white-space:nowrap}
     .dp-table td{padding:0.375rem 0.5rem;border-bottom:1px solid #D9E2F3;vertical-align:top}
+    .dp-table tr.row-note td:first-child,
+    .dp-table tr.row-note td:last-child,
+    .dp-table tr.row-convention td:first-child,
+    .dp-table tr.row-convention td:last-child{vertical-align:middle}
+    .dp-table tr.row-note td:first-child input[type="date"]{margin:0}
+    .dp-table tr.row-note td:last-child .dp-row-actions,
+    .dp-table tr.row-convention td:last-child .dp-row-actions{align-items:center;min-height:100%}
     .dp-table tr.row-convention{background:#fce4ec}
     .dp-table tr.row-special{background:#e8f5e9}
     .dp-table tr.row-note{background:#f5f5f5;font-style:italic}
