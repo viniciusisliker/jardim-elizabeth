@@ -1,32 +1,39 @@
-<nav class="sticky top-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant">
+<nav class="je-site-header sticky top-0 z-50">
+  <div class="je-site-header-accent" aria-hidden="true"></div>
   <div class="max-w-7xl mx-auto px-6">
-    <div class="flex items-center justify-between h-16 gap-4">
+    <div class="je-site-header-inner">
 
-      <a href="index.html" class="flex-shrink-0">
-        <span class="text-xl font-extrabold text-primary tracking-tight">Jardim Elizabeth</span>
+      <a href="index.html" class="je-site-brand flex-shrink-0">
+        <span class="je-site-brand-mark" aria-hidden="true">JE</span>
+        <span class="je-site-brand-text">
+          <span class="je-site-brand-name">Jardim Elizabeth</span>
+          <span class="je-site-brand-sub">Congregação Cristã</span>
+        </span>
       </a>
 
-      <div class="hidden lg:flex items-center gap-7 text-sm font-medium text-secondary">
-        <a href="index.html" class="nav-link hover:text-primary transition-colors">Home</a>
-        <a href="agenda.html" class="nav-link hover:text-primary transition-colors">Agenda</a>
-        <a href="agendamentos.html" class="nav-link hover:text-primary transition-colors">Agendamentos</a>
-        <a href="donativos.html" class="nav-link hover:text-primary transition-colors">Donativos</a>
-        <a href="quadrodeanuncios.html" class="nav-link hover:text-primary transition-colors">Quadro de Anúncios</a>
-        <a href="territorios.html" class="nav-link hover:text-primary transition-colors">Territórios</a>
+      <div class="je-site-nav-wrap hidden lg:flex" role="navigation" aria-label="Menu principal">
+        <div class="je-site-nav">
+          <a href="index.html" class="je-site-nav-link nav-link">Home</a>
+          <a href="agenda.html" class="je-site-nav-link nav-link">Agenda</a>
+          <a href="agendamentos.html" class="je-site-nav-link nav-link">Agendamentos</a>
+          <a href="donativos.html" class="je-site-nav-link nav-link">Donativos</a>
+          <a href="quadrodeanuncios.html" class="je-site-nav-link nav-link">Quadro de Anúncios</a>
+          <a href="territorios.html" class="je-site-nav-link nav-link">Territórios</a>
+        </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button id="mobile-menu-btn" type="button" class="je-mobile-menu-trigger lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low text-primary" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
+      <div class="je-site-actions">
+        <button id="mobile-menu-btn" type="button" class="je-mobile-menu-trigger je-site-icon-btn lg:hidden" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
           <span class="material-symbols-outlined je-mobile-menu-trigger-icon je-mobile-menu-trigger-icon--open">menu</span>
           <span class="material-symbols-outlined je-mobile-menu-trigger-icon je-mobile-menu-trigger-icon--close">close</span>
         </button>
 
-        <a id="hub-nav-btn" href="hub.html" class="hidden w-10 h-10 items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container-low text-secondary hover:text-primary transition-colors" aria-label="Hub Administrativo" title="Hub Administrativo">
+        <a id="hub-nav-btn" href="hub.html" class="je-site-icon-btn je-site-icon-btn--hub hidden" aria-label="Hub Administrativo" title="Hub Administrativo">
           <span class="material-symbols-outlined">dashboard</span>
         </a>
 
         <div class="relative" id="profile-menu-container">
-          <button id="profile-btn" type="button" class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant bg-white hover:bg-surface-container-low text-primary transition-colors" aria-label="Perfil" aria-expanded="false" aria-haspopup="true">
+          <button id="profile-btn" type="button" class="je-site-icon-btn" aria-label="Perfil" aria-expanded="false" aria-haspopup="true">
             <span class="material-symbols-outlined" id="profile-icon">account_circle</span>
           </button>
 

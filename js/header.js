@@ -104,7 +104,8 @@
 
     if (hubBtn) {
       hubBtn.classList.toggle('hidden', !canHub);
-      hubBtn.classList.toggle('flex', !!canHub);
+      if (canHub) hubBtn.classList.add('flex');
+      else hubBtn.classList.remove('flex');
     }
 
     const hubSlot = qs('mobile-menu-hub-slot');
