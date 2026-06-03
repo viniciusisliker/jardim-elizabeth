@@ -443,10 +443,45 @@
       .je-footer-info > .je-footer-shell,
       .je-footer-info > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-footer-grid { gap: 0.875rem; }
-      .je-footer-bar > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; padding-top: 1.5rem; padding-bottom: 1.5rem; }
-      .je-footer-map-btn { min-height: 2.75rem; flex: 1 1 100%; }
+      .je-footer-bar > .max-w-7xl {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        padding-top: 1.5rem;
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+      }
+      .je-footer-card { padding: 1.125rem 1.25rem; }
+      .je-footer-card:hover { transform: none; }
+      .je-footer-map-links { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .je-footer-map-btn {
+        min-height: 2.75rem;
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        padding: 0.625rem 0.75rem;
+      }
+      .je-footer-map-btn:last-child { grid-column: 1 / -1; }
+      .je-footer-email { min-height: 2.75rem; font-size: 0.8125rem; }
+      .je-footer-schedule-item { min-height: 2.75rem; }
       main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
       .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .je-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .je-footer-card--location { grid-column: 1 / -1; }
+      .je-footer-map-links {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .je-footer-map-btn {
+        flex: 1 1 calc(33.333% - 0.35rem);
+        min-width: 7rem;
+      }
+      .je-footer-map-btn:last-child { grid-column: auto; }
+      .je-footer-intro { max-width: none; }
+      .je-footer-headline { font-size: 1.5rem; }
     }
     @media (max-width: 767px) {
       #header nav a.flex-shrink-0 > span {
@@ -459,7 +494,40 @@
       }
       #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
       #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-      .je-footer-copy { text-align: center; line-height: 1.5; }
+      .je-footer-info {
+        padding-top: 2rem;
+        padding-bottom: 1.5rem;
+        padding-left: env(safe-area-inset-left, 0);
+        padding-right: env(safe-area-inset-right, 0);
+      }
+      .je-footer-intro {
+        margin-bottom: 1.125rem;
+        text-align: center;
+        max-width: none;
+      }
+      .je-footer-headline { font-size: 1.25rem; }
+      .je-footer-kicker { text-align: center; }
+      .je-footer-card { border-radius: 0.875rem; padding: 1rem 1.125rem; }
+      .je-footer-text { font-size: 0.8125rem; line-height: 1.55; margin-bottom: 0.875rem; }
+      .je-footer-map-links { grid-template-columns: 1fr; }
+      .je-footer-map-btn:last-child { grid-column: auto; }
+      .je-footer-map-btn-label { white-space: normal; text-align: center; line-height: 1.2; }
+      .je-footer-schedule { gap: 0.5rem; }
+      .je-footer-schedule-detail { font-size: 0.8125rem; }
+      .je-footer-email {
+        justify-content: center;
+        text-align: center;
+        word-break: break-word;
+        padding: 0.875rem 0.75rem;
+      }
+      .je-footer-bar > .max-w-7xl {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.625rem;
+        text-align: center;
+      }
+      .je-footer-brand { font-size: 1rem; }
+      .je-footer-copy { text-align: center; line-height: 1.5; font-size: 0.75rem; max-width: 20rem; }
     }
   `;
 
