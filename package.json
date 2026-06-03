@@ -1,0 +1,9 @@
+{
+  "name": "jardim-elizabeth",
+  "private": true,
+  "description": "Site da congregação Jardim Elizabeth",
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "start": "npm run dev"
+  }
+}

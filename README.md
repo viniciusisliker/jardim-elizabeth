@@ -13,6 +13,18 @@ O site é publicado automaticamente na Vercel ao fazer **push na branch `main`**
 
 Configuração no repositório: `vercel.json` (site estático, sem build).
 
+### Desenvolvimento local
+
+Na pasta do clone:
+
+```bash
+npm run dev
+```
+
+(Requer [Node.js](https://nodejs.org/) instalado. Não precisa de `npm install` — o servidor de desenvolvimento não usa dependências externas.)
+
+Abra [http://localhost:3000](http://localhost:3000). O Supabase Auth exige servir por HTTP (não abra os HTML direto pelo Explorer).
+
 ### Fluxo
 
 ```bash

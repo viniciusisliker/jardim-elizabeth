@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discursos Públicos — Hub | Jardim Elizabeth</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet"/>
+  <script>tailwind.config={theme:{extend:{colors:{primary:'#002060',secondary:'#1F497D','outline-variant':'#1F497D','on-surface-variant':'#43474f',background:'#F7F6F2',error:'#C00000',accent:'#984806','accent-gold':'#C8A96E','section-bg':'#EEECE1'}}}}</script>
+  <style>
+    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+    .tab-active{border-bottom:2px solid #002060;color:#002060;font-weight:600}
+    .board-month-toolbar{border:2px solid #002060;border-radius:1rem;background:linear-gradient(180deg,#fff 0%,#F7F6F2 100%);padding:1rem 1.125rem;margin-bottom:1rem;box-shadow:0 4px 18px rgba(0,32,96,.08)}
+    .board-month-toolbar__head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem}
+    .board-month-toolbar__pick{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.875rem;flex:1;min-width:min(100%,18rem)}
+    .board-month-toolbar__icon{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:0.75rem;background:#002060;color:#fff;flex-shrink:0}
+    .board-month-toolbar__field{flex:1;min-width:10rem}
+    .board-month-toolbar__field label{display:block;font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#002060;margin-bottom:0.125rem}
+    .board-month-toolbar__hint{font-size:0.75rem;color:#43474f;margin:0 0 0.5rem;line-height:1.35}
+    .board-month-input-wrap{position:relative;display:flex;align-items:center}
+    #board-month{display:block;width:100%;min-width:11rem;min-height:2.75rem;padding:0.625rem 0.875rem;border:2px solid #1F497D;border-radius:0.625rem;background:#fff;font-size:1rem;font-weight:700;color:#002060}
+    .board-load-btn{display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-height:2.75rem;padding:0.625rem 1.125rem;border-radius:0.625rem;background:#002060;color:#fff;font-size:0.875rem;font-weight:700;border:none;cursor:pointer}
+    .board-status-bar{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid rgba(31,73,125,.15)}
+    .board-status-bar__label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#43474f}
+    .qa-section{background:#fff;border:1px solid rgba(31,73,125,.35);border-radius:0.625rem;margin-bottom:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,32,96,.06)}
+    .qa-section-title{display:flex;align-items:center;gap:0.5rem;font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#002060;background:linear-gradient(180deg,#EEECE1 0%,#e8e6df 100%);padding:0.75rem 1.125rem;border-bottom:1px solid #D9E2F3}
+    .qa-section-title .material-symbols-outlined{font-size:1.125rem;color:#984806;font-variation-settings:'FILL' 1,'wght' 500}
+    .qa-section-body{padding:1rem;background:#fff}
+    .dp-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .dp-table{width:100%;min-width:52rem;border-collapse:collapse;font-size:0.8125rem}
+    .dp-table th{background:#002060;color:#fff;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:0.5rem 0.625rem;text-align:left;white-space:nowrap}
+    .dp-table td{padding:0.375rem 0.5rem;border-bottom:1px solid #D9E2F3;vertical-align:top}
+    .dp-table tr.row-convention{background:#fce4ec}
+    .dp-table tr.row-special{background:#e8f5e9}
+    .dp-table tr.row-note{background:#f5f5f5;font-style:italic}
+    .dp-table input,.dp-table select,.dp-table textarea{width:100%;border:1px solid #c3c6d0;border-radius:0.375rem;padding:0.375rem 0.5rem;font-size:0.8125rem;background:#fff}
+    .dp-table input:focus,.dp-table select:focus,.dp-table textarea:focus{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
+    .dp-row-actions{display:flex;gap:0.25rem;justify-content:flex-end}
+    .dp-row-btn{font-size:0.6875rem;font-weight:700;padding:0.25rem 0.5rem;border-radius:0.375rem;border:1px solid rgba(192,0,0,.25);color:#C00000;background:#fff;cursor:pointer;white-space:nowrap}
+    .dp-toolbar{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;align-items:center;justify-content:space-between}
+    .dp-toolbar-actions{display:flex;flex-wrap:wrap;gap:0.5rem}
+    .dp-mini-btn{font-size:0.75rem;font-weight:600;padding:0.375rem 0.75rem;border-radius:0.5rem;border:1px solid #1F497D;background:#fff;color:#43474f;cursor:pointer}
+    .dp-mini-btn:hover{border-color:#002060;background:#EEECE1}
+    .dp-save-btn{font-size:0.875rem;font-weight:700;padding:0.5rem 1rem;border-radius:0.5rem;border:none;background:#002060;color:#fff;cursor:pointer}
+    .dp-type-badge{display:inline-block;font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.125rem 0.375rem;border-radius:9999px;margin-bottom:0.25rem}
+    .dp-type-badge--convention{background:#f8bbd0;color:#880e4f}
+    .dp-type-badge--special{background:#c8e6c9;color:#1b5e20}
+    .dp-type-badge--note{background:#e0e0e0;color:#424242}
+    @media(max-width:767px){.dp-mini-btn,.dp-save-btn,.board-load-btn{min-height:2.75rem}}
+  </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
+  <div id="header"></div>
+  <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
+    <div class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
+      <a href="../hub.html" class="text-secondary">Hub</a> / <span class="text-primary">Discursos Públicos</span>
+    </div>
+    <div class="mb-6">
+      <h1 class="text-2xl font-extrabold text-primary">Discursos Públicos</h1>
+      <p class="text-sm text-on-surface-variant mt-1">Arranjo mensal de oradores recebidos e enviados — como a planilha do ancião responsável.</p>
+    </div>
+
+    <section class="board-month-toolbar" aria-label="Selecionar mês">
+      <div class="board-month-toolbar__head">
+        <div class="board-month-toolbar__pick">
+          <div class="board-month-toolbar__icon" aria-hidden="true">
+            <span class="material-symbols-outlined">calendar_month</span>
+          </div>
+          <div class="board-month-toolbar__field">
+            <label for="board-month">Mês do arranjo</label>
+            <p class="board-month-toolbar__hint">Escolha o mês e clique em carregar para abrir ou criar o rascunho.</p>
+            <div class="board-month-input-wrap">
+              <input type="month" id="board-month"/>
+            </div>
+          </div>
+          <button type="button" id="btn-load-board" class="board-load-btn">
+            <span class="material-symbols-outlined" style="font-size:1.125rem">folder_open</span>
+            Carregar mês
+          </button>
+        </div>
+      </div>
+      <div class="board-status-bar">
+        <span class="board-status-bar__label">Arranjo atual</span>
+        <p id="board-label" class="text-sm font-bold text-primary m-0">—</p>
+      </div>
+    </section>
+
+    <p id="admin-toast" class="hidden text-sm mb-4"></p>
+
+    <div id="editor-shell" class="hidden">
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-4">
+        <nav class="flex flex-wrap gap-4 text-sm">
+          <button type="button" data-tab="receive" class="tab-btn tab-active pb-2">Recebemos</button>
+          <button type="button" data-tab="send" class="tab-btn pb-2 text-on-surface-variant">Enviamos</button>
+        </nav>
+      </div>
+
+      <div class="dp-toolbar">
+        <div class="dp-toolbar-actions">
+          <button type="button" id="btn-regen-saturdays" class="dp-mini-btn">Regenerar sábados</button>
+          <button type="button" id="btn-add-speech" class="dp-mini-btn">+ Discurso</button>
+          <button type="button" id="btn-add-convention" class="dp-mini-btn">+ Congresso</button>
+          <button type="button" id="btn-add-special" class="dp-mini-btn">+ Visita SC</button>
+          <button type="button" id="btn-add-note" class="dp-mini-btn">+ Nota</button>
+        </div>
+        <button type="button" id="btn-save" class="dp-save-btn">Salvar arranjo</button>
+      </div>
+
+      <div id="panel-receive" class="tab-panel">
+        <div class="qa-section">
+          <div class="qa-section-title">
+            <span class="material-symbols-outlined">call_received</span>
+            Recebemos — oradores visitantes
+          </div>
+          <div class="qa-section-body dp-table-wrap">
+            <table class="dp-table" id="table-receive">
+              <thead>
+                <tr>
+                  <th style="width:7rem">Data</th>
+                  <th style="width:11rem">Orador</th>
+                  <th style="width:4.5rem">Esboço</th>
+                  <th>Tema</th>
+                  <th style="width:10rem">Características</th>
+                  <th style="width:12rem">Observação</th>
+                  <th style="width:4rem"></th>
+                </tr>
+              </thead>
+              <tbody id="tbody-receive"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-send" class="tab-panel hidden">
+        <div class="qa-section">
+          <div class="qa-section-title">
+            <span class="material-symbols-outlined">call_made</span>
+            Enviamos — oradores da congregação
+          </div>
+          <div class="qa-section-body dp-table-wrap">
+            <table class="dp-table" id="table-send">
+              <thead>
+                <tr>
+                  <th style="width:7rem">Data</th>
+                  <th style="width:11rem">Orador</th>
+                  <th style="width:4.5rem">Esboço</th>
+                  <th>Tema</th>
+                  <th style="width:10rem">Características</th>
+                  <th style="width:12rem">Observação</th>
+                  <th style="width:4rem"></th>
+                </tr>
+              </thead>
+              <tbody id="tbody-send"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="footer"></div>
+  <datalist id="characteristics-list">
+    <option value="Bíblia/Deus"></option>
+    <option value="Provações/Problemas"></option>
+    <option value="Religião/Adoração"></option>
+    <option value="Março/Agosto - SC"></option>
+    <option value="Orador Local"></option>
+  </datalist>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/header.js"></script>
+  <script src="../js/site-loader.js"></script>
+  <script src="../js/je-toast.js"></script>
+  <script src="../js/admin-core.js"></script>
+  <script src="../js/admin/discursos-publicos.js"></script>
+</body>
+</html>
