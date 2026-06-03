@@ -304,15 +304,8 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .je-site-brand-sub {
-      font-size: 0.625rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #3b5e97;
-      margin-top: 0.125rem;
-    }
     .je-site-nav-wrap {
+      display: none;
       flex: 1;
       justify-content: center;
       min-width: 0;
@@ -387,7 +380,25 @@
       box-shadow: 0 4px 12px rgba(152, 72, 6, 0.15);
     }
 
-    /* Menu mobile — drawer lateral (oculto no desktop via lg:hidden no HTML) */
+    /* Menu hambúrguer: só mobile/tablet (<1024px). Nav pills no desktop. */
+    @media (min-width: 1024px) {
+      .je-site-menu-mobile-only,
+      #mobile-menu-btn {
+        display: none !important;
+      }
+      .je-site-nav-wrap {
+        display: flex !important;
+      }
+      .je-mobile-menu-backdrop,
+      .je-mobile-menu {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      body.je-menu-open { overflow: auto; }
+    }
+
+    /* Menu mobile — drawer lateral */
     body.je-menu-open { overflow: hidden; }
     .je-mobile-menu-trigger-icon--close { display: none; }
     .je-mobile-menu-trigger.is-open .je-mobile-menu-trigger-icon--open { display: none; }
@@ -577,7 +588,6 @@
       #header nav > .max-w-7xl,
       #header .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-site-header-inner { min-height: 3.75rem; }
-      .je-site-brand-sub { display: none; }
       .je-site-brand-name { font-size: 1rem; max-width: 10rem; }
       .je-site-brand-mark { width: 2.25rem; height: 2.25rem; font-size: 0.75rem; }
       #mobile-menu-btn,
