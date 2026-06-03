@@ -11,7 +11,6 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-
 gtag('config', 'G-PGXCZF9S9W');
 </script>
 
@@ -27,28 +26,20 @@ gtag('config', 'G-PGXCZF9S9W');
           colors: {
             "primary-container": "#2b4b7a",
             "on-primary-container": "#9dbcf2",
-            "on-primary": "#ffffff",
             "surface-container": "#f0eded",
             "secondary": "#3b5e97",
             "secondary-fixed": "#d6e3ff",
-            "secondary-fixed-dim": "#aac7ff",
-            "surface-bright": "#fbf9f8",
-            "inverse-on-surface": "#f2f0f0",
             "primary": "#0f3462",
             "background": "#fbf9f8",
             "on-surface-variant": "#43474f",
             "outline-variant": "#c3c6d0",
             "on-background": "#1b1c1c",
-            "surface-container-highest": "#e4e2e2",
             "surface-container-low": "#f5f3f3",
             "on-surface": "#1b1c1c",
             "outline": "#747780",
             "surface-container-high": "#eae8e7",
-            "surface": "#fbf9f8",
+            "surface-container-highest": "#e4e2e2",
             "surface-container-lowest": "#ffffff",
-            "secondary-container": "#9cbffe",
-            "primary-fixed": "#d6e3ff",
-            "on-primary-fixed": "#001b3d",
           },
           fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
           borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
@@ -62,536 +53,765 @@ gtag('config', 'G-PGXCZF9S9W');
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
+
+    .je-ter-hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a2847 0%, #0f3462 45%, #1a4a7a 100%);
+      color: #fff;
+    }
+    .je-ter-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 100% 0%, rgba(200,169,110,.25) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59,94,151,.35) 0%, transparent 50%);
+    }
+    .je-ter-hero-inner { position: relative; z-index: 1; }
+    .je-ter-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .je-ter-status-pill-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 3px rgba(74,222,128,.25);
+    }
+
+    .je-ter-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .je-ter-toolbar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+    .je-ter-search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 24rem;
+    }
+    .je-ter-search-wrap .material-symbols-outlined {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.125rem;
+      color: #747780;
+      pointer-events: none;
+    }
+    .je-ter-search {
+      width: 100%;
+      padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(15,52,98,.12);
+      background: #fff;
+      font-size: 0.875rem;
+      color: #1b1c1c;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .je-ter-search:focus {
+      border-color: #3b5e97;
+      box-shadow: 0 0 0 3px rgba(59,94,151,.15);
+    }
+    .je-ter-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+    .je-ter-filter {
+      padding: 0.4375rem 0.875rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(15,52,98,.12);
+      background: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #43474f;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .je-ter-filter:hover { border-color: #3b5e97; color: #0f3462; }
+    .je-ter-filter.is-active {
+      background: #0f3462;
+      border-color: #0f3462;
+      color: #fff;
+    }
+    .je-ter-count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #747780;
+      margin-bottom: 1rem;
+    }
+
+    .je-ter-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) { .je-ter-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .je-ter-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; } }
+
+    .je-ter-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1.125rem;
+      border-radius: 1.25rem;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+    .je-ter-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(15,52,98,.1);
+    }
+    .je-ter-card.is-hidden { display: none; }
+    .je-ter-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .je-ter-card-num {
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #3b5e97;
+    }
+    .je-ter-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.5625rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .je-ter-status--disponivel { background: #e8f5ee; color: #1a7f4b; }
+    .je-ter-status--designado { background: #fef3c7; color: #b45309; }
+    .je-ter-status--concluido { background: #eff6ff; color: #0f3462; }
+    .je-ter-card-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f3462;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin: 0;
+    }
+    .je-ter-map-thumb {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: none;
+      border-radius: 0.875rem;
+      overflow: hidden;
+      background: #f5f8fc;
+      border: 1px solid rgba(15,52,98,.08);
+      cursor: zoom-in;
+      aspect-ratio: 4 / 3;
+    }
+    .je-ter-map-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform .35s;
+    }
+    .je-ter-map-thumb:hover img { transform: scale(1.04); }
+    .je-ter-map-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      background: rgba(10,40,71,.55);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .je-ter-map-thumb:hover .je-ter-map-overlay,
+    .je-ter-map-thumb:focus-visible .je-ter-map-overlay { opacity: 1; }
+    .je-ter-map-overlay .material-symbols-outlined { font-size: 1.5rem; }
+
+    .je-ter-empty {
+      display: none;
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border-radius: 1.25rem;
+      background: #fff;
+      border: 1px dashed rgba(15,52,98,.18);
+      color: #747780;
+      font-size: 0.875rem;
+    }
+    .je-ter-empty.is-visible { display: block; }
+
+    .je-ter-guide {
+      margin-top: 2.5rem;
+      padding: 1.5rem;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #faf6ef 0%, #fff 100%);
+      border: 1px solid rgba(200,169,110,.35);
+    }
+    @media (min-width: 768px) { .je-ter-guide { padding: 2rem; } }
+    .je-ter-guide-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+    .je-ter-guide-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: rgba(15,52,98,.08);
+      color: #0f3462;
+      flex-shrink: 0;
+    }
+    .je-ter-guide-head h2 {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: #0f3462;
+      margin: 0 0 0.25rem;
+    }
+    .je-ter-guide-head p {
+      font-size: 0.8125rem;
+      color: #43474f;
+      margin: 0;
+      line-height: 1.45;
+    }
+    .je-ter-guide-grid {
+      display: grid;
+      gap: 0.875rem;
+    }
+    @media (min-width: 640px) { .je-ter-guide-grid { grid-template-columns: repeat(2, 1fr); } }
+    .je-ter-guide-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.875rem;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(15,52,98,.08);
+    }
+    .je-ter-guide-item .material-symbols-outlined {
+      font-size: 1.125rem;
+      color: #3b5e97;
+      flex-shrink: 0;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
+    .je-ter-guide-item h4 {
+      font-size: 0.8125rem;
+      font-weight: 800;
+      color: #0f3462;
+      margin: 0 0 0.25rem;
+    }
+    .je-ter-guide-item p {
+      font-size: 0.75rem;
+      color: #43474f;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .je-ter-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(10,40,71,.88);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s, visibility .2s;
+    }
+    .je-ter-lightbox.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .je-ter-lightbox-panel {
+      position: relative;
+      width: min(56rem, 100%);
+      max-height: calc(100vh - 2rem);
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,.35);
+    }
+    .je-ter-lightbox-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid #e2e6ef;
+    }
+    .je-ter-lightbox-title {
+      font-size: 0.875rem;
+      font-weight: 800;
+      color: #0f3462;
+      margin: 0;
+    }
+    .je-ter-lightbox-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: none;
+      border-radius: 9999px;
+      background: #f5f8fc;
+      color: #43474f;
+      cursor: pointer;
+    }
+    .je-ter-lightbox-body {
+      overflow: auto;
+      padding: 0.75rem;
+      background: #f5f8fc;
+    }
+    .je-ter-lightbox-body img {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 767px) {
+      .je-ter-search-wrap { max-width: none; }
+      .je-ter-filters { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.25rem; }
+    }
   </style>
 </head>
 
 <body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">
 
-  <!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
-<div id="header"></div>
+  <div id="header"></div>
+
   <main>
 
-    <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
-    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6 je-page-shell">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-<a href="index.html"> <span class="material-symbols-outlined text-secondary" style="font-size:15px"> home </span> </a>
-          <a href="index.html">
-			      <span class="text-secondary">Jardim Elizabeth</span>
-		      </a>
-          <span class="text-outline">/</span>
-          <span class="text-primary">Territórios</span>
-        </div>
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <section class="je-ter-hero border-b border-outline-variant py-12 md:py-14 fade-up">
+      <div class="max-w-6xl mx-auto px-6 je-page-shell je-ter-hero-inner">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
           <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Territórios</h1>
-            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Confira as imagens dos territórios e organize o trabalho de pregação de forma eficiente.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/70 mb-4">
+              <a href="index.html" class="text-white/90 hover:text-white"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+              <a href="index.html" class="text-white/90 hover:text-white">Jardim Elizabeth</a>
+              <span class="text-white/40">/</span>
+              <span class="text-[#c8a96e]">Territórios</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Territórios</h1>
+            <p class="text-white/80 mt-3 text-sm md:text-base max-w-xl leading-relaxed">
+              Mapas das áreas de pregação da congregação — consulte o status e amplie cada território.
+            </p>
           </div>
-          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
-            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          <div class="je-ter-status-pill self-start">
+            <span class="je-ter-status-pill-dot" aria-hidden="true"></span>
+            <span>19 territórios · 2026</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 je-page-shell py-10 fade-up-2 space-y-8">
+    <div class="max-w-6xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
 
-            <!-- Título da seção -->
-      <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-secondary">map</span>
-        <h2 class="text-xl font-bold text-primary tracking-tight">Territórios da Congregação</h2>
-        <div class="flex-1 h-px bg-outline-variant"></div>
+      <div class="je-ter-toolbar">
+        <label class="je-ter-search-wrap">
+          <span class="material-symbols-outlined">search</span>
+          <input id="je-ter-search" class="je-ter-search" type="search" placeholder="Buscar por nome ou número…" autocomplete="off"/>
+        </label>
+        <div class="je-ter-filters" role="group" aria-label="Filtrar por status">
+          <button type="button" class="je-ter-filter is-active" data-je-ter-filter="all">Todos</button>
+          <button type="button" class="je-ter-filter" data-je-ter-filter="disponivel">Disponível</button>
+          <button type="button" class="je-ter-filter" data-je-ter-filter="designado">Designado</button>
+          <button type="button" class="je-ter-filter" data-je-ter-filter="concluido">Concluído</button>
+        </div>
       </div>
 
-      <!-- Grid de cards — 19 territórios reais -->
-      <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <p id="je-ter-count" class="je-ter-count" aria-live="polite">Mostrando 19 territórios</p>
 
-        <!-- 01 — Jardim Campo Limpo -->
-        <article data-nome="jardim campo limpo" data-num="01" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 01</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Campo Limpo</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 01 – Jardim Campo Limpo"
-                   src="img/territorios/t01.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+      <div id="cardsGrid" class="je-ter-grid">
+        <article data-nome="jardim campo limpo" data-num="01" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 01</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Campo Limpo</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 01">
+            <img src="img/territorios/t01.jpg" alt="Mapa Território 01 – Jardim Campo Limpo" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 02 — Jardim Elizabeth A -->
-        <article data-nome="jardim elizabeth a" data-num="02" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 02</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth A</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 02 – Jardim Elizabeth A"
-                   src="img/territorios/t02.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim elizabeth a" data-num="02" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 02</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Elizabeth A</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 02">
+            <img src="img/territorios/t02.jpg" alt="Mapa Território 02 – Jardim Elizabeth A" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 03 — Jardim Elizabeth B -->
-        <article data-nome="jardim elizabeth b" data-num="03" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 03</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth B</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 03 – Jardim Elizabeth B"
-                   src="img/territorios/t03.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim elizabeth b" data-num="03" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 03</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Elizabeth B</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 03">
+            <img src="img/territorios/t03.jpg" alt="Mapa Território 03 – Jardim Elizabeth B" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 04 — Jardim Elizabeth C -->
-        <article data-nome="jardim elizabeth c" data-num="04" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 04</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth C</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 04 – Jardim Elizabeth C"
-                   src="img/territorios/t04.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim elizabeth c" data-num="04" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 04</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Elizabeth C</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 04">
+            <img src="img/territorios/t04.jpg" alt="Mapa Território 04 – Jardim Elizabeth C" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 05 — Jardim Elizabeth D -->
-        <article data-nome="jardim elizabeth d" data-num="05" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 05</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Elizabeth D</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 05 – Jardim Elizabeth D"
-                   src="img/territorios/t05.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim elizabeth d" data-num="05" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 05</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Elizabeth D</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 05">
+            <img src="img/territorios/t05.jpg" alt="Mapa Território 05 – Jardim Elizabeth D" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 06 — Vila Pirajussara -->
-        <article data-nome="vila pirajussara" data-num="06" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 06</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Vila Pirajussara</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 06 – Vila Pirajussara"
-                   src="img/territorios/t06.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="vila pirajussara" data-num="06" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 06</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Vila Pirajussara</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 06">
+            <img src="img/territorios/t06.jpg" alt="Mapa Território 06 – Vila Pirajussara" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 07 — Jardim Iracema A -->
-        <article data-nome="jardim iracema a" data-num="07" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 07</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Iracema A</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 07 – Jardim Iracema A"
-                   src="img/territorios/t07.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim iracema a" data-num="07" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 07</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Iracema A</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 07">
+            <img src="img/territorios/t07.jpg" alt="Mapa Território 07 – Jardim Iracema A" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 08 — Jardim Iracema B -->
-        <article data-nome="jardim iracema b" data-num="08" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 08</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Iracema B</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 08 – Jardim Iracema B"
-                   src="img/territorios/t08.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim iracema b" data-num="08" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 08</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Iracema B</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 08">
+            <img src="img/territorios/t08.jpg" alt="Mapa Território 08 – Jardim Iracema B" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 09 — Jardim Helga E -->
-        <article data-nome="jardim helga e" data-num="09" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 09</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga E</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 09 – Jardim Helga E"
-                   src="img/territorios/t09.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim helga e" data-num="09" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 09</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Helga E</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 09">
+            <img src="img/territorios/t09.jpg" alt="Mapa Território 09 – Jardim Helga E" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 10 — Jd Leônidas Moreira A -->
-        <article data-nome="jardim leônidas moreira a leonidas" data-num="10" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 10</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira A</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 10 – Jd Leônidas Moreira A"
-                   src="img/territorios/t10.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim leônidas moreira a leonidas" data-num="10" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 10</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jd Leônidas Moreira A</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 10">
+            <img src="img/territorios/t10.jpg" alt="Mapa Território 10 – Jd Leônidas Moreira A" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 11 — Jd Leônidas Moreira B -->
-        <article data-nome="jardim leônidas moreira b leonidas" data-num="11" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 11</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira B</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 11 – Jd Leônidas Moreira B"
-                   src="img/territorios/t11.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim leônidas moreira b leonidas" data-num="11" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 11</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jd Leônidas Moreira B</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 11">
+            <img src="img/territorios/t11.jpg" alt="Mapa Território 11 – Jd Leônidas Moreira B" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 12 — Jd Leônidas Moreira C -->
-        <article data-nome="jardim leônidas moreira c leonidas" data-num="12" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 12</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jd Leônidas Moreira C</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 12 – Jd Leônidas Moreira C"
-                   src="img/territorios/t12.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim leônidas moreira c leonidas" data-num="12" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 12</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jd Leônidas Moreira C</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 12">
+            <img src="img/territorios/t12.jpg" alt="Mapa Território 12 – Jd Leônidas Moreira C" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 13 — CDHU A -->
-        <article data-nome="cdhu a" data-num="13" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 13</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">CDHU A</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 13 – CDHU A"
-                   src="img/territorios/t13.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="cdhu a" data-num="13" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 13</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">CDHU A</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 13">
+            <img src="img/territorios/t13.jpg" alt="Mapa Território 13 – CDHU A" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 14 — CDHU B -->
-        <article data-nome="cdhu b" data-num="14" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 14</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">CDHU B</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 14 – CDHU B"
-                   src="img/territorios/t14.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="cdhu b" data-num="14" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 14</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">CDHU B</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 14">
+            <img src="img/territorios/t14.jpg" alt="Mapa Território 14 – CDHU B" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 15 — CDHU C -->
-        <article data-nome="cdhu c" data-num="15" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 15</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">CDHU C</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 15 – CDHU C"
-                   src="img/territorios/t15.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="cdhu c" data-num="15" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 15</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">CDHU C</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 15">
+            <img src="img/territorios/t15.jpg" alt="Mapa Território 15 – CDHU C" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 16 — Jardim Helga A -->
-        <article data-nome="jardim helga a" data-num="16" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 16</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga A</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 16 – Jardim Helga A"
-                   src="img/territorios/t16.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim helga a" data-num="16" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 16</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Helga A</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 16">
+            <img src="img/territorios/t16.jpg" alt="Mapa Território 16 – Jardim Helga A" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 17 — Jardim Helga B -->
-        <article data-nome="jardim helga b" data-num="17" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 17</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga B</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 17 – Jardim Helga B"
-                   src="img/territorios/t17.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim helga b" data-num="17" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 17</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Helga B</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 17">
+            <img src="img/territorios/t17.jpg" alt="Mapa Território 17 – Jardim Helga B" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 18 — Jardim Helga C -->
-        <article data-nome="jardim helga c" data-num="18" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 18</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga C</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 18 – Jardim Helga C"
-                   src="img/territorios/t18.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim helga c" data-num="18" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 18</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Helga C</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 18">
+            <img src="img/territorios/t18.jpg" alt="Mapa Território 18 – Jardim Helga C" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
-        <!-- 19 — Jardim Helga D -->
-        <article data-nome="jardim helga d" data-num="19" data-status="disponivel"
-                 class="territory-card group bg-surface-container-lowest rounded-xl border border-l-4 border-outline-variant shadow-sm hover:shadow-md transition-all" style="border-left-color:#3b5e97">
-          <div class="p-5">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <span class="text-[10px] font-bold tracking-widest text-secondary uppercase">Território 19</span>
-                <h3 class="text-base font-bold text-primary mt-0.5">Jardim Helga D</h3>
-              </div>
-            </div>
-            <div class="w-full rounded-lg bg-surface-container-low mb-4 overflow-hidden border border-outline-variant">
-              <img class="w-full object-contain group-hover:scale-105 transition-transform duration-500"
-                   alt="Mapa Território 19 – Jardim Helga D"
-                   src="img/territorios/t19.jpg"/>
-            </div>
-            <div class="flex items-center justify-between">
-              <button class="flex items-center gap-1.5 text-primary text-xs font-semibold hover:underline">
-                <span class="material-symbols-outlined" style="font-size:16px">map</span> Ver Mapa
-              </button>
-            </div>
-          </div>
+        <article data-nome="jardim helga d" data-num="19" data-status="disponivel" class="territory-card je-ter-card">
+          <header class="je-ter-card-head">
+            <span class="je-ter-card-num">Território 19</span>
+            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
+          </header>
+          <h3 class="je-ter-card-title">Jardim Helga D</h3>
+          <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 19">
+            <img src="img/territorios/t19.jpg" alt="Mapa Território 19 – Jardim Helga D" loading="lazy"/>
+            <span class="je-ter-map-overlay">
+              <span class="material-symbols-outlined">zoom_in</span>
+              Ver mapa
+            </span>
+          </button>
         </article>
 
       </div>
 
-      <!-- Diretrizes -->
-      <div class="bg-surface-container-low border border-outline-variant rounded-xl p-8 md:p-10 mt-4">
-        <div class="flex flex-col md:flex-row gap-10">
-          <div class="md:w-1/3">
-            <div class="flex items-center gap-3 mb-3">
-              <span class="material-symbols-outlined text-secondary">verified_user</span>
-              <h2 class="text-xl font-bold text-primary tracking-tight">Diretrizes de Trabalho</h2>
-            </div>
-            <p class="text-on-surface-variant text-sm leading-relaxed">Orientações essenciais para um testemunho eficaz e respeitoso em nossa região.</p>
+      <p id="je-ter-empty" class="je-ter-empty">Nenhum território encontrado com esses filtros.</p>
+
+      <section class="je-ter-guide" aria-labelledby="je-ter-guide-title">
+        <div class="je-ter-guide-head">
+          <span class="je-ter-guide-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">verified_user</span>
+          </span>
+          <div>
+            <h2 id="je-ter-guide-title">Diretrizes de trabalho</h2>
+            <p>Orientações essenciais para um testemunho eficaz e respeitoso em nossa região.</p>
           </div>
-          <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        </div>
+        <div class="je-ter-guide-grid">
+          <div class="je-ter-guide-item">
+            <span class="material-symbols-outlined">update</span>
             <div>
-              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:18px">update</span> Prazos
-              </h4>
-              <p class="text-xs text-on-surface-variant leading-relaxed">Procure trabalhar o território de forma consciente, hábil e com agilidade.</p>
+              <h4>Prazos</h4>
+              <p>Procure trabalhar o território de forma consciente, hábil e com agilidade.</p>
             </div>
+          </div>
+          <div class="je-ter-guide-item">
+            <span class="material-symbols-outlined">note_alt</span>
             <div>
-              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:18px">note_alt</span> Registros
-              </h4>
-              <p class="text-xs text-on-surface-variant leading-relaxed">Mantenha as anotações de 'não em casa' e 'revisitas' organizadas para o próximo publicador.</p>
+              <h4>Registros</h4>
+              <p>Mantenha as anotações de "não em casa" e "revisitas" organizadas para o próximo publicador.</p>
             </div>
+          </div>
+          <div class="je-ter-guide-item">
+            <span class="material-symbols-outlined">notifications_off</span>
             <div>
-              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:18px">notifications_off</span> Não Visitar
-              </h4>
-              <p class="text-xs text-on-surface-variant leading-relaxed">Respeite rigorosamente as residências marcadas como "Não Visitar" para evitar conflitos.</p>
+              <h4>Não visitar</h4>
+              <p>Respeite rigorosamente as residências marcadas como "Não Visitar" para evitar conflitos.</p>
             </div>
+          </div>
+          <div class="je-ter-guide-item">
+            <span class="material-symbols-outlined">assignment_turned_in</span>
             <div>
-              <h4 class="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:18px">assignment_turned_in</span> Devolução
-              </h4>
-              <p class="text-xs text-on-surface-variant leading-relaxed">Ao concluir, sinalize para o Servo de Territórios que ele foi concluído para que a devolução seja efetuada.</p>
+              <h4>Devolução</h4>
+              <p>Ao concluir, sinalize ao Servo de Territórios para que a devolução seja efetuada.</p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
     </div>
 
   </main>
 
-  <!-- ══ RODAPÉ ═══════════════════════════════════════════════ -->
-<div id="footer"></div>
+  <div id="je-ter-lightbox" class="je-ter-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="je-ter-lightbox-title">
+    <div class="je-ter-lightbox-panel">
+      <div class="je-ter-lightbox-head">
+        <h3 id="je-ter-lightbox-title" class="je-ter-lightbox-title"></h3>
+        <button type="button" id="je-ter-lightbox-close" class="je-ter-lightbox-close" aria-label="Fechar">
+          <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        </button>
+      </div>
+      <div class="je-ter-lightbox-body">
+        <img id="je-ter-lightbox-img" src="" alt=""/>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>

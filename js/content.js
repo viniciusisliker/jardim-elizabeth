@@ -180,13 +180,112 @@
     return data;
   }
 
+  const TERRITORY_STATUS = {
+    disponivel: 'Disponível',
+    designado: 'Designado',
+    concluido: 'Concluído'
+  };
+
+  function applyTerritoryStatus(card, status) {
+    const value = status || 'disponivel';
+    card.dataset.status = value;
+    const badge = card.querySelector('[data-je-status]');
+    if (badge) {
+      badge.textContent = TERRITORY_STATUS[value] || TERRITORY_STATUS.disponivel;
+      badge.className = `je-ter-status je-ter-status--${value}`;
+    }
+  }
+
+  function initTerritoriesPage() {
+    const grid = document.getElementById('cardsGrid');
+    if (!grid) return;
+
+    const search = document.getElementById('je-ter-search');
+    const countEl = document.getElementById('je-ter-count');
+    const emptyEl = document.getElementById('je-ter-empty');
+    const filters = document.querySelectorAll('[data-je-ter-filter]');
+    const lightbox = document.getElementById('je-ter-lightbox');
+    const lightboxImg = document.getElementById('je-ter-lightbox-img');
+    const lightboxTitle = document.getElementById('je-ter-lightbox-title');
+    const lightboxClose = document.getElementById('je-ter-lightbox-close');
+    let activeFilter = 'all';
+
+    function cards() {
+      return [...grid.querySelectorAll('.territory-card')];
+    }
+
+    function applyFilters() {
+      const query = (search?.value || '').trim().toLowerCase();
+      let visible = 0;
+      cards().forEach((card) => {
+        const nome = (card.dataset.nome || '').toLowerCase();
+        const num = (card.dataset.num || '').toLowerCase();
+        const title = (card.querySelector('.je-ter-card-title')?.textContent || '').toLowerCase();
+        const status = card.dataset.status || 'disponivel';
+        const matchesSearch = !query || nome.includes(query) || num.includes(query) || title.includes(query);
+        const matchesStatus = activeFilter === 'all' || status === activeFilter;
+        const show = matchesSearch && matchesStatus;
+        card.classList.toggle('is-hidden', !show);
+        if (show) visible += 1;
+      });
+      if (countEl) {
+        countEl.textContent = visible === 1 ? 'Mostrando 1 território' : `Mostrando ${visible} territórios`;
+      }
+      emptyEl?.classList.toggle('is-visible', visible === 0);
+    }
+
+    filters.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeFilter = btn.dataset.jeTerFilter || 'all';
+        filters.forEach((b) => b.classList.toggle('is-active', b === btn));
+        applyFilters();
+      });
+    });
+    search?.addEventListener('input', applyFilters);
+
+    function openLightbox(img, title) {
+      if (!lightbox || !lightboxImg || !lightboxTitle) return;
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt;
+      lightboxTitle.textContent = title;
+      lightbox.classList.add('is-open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      if (!lightbox) return;
+      lightbox.classList.remove('is-open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-je-map-open]');
+      if (!btn) return;
+      const card = btn.closest('.territory-card');
+      const img = btn.querySelector('img');
+      const title = card?.querySelector('.je-ter-card-title')?.textContent || 'Território';
+      if (img) openLightbox(img, title);
+    });
+
+    lightboxClose?.addEventListener('click', closeLightbox);
+    lightbox?.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox?.classList.contains('is-open')) closeLightbox();
+    });
+
+    applyFilters();
+    window.JETerritoriesRefresh = applyFilters;
+  }
+
   async function loadTerritories() {
     const items = await fetchTerritories();
     if (!items) return;
     items.forEach((t) => {
       const card = document.querySelector(`.territory-card[data-num="${t.num}"], article[data-num="${t.num}"]`);
       if (!card) return;
-      card.dataset.status = t.status || 'disponivel';
+      applyTerritoryStatus(card, t.status);
       if (t.display_name) {
         const h3 = card.querySelector('h3');
         if (h3) h3.textContent = t.display_name;
@@ -200,6 +299,7 @@
       }
       if (t.slug) card.dataset.nome = t.slug;
     });
+    if (window.JETerritoriesRefresh) window.JETerritoriesRefresh();
   }
 
   async function loadProximosEventos() {
@@ -294,6 +394,7 @@
   }
 
   function boot() {
+    initTerritoriesPage();
     const run = () => {
       loadAgenda();
       loadAnnouncements();
