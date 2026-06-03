@@ -18,43 +18,82 @@
     .board-month-toolbar__field{flex:1;min-width:10rem}
     .board-month-toolbar__field label{display:block;font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#002060;margin-bottom:0.125rem}
     .board-month-toolbar__hint{font-size:0.75rem;color:#43474f;margin:0 0 0.5rem;line-height:1.35}
-    .board-month-input-wrap{position:relative;display:flex;align-items:center}
     #board-month{display:block;width:100%;min-width:11rem;min-height:2.75rem;padding:0.625rem 0.875rem;border:2px solid #1F497D;border-radius:0.625rem;background:#fff;font-size:1rem;font-weight:700;color:#002060}
-    .board-load-btn{display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-height:2.75rem;padding:0.625rem 1.125rem;border-radius:0.625rem;background:#002060;color:#fff;font-size:0.875rem;font-weight:700;border:none;cursor:pointer}
-    .board-status-bar{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid rgba(31,73,125,.15)}
+    .board-load-btn{display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-height:2.75rem;padding:0.625rem 1.125rem;border-radius:0.625rem;background:#002060;color:#fff;font-size:0.875rem;font-weight:700;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s}
+    .board-load-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,32,96,.22)}
+    .board-status-bar{display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid rgba(31,73,125,.15)}
     .board-status-bar__label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#43474f}
-    .qa-section{background:#fff;border:1px solid rgba(31,73,125,.35);border-radius:0.625rem;margin-bottom:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,32,96,.06)}
-    .qa-section-title{display:flex;align-items:center;gap:0.5rem;font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#002060;background:linear-gradient(180deg,#EEECE1 0%,#e8e6df 100%);padding:0.75rem 1.125rem;border-bottom:1px solid #D9E2F3}
-    .qa-section-title .material-symbols-outlined{font-size:1.125rem;color:#984806;font-variation-settings:'FILL' 1,'wght' 500}
-    .qa-section-body{padding:1rem;background:#fff}
-    .dp-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .dp-table{width:100%;min-width:52rem;border-collapse:collapse;font-size:0.8125rem}
-    .dp-table th{background:#002060;color:#fff;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:0.5rem 0.625rem;text-align:left;white-space:nowrap}
-    .dp-table td{padding:0.375rem 0.5rem;border-bottom:1px solid #D9E2F3;vertical-align:top}
-    .dp-table tr.row-note td:first-child,
-    .dp-table tr.row-note td:last-child,
-    .dp-table tr.row-convention td:first-child,
-    .dp-table tr.row-convention td:last-child{vertical-align:middle}
-    .dp-table tr.row-note td:first-child input[type="date"]{margin:0}
-    .dp-table tr.row-note td:last-child .dp-row-actions,
-    .dp-table tr.row-convention td:last-child .dp-row-actions{align-items:center;min-height:100%}
-    .dp-table tr.row-convention{background:#fce4ec}
-    .dp-table tr.row-special{background:#e8f5e9}
-    .dp-table tr.row-note{background:#f5f5f5;font-style:italic}
-    .dp-table input,.dp-table select,.dp-table textarea{width:100%;border:1px solid #c3c6d0;border-radius:0.375rem;padding:0.375rem 0.5rem;font-size:0.8125rem;background:#fff}
-    .dp-table input:focus,.dp-table select:focus,.dp-table textarea:focus{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
-    .dp-row-actions{display:flex;gap:0.25rem;justify-content:flex-end}
-    .dp-row-btn{font-size:0.6875rem;font-weight:700;padding:0.25rem 0.5rem;border-radius:0.375rem;border:1px solid rgba(192,0,0,.25);color:#C00000;background:#fff;cursor:pointer;white-space:nowrap}
+    .dp-stats{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem}
+    .dp-stat{display:inline-flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:700;background:#fff;border:1px solid #D9E2F3;color:#43474f}
+    .dp-stat strong{color:#002060}
+    .dp-stat--progress{background:linear-gradient(90deg,#e8f5ee var(--dp-pct,0%),#fff var(--dp-pct,0%));border-color:rgba(26,127,75,.25)}
+    .dp-timeline{display:flex;gap:0.5rem;overflow-x:auto;padding:0.25rem 0 0.75rem;margin-bottom:1rem;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+    .dp-timeline-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:0.25rem;min-width:3.25rem;padding:0.5rem 0.625rem;border-radius:0.75rem;border:2px solid #D9E2F3;background:#fff;cursor:pointer;transition:all .18s ease}
+    .dp-timeline-chip:hover{border-color:#1F497D;transform:translateY(-2px)}
+    .dp-timeline-chip.is-active{border-color:#002060;background:#002060;color:#fff;box-shadow:0 4px 12px rgba(0,32,96,.25)}
+    .dp-timeline-chip.is-filled:not(.is-active){border-color:#984806;background:#F7F6F2}
+    .dp-timeline-chip.is-special:not(.is-active){border-color:#880e4f;background:#fce4ec}
+    .dp-timeline-chip__day{font-size:1rem;font-weight:800;line-height:1}
+    .dp-timeline-chip__meta{font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;opacity:.85}
     .dp-toolbar{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;align-items:center;justify-content:space-between}
     .dp-toolbar-actions{display:flex;flex-wrap:wrap;gap:0.5rem}
-    .dp-mini-btn{font-size:0.75rem;font-weight:600;padding:0.375rem 0.75rem;border-radius:0.5rem;border:1px solid #1F497D;background:#fff;color:#43474f;cursor:pointer}
-    .dp-mini-btn:hover{border-color:#002060;background:#EEECE1}
-    .dp-save-btn{font-size:0.875rem;font-weight:700;padding:0.5rem 1rem;border-radius:0.5rem;border:none;background:#002060;color:#fff;cursor:pointer}
-    .dp-type-badge{display:inline-block;font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.125rem 0.375rem;border-radius:9999px;margin-bottom:0.25rem}
+    .dp-mini-btn{display:inline-flex;align-items:center;gap:0.25rem;font-size:0.75rem;font-weight:600;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:1px solid #1F497D;background:#fff;color:#43474f;cursor:pointer;transition:all .15s}
+    .dp-mini-btn:hover{border-color:#002060;background:#EEECE1;color:#002060}
+    .dp-save-btn{display:inline-flex;align-items:center;gap:0.375rem;font-size:0.875rem;font-weight:700;padding:0.5625rem 1.125rem;border-radius:0.625rem;border:none;background:#002060;color:#fff;cursor:pointer;transition:all .15s;box-shadow:0 2px 8px rgba(0,32,96,.2)}
+    .dp-save-btn:hover{opacity:.94;transform:translateY(-1px)}
+    .dp-save-btn.is-dirty{background:#984806;box-shadow:0 2px 8px rgba(152,72,6,.25)}
+    .dp-save-btn.is-dirty::after{content:'';width:0.5rem;height:0.5rem;border-radius:9999px;background:#fff;animation:dp-pulse 1.2s ease infinite}
+    @keyframes dp-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+    .dp-workspace{display:grid;gap:1rem}
+    @media(min-width:900px){.dp-workspace{grid-template-columns:11rem 1fr 14rem;align-items:start}}
+    .dp-nav{display:flex;flex-direction:row;gap:0.5rem;overflow-x:auto;padding-bottom:0.25rem;-webkit-overflow-scrolling:touch}
+    @media(min-width:900px){.dp-nav{flex-direction:column;overflow:visible;max-height:32rem;overflow-y:auto;padding-right:0.25rem}}
+    .dp-nav-btn{display:flex;flex-direction:column;align-items:flex-start;gap:0.125rem;min-width:8.5rem;text-align:left;padding:0.625rem 0.75rem;border-radius:0.625rem;border:1px solid #D9E2F3;background:#fff;cursor:pointer;transition:all .15s}
+    @media(min-width:900px){.dp-nav-btn{min-width:0;width:100%}}
+    .dp-nav-btn:hover{border-color:#1F497D;background:#F7F6F2}
+    .dp-nav-btn.is-active{border-color:#002060;background:#002060;color:#fff;box-shadow:0 2px 8px rgba(0,32,96,.2)}
+    .dp-nav-btn.is-active .dp-nav-meta{color:rgba(255,255,255,.75)}
+    .dp-nav-btn.is-filled:not(.is-active){border-color:rgba(152,72,6,.45);background:linear-gradient(180deg,#fff,#F7F6F2)}
+    .dp-nav-title{font-size:0.8125rem;font-weight:800;line-height:1.2}
+    .dp-nav-meta{font-size:0.625rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#1F497D}
+    .dp-doc-panel{border:2px solid #002060;border-radius:0.875rem;overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(0,32,96,.08);animation:dp-fade-in .22s ease}
+    @keyframes dp-fade-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .dp-doc-banner{background:#002060;color:#fff;padding:0.875rem 1.125rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem}
+    .dp-doc-banner h3{margin:0;font-size:1.0625rem;font-weight:800;line-height:1.2}
+    .dp-doc-banner-meta{font-size:0.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.85}
+    .dp-doc-body{padding:1.125rem;background:#F7F6F2}
+    .dp-fields{display:grid;gap:1rem}
+    @media(min-width:640px){.dp-fields{grid-template-columns:repeat(2,1fr)}}
+    .dp-field{display:flex;flex-direction:column;gap:0.375rem}
+    .dp-field.span-2{grid-column:1/-1}
+    .dp-field label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#1F497D;display:flex;align-items:center;gap:0.375rem}
+    .dp-field label::before{content:'';width:2px;height:0.75rem;border-radius:1px;background:#984806}
+    .dp-field input,.dp-field textarea,.dp-field select{width:100%;border:1px solid #c3c6d0;border-radius:0.5rem;padding:0.625rem 0.75rem;font-size:0.9375rem;background:#fff;transition:border-color .15s,box-shadow .15s}
+    .dp-field input:focus,.dp-field textarea:focus,.dp-field select:focus{outline:none;border-color:#002060;box-shadow:0 0 0 3px rgba(0,32,96,.1)}
+    .dp-field.is-filled input,.dp-field.is-filled textarea{border-color:rgba(0,32,96,.3)}
+    .dp-char-pills{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.375rem}
+    .dp-char-pill{font-size:0.6875rem;font-weight:700;padding:0.3125rem 0.625rem;border-radius:9999px;border:1.5px solid #c3c6d0;background:#fff;color:#43474f;cursor:pointer;transition:all .15s}
+    .dp-char-pill:hover{border-color:#1F497D}
+    .dp-char-pill.is-on{border-color:#002060;background:#002060;color:#fff}
+    .dp-type-badge{display:inline-flex;align-items:center;gap:0.25rem;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.2rem 0.5rem;border-radius:9999px}
     .dp-type-badge--convention{background:#f8bbd0;color:#880e4f}
     .dp-type-badge--special{background:#c8e6c9;color:#1b5e20}
     .dp-type-badge--note{background:#e0e0e0;color:#424242}
-    @media(max-width:767px){.dp-mini-btn,.dp-save-btn,.board-load-btn{min-height:2.75rem}}
+    .dp-type-badge--speech{background:#dbeafe;color:#1d4ed8}
+    .dp-doc-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.875rem 1.125rem;background:#EEECE1;border-top:1px solid #D9E2F3}
+    .dp-nav-arrow{display:inline-flex;align-items:center;gap:0.25rem;padding:0.4375rem 0.75rem;border-radius:0.5rem;border:1px solid rgba(0,32,96,.15);background:#fff;font-size:0.8125rem;font-weight:700;color:#002060;cursor:pointer}
+    .dp-nav-arrow:disabled{opacity:.35;cursor:not-allowed}
+    .dp-preview-card{background:#fff;border:1px solid #e2e6ef;border-radius:1rem;padding:1.125rem;box-shadow:0 4px 20px rgba(15,52,98,.08);position:sticky;top:1rem;animation:dp-fade-in .28s ease}
+    @media(max-width:899px){.dp-preview-card{position:static}}
+    .dp-preview-label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#43474f;margin-bottom:0.75rem}
+    .dp-preview-sheet{border:1px solid #D9E2F3;border-radius:0.625rem;overflow:hidden;background:#fff;font-size:0.8125rem}
+    .dp-preview-row{display:grid;grid-template-columns:5.5rem 1fr;border-top:1px solid #eef0f4}
+    .dp-preview-row:first-child{border-top:none}
+    .dp-preview-row dt{padding:0.5rem 0.625rem;background:#F7F6F2;font-weight:800;color:#1F497D;font-size:0.625rem;text-transform:uppercase}
+    .dp-preview-row dd{margin:0;padding:0.5rem 0.625rem;color:#1b1c1c;line-height:1.4}
+    .dp-preview-empty{color:#43474f;font-style:italic;font-size:0.8125rem;line-height:1.5}
+    .dp-empty-state{text-align:center;padding:2.5rem 1rem;color:#43474f;background:#fff;border:1px dashed #D9E2F3;border-radius:0.875rem}
+    @media(max-width:767px){.dp-mini-btn,.dp-save-btn,.board-load-btn,.dp-nav-arrow{min-height:2.75rem}}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -65,7 +104,7 @@
     </div>
     <div class="mb-6">
       <h1 class="text-2xl font-extrabold text-primary">Discursos Públicos</h1>
-      <p class="text-sm text-on-surface-variant mt-1">Arranjo mensal de oradores recebidos e enviados — como a planilha do ancião responsável.</p>
+      <p class="text-sm text-on-surface-variant mt-1">Navegue pelos sábados, preencha com preview ao vivo e salve o arranjo do mês.</p>
     </div>
 
     <section class="board-month-toolbar" aria-label="Selecionar mês">
@@ -77,9 +116,7 @@
           <div class="board-month-toolbar__field">
             <label for="board-month">Mês do arranjo</label>
             <p class="board-month-toolbar__hint">Escolha o mês e clique em carregar para abrir ou criar o rascunho.</p>
-            <div class="board-month-input-wrap">
-              <input type="month" id="board-month"/>
-            </div>
+            <input type="month" id="board-month"/>
           </div>
           <button type="button" id="btn-load-board" class="board-load-btn">
             <span class="material-symbols-outlined" style="font-size:1.125rem">folder_open</span>
@@ -97,71 +134,36 @@
 
     <div id="editor-shell" class="hidden">
       <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-4">
-        <nav class="flex flex-wrap gap-4 text-sm">
+        <nav class="flex flex-wrap gap-4 text-sm" aria-label="Direção">
           <button type="button" data-tab="receive" class="tab-btn tab-active pb-2">Recebemos</button>
           <button type="button" data-tab="send" class="tab-btn pb-2 text-on-surface-variant">Enviamos</button>
         </nav>
       </div>
 
+      <div id="dp-stats" class="dp-stats" aria-live="polite"></div>
+      <div id="dp-timeline" class="dp-timeline" role="tablist" aria-label="Linha do tempo do mês"></div>
+
       <div class="dp-toolbar">
         <div class="dp-toolbar-actions">
-          <button type="button" id="btn-regen-saturdays" class="dp-mini-btn">Regenerar sábados</button>
+          <button type="button" id="btn-regen-saturdays" class="dp-mini-btn"><span class="material-symbols-outlined" style="font-size:16px">refresh</span>Regenerar sábados</button>
           <button type="button" id="btn-add-speech" class="dp-mini-btn">+ Discurso</button>
           <button type="button" id="btn-add-convention" class="dp-mini-btn">+ Congresso</button>
           <button type="button" id="btn-add-special" class="dp-mini-btn">+ Visita SC</button>
           <button type="button" id="btn-add-note" class="dp-mini-btn">+ Nota</button>
         </div>
-        <button type="button" id="btn-save" class="dp-save-btn">Salvar arranjo</button>
+        <button type="button" id="btn-save" class="dp-save-btn">
+          <span class="material-symbols-outlined" style="font-size:18px">save</span>
+          Salvar arranjo
+        </button>
       </div>
 
-      <div id="panel-receive" class="tab-panel">
-        <div class="qa-section">
-          <div class="qa-section-title">
-            <span class="material-symbols-outlined">call_received</span>
-            Recebemos — oradores visitantes
-          </div>
-          <div class="qa-section-body dp-table-wrap">
-            <table class="dp-table" id="table-receive">
-              <thead>
-                <tr>
-                  <th style="width:7rem">Data</th>
-                  <th style="width:11rem">Orador</th>
-                  <th style="width:4.5rem">Esboço</th>
-                  <th>Tema</th>
-                  <th style="width:10rem">Características</th>
-                  <th style="width:12rem">Observação</th>
-                  <th style="width:4rem"></th>
-                </tr>
-              </thead>
-              <tbody id="tbody-receive"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div id="panel-send" class="tab-panel hidden">
-        <div class="qa-section">
-          <div class="qa-section-title">
-            <span class="material-symbols-outlined">call_made</span>
-            Enviamos — oradores da congregação
-          </div>
-          <div class="qa-section-body dp-table-wrap">
-            <table class="dp-table" id="table-send">
-              <thead>
-                <tr>
-                  <th style="width:7rem">Data</th>
-                  <th style="width:11rem">Orador</th>
-                  <th style="width:4.5rem">Esboço</th>
-                  <th>Tema</th>
-                  <th style="width:10rem">Características</th>
-                  <th style="width:12rem">Observação</th>
-                  <th style="width:4rem"></th>
-                </tr>
-              </thead>
-              <tbody id="tbody-send"></tbody>
-            </table>
-          </div>
-        </div>
+      <div class="dp-workspace">
+        <nav id="dp-nav" class="dp-nav" aria-label="Entradas do mês"></nav>
+        <div id="dp-editor-host"></div>
+        <aside id="dp-preview" class="dp-preview-card" aria-live="polite">
+          <p class="dp-preview-label">Pré-visualização</p>
+          <div id="dp-preview-body" class="dp-preview-empty">Selecione uma entrada para ver o resumo.</div>
+        </aside>
       </div>
     </div>
   </main>
@@ -177,9 +179,9 @@
   <script src="../js/auth.js"></script>
   <script src="../js/header.js"></script>
   <script src="../js/site-loader.js"></script>
-  <script src="../js/je-toast.js?v=2026060301"></script>
-  <script src="../js/je-dialog.js?v=2026060301"></script>
+  <script src="../js/je-toast.js?v=2026060302"></script>
+  <script src="../js/je-dialog.js?v=2026060302"></script>
   <script src="../js/admin-core.js"></script>
-  <script src="../js/admin/discursos-publicos.js"></script>
+  <script src="../js/admin/discursos-publicos.js?v=2026060302"></script>
 </body>
 </html>
