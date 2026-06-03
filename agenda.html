@@ -59,20 +59,188 @@ gtag('config', 'G-PGXCZF9S9W');
 
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .month-body { display: none; }
-    .month-block.open .month-body { display: block; }
-    .month-chevron { transition: transform 0.25s; }
-    .month-block.open .month-chevron { transform: rotate(180deg); }
     @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
     .fade-up  { animation: fadeUp 0.4s ease both; }
     .fade-up-2{ animation: fadeUp 0.4s 0.1s ease both; }
 
-    /* ── Bloco de data uniforme ── */
-    .date-badge {
+    .je-ag-hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a2847 0%, #0f3462 45%, #1a4a7a 100%);
+      color: #fff;
+    }
+    .je-ag-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 100% 0%, rgba(200,169,110,.25) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59,94,151,.35) 0%, transparent 50%);
+    }
+    .je-ag-hero-inner { position: relative; z-index: 1; }
+    .je-ag-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .je-ag-status-pill-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 3px rgba(74,222,128,.25);
+    }
+
+    .je-ag-layout {
+      display: grid;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (min-width: 1024px) {
+      .je-ag-layout { grid-template-columns: 1fr 18rem; gap: 2rem; }
+    }
+
+    .je-ag-search-wrap {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .je-ag-search-wrap .material-symbols-outlined {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.125rem;
+      color: #747780;
+      pointer-events: none;
+    }
+    .je-ag-search {
+      width: 100%;
+      max-width: 24rem;
+      padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(15,52,98,.12);
+      background: #fff;
+      font-size: 0.875rem;
+      color: #1b1c1c;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .je-ag-search:focus {
+      border-color: #3b5e97;
+      box-shadow: 0 0 0 3px rgba(59,94,151,.15);
+    }
+
+    .je-ag-section-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .je-ag-section-head h2 {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: #0f3462;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .je-ag-section-head .material-symbols-outlined {
+      color: #3b5e97;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
+    .je-ag-section-line { flex: 1; height: 1px; background: #e2e6ef; }
+
+    .je-ag-months { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .je-ag-month {
+      border-radius: 1.25rem;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+      overflow: hidden;
+    }
+    .je-ag-month.is-filtered-empty { display: none; }
+    .je-ag-month-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      width: 100%;
+      padding: 1rem 1.125rem;
+      border: none;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: background .15s;
+    }
+    .je-ag-month-head:hover { background: #f5f8fc; }
+    .je-ag-month.open .je-ag-month-head { background: linear-gradient(180deg, #f5f8fc 0%, #fff 100%); }
+    .je-ag-month-head-left {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+    .je-ag-month-dot {
+      width: 0.625rem;
+      height: 0.625rem;
+      border-radius: 9999px;
+      background: #3b5e97;
       flex-shrink: 0;
-      width: 3rem;          /* w-12 */
+    }
+    .je-ag-month-dot--gold { background: #c8a96e; }
+    .je-ag-month-label {
+      font-size: 0.9375rem;
+      font-weight: 800;
+      color: #0f3462;
+    }
+    .je-ag-month-count {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #747780;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: #f5f8fc;
+      border: 1px solid rgba(15,52,98,.08);
+    }
+    .je-ag-month-chevron {
+      color: #747780;
+      transition: transform .25s;
+      flex-shrink: 0;
+    }
+    .je-ag-month.open .je-ag-month-chevron { transform: rotate(180deg); }
+    .je-ag-month-body {
+      display: none;
+      border-top: 1px solid rgba(15,52,98,.08);
+    }
+    .je-ag-month.open .je-ag-month-body { display: block; }
+
+    .je-ag-event {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 1.125rem;
+      border-bottom: 1px solid rgba(15,52,98,.06);
+      transition: background .15s;
+    }
+    .je-ag-event:last-child { border-bottom: none; }
+    .je-ag-event:hover { background: #fafbfd; }
+    .je-ag-event.is-hidden { display: none; }
+
+    .je-ag-date {
+      flex-shrink: 0;
+      width: 3rem;
       text-align: center;
-      border-radius: 0.5rem;
+      border-radius: 0.625rem;
       padding: 0.5rem 0.25rem;
       display: flex;
       flex-direction: column;
@@ -80,54 +248,135 @@ gtag('config', 'G-PGXCZF9S9W');
       justify-content: center;
       gap: 2px;
     }
-    .date-badge .date-num {
-      font-size: 0.8125rem;  /* 13px — proporcional para qualquer conteúdo */
+    .je-ag-date-num {
+      font-size: 0.8125rem;
       font-weight: 800;
       line-height: 1.2;
       letter-spacing: -0.01em;
     }
-    .date-badge.date-long .date-num {
-      font-size: 0.625rem;   /* 10px — datas longas tipo 27/7–01/8 */
+    .je-ag-date.is-long .je-ag-date-num {
+      font-size: 0.625rem;
       letter-spacing: 0;
     }
-    .date-badge .date-lbl {
-      font-size: 0.5625rem;  /* 9px */
+    .je-ag-date-lbl {
+      font-size: 0.5625rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       line-height: 1;
     }
-
-    /* variante padrão (cinza) */
-    .date-badge.variant-default {
-      background: #f5f3f3;
-      border: 1px solid #c3c6d0;
+    .je-ag-date--default {
+      background: #f5f8fc;
+      border: 1px solid #e2e6ef;
     }
-    .date-badge.variant-default .date-num { color: #0f3462; }
-    .date-badge.variant-default .date-lbl { color: #3b5e97; }
-
-    /* variante destaque (azul escuro) */
-    .date-badge.variant-primary {
-      background: #0f3462;
-    }
-    .date-badge.variant-primary .date-num { color: #ffffff; }
-    .date-badge.variant-primary .date-lbl { color: rgba(255,255,255,0.7); }
-
-    /* variante especial (dourado) */
-    .date-badge.variant-gold {
-      background: rgba(200,169,110,0.12);
+    .je-ag-date--default .je-ag-date-num { color: #0f3462; }
+    .je-ag-date--default .je-ag-date-lbl { color: #3b5e97; }
+    .je-ag-date--primary { background: #0f3462; }
+    .je-ag-date--primary .je-ag-date-num { color: #fff; }
+    .je-ag-date--primary .je-ag-date-lbl { color: rgba(255,255,255,.72); }
+    .je-ag-date--gold {
+      background: rgba(200,169,110,.12);
       border: 1px solid #c8a96e;
     }
-    .date-badge.variant-gold .date-num { color: #8a6a2a; }
-    .date-badge.variant-gold .date-lbl { color: #a07c35; }
-    @media (max-width: 1023px) {
-      .je-agenda-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
-      .month-header { min-height: 3rem; }
+    .je-ag-date--gold .je-ag-date-num { color: #8a6a2a; }
+    .je-ag-date--gold .je-ag-date-lbl { color: #a07c35; }
+
+    .je-ag-event-body { flex: 1; min-width: 0; }
+    .je-ag-cat {
+      display: inline-block;
+      margin-bottom: 0.375rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.5625rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
+    .je-ag-cat--meetings { background: #dbeafe; color: #0f3462; }
+    .je-ag-cat--special { background: rgba(200,169,110,.2); color: #7a5200; }
+    .je-ag-event-title {
+      font-size: 0.875rem;
+      font-weight: 800;
+      color: #1b1c1c;
+      line-height: 1.35;
+      margin: 0;
+    }
+    .je-ag-event-desc {
+      font-size: 0.75rem;
+      color: #43474f;
+      line-height: 1.45;
+      margin: 0.25rem 0 0;
+    }
+    .je-ag-event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      margin-top: 0.625rem;
+    }
+    .je-ag-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      color: #43474f;
+    }
+    .je-ag-meta-item .material-symbols-outlined { font-size: 0.875rem; color: #3b5e97; }
+
+    .je-ag-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    @media (min-width: 1024px) {
+      .je-ag-sidebar { position: sticky; top: 5.5rem; }
+    }
+    .je-ag-highlights-card {
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #faf6ef 0%, #fff 100%);
+      border: 1px solid rgba(200,169,110,.35);
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+    }
+    .je-ag-highlights-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .je-ag-highlights-head .material-symbols-outlined {
+      font-size: 1.125rem;
+      color: #c8a96e;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
+    .je-ag-highlights-head h3 {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #43474f;
+      margin: 0;
+    }
+    .je-ag-highlights-list { display: flex; flex-direction: column; gap: 0.875rem; }
+    .je-ag-highlight { display: flex; gap: 0.625rem; align-items: flex-start; }
+    .je-ag-highlight-dot {
+      width: 0.4375rem;
+      height: 0.4375rem;
+      border-radius: 9999px;
+      background: #c8a96e;
+      margin-top: 0.375rem;
+      flex-shrink: 0;
+    }
+    .je-ag-highlight-date {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      color: #3b5e97;
+      margin-bottom: 0.125rem;
+    }
+    .je-ag-highlight-title {
+      font-size: 0.75rem;
+      color: #43474f;
+      line-height: 1.4;
+    }
+
     @media (max-width: 767px) {
-      .je-agenda-header h1 { font-size: 1.75rem; }
-      .month-header { padding-left: 1rem; padding-right: 1rem; }
-      .month-body .flex.gap-4 { padding-left: 1rem; padding-right: 1rem; gap: 0.75rem; }
+      .je-ag-search { max-width: none; }
+      .je-ag-event { padding: 0.875rem 1rem; gap: 0.75rem; }
     }
   </style>
 </head>
@@ -139,80 +388,80 @@ gtag('config', 'G-PGXCZF9S9W');
   <main>
 
     <!-- ══ CABEÇALHO ════════════════════════════════════════════ -->
-    <section class="bg-surface-container-low border-b border-outline-variant py-10 fade-up">
-      <div class="max-w-7xl mx-auto px-6 je-page-shell">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">
-  <a href="index.html">
-    <span class="material-symbols-outlined text-secondary" style="font-size:15px">
-        home
-    </span>
-</a>
-          <a href="index.html">
-			  <span class="text-secondary">Jardim Elizabeth</span>
-		  </a>
-          <span class="text-outline">/</span>
-          <span class="text-primary">Agenda</span>
-        </div>
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <section class="je-ag-hero border-b border-outline-variant py-12 md:py-14 fade-up">
+      <div class="max-w-6xl mx-auto px-6 je-page-shell je-ag-hero-inner">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
           <div>
-            <h1 class="je-agenda-header text-3xl md:text-4xl font-extrabold text-primary tracking-tight leading-tight">Agenda da Congregação</h1>
-            <p class="text-on-surface-variant mt-2 text-sm max-w-lg">Reuniões, eventos especiais e datas importantes organizados por mês.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/70 mb-4">
+              <a href="index.html" class="text-white/90 hover:text-white"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+              <a href="index.html" class="text-white/90 hover:text-white">Jardim Elizabeth</a>
+              <span class="text-white/40">/</span>
+              <span class="text-[#c8a96e]">Agenda</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Agenda da Congregação</h1>
+            <p class="text-white/80 mt-3 text-sm md:text-base max-w-xl leading-relaxed">
+              Reuniões, eventos especiais e datas importantes organizados por mês.
+            </p>
           </div>
-          <div class="flex items-center gap-2 bg-white border border-outline-variant rounded-full px-4 py-1.5 self-start md:self-auto">
-            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-            <span class="text-xs font-semibold text-on-surface-variant">Atualizado — 2026</span>
+          <div class="je-ag-status-pill self-start">
+            <span class="je-ag-status-pill-dot" aria-hidden="true"></span>
+            <span>Atualizado — 2026</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ══ CONTEÚDO ═════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 je-page-shell je-agenda-shell py-10 fade-up-2">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="max-w-6xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
+      <div class="je-ag-layout">
 
-        <!-- ── ACORDEÃO ────────────────────────────────────────── -->
-        <div class="lg:col-span-8 space-y-3">
+        <div class="je-ag-main">
+          <label class="je-ag-search-wrap">
+            <span class="material-symbols-outlined">search</span>
+            <input id="je-ag-search" class="je-ag-search" type="search" placeholder="Buscar eventos…" autocomplete="off"/>
+          </label>
 
-          <div class="flex items-center gap-3 mb-6">
-            <span class="material-symbols-outlined text-secondary">calendar_month</span>
-            <h2 class="text-xl font-bold text-primary tracking-tight">Programação</h2>
-            <div class="flex-1 h-px bg-outline-variant"></div>
+          <div class="je-ag-section-head">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <h2>Programação</h2>
+            <div class="je-ag-section-line" aria-hidden="true"></div>
           </div>
 
-          <div id="je-agenda-months" class="space-y-3">
+          <div id="je-agenda-months" class="je-ag-months">
 
           <!-- ════ ABRIL / 2026 ════ (primeiro = abre automaticamente) -->
-          <div class="month-block open bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Abril / 2026</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+          <div class="je-ag-month open">
+            <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="true">
+              <span class="je-ag-month-head-left">
+                <span class="je-ag-month-dot" aria-hidden="true"></span>
+                <span class="je-ag-month-label">Abril / 2026</span>
+                <span class="je-ag-month-count">2 eventos</span>
+              </span>
+              <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+            </button>
+            <div class="je-ag-month-body">
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-gold">
-                  <span class="date-num">02</span>
-                  <span class="date-lbl">Abr</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--gold">
+                  <span class="je-ag-date-num">02</span>
+                  <span class="je-ag-date-lbl">Abr</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
-                  <h3 class="font-bold text-on-surface text-sm">Celebração no Salão do Reino</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração especial em nosso salão do Reino.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Celebração</span>
+                  <h3 class="je-ag-event-title">Celebração no Salão do Reino</h3>
+                  <p class="je-ag-event-desc">Celebração especial em nosso salão do Reino.</p>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default">
-                  <span class="date-num">18–19</span>
-                  <span class="date-lbl">Abr</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default">
+                  <span class="je-ag-date-num">18–19</span>
+                  <span class="je-ag-date-lbl">Abr</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm">Visita do Representante de Betel</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do representante de Betel à congregação.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Visita do Representante de Betel</h3>
+                  <p class="je-ag-event-desc">Visita do representante de Betel à congregação.</p>
                 </div>
               </div>
 
@@ -220,37 +469,38 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
 
           <!-- ════ MARÇO / 2026 ════ -->
-          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Março / 2026</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+          <div class="je-ag-month">
+            <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="false">
+              <span class="je-ag-month-head-left">
+                <span class="je-ag-month-dot" aria-hidden="true"></span>
+                <span class="je-ag-month-label">Março / 2026</span>
+                <span class="je-ag-month-count">2 eventos</span>
+              </span>
+              <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+            </button>
+            <div class="je-ag-month-body">
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default">
-                  <span class="date-num">01</span>
-                  <span class="date-lbl">Mar</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default">
+                  <span class="je-ag-date-num">01</span>
+                  <span class="je-ag-date-lbl">Mar</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Assembleia</span>
-                  <h3 class="font-bold text-on-surface text-sm">Assembleia de Circuito</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Assembleia de Circuito com o superintendente.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Assembleia</span>
+                  <h3 class="je-ag-event-title">Assembleia de Circuito</h3>
+                  <p class="je-ag-event-desc">Assembleia de Circuito com o superintendente.</p>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-primary">
-                  <span class="date-num">28</span>
-                  <span class="date-lbl">Mar</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--primary">
+                  <span class="je-ag-date-num">28</span>
+                  <span class="je-ag-date-lbl">Mar</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm">Discurso Especial</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Discurso especial para toda a congregação.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Discurso Especial</h3>
+                  <p class="je-ag-event-desc">Discurso especial para toda a congregação.</p>
                 </div>
               </div>
 
@@ -258,28 +508,29 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
 
           <!-- ════ FEVEREIRO / 2026 ════ -->
-          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Fevereiro / 2026</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+          <div class="je-ag-month">
+            <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="false">
+              <span class="je-ag-month-head-left">
+                <span class="je-ag-month-dot" aria-hidden="true"></span>
+                <span class="je-ag-month-label">Fevereiro / 2026</span>
+                <span class="je-ag-month-count">1 evento</span>
+              </span>
+              <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+            </button>
+            <div class="je-ag-month-body">
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-gold">
-                  <span class="date-num">21</span>
-                  <span class="date-lbl">Sáb</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--gold">
+                  <span class="je-ag-date-num">21</span>
+                  <span class="je-ag-date-lbl">Sáb</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião Especial com Representantes da Sede Mundial</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião especial com os representantes da sede mundial, às 18:00 horas.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>18:00 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Reunião Especial com Representantes da Sede Mundial</h3>
+                  <p class="je-ag-event-desc">Reunião especial com os representantes da sede mundial, às 18:00 horas.</p>
+                  <div class="je-ag-event-meta">
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">schedule</span>18:00 hs</span>
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>Salão do Reino</span>
                   </div>
                 </div>
               </div>
@@ -288,59 +539,60 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
 
           <!-- ════ JANEIRO / 2026 ════ -->
-          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
-                <span class="font-bold text-primary text-base">Janeiro / 2026</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+          <div class="je-ag-month">
+            <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="false">
+              <span class="je-ag-month-head-left">
+                <span class="je-ag-month-dot" aria-hidden="true"></span>
+                <span class="je-ag-month-label">Janeiro / 2026</span>
+                <span class="je-ag-month-count">3 eventos</span>
+              </span>
+              <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+            </button>
+            <div class="je-ag-month-body">
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default">
-                  <span class="date-num">05</span>
-                  <span class="date-lbl">Seg</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default">
+                  <span class="je-ag-date-num">05</span>
+                  <span class="je-ag-date-lbl">Seg</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Rodízio de Horários</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Reunião de quarta e sábado às 19:30 hs.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:30 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--meetings">Reuniões</span>
+                  <h3 class="je-ag-event-title">Rodízio de Horários</h3>
+                  <p class="je-ag-event-desc">Reunião de quarta e sábado às 19:30 hs.</p>
+                  <div class="je-ag-event-meta">
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">schedule</span>19:30 hs</span>
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>Salão do Reino</span>
                   </div>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-primary">
-                  <span class="date-num">06</span>
-                  <span class="date-lbl">Ter</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--primary">
+                  <span class="je-ag-date-num">06</span>
+                  <span class="je-ag-date-lbl">Ter</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Visita do Superintendente de Circuito</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Visita oficial do superintendente de circuito à congregação.</p>
-                  <div class="flex gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Visita do Superintendente de Circuito</h3>
+                  <p class="je-ag-event-desc">Visita oficial do superintendente de circuito à congregação.</p>
+                  <div class="je-ag-event-meta">
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>Salão do Reino</span>
                   </div>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default">
-                  <span class="date-num">09</span>
-                  <span class="date-lbl">Sex</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default">
+                  <span class="je-ag-date-num">09</span>
+                  <span class="je-ag-date-lbl">Sex</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Reuniões</span>
-                  <h3 class="font-bold text-on-surface text-sm leading-snug">Reunião com Pioneiros Auxiliares</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Às 19:00 hs com pioneiros auxiliares. Às 20:15 hs com anciãos e servos.</p>
-                  <div class="flex flex-wrap gap-4 mt-2">
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>19:00 · 20:15 hs</span>
-                    <span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>Salão do Reino</span>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--meetings">Reuniões</span>
+                  <h3 class="je-ag-event-title">Reunião com Pioneiros Auxiliares</h3>
+                  <p class="je-ag-event-desc">Às 19:00 hs com pioneiros auxiliares. Às 20:15 hs com anciãos e servos.</p>
+                  <div class="je-ag-event-meta">
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">schedule</span>19:00 · 20:15 hs</span>
+                    <span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>Salão do Reino</span>
                   </div>
                 </div>
               </div>
@@ -349,97 +601,98 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
 
           <!-- ════ EVENTOS FUTUROS ════ -->
-          <div class="month-block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-            <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-              <div class="flex items-center gap-3">
-                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#c8a96e"></div>
-                <span class="font-bold text-primary text-base">Eventos Futuros</span>
-              </div>
-              <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-            </div>
-            <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+          <div class="je-ag-month">
+            <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="false">
+              <span class="je-ag-month-head-left">
+                <span class="je-ag-month-dot je-ag-month-dot--gold" aria-hidden="true"></span>
+                <span class="je-ag-month-label">Eventos Futuros</span>
+                <span class="je-ag-month-count">7 eventos</span>
+              </span>
+              <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+            </button>
+            <div class="je-ag-month-body">
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-gold">
-                  <span class="date-num">05</span>
-                  <span class="date-lbl">Jun</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--gold">
+                  <span class="je-ag-date-num">05</span>
+                  <span class="je-ag-date-lbl">Jun</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Passeio</span>
-                  <h3 class="font-bold text-on-surface text-sm">Visita a Betel</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Vagas limitadas — procurem nosso irmão Edvan para se inscrever.</p>
-                </div>
-              </div>
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default">
-                  <span class="date-num">09–14</span>
-                  <span class="date-lbl">Jun</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm">Visita do Superintendente de Circuito</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Visita do superintendente de circuito à congregação.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Passeio</span>
+                  <h3 class="je-ag-event-title">Visita a Betel</h3>
+                  <p class="je-ag-event-desc">Vagas limitadas — procurem nosso irmão Edvan para se inscrever.</p>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-primary">
-                  <span class="date-num">17–19</span>
-                  <span class="date-lbl">Jul</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default">
+                  <span class="je-ag-date-num">09–14</span>
+                  <span class="je-ag-date-lbl">Jun</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Congresso</span>
-                  <h3 class="font-bold text-on-surface text-sm">Congresso VGP (9)</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Congresso de circuito.</p>
-                </div>
-              </div>
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default date-long">
-                  <span class="date-num">27/7–01/8</span>
-                  <span class="date-lbl">2026</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
-                  <h3 class="font-bold text-on-surface text-sm">Escola de Pioneiros — Classe A</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Início da Escola de Pioneiros Classe A.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Visita do Superintendente de Circuito</h3>
+                  <p class="je-ag-event-desc">Visita do superintendente de circuito à congregação.</p>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-default date-long">
-                  <span class="date-num">03–08/8</span>
-                  <span class="date-lbl">2026</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--primary">
+                  <span class="je-ag-date-num">17–19</span>
+                  <span class="je-ag-date-lbl">Jul</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-secondary bg-secondary-fixed/50 px-2 py-0.5 rounded mb-1">Escola</span>
-                  <h3 class="font-bold text-on-surface text-sm">Escola de Pioneiros — Classe B</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Escola de Pioneiros Classe B.</p>
-                </div>
-              </div>
-
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-gold">
-                  <span class="date-num">26</span>
-                  <span class="date-lbl">Set</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Especial</span>
-                  <h3 class="font-bold text-on-surface text-sm">Discurso Especial</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Discurso especial para toda a congregação.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Congresso</span>
+                  <h3 class="je-ag-event-title">Congresso VGP (9)</h3>
+                  <p class="je-ag-event-desc">Congresso de circuito.</p>
                 </div>
               </div>
 
-              <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-                <div class="date-badge variant-gold">
-                  <span class="date-num">22</span>
-                  <span class="date-lbl">Mar/27</span>
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default is-long">
+                  <span class="je-ag-date-num">27/7–01/8</span>
+                  <span class="je-ag-date-lbl">2026</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-[#7a5200] bg-[#c8a96e]/20 px-2 py-0.5 rounded mb-1">Celebração</span>
-                  <h3 class="font-bold text-on-surface text-sm">Celebração — 2027</h3>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Celebração em 22/03/2027.</p>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--meetings">Escola</span>
+                  <h3 class="je-ag-event-title">Escola de Pioneiros — Classe A</h3>
+                  <p class="je-ag-event-desc">Início da Escola de Pioneiros Classe A.</p>
+                </div>
+              </div>
+
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--default is-long">
+                  <span class="je-ag-date-num">03–08/8</span>
+                  <span class="je-ag-date-lbl">2026</span>
+                </div>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--meetings">Escola</span>
+                  <h3 class="je-ag-event-title">Escola de Pioneiros — Classe B</h3>
+                  <p class="je-ag-event-desc">Escola de Pioneiros Classe B.</p>
+                </div>
+              </div>
+
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--gold">
+                  <span class="je-ag-date-num">26</span>
+                  <span class="je-ag-date-lbl">Set</span>
+                </div>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Especial</span>
+                  <h3 class="je-ag-event-title">Discurso Especial</h3>
+                  <p class="je-ag-event-desc">Discurso especial para toda a congregação.</p>
+                </div>
+              </div>
+
+              <div class="je-ag-event">
+                <div class="je-ag-date je-ag-date--gold">
+                  <span class="je-ag-date-num">22</span>
+                  <span class="je-ag-date-lbl">Mar/27</span>
+                </div>
+                <div class="je-ag-event-body">
+                  <span class="je-ag-cat je-ag-cat--special">Celebração</span>
+                  <h3 class="je-ag-event-title">Celebração — 2027</h3>
+                  <p class="je-ag-event-desc">Celebração em 22/03/2027.</p>
                 </div>
               </div>
 
@@ -447,56 +700,55 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
 
           </div>
+        </div>
         <!-- FIM ACORDEÃO ─────────────────────────────────────────── -->
 
 
         <!-- ── SIDEBAR ─────────────────────────────────────────── -->
-        <aside class="lg:col-span-4 space-y-5">
-
-          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
-              <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface-variant">Destaques do Ano</h3>
+        <aside class="je-ag-sidebar">
+          <div class="je-ag-highlights-card">
+            <div class="je-ag-highlights-head">
+              <span class="material-symbols-outlined">star</span>
+              <h3>Destaques do ano</h3>
             </div>
-            <div id="je-agenda-highlights" class="space-y-3">
-              <div class="flex gap-3">
-                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+            <div id="je-agenda-highlights" class="je-ag-highlights-list">
+              <div class="je-ag-highlight">
+                <span class="je-ag-highlight-dot" aria-hidden="true"></span>
                 <div>
-                  <div class="text-[11px] font-bold text-secondary">21 Fev 2026</div>
-                  <div class="text-xs text-on-surface-variant">Reunião Especial — Representantes da Sede Mundial</div>
+                  <div class="je-ag-highlight-date">21 Fev 2026</div>
+                  <div class="je-ag-highlight-title">Reunião Especial — Representantes da Sede Mundial</div>
                 </div>
               </div>
-              <div class="flex gap-3">
-                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+              <div class="je-ag-highlight">
+                <span class="je-ag-highlight-dot" aria-hidden="true"></span>
                 <div>
-                  <div class="text-[11px] font-bold text-secondary">01 Mar 2026</div>
-                  <div class="text-xs text-on-surface-variant">Assembleia de Circuito</div>
+                  <div class="je-ag-highlight-date">01 Mar 2026</div>
+                  <div class="je-ag-highlight-title">Assembleia de Circuito</div>
                 </div>
               </div>
-              <div class="flex gap-3">
-                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+              <div class="je-ag-highlight">
+                <span class="je-ag-highlight-dot" aria-hidden="true"></span>
                 <div>
-                  <div class="text-[11px] font-bold text-secondary">02 Abr 2026</div>
-                  <div class="text-xs text-on-surface-variant">Celebração da Morte de Cristo</div>
+                  <div class="je-ag-highlight-date">02 Abr 2026</div>
+                  <div class="je-ag-highlight-title">Celebração da Morte de Cristo</div>
                 </div>
               </div>
-              <div class="flex gap-3">
-                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+              <div class="je-ag-highlight">
+                <span class="je-ag-highlight-dot" aria-hidden="true"></span>
                 <div>
-                  <div class="text-[11px] font-bold text-secondary">05 Jun 2026</div>
-                  <div class="text-xs text-on-surface-variant">Visita a Betel — vagas limitadas</div>
+                  <div class="je-ag-highlight-date">05 Jun 2026</div>
+                  <div class="je-ag-highlight-title">Visita a Betel — vagas limitadas</div>
                 </div>
               </div>
-              <div class="flex gap-3">
-                <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+              <div class="je-ag-highlight">
+                <span class="je-ag-highlight-dot" aria-hidden="true"></span>
                 <div>
-                  <div class="text-[11px] font-bold text-secondary">17–19 Jul 2026</div>
-                  <div class="text-xs text-on-surface-variant">Congresso VGP (9)</div>
+                  <div class="je-ag-highlight-date">17–19 Jul 2026</div>
+                  <div class="je-ag-highlight-title">Congresso VGP (9)</div>
                 </div>
               </div>
             </div>
           </div>
-
         </aside>
 
       </div>
@@ -509,7 +761,9 @@ gtag('config', 'G-PGXCZF9S9W');
 
   <script>
     function toggleMonth(header) {
-      header.closest('.month-block').classList.toggle('open');
+      const month = header.closest('.je-ag-month');
+      const open = month.classList.toggle('open');
+      header.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
   </script>
 

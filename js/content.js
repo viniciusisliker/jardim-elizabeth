@@ -19,34 +19,35 @@
   }
 
   function badgeClass(variant) {
-    if (variant === 'primary') return 'variant-primary';
-    if (variant === 'gold') return 'variant-gold';
-    return 'variant-default';
+    if (variant === 'primary') return 'je-ag-date--primary';
+    if (variant === 'gold') return 'je-ag-date--gold';
+    return 'je-ag-date--default';
   }
 
   function isLongDate(display) {
     return display && (display.includes('/') || display.includes('–') && display.length > 4);
   }
 
+  function categoryClass(category) {
+    return category === 'Reuniões' || category === 'Escola' ? 'je-ag-cat--meetings' : 'je-ag-cat--special';
+  }
+
   function renderEventRow(ev) {
-    const longCls = isLongDate(ev.date_display) ? ' date-long' : '';
+    const longCls = isLongDate(ev.date_display) ? ' is-long' : '';
     const meta = [];
-    if (ev.event_time) meta.push(`<span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">schedule</span>${esc(ev.event_time)}</span>`);
-    if (ev.location) meta.push(`<span class="flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined" style="font-size:14px">location_on</span>${esc(ev.location)}</span>`);
-    const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
-      ? 'text-secondary bg-secondary-fixed/50'
-      : 'text-[#7a5200] bg-[#c8a96e]/20';
+    if (ev.event_time) meta.push(`<span class="je-ag-meta-item"><span class="material-symbols-outlined">schedule</span>${esc(ev.event_time)}</span>`);
+    if (ev.location) meta.push(`<span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>${esc(ev.location)}</span>`);
     return `
-      <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-        <div class="date-badge ${badgeClass(ev.badge_variant)}${longCls}">
-          <span class="date-num">${esc(ev.date_display)}</span>
-          <span class="date-lbl">${esc(ev.date_label)}</span>
+      <div class="je-ag-event">
+        <div class="je-ag-date ${badgeClass(ev.badge_variant)}${longCls}">
+          <span class="je-ag-date-num">${esc(ev.date_display)}</span>
+          <span class="je-ag-date-lbl">${esc(ev.date_label)}</span>
         </div>
-        <div class="flex-1 min-w-0">
-          <span class="inline-block text-[10px] font-bold uppercase tracking-widest ${catCls} px-2 py-0.5 rounded mb-1">${esc(ev.category)}</span>
-          <h3 class="font-bold text-on-surface text-sm leading-snug">${esc(ev.title)}</h3>
-          ${ev.description ? `<p class="text-xs text-on-surface-variant mt-0.5">${esc(ev.description)}</p>` : ''}
-          ${meta.length ? `<div class="flex flex-wrap gap-4 mt-2">${meta.join('')}</div>` : ''}
+        <div class="je-ag-event-body">
+          <span class="je-ag-cat ${categoryClass(ev.category)}">${esc(ev.category)}</span>
+          <h3 class="je-ag-event-title">${esc(ev.title)}</h3>
+          ${ev.description ? `<p class="je-ag-event-desc">${esc(ev.description)}</p>` : ''}
+          ${meta.length ? `<div class="je-ag-event-meta">${meta.join('')}</div>` : ''}
         </div>
       </div>`;
   }
@@ -69,18 +70,19 @@
   function renderAgendaMonths(events, openFirst) {
     const groups = groupAgendaByMonth(events);
     return groups.map(([key, group], idx) => {
-      const dot = key === 'futuros' ? 'style="background:#c8a96e"' : '';
+      const dotGold = key === 'futuros' ? ' je-ag-month-dot--gold' : '';
       const openCls = openFirst && idx === 0 ? ' open' : '';
       return `
-        <div class="month-block${openCls} bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-          <div class="month-header flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-container-low transition-colors" onclick="toggleMonth(this)">
-            <div class="flex items-center gap-3">
-              <div class="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0" ${dot}></div>
-              <span class="font-bold text-primary text-base">${esc(group.label)}</span>
-            </div>
-            <span class="material-symbols-outlined month-chevron text-on-surface-variant">expand_more</span>
-          </div>
-          <div class="month-body border-t border-outline-variant divide-y divide-outline-variant">
+        <div class="je-ag-month${openCls}">
+          <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="${openFirst && idx === 0 ? 'true' : 'false'}">
+            <span class="je-ag-month-head-left">
+              <span class="je-ag-month-dot${dotGold}" aria-hidden="true"></span>
+              <span class="je-ag-month-label">${esc(group.label)}</span>
+              <span class="je-ag-month-count">${group.events.length} evento${group.events.length === 1 ? '' : 's'}</span>
+            </span>
+            <span class="material-symbols-outlined je-ag-month-chevron">expand_more</span>
+          </button>
+          <div class="je-ag-month-body">
             ${group.events.map(renderEventRow).join('')}
           </div>
         </div>`;
@@ -96,14 +98,34 @@
         ? `${String(d.getDate()).padStart(2, '0')} ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()]} ${d.getFullYear()}`
         : `${ev.date_display} ${ev.date_label}`;
       return `
-        <div class="flex gap-3">
-          <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:#c8a96e"></div>
+        <div class="je-ag-highlight">
+          <span class="je-ag-highlight-dot" aria-hidden="true"></span>
           <div>
-            <div class="text-[11px] font-bold text-secondary">${esc(dateStr)}</div>
-            <div class="text-xs text-on-surface-variant">${esc(ev.title)}</div>
+            <div class="je-ag-highlight-date">${esc(dateStr)}</div>
+            <div class="je-ag-highlight-title">${esc(ev.title)}</div>
           </div>
         </div>`;
     }).join('');
+  }
+
+  function initAgendaPage() {
+    const search = document.getElementById('je-ag-search');
+    const root = document.getElementById('je-agenda-months');
+    if (!search || !root) return;
+
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      root.querySelectorAll('.je-ag-month').forEach((month) => {
+        let visible = 0;
+        month.querySelectorAll('.je-ag-event').forEach((row) => {
+          const show = !query || row.textContent.toLowerCase().includes(query);
+          row.classList.toggle('is-hidden', !show);
+          if (show) visible += 1;
+        });
+        month.classList.toggle('is-filtered-empty', visible === 0 && !!query);
+        if (query && visible > 0) month.classList.add('open');
+      });
+    });
   }
 
   async function loadAgenda() {
@@ -395,6 +417,7 @@
 
   function boot() {
     initTerritoriesPage();
+    initAgendaPage();
     const run = () => {
       loadAgenda();
       loadAnnouncements();
