@@ -332,6 +332,14 @@
       color: #fff !important;
       box-shadow: 0 4px 12px rgba(15, 52, 98, 0.22);
     }
+    .je-site-nav-link--icon {
+      padding: 0.4375rem 0.625rem;
+      justify-content: center;
+    }
+    .je-site-nav-link--icon .material-symbols-outlined {
+      font-size: 1.125rem;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
     .je-site-actions {
       display: flex;
       align-items: center;
