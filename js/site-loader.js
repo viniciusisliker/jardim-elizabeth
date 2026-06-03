@@ -274,35 +274,13 @@
       color: inherit;
       min-width: 0;
     }
-    .je-site-brand-mark {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 0.75rem;
-      background: linear-gradient(135deg, #0f3462 0%, #1a4a7a 100%);
-      color: #c8a96e;
-      font-size: 0.8125rem;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(15, 52, 98, 0.22);
-    }
-    .je-site-brand-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      line-height: 1.15;
-    }
-    .je-site-brand-name {
-      font-size: 1.0625rem;
-      font-weight: 800;
-      color: #0f3462;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .je-site-brand-logo {
+      display: block;
+      height: 2.75rem;
+      width: auto;
+      max-width: min(11rem, 42vw);
+      object-fit: contain;
+      object-position: left center;
     }
     .je-site-nav-wrap {
       display: none;
@@ -446,21 +424,12 @@
       padding: 1.25rem 1.25rem 1rem;
       color: #fff;
     }
-    .je-mobile-menu-eyebrow {
+    .je-mobile-menu-logo {
       display: block;
-      font-size: 0.625rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: rgba(200, 169, 110, 0.95);
-      margin-bottom: 0.25rem;
-    }
-    .je-mobile-menu-title {
-      display: block;
-      font-size: 1.25rem;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
+      height: 2.5rem;
+      width: auto;
+      max-width: 10rem;
+      object-fit: contain;
     }
     .je-mobile-menu-close {
       flex-shrink: 0;
@@ -588,8 +557,7 @@
       #header nav > .max-w-7xl,
       #header .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-site-header-inner { min-height: 3.75rem; }
-      .je-site-brand-name { font-size: 1rem; max-width: 10rem; }
-      .je-site-brand-mark { width: 2.25rem; height: 2.25rem; font-size: 0.75rem; }
+      .je-site-brand-logo { height: 2.35rem; max-width: min(9.5rem, 38vw); }
       #mobile-menu-btn,
       #profile-btn,
       .je-site-icon-btn { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
@@ -641,13 +609,7 @@
       .je-footer-headline { font-size: 1.5rem; }
     }
     @media (max-width: 767px) {
-      #header nav a.flex-shrink-0 > span,
-      .je-site-brand-name {
-        max-width: 10rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
+      .je-site-brand-logo { max-width: min(9rem, 36vw); }
       #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
       #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
       .je-footer-info {
@@ -722,11 +684,35 @@
   const isAdminPath = /\/admin(\/|$)/.test(window.location.pathname);
   const assetBase = isAdminPath ? '..' : '.';
 
+  function ensureFavicon() {
+    const iconHref = `${assetBase}/img/favicon.png`;
+    if (!document.querySelector('link[rel="icon"]')) {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = iconHref;
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      const link = document.createElement('link');
+      link.rel = 'apple-touch-icon';
+      link.href = iconHref;
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = `${assetBase}/site.webmanifest`;
+      document.head.appendChild(link);
+    }
+  }
+
   function ensureMaterialSymbols() {
     ensureMaterialSymbolsLoaded();
   }
 
   async function boot() {
+    ensureFavicon();
     ensureMaterialSymbols();
     await materialSymbolsReady();
 
@@ -759,10 +745,11 @@
   }
 
   function fixRelativeLinks(container, prefix) {
-    container.querySelectorAll('a[href]').forEach((link) => {
-      const href = link.getAttribute('href');
-      if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('../') || href.startsWith('/')) return;
-      link.setAttribute('href', prefix + href);
+    container.querySelectorAll('a[href], img[src]').forEach((el) => {
+      const attr = el.hasAttribute('href') ? 'href' : 'src';
+      const val = el.getAttribute(attr);
+      if (!val || val.startsWith('http') || val.startsWith('#') || val.startsWith('../') || val.startsWith('/')) return;
+      el.setAttribute(attr, prefix + val);
     });
   }
 
