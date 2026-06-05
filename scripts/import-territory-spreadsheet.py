@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Gera SQL de importacao a partir da Planilha Gestao Territorios."""
+import json
 import re
 import unicodedata
 import zipfile
@@ -103,6 +104,71 @@ def sql_str(s):
     return "'" + str(s).replace("'", "''") + "'"
 
 
+def sql_json(obj):
+    return "'" + json.dumps(obj, ensure_ascii=False).replace("'", "''") + "'::jsonb"
+
+
+def parse_territory_ref(row):
+    tid = (row.get("D") or "").strip()
+    name = (row.get("E") or "").strip()
+    num = None
+    display = None
+    m = re.match(r"^(T\s*\d+)", tid, re.I)
+    if m:
+        num = re.sub(r"\D", "", m.group(1)).lstrip("0") or "0"
+    if " - " in tid:
+        parts = tid.split(" - ", 1)
+        if not num:
+            num = re.sub(r"\D", "", parts[0]).lstrip("0") or "0"
+        display = parts[1].strip()
+    elif name and not re.match(r"^T\s*\d", name, re.I):
+        display = name.strip()
+    label = tid
+    if name and not re.match(r"^T\s*\d", name, re.I):
+        label = f"{tid} {name}".strip() if tid else name
+    return num, display, label
+
+
+def history_profile_name(raw):
+    if not raw:
+        return None
+    n = norm(raw)
+    if not n or n.startswith("a definir") or "assembleia" in n:
+        return None
+    return PROFILE_ALIASES.get(n, raw.strip())
+
+
+def history_event_type(dirigente):
+    if dirigente and "assembleia" in norm(dirigente):
+        return "status"
+    return "trabalho"
+
+
+def territory_match_sql(num, display):
+    clauses = []
+    if display:
+        db_name = db_territory_name(display)
+        clauses.append(f"lower(trim(t.display_name)) = lower(trim({sql_str(db_name)}))")
+    if num:
+        clauses.append(f"t.num = lpad({sql_str(num)}, 2, '0')")
+        clauses.append(f"t.num = {sql_str(num)}")
+    if not clauses:
+        return "NULL"
+    return f"(SELECT id FROM public.territories t WHERE {' OR '.join(clauses)} LIMIT 1)"
+
+
+def profile_match_sql(name):
+    if not name:
+        return "NULL"
+    first = name.split()[0]
+    return (
+        f"(SELECT id FROM public.profiles p WHERE "
+        f"lower(trim(p.full_name)) = lower(trim({sql_str(name)})) "
+        f"OR lower(trim(p.full_name)) LIKE lower(trim({sql_str(first)})) || '%' "
+        f"LIMIT 1)"
+    )
+
+
 def main():
     with zipfile.ZipFile(XLSX) as z:
         strings = read_strings(z)
@@ -131,6 +197,8 @@ def main():
         "DELETE FROM public.territory_overseers;",
         "DELETE FROM public.territory_meeting_spots;",
         "DELETE FROM public.territory_assignments;",
+        "DELETE FROM public.territory_history WHERE metadata->>'source' = 'spreadsheet';",
+        "DELETE FROM public.territory_history WHERE event_type = 'designacao' AND territory_id IS NULL AND profile_id IS NULL AND metadata = '{}'::jsonb;",
         "",
     ]
 
@@ -213,21 +281,35 @@ ON CONFLICT (profile_id) DO UPDATE SET preference = EXCLUDED.preference, is_acti
             f"VALUES ({sql_str(day)}, {sql_str(loc)}, {sql_str(addr)}, {sql_str(times)}, {sort});"
         )
 
-    # Historico (ultimos 40)
-    for row in hist_rows[-40:]:
+    # Historico completo da planilha
+    for row in hist_rows:
         if not row.get("A"):
             continue
         dt = excel_date(row.get("A"))
         if not dt:
             continue
-        dirigente = row.get("C") or ""
-        terr_id = row.get("D") or ""
-        terr_name = row.get("E") or ""
-        obs = row.get("F") or None
-        details = f"{dirigente} · {terr_id} {terr_name}".strip()
+        weekday = (row.get("B") or "").strip() or None
+        dirigente_raw = (row.get("C") or "").strip()
+        obs = (row.get("F") or "").strip() or None
+        num, display, terr_label = parse_territory_ref(row)
+        profile_name = history_profile_name(dirigente_raw)
+        event_type = history_event_type(dirigente_raw)
+
+        detail_parts = [weekday, dirigente_raw, terr_label]
+        details = " · ".join(p for p in detail_parts if p)
+        metadata = {
+            "source": "spreadsheet",
+            "weekday": weekday,
+            "dirigente_name": dirigente_raw or None,
+            "territory_label": terr_label or None,
+            "territory_num": num,
+            "observations": obs,
+        }
+
         lines.append(
-            f"INSERT INTO public.territory_history (event_type, event_date, details) "
-            f"VALUES ('designacao', {sql_str(dt)}, {sql_str(details)});"
+            f"INSERT INTO public.territory_history (event_type, event_date, territory_id, profile_id, details, metadata) "
+            f"VALUES ({sql_str(event_type)}, {sql_str(dt)}, {territory_match_sql(num, display)}, "
+            f"{profile_match_sql(profile_name)}, {sql_str(details)}, {sql_json(metadata)});"
         )
 
     OUT.write_text("\n".join(lines), encoding="utf-8")

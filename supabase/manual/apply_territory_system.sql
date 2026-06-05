@@ -86,7 +86,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS territory_active_one_per_profile
 
 CREATE TABLE IF NOT EXISTS public.territory_history (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type text NOT NULL CHECK (event_type IN ('designacao', 'devolucao', 'edicao', 'cronograma', 'status')),
+  event_type text NOT NULL CHECK (event_type IN ('designacao', 'devolucao', 'edicao', 'cronograma', 'status', 'trabalho')),
   territory_id uuid REFERENCES public.territories(id) ON DELETE SET NULL,
   profile_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
   event_date date NOT NULL DEFAULT CURRENT_DATE,

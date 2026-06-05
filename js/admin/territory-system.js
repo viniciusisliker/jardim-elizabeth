@@ -7,7 +7,8 @@
     devolucao: 'Devolução',
     edicao: 'Edição',
     cronograma: 'Cronograma',
-    status: 'Status'
+    status: 'Status',
+    trabalho: 'Trabalho de campo'
   };
 
   let client;
@@ -104,12 +105,13 @@
     const { data, error } = await client
       .from('territory_history')
       .select(`
-        id, event_type, event_date, details, created_at,
+        id, event_type, event_date, details, metadata, created_at,
         territories ( num, display_name ),
         profiles!profile_id ( full_name )
       `)
+      .order('event_date', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(80);
+      .limit(250);
     if (error) throw error;
     history = data || [];
   }
@@ -322,19 +324,44 @@
     );
   }
 
+  function historyWeekday(entry) {
+    return entry.metadata?.weekday || H.formatWeekday(String(entry.event_date).slice(0, 10));
+  }
+
+  function historyDirigente(entry) {
+    return profileName(entry.profiles) || entry.metadata?.dirigente_name || '—';
+  }
+
+  function historyTerritory(entry) {
+    if (entry.territories) return H.territoryLabel(entry.territories);
+    return entry.metadata?.territory_label || '—';
+  }
+
+  function historyObservations(entry) {
+    const obs = entry.metadata?.observations;
+    if (obs) return obs;
+    if (entry.metadata?.source === 'spreadsheet') return '—';
+    return entry.details || EVENT_LABELS[entry.event_type] || entry.event_type || '—';
+  }
+
   function renderHistorico() {
     const el = document.getElementById('historico-list');
     if (!history.length) {
       el.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhum registro ainda.</p>';
       return;
     }
-    el.innerHTML = history.map((h) => `
-      <div class="terr-table-row terr-table-row--4 text-sm py-3 border-b border-outline-variant/40">
-        <span class="text-xs text-on-surface-variant">${escapeHtml(H.formatDisplayDate(String(h.event_date).slice(0, 10)))}</span>
-        <span class="font-semibold text-primary">${escapeHtml(EVENT_LABELS[h.event_type] || h.event_type)}</span>
-        <span class="text-on-surface-variant">${escapeHtml(h.details || '—')}</span>
-        <span class="text-xs text-on-surface-variant">${escapeHtml(H.territoryLabel(h.territories))}</span>
-      </div>`).join('');
+    el.innerHTML = `
+      <div class="terr-table-row terr-table-row--hist text-[10px] font-bold uppercase text-on-surface-variant pb-1 border-b hidden md:grid">
+        <span>Data</span><span>Dia</span><span>Dirigente</span><span>Território</span><span>Observações</span>
+      </div>
+      ${history.map((h) => `
+      <div class="terr-table-row terr-table-row--hist text-sm py-3 border-b border-outline-variant/40">
+        <span class="text-xs text-on-surface-variant whitespace-nowrap">${escapeHtml(H.formatDisplayDate(String(h.event_date).slice(0, 10)))}</span>
+        <span class="text-on-surface-variant">${escapeHtml(historyWeekday(h))}</span>
+        <span class="font-semibold text-primary">${escapeHtml(historyDirigente(h))}</span>
+        <span class="text-on-surface-variant">${escapeHtml(historyTerritory(h))}</span>
+        <span class="text-xs text-on-surface-variant">${escapeHtml(historyObservations(h))}</span>
+      </div>`).join('')}`;
   }
 
   function renderDirigentes() {
