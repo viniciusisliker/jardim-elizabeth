@@ -360,28 +360,35 @@
 
   function renderCatalogo() {
     const grid = document.getElementById('catalogo-grid');
-    grid.innerHTML = territories.map((t) => {
-      const active = activeAssignments.find((a) => a.territory_id === t.id);
-      const assignee = active ? profileName(active.profiles) : '—';
-      const days = H.daysSince(t.last_worked_at);
-      return `
-        <div class="bg-white border border-outline-variant rounded-xl p-4">
-          <div class="flex items-start justify-between gap-2 mb-2">
-            <div>
-              <p class="text-[10px] font-bold text-secondary uppercase">T${escapeHtml(t.num)}</p>
-              <p class="font-bold text-primary text-sm">${escapeHtml(t.display_name)}</p>
-            </div>
-            ${priorityBadge(t)}
+    grid.innerHTML = `
+      <div class="terr-catalog-scroll">
+        <div class="terr-catalog-panel">
+          <div class="terr-catalog-row terr-catalog-row--head">
+            <span>T</span><span>Território</span><span>Status</span><span>Designado</span><span>Prioridade</span><span>Dias</span><span></span>
           </div>
-          <p class="text-[11px] text-on-surface-variant mb-1">Status: <strong>${escapeHtml(STATUS_LABELS[t.status] || t.status)}</strong></p>
-          <p class="text-[11px] text-on-surface-variant mb-1">Designado: ${escapeHtml(assignee)}</p>
-          <p class="text-[11px] text-on-surface-variant mb-3">${days !== null ? `${days} dias sem cobertura` : 'Sem registro de trabalho'}</p>
-          <button type="button" data-edit-terr="${t.id}" class="text-xs font-semibold text-secondary">Editar</button>
-        </div>`;
-    }).join('');
+          ${territories.map((t) => {
+            const active = activeAssignments.find((a) => a.territory_id === t.id);
+            const assignee = active ? profileName(active.profiles) : '—';
+            const days = H.daysSince(t.last_worked_at);
+            const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
+            return `
+          <div class="terr-catalog-row">
+            <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
+            <span class="terr-catalog-name" title="${escapeHtml(t.display_name)}">${escapeHtml(t.display_name)}</span>
+            <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
+            <span class="terr-catalog-cell${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</span>
+            <span class="terr-catalog-priority">${priorityBadge(t)}</span>
+            <span class="terr-catalog-cell" title="${days !== null ? `${days} dias sem cobertura` : 'Sem registro'}">${days !== null ? `${days}d` : '—'}</span>
+            <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+          </div>`;
+          }).join('')}
+        </div>
+      </div>`;
 
     grid.querySelectorAll('[data-edit-terr]').forEach((btn) =>
-      btn.addEventListener('click', () => openTerrForm(territories.find((t) => t.id === btn.dataset.editTerr)))
+      btn.addEventListener('click', () => openTerrFormModal(territories.find((t) => t.id === btn.dataset.editTerr)))
     );
   }
 
@@ -455,17 +462,67 @@
     );
   }
 
-  function openTerrForm(t) {
-    document.getElementById('terr-form').classList.remove('hidden');
-    document.getElementById('terr-id').value = t.id;
-    document.getElementById('terr-num').value = t.num;
-    document.getElementById('terr-name').value = t.display_name;
-    document.getElementById('terr-image').value = t.map_image_url || '';
-    document.getElementById('terr-type').value = t.territory_type || 'meio_de_semana';
-    document.getElementById('terr-occasion').value = t.best_occasion || '';
-    document.getElementById('terr-obs').value = t.observations || '';
-    document.getElementById('panel-catalogo').appendChild(document.getElementById('terr-form'));
-    document.getElementById('terr-form').scrollIntoView({ behavior: 'smooth' });
+  function openTerrFormModal(t) {
+    if (!t) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
+    wrap.innerHTML = `
+      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-md space-y-3 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div>
+          <h3 class="font-bold text-primary">Editar território</h3>
+          <p class="text-sm text-on-surface-variant mt-0.5">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name)}</p>
+        </div>
+        <label class="block text-xs font-semibold text-primary">Nome
+          <input name="display_name" required value="${escapeHtml(t.display_name)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">URL da imagem
+          <input name="map_image_url" value="${escapeHtml(t.map_image_url || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Tipo
+          <select name="territory_type" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+            <option value="meio_de_semana" ${t.territory_type !== 'final_de_semana' ? 'selected' : ''}>Meio de semana</option>
+            <option value="final_de_semana" ${t.territory_type === 'final_de_semana' ? 'selected' : ''}>Final de semana</option>
+          </select>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Melhor ocasião
+          <input name="best_occasion" value="${escapeHtml(t.best_occasion || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Manhã, Tarde…"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Observações
+          <textarea name="observations" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm">${escapeHtml(t.observations || '')}</textarea>
+        </label>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
+          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+        </div>
+      </form>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-cancel]').addEventListener('click', () => wrap.remove());
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
+    wrap.querySelector('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const { error } = await client.from('territories').update({
+        display_name: fd.get('display_name')?.trim(),
+        map_image_url: fd.get('map_image_url')?.trim() || null,
+        territory_type: fd.get('territory_type'),
+        best_occasion: fd.get('best_occasion')?.trim() || null,
+        observations: fd.get('observations')?.trim() || null
+      }).eq('id', t.id);
+      wrap.remove();
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, 'Território atualizado.');
+        await client.rpc('log_territory_history', {
+          p_event_type: 'edicao',
+          p_territory_id: t.id,
+          p_profile_id: null,
+          p_event_date: H.toISODate(new Date()),
+          p_details: 'Catálogo atualizado pelo servo de territórios',
+          p_metadata: {}
+        }).catch(() => {});
+        await refresh();
+      }
+    });
   }
 
   async function refresh() {
@@ -744,36 +801,6 @@
         await refresh();
       }
     });
-
-    document.getElementById('terr-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('terr-id').value;
-      const { error } = await client.from('territories').update({
-        display_name: document.getElementById('terr-name').value.trim(),
-        map_image_url: document.getElementById('terr-image').value.trim(),
-        territory_type: document.getElementById('terr-type').value,
-        best_occasion: document.getElementById('terr-occasion').value.trim() || null,
-        observations: document.getElementById('terr-obs').value.trim() || null
-      }).eq('id', id);
-      if (error) showToast(toast, error.message, true);
-      else {
-        showToast(toast, 'Território atualizado.');
-        document.getElementById('terr-form').classList.add('hidden');
-        await client.rpc('log_territory_history', {
-          p_event_type: 'edicao',
-          p_territory_id: id,
-          p_profile_id: null,
-          p_event_date: H.toISODate(new Date()),
-          p_details: 'Catálogo atualizado pelo servo de territórios',
-          p_metadata: {}
-        }).catch(() => {});
-        await refresh();
-      }
-    });
-
-    document.getElementById('btn-cancel-terr').addEventListener('click', () =>
-      document.getElementById('terr-form').classList.add('hidden')
-    );
 
     document.getElementById('semana-week').addEventListener('change', (e) => {
       currentWeek = H.snapToMonday(e.target.value);
