@@ -155,35 +155,100 @@
     });
   }
 
+  function goToTab(tab) {
+    const btn = document.querySelector(`[data-terr-tab="${tab}"]`);
+    if (btn) btn.click();
+  }
+
+  function bindDashLinks(root) {
+    (root || document).querySelectorAll('[data-go-tab]').forEach((el) =>
+      el.addEventListener('click', () => goToTab(el.dataset.goTab))
+    );
+  }
+
   function renderDashboard() {
+    const total = territories.length;
     const disponiveis = territories.filter((t) => t.status === 'disponivel').length;
     const designados = activeAssignments.length;
     const alta = territories.filter((t) => t.status === 'disponivel' && H.computePriority(t).tone === 'high').length;
+    const dirigentes = overseers.filter((o) => o.is_active !== false).length;
+    const emCampoPct = total ? Math.round((designados / total) * 100) : 0;
+
+    const availDays = territories
+      .filter((t) => t.status === 'disponivel')
+      .map((t) => H.daysSince(t.last_worked_at))
+      .filter((d) => d !== null);
+    const avgDays = availDays.length
+      ? Math.round(availDays.reduce((a, b) => a + b, 0) / availDays.length)
+      : null;
+
+    document.getElementById('dash-hero').innerHTML = `
+      <div class="flex-1 min-w-[10rem]">
+        <h2>Visão geral</h2>
+        <p>${designados} de ${total} territórios em campo${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}</p>
+      </div>
+      <div class="terr-dash-progress" aria-hidden="true">
+        <div class="terr-dash-progress__bar"><div class="terr-dash-progress__fill" style="width:${emCampoPct}%"></div></div>
+        <p class="terr-dash-progress__label">${emCampoPct}% designados</p>
+      </div>
+      <div class="terr-dash-hero-actions">
+        <button type="button" class="terr-dash-chip" data-go-tab="designar"><span class="material-symbols-outlined" aria-hidden="true">add</span>Designar</button>
+        <button type="button" class="terr-dash-chip" data-go-tab="semana"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>Cronograma</button>
+        <button type="button" class="terr-dash-chip" data-go-tab="historico"><span class="material-symbols-outlined" aria-hidden="true">history</span>Histórico</button>
+      </div>`;
+    bindDashLinks(document.getElementById('dash-hero'));
 
     document.getElementById('dash-stats').innerHTML = `
-      <div class="terr-stat"><p class="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Disponíveis</p><p class="terr-stat-val">${disponiveis}</p></div>
-      <div class="terr-stat"><p class="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Designados</p><p class="terr-stat-val">${designados}</p></div>
-      <div class="terr-stat"><p class="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Prioridade alta</p><p class="terr-stat-val">${alta}</p></div>
-      <div class="terr-stat"><p class="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Dirigentes</p><p class="terr-stat-val">${overseers.filter((o) => o.is_active !== false).length}</p></div>`;
+      <div class="terr-dash-stat terr-dash-stat--avail">
+        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+        <div><p class="terr-dash-stat__label">Disponíveis</p><p class="terr-dash-stat__val">${disponiveis}</p></div>
+      </div>
+      <div class="terr-dash-stat terr-dash-stat--work">
+        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_turned_in</span></span>
+        <div><p class="terr-dash-stat__label">Designados</p><p class="terr-dash-stat__val">${designados}</p></div>
+      </div>
+      <div class="terr-dash-stat terr-dash-stat--high">
+        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">warning</span></span>
+        <div><p class="terr-dash-stat__label">Prioridade alta</p><p class="terr-dash-stat__val">${alta}</p></div>
+      </div>
+      <div class="terr-dash-stat terr-dash-stat--people">
+        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+        <div><p class="terr-dash-stat__label">Dirigentes</p><p class="terr-dash-stat__val">${dirigentes}</p></div>
+      </div>`;
 
     const activeEl = document.getElementById('dash-active-list');
     if (!activeAssignments.length) {
-      activeEl.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhum território designado no momento.</p>';
+      activeEl.innerHTML = '<p class="terr-dash-empty">Nenhum território designado no momento.</p>';
     } else {
-      activeEl.innerHTML = activeAssignments.slice(0, 8).map((a) => `
-        <div class="flex justify-between gap-2 py-2 border-b border-outline-variant/40 last:border-0 text-sm">
-          <span class="font-semibold text-primary">${escapeHtml(profileName(a.profiles))}</span>
-          <span class="text-on-surface-variant">${escapeHtml(H.territoryLabel(a.territories))}</span>
+      activeEl.innerHTML = activeAssignments.map((a) => `
+        <div class="terr-dash-row">
+          <span class="terr-dash-person" title="${escapeHtml(profileName(a.profiles))}">
+            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+            ${escapeHtml(profileName(a.profiles))}
+          </span>
+          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(a.territories))}">
+            <span class="terr-dash-terr-num">T${escapeHtml(a.territories?.num || '?')}</span>${escapeHtml(a.territories?.display_name || '—')}
+          </span>
         </div>`).join('');
     }
 
     const priEl = document.getElementById('dash-priority-list');
-    const top = H.sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 6);
-    priEl.innerHTML = top.length ? top.map((t) => `
-      <div class="flex items-center justify-between gap-2 py-2 border-b border-outline-variant/40 last:border-0 text-sm">
-        <span class="text-primary font-medium">${escapeHtml(H.territoryLabel(t))}</span>
-        ${priorityBadge(t)}
-      </div>`).join('') : '<p class="text-sm text-on-surface-variant">Nenhum disponível.</p>';
+    const top = H.sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
+    priEl.innerHTML = top.length ? top.map((t) => {
+      const days = H.daysSince(t.last_worked_at);
+      return `
+        <div class="terr-dash-row">
+          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(t))}">
+            <span class="terr-dash-terr-num">T${escapeHtml(t.num)}</span>${escapeHtml(t.display_name)}
+          </span>
+          <span class="flex items-center gap-2 shrink-0">
+            ${days !== null ? `<span class="text-[10px] text-on-surface-variant">${days}d</span>` : ''}
+            ${priorityBadge(t)}
+          </span>
+        </div>`;
+    }).join('') : '<p class="terr-dash-empty">Nenhum disponível.</p>';
+
+    bindDashLinks(document.getElementById('panel-painel'));
   }
 
   function fillDesignarSelects() {
