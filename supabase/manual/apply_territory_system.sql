@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS public.territory_overseers (
     CHECK (preference IN ('meio_de_semana', 'final_de_semana', 'ambos')),
   is_active boolean NOT NULL DEFAULT true,
   notes text,
+  available_days text[] NOT NULL DEFAULT '{}',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

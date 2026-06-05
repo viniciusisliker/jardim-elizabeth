@@ -65,7 +65,7 @@
   async function loadOverseers() {
     const { data, error } = await client
       .from('territory_overseers')
-      .select('profile_id, preference, is_active, notes, profiles(full_name, username)');
+      .select('profile_id, preference, available_days, is_active, notes, profiles(full_name, username)');
     if (error) throw error;
     overseers = (data || []).sort((a, b) => profileName(a.profiles).localeCompare(profileName(b.profiles)));
   }
@@ -343,13 +343,25 @@
       el.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhum dirigente cadastrado. Adicione acima.</p>';
       return;
     }
-    el.innerHTML = overseers.map((o) => `
-      <div class="terr-table-row terr-table-row--4 text-sm py-3 border-b border-outline-variant/40">
+    el.innerHTML = `
+      <div class="terr-table-row terr-table-row--5 text-[10px] font-bold uppercase text-on-surface-variant pb-1 border-b hidden sm:grid">
+        <span>Dirigente</span><span>Dias</span><span>Status</span><span class="col-span-2"></span>
+      </div>
+      ${overseers.map((o) => `
+      <div class="terr-table-row terr-table-row--5 text-sm py-3 border-b border-outline-variant/40">
         <span class="font-semibold text-primary">${escapeHtml(profileName(o.profiles))}</span>
-        <span>${escapeHtml(H.PREFERENCE_LABELS[o.preference] || o.preference)}</span>
+        <span class="text-on-surface-variant" title="${escapeHtml(H.overseerDays(o).join(', '))}">${escapeHtml(H.formatOverseerDays(o))}</span>
         <span class="text-xs ${o.is_active !== false ? 'text-green-700' : 'text-on-surface-variant'}">${o.is_active !== false ? 'Ativo' : 'Inativo'}</span>
-        <button type="button" data-del-overseer="${o.profile_id}" class="text-xs font-semibold text-error justify-self-start">Remover</button>
-      </div>`).join('');
+        <div class="flex flex-wrap gap-3 justify-self-start sm:col-span-2">
+          <button type="button" data-edit-overseer="${o.profile_id}" class="text-xs font-semibold text-secondary">Editar</button>
+          <button type="button" data-del-overseer="${o.profile_id}" class="text-xs font-semibold text-error">Remover</button>
+        </div>
+      </div>`).join('')}`;
+    el.querySelectorAll('[data-edit-overseer]').forEach((btn) =>
+      btn.addEventListener('click', () =>
+        openOverseerEditModal(overseers.find((o) => o.profile_id === btn.dataset.editOverseer))
+      )
+    );
     el.querySelectorAll('[data-del-overseer]').forEach((btn) =>
       btn.addEventListener('click', () => removeOverseer(btn.dataset.delOverseer))
     );
@@ -407,6 +419,53 @@
     const { error } = await client.from('territory_overseers').delete().eq('profile_id', profileId);
     if (error) showToast(toast, error.message, true);
     else { showToast(toast, 'Dirigente removido.'); await refresh(); }
+  }
+
+  function openOverseerEditModal(overseer) {
+    if (!overseer) return;
+    const selected = new Set(H.overseerDays(overseer));
+    const wrap = document.createElement('div');
+    wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
+    wrap.innerHTML = `
+      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-md space-y-4 shadow-xl">
+        <div>
+          <h3 class="font-bold text-primary">Dias disponíveis</h3>
+          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(profileName(overseer.profiles))}</p>
+        </div>
+        <fieldset class="grid grid-cols-2 gap-2 border-0 p-0 m-0">
+          <legend class="sr-only">Dias da semana</legend>
+          ${H.CRONOGRAMA_DAYS.map((day) => `
+            <label class="flex items-center gap-2 text-sm cursor-pointer rounded-lg border border-outline-variant/60 px-3 py-2 hover:bg-surface-container-low">
+              <input type="checkbox" name="day" value="${escapeHtml(day)}" ${selected.has(day) ? 'checked' : ''} class="rounded border-outline-variant"/>
+              <span>${escapeHtml(day)}</span>
+            </label>`).join('')}
+        </fieldset>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
+          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+        </div>
+      </form>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-cancel]').addEventListener('click', () => wrap.remove());
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
+    wrap.querySelector('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const days = [...e.target.querySelectorAll('input[name="day"]:checked')].map((el) => el.value);
+      if (!days.length) {
+        showToast(toast, 'Selecione pelo menos um dia.', true);
+        return;
+      }
+      const { error } = await client.from('territory_overseers').update({
+        available_days: days,
+        preference: H.preferenceFromDays(days)
+      }).eq('profile_id', overseer.profile_id);
+      wrap.remove();
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, 'Dias atualizados.');
+        await refresh();
+      }
+    });
   }
 
   function openScheduleFormModal() {
@@ -552,9 +611,11 @@
 
     document.getElementById('form-overseer').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const preference = document.getElementById('overseer-pref').value;
       const { error } = await client.from('territory_overseers').upsert({
         profile_id: document.getElementById('overseer-profile').value,
-        preference: document.getElementById('overseer-pref').value,
+        preference,
+        available_days: H.daysFromPreference(preference),
         is_active: true
       });
       if (error) showToast(toast, error.message, true);

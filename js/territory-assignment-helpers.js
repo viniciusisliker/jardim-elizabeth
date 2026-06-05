@@ -14,7 +14,35 @@
     final_de_semana: 'Final de semana',
     ambos: 'Ambos'
   };
+  const MIDWEEK_DAYS = ['Terça', 'Quarta', 'Quinta', 'Sexta'];
+  const WEEKEND_DAYS = ['Sábado', 'Domingo'];
   const SITE_TERRITORIES_URL = 'https://jardimelizabeth.vercel.app/territorios.html';
+
+  function daysFromPreference(preference) {
+    if (preference === 'final_de_semana') return [...WEEKEND_DAYS];
+    if (preference === 'ambos') return [...CRONOGRAMA_DAYS];
+    return [...MIDWEEK_DAYS];
+  }
+
+  function preferenceFromDays(days) {
+    const set = new Set(days || []);
+    const hasMid = MIDWEEK_DAYS.some((d) => set.has(d));
+    const hasWeekend = WEEKEND_DAYS.some((d) => set.has(d));
+    if (hasMid && hasWeekend) return 'ambos';
+    if (hasWeekend) return 'final_de_semana';
+    return 'meio_de_semana';
+  }
+
+  function overseerDays(overseer) {
+    if (overseer?.available_days?.length) return overseer.available_days;
+    return daysFromPreference(overseer?.preference);
+  }
+
+  function formatOverseerDays(overseer) {
+    const days = overseerDays(overseer);
+    if (days.length >= CRONOGRAMA_DAYS.length) return 'Todos os dias';
+    return days.map((d) => d.slice(0, 3)).join(', ');
+  }
 
   function pad(n) {
     return String(n).padStart(2, '0');
@@ -171,7 +199,13 @@
     CRONOGRAMA_DAYS,
     MONTHS_PT,
     PREFERENCE_LABELS,
+    MIDWEEK_DAYS,
+    WEEKEND_DAYS,
     SITE_TERRITORIES_URL,
+    daysFromPreference,
+    preferenceFromDays,
+    overseerDays,
+    formatOverseerDays,
     toISODate,
     parseISODate,
     getMonday,
