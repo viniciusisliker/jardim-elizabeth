@@ -4,6 +4,8 @@
   "description": "Site da congregação Jardim Elizabeth",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "db:push": "supabase db push",
+    "db:apply-territories": "powershell -ExecutionPolicy Bypass -File scripts/apply-supabase-migrations.ps1"
   }
 }

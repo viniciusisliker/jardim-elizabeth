@@ -146,6 +146,14 @@ BEGIN
 
   SELECT id INTO v_existing
   FROM public.territory_active_assignments
+  WHERE territory_id = p_territory_id AND status = 'active'
+  LIMIT 1;
+  IF FOUND THEN
+    RAISE EXCEPTION 'Este território já possui designação ativa';
+  END IF;
+
+  SELECT id INTO v_existing
+  FROM public.territory_active_assignments
   WHERE profile_id = p_profile_id AND status = 'active'
   LIMIT 1;
   IF FOUND THEN

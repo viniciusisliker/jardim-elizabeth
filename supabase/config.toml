@@ -1,0 +1,5 @@
+# Supabase local config — project ref do site Jardim Elizabeth
+project_id = "prhijmkvsgqusivmnqzx"
+
+[db]
+major_version = 15
