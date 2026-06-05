@@ -76,7 +76,7 @@
       .select(`
         id, assigned_at, territory_id, profile_id,
         territories ( num, display_name, map_image_url ),
-        profiles ( full_name, username )
+        profiles!profile_id ( full_name, username )
       `)
       .eq('status', 'active')
       .order('assigned_at', { ascending: false });
@@ -106,7 +106,7 @@
       .select(`
         id, event_type, event_date, details, created_at,
         territories ( num, display_name ),
-        profiles ( full_name )
+        profiles!profile_id ( full_name )
       `)
       .order('created_at', { ascending: false })
       .limit(80);
