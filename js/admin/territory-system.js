@@ -145,15 +145,31 @@
     return errors;
   }
 
+  function updateNavIndicator(activeBtn) {
+    const nav = document.getElementById('terr-nav');
+    const indicator = document.getElementById('terr-nav-indicator');
+    if (!nav || !indicator || !activeBtn) return;
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    indicator.style.width = `${btnRect.width}px`;
+    indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
+  }
+
   function setupTabs() {
     document.querySelectorAll('[data-terr-tab]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.terrTab;
         document.querySelectorAll('[data-terr-tab]').forEach((b) => b.classList.toggle('active', b.dataset.terrTab === tab));
         document.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `panel-${tab}`));
+        updateNavIndicator(btn);
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         if (tab === 'semana') renderSemana();
       });
     });
+    const active = document.querySelector('[data-terr-tab].active');
+    updateNavIndicator(active);
+    requestAnimationFrame(() => updateNavIndicator(active));
+    window.addEventListener('resize', () => updateNavIndicator(document.querySelector('[data-terr-tab].active')));
   }
 
   function goToTab(tab) {

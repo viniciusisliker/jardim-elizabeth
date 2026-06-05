@@ -9,8 +9,29 @@
   <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a','accent-gold':'#c8a96e'}}}}</script>
   <style>
     .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
-    .terr-tab{border-bottom:2px solid transparent;padding:.5rem .75rem;font-size:.75rem;font-weight:700;color:#43474f;white-space:nowrap}
-    .terr-tab.active{border-color:#0f3462;color:#0f3462}
+    .terr-nav-stage{position:relative;display:flex;justify-content:center;margin-bottom:1.75rem;padding:.25rem 0}
+    .terr-nav-glow{position:absolute;inset:0 10% 40%;background:radial-gradient(ellipse at center,rgba(200,169,110,.22) 0%,rgba(15,52,98,.08) 45%,transparent 72%);pointer-events:none;filter:blur(8px)}
+    .terr-nav-scroll{width:100%;display:flex;justify-content:center;overflow-x:auto;padding:.125rem .25rem;scrollbar-width:none;-ms-overflow-style:none}
+    .terr-nav-scroll::-webkit-scrollbar{display:none}
+    .terr-nav{position:relative;display:inline-flex;align-items:center;gap:.1875rem;padding:.3125rem;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(15,52,98,.1);border-radius:9999px;box-shadow:0 1px 2px rgba(15,52,98,.06),0 8px 32px rgba(15,52,98,.1),inset 0 1px 0 rgba(255,255,255,.9)}
+    .terr-nav-indicator{position:absolute;top:.3125rem;bottom:.3125rem;left:0;border-radius:9999px;background:linear-gradient(135deg,#0f3462 0%,#1a5080 55%,#0f3462 100%);box-shadow:0 2px 10px rgba(15,52,98,.35),inset 0 1px 0 rgba(255,255,255,.12);transition:transform .38s cubic-bezier(.34,1.35,.64,1),width .32s cubic-bezier(.4,0,.2,1);z-index:0;pointer-events:none}
+    .terr-nav-indicator::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.14) 0%,transparent 48%);pointer-events:none}
+    .terr-tab{position:relative;z-index:1;display:inline-flex;align-items:center;gap:.3125rem;padding:.4375rem .75rem;border:none;background:transparent;border-radius:9999px;font-size:.6875rem;font-weight:800;color:#5c6470;cursor:pointer;transition:color .22s ease,transform .22s ease;white-space:nowrap;letter-spacing:.01em}
+    .terr-tab .material-symbols-outlined{font-size:1.0625rem;transition:transform .28s cubic-bezier(.34,1.35,.64,1),color .22s ease}
+    .terr-tab-label{line-height:1}
+    .terr-tab.active{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.12)}
+    .terr-tab.active .material-symbols-outlined{transform:scale(1.08);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+    .terr-tab:not(.active):hover{color:#0f3462;background:rgba(15,52,98,.05)}
+    .terr-tab:not(.active):hover .material-symbols-outlined{transform:translateY(-1px)}
+    .terr-tab:focus-visible{outline:2px solid #c8a96e;outline-offset:2px}
+    @media(max-width:720px){
+      .terr-tab{padding:.4375rem .5625rem;font-size:.625rem}
+      .terr-tab-label{display:none}
+      .terr-tab .material-symbols-outlined{font-size:1.125rem}
+    }
+    @media(min-width:721px) and (max-width:960px){
+      .terr-tab{padding:.4375rem .625rem}
+    }
     .terr-stat{background:#fff;border:1px solid #e2e6ef;border-radius:.875rem;padding:1rem}
     .terr-stat-val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.5rem;font-weight:800;color:#0f3462;line-height:1}
     .terr-priority{display:inline-flex;padding:.125rem .5rem;border-radius:9999px;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
@@ -177,15 +198,42 @@
     </div>
     <p id="admin-toast" class="hidden text-sm mb-3"></p>
 
-    <nav class="flex gap-1 overflow-x-auto border-b border-outline-variant mb-6 pb-px" aria-label="Abas de territórios">
-      <button type="button" class="terr-tab active" data-terr-tab="painel">Painel</button>
-      <button type="button" class="terr-tab" data-terr-tab="designar">Designar</button>
-      <button type="button" class="terr-tab" data-terr-tab="devolver">Devolver</button>
-      <button type="button" class="terr-tab" data-terr-tab="semana">Cronograma</button>
-      <button type="button" class="terr-tab" data-terr-tab="catalogo">Catálogo</button>
-      <button type="button" class="terr-tab" data-terr-tab="historico">Histórico</button>
-      <button type="button" class="terr-tab" data-terr-tab="dirigentes">Dirigentes</button>
-    </nav>
+    <div class="terr-nav-stage">
+      <div class="terr-nav-glow" aria-hidden="true"></div>
+      <div class="terr-nav-scroll">
+        <nav id="terr-nav" class="terr-nav" aria-label="Abas de territórios">
+          <span id="terr-nav-indicator" class="terr-nav-indicator" aria-hidden="true"></span>
+          <button type="button" class="terr-tab active" data-terr-tab="painel" title="Painel">
+            <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+            <span class="terr-tab-label">Painel</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="designar" title="Designar">
+            <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+            <span class="terr-tab-label">Designar</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="devolver" title="Devolver">
+            <span class="material-symbols-outlined" aria-hidden="true">assignment_return</span>
+            <span class="terr-tab-label">Devolver</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="semana" title="Cronograma">
+            <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+            <span class="terr-tab-label">Cronograma</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="catalogo" title="Catálogo">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>
+            <span class="terr-tab-label">Catálogo</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="historico" title="Histórico">
+            <span class="material-symbols-outlined" aria-hidden="true">history</span>
+            <span class="terr-tab-label">Histórico</span>
+          </button>
+          <button type="button" class="terr-tab" data-terr-tab="dirigentes" title="Dirigentes">
+            <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+            <span class="terr-tab-label">Dirigentes</span>
+          </button>
+        </nav>
+      </div>
+    </div>
 
     <!-- PAINEL -->
     <section id="panel-painel" class="terr-panel active space-y-3">
@@ -317,6 +365,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060519"></script>
-    <script src="../js/admin/territory-system.js?v=2026060524"></script>
+    <script src="../js/admin/territory-system.js?v=2026060525"></script>
 </body>
 </html>
