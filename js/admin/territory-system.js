@@ -51,17 +51,23 @@
 
   async function loadProfiles() {
     const { data, error } = await client.from('profiles').select('id, full_name, username, role').order('full_name');
-    if (error) throw error;
+    if (error) {
+      const { data: overseerProfiles } = await client
+        .from('territory_overseers')
+        .select('profile_id, profiles(id, full_name, username, role)');
+      profiles = (overseerProfiles || []).map((o) => o.profiles).filter(Boolean);
+      if (!profiles.length) throw error;
+      return;
+    }
     profiles = data || [];
   }
 
   async function loadOverseers() {
     const { data, error } = await client
       .from('territory_overseers')
-      .select('profile_id, preference, is_active, notes, profiles(full_name, username)')
-      .order('profile_id');
+      .select('profile_id, preference, is_active, notes, profiles(full_name, username)');
     if (error) throw error;
-    overseers = data || [];
+    overseers = (data || []).sort((a, b) => profileName(a.profiles).localeCompare(profileName(b.profiles)));
   }
 
   async function loadActiveAssignments() {
@@ -118,7 +124,7 @@
   }
 
   async function reloadAll() {
-    await Promise.all([
+    const results = await Promise.allSettled([
       loadTerritories(),
       loadProfiles(),
       loadOverseers(),
@@ -127,6 +133,14 @@
       loadHistory(),
       loadMeetingSpots()
     ]);
+    const labels = ['territories', 'profiles', 'overseers', 'active', 'schedule', 'history', 'spots'];
+    const errors = results
+      .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
+      .filter(Boolean);
+    if (errors.length && toast) {
+      showToast(toast, `Alguns dados não carregaram: ${errors[0]}`, true);
+    }
+    return errors;
   }
 
   function setupTabs() {
@@ -355,14 +369,23 @@
   }
 
   async function refresh() {
-    await reloadAll();
-    renderDashboard();
-    fillDesignarSelects();
-    renderDevolver();
-    renderSemana();
-    renderCatalogo();
-    renderHistorico();
-    renderDirigentes();
+    try {
+      await reloadAll();
+      renderDashboard();
+      fillDesignarSelects();
+      renderDevolver();
+      renderSemana();
+      renderCatalogo();
+      renderHistorico();
+      renderDirigentes();
+    } catch (err) {
+      console.error('Territory refresh:', err);
+      if (toast) showToast(toast, err.message || 'Erro ao carregar territórios.', true);
+      document.getElementById('dash-active-list').innerHTML =
+        `<p class="text-sm text-error">${escapeHtml(err.message || 'Erro ao carregar.')}</p>`;
+      document.getElementById('dash-priority-list').innerHTML =
+        `<p class="text-sm text-error">Verifique a conexão ou permissões no Supabase.</p>`;
+    }
   }
 
   async function deleteScheduleRow(id) {

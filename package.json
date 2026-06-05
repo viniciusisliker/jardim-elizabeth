@@ -6,6 +6,7 @@
     "dev": "node scripts/dev-server.js",
     "start": "npm run dev",
     "db:push": "supabase db push",
-    "db:apply-territories": "powershell -ExecutionPolicy Bypass -File scripts/apply-supabase-migrations.ps1"
+    "db:apply-territories": "powershell -ExecutionPolicy Bypass -File scripts/apply-supabase-migrations.ps1",
+    "db:import-spreadsheet": "python scripts/import-territory-spreadsheet.py && supabase db query --linked -f supabase/manual/seed_from_spreadsheet.sql"
   }
 }
