@@ -21,6 +21,7 @@
   let history = [];
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
+  let histFilter = { q: '', type: 'all' };
 
   function priorityBadge(t) {
     const p = H.computePriority(t);
@@ -473,28 +474,183 @@
   function historyObservations(entry) {
     const obs = entry.metadata?.observations;
     if (obs) return obs;
-    if (entry.metadata?.source === 'spreadsheet') return '—';
-    return entry.details || EVENT_LABELS[entry.event_type] || entry.event_type || '—';
+    if (entry.metadata?.source === 'spreadsheet') return '';
+    return entry.details || EVENT_LABELS[entry.event_type] || entry.event_type || '';
+  }
+
+  function historyTerritoryNum(entry) {
+    return entry.territories?.num || entry.metadata?.territory_num || null;
+  }
+
+  function historyIsWeekend(entry) {
+    const day = historyWeekday(entry);
+    return day === 'Sábado' || day === 'Domingo';
+  }
+
+  function historyTypeClass(entry) {
+    const t = entry.event_type || 'default';
+    return EVENT_LABELS[t] ? t : 'default';
+  }
+
+  function historyTypeBadge(entry) {
+    if (entry.event_type === 'trabalho' && entry.metadata?.source === 'spreadsheet') return '';
+    const label = EVENT_LABELS[entry.event_type] || entry.event_type || 'Evento';
+    return `<span class="terr-hist-type terr-hist-type--${historyTypeClass(entry)}">${escapeHtml(label)}</span>`;
+  }
+
+  function getFilteredHistory() {
+    const q = histFilter.q.trim().toLowerCase();
+    return history.filter((h) => {
+      if (histFilter.type === 'trabalho' && h.event_type !== 'trabalho') return false;
+      if (histFilter.type === 'sistema' && h.event_type === 'trabalho') return false;
+      if (!q) return true;
+      const hay = [
+        String(h.event_date).slice(0, 10),
+        historyWeekday(h),
+        historyDirigente(h),
+        historyTerritory(h),
+        historyObservations(h),
+        EVENT_LABELS[h.event_type]
+      ].join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function bindHistoricoFilters() {
+    const grid = document.getElementById('historico-grid');
+    if (!grid) return;
+    const search = grid.querySelector('#hist-search');
+    if (search && search.value !== histFilter.q) search.value = histFilter.q;
+    search?.addEventListener('input', (e) => {
+      histFilter.q = e.target.value;
+      renderHistoricoTable();
+    });
+    grid.querySelectorAll('[data-hist-filter]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        histFilter.type = btn.dataset.histFilter;
+        grid.querySelectorAll('[data-hist-filter]').forEach((b) =>
+          b.classList.toggle('terr-hist-filter--active', b.dataset.histFilter === histFilter.type)
+        );
+        renderHistoricoTable();
+      });
+    });
+  }
+
+  function renderHistoricoTable() {
+    const listEl = document.getElementById('historico-table-body');
+    const footEl = document.getElementById('historico-foot');
+    if (!listEl) return;
+
+    const filtered = getFilteredHistory();
+    const trabalhoCount = history.filter((h) => h.event_type === 'trabalho').length;
+    const sistemaCount = history.length - trabalhoCount;
+
+    const countAll = document.getElementById('hist-count-all');
+    const countWork = document.getElementById('hist-count-work');
+    const countSys = document.getElementById('hist-count-sys');
+    if (countAll) countAll.textContent = String(history.length);
+    if (countWork) countWork.textContent = String(trabalhoCount);
+    if (countSys) countSys.textContent = String(sistemaCount);
+
+    if (!filtered.length) {
+      listEl.innerHTML = `
+        <div class="terr-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${history.length ? 'Nenhum registro corresponde ao filtro.' : 'Nenhum registro ainda.'}</p>
+        </div>`;
+      if (footEl) footEl.textContent = '';
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((h) => {
+      const obs = historyObservations(h);
+      const terrNum = historyTerritoryNum(h);
+      const terrText = h.territories
+        ? (h.territories.display_name || '—')
+        : (entryTerrName(h) || historyTerritory(h));
+      return `
+      <div class="terr-hist-row terr-hist-row--${historyIsWeekend(h) ? 'weekend' : 'weekday'}">
+        <span class="terr-hist-date">${escapeHtml(H.formatDisplayDate(String(h.event_date).slice(0, 10)))}</span>
+        <span class="terr-hist-day">${escapeHtml(historyWeekday(h))}</span>
+        <span class="terr-hist-cell terr-hist-cell--dirigente${historyDirigente(h) === '—' ? ' terr-hist-cell--muted' : ''}" title="${escapeHtml(historyDirigente(h))}">${escapeHtml(historyDirigente(h))}</span>
+        <span class="terr-hist-cell" title="${escapeHtml(historyTerritory(h))}">
+          ${terrNum ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}${escapeHtml(terrText)}
+        </span>
+        <span class="terr-hist-obs${obs ? '' : ' terr-hist-obs--empty'}" title="${escapeHtml(obs || 'Sem observações')}">${historyTypeBadge(h)}${escapeHtml(obs || '—')}</span>
+      </div>`;
+    }).join('');
+
+    if (footEl) {
+      const suffix = filtered.length < history.length ? ` (${history.length} no total)` : '';
+      footEl.textContent = `Exibindo ${filtered.length} registro${filtered.length === 1 ? '' : 's'}${suffix}`;
+    }
+  }
+
+  function entryTerrName(entry) {
+    const label = entry.metadata?.territory_label || '';
+    return label.replace(/^T?\d+\s*[-–—]?\s*/i, '').trim() || label;
   }
 
   function renderHistorico() {
-    const el = document.getElementById('historico-list');
+    const grid = document.getElementById('historico-grid');
     if (!history.length) {
-      el.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhum registro ainda.</p>';
+      grid.innerHTML = `
+        <div class="terr-hist-toolbar">
+          <div>
+            <h2>Histórico de trabalho de campo</h2>
+            <p>Registros importados da planilha e eventos do sistema</p>
+          </div>
+        </div>
+        <div class="terr-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">history</span>
+          <p class="text-sm font-semibold text-primary">Nenhum registro ainda</p>
+          <p class="text-xs mt-1">Designações, devoluções e trabalhos aparecerão aqui.</p>
+        </div>`;
       return;
     }
-    el.innerHTML = `
-      <div class="terr-table-row terr-table-row--hist text-[10px] font-bold uppercase text-on-surface-variant pb-1 border-b hidden md:grid">
-        <span>Data</span><span>Dia</span><span>Dirigente</span><span>Território</span><span>Observações</span>
+
+    grid.innerHTML = `
+      <div class="terr-hist-toolbar">
+        <div>
+          <h2>Histórico de trabalho de campo</h2>
+          <p>Planilha + eventos do sistema · últimos ${history.length} registros</p>
+        </div>
+        <div class="terr-hist-toolbar-search">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input id="hist-search" type="search" class="terr-hist-input" placeholder="Buscar dirigente, território…" autocomplete="off"/>
+        </div>
+        <div class="terr-hist-filters">
+          <button type="button" class="terr-hist-filter${histFilter.type === 'all' ? ' terr-hist-filter--active' : ''}" data-hist-filter="all">Todos</button>
+          <button type="button" class="terr-hist-filter${histFilter.type === 'trabalho' ? ' terr-hist-filter--active' : ''}" data-hist-filter="trabalho">Campo</button>
+          <button type="button" class="terr-hist-filter${histFilter.type === 'sistema' ? ' terr-hist-filter--active' : ''}" data-hist-filter="sistema">Sistema</button>
+        </div>
       </div>
-      ${history.map((h) => `
-      <div class="terr-table-row terr-table-row--hist text-sm py-3 border-b border-outline-variant/40">
-        <span class="text-xs text-on-surface-variant whitespace-nowrap">${escapeHtml(H.formatDisplayDate(String(h.event_date).slice(0, 10)))}</span>
-        <span class="text-on-surface-variant">${escapeHtml(historyWeekday(h))}</span>
-        <span class="font-semibold text-primary">${escapeHtml(historyDirigente(h))}</span>
-        <span class="text-on-surface-variant">${escapeHtml(historyTerritory(h))}</span>
-        <span class="text-xs text-on-surface-variant">${escapeHtml(historyObservations(h))}</span>
-      </div>`).join('')}`;
+      <div class="terr-hist-stats">
+        <div class="terr-hist-stat terr-hist-stat--all">
+          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span></span>
+          <div><p class="terr-hist-stat__label">Total</p><p class="terr-hist-stat__val" id="hist-count-all">${history.length}</p></div>
+        </div>
+        <div class="terr-hist-stat terr-hist-stat--work">
+          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">hiking</span></span>
+          <div><p class="terr-hist-stat__label">Trabalho de campo</p><p class="terr-hist-stat__val" id="hist-count-work">0</p></div>
+        </div>
+        <div class="terr-hist-stat terr-hist-stat--sys">
+          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
+          <div><p class="terr-hist-stat__label">Eventos sistema</p><p class="terr-hist-stat__val" id="hist-count-sys">0</p></div>
+        </div>
+      </div>
+      <div class="terr-hist-scroll">
+        <div class="terr-hist-panel">
+          <div class="terr-hist-row terr-hist-row--head">
+            <span>Data</span><span>Dia</span><span>Dirigente</span><span>Território</span><span>Observações</span>
+          </div>
+          <div id="historico-table-body"></div>
+          <p id="historico-foot" class="terr-hist-foot"></p>
+        </div>
+      </div>`;
+
+    bindHistoricoFilters();
+    renderHistoricoTable();
   }
 
   function renderDirigentes() {
