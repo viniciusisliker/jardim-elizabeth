@@ -282,66 +282,50 @@
     return scheduleDayTone(label) === 'weekend' ? 'weekend' : 'today';
   }
 
-  function scheduleField(label, value, muted) {
-    const cls = muted ? 'text-muted' : '';
-    return `
-      <div class="terr-sched-field">
-        <label>${escapeHtml(label)}</label>
-        <p class="${cls}">${escapeHtml(value || '—')}</p>
-      </div>`;
-  }
-
   function renderSemana() {
     document.getElementById('semana-week').value = currentWeek;
     const el = document.getElementById('semana-list');
     if (!weekTemplate.length) {
       el.innerHTML = `
-        <div class="terr-empty bg-white border border-outline-variant rounded-xl">
+        <div class="terr-empty">
           <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
-          <p class="text-sm font-semibold text-primary mb-1">Nenhuma linha no cronograma</p>
-          <p class="text-xs">Importe da planilha ou clique em <strong>Nova linha</strong>.</p>
+          <p class="text-sm font-semibold text-primary">Nenhuma linha no cronograma</p>
         </div>`;
     } else {
       el.innerHTML = `
-        <div class="terr-sched-grid">
-          ${weekTemplate.map((r) => {
-            const tone = scheduleDayTone(r.weekday_label);
-            const sugg = scheduleSuggestion(r);
-            const hasSugg = r.suggestion || r.suggestion_note;
-            const hasObs = Boolean(r.observations?.trim());
-            return `
-            <article class="terr-sched-card">
-              <header class="terr-sched-card__head">
-                <span class="terr-sched-day terr-sched-day--${tone}">
-                  <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
-                  ${escapeHtml(r.weekday_label)}
-                </span>
-                ${r.schedule_times ? `<span class="terr-sched-time"><span class="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>${escapeHtml(r.schedule_times)}</span>` : ''}
-              </header>
-              <div class="terr-sched-card__body">
-                ${scheduleField('Dirigente', scheduleDirigente(r), scheduleDirigente(r) === '—')}
-                ${scheduleField('Território', scheduleTerritory(r), scheduleTerritory(r) === '—')}
-                ${scheduleField('Local', r.location_name, !r.location_name)}
-                ${hasObs ? scheduleField('Observações', r.observations) : ''}
-                ${hasSugg ? `
-                <div class="terr-sched-field terr-sched-field--full">
-                  <label>Sugestão</label>
-                  <div class="terr-sched-suggestion">
-                    <span class="material-symbols-outlined" aria-hidden="true">lightbulb</span>
-                    <span>${escapeHtml(sugg)}</span>
-                  </div>
-                </div>` : ''}
+        <div class="terr-sched-scroll">
+          <div class="terr-sched-panel">
+            <div class="terr-sched-row terr-sched-row--head">
+              <span>Dia</span><span>Dirigente</span><span>Território</span><span>Local</span><span>Hora</span><span>Sugestão</span><span></span>
+            </div>
+            ${weekTemplate.map((r) => {
+              const tone = scheduleDayTone(r.weekday_label);
+              const dirigente = scheduleDirigente(r);
+              const territorio = scheduleTerritory(r);
+              const sugg = scheduleSuggestion(r);
+              const hasSugg = r.suggestion || r.suggestion_note;
+              return `
+            <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}">
+              <span class="terr-sched-day-pill">
+                <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
+                ${escapeHtml(r.weekday_label)}
+              </span>
+              <span class="terr-sched-cell terr-sched-cell--dirigente${dirigente === '—' ? ' terr-sched-cell--muted' : ''}">${escapeHtml(dirigente)}</span>
+              <span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>
+              <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
+              <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
+              <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
+              <div class="terr-sched-row-actions">
+                <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
+                  <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                </button>
+                <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
+                  <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                </button>
               </div>
-              <footer class="terr-sched-actions">
-                <button type="button" data-edit-schedule="${r.id}" class="terr-sched-btn terr-sched-btn--edit">
-                  <span class="material-symbols-outlined" aria-hidden="true">edit</span>Editar
-                </button>
-                <button type="button" data-del-schedule="${r.id}" class="terr-sched-btn terr-sched-btn--del">
-                  <span class="material-symbols-outlined" aria-hidden="true">delete</span>Excluir
-                </button>
-              </footer>
-            </article>`;
-          }).join('')}
+            </div>`;
+            }).join('')}
+          </div>
         </div>`;
       el.querySelectorAll('[data-edit-schedule]').forEach((btn) =>
         btn.addEventListener('click', () =>
@@ -355,17 +339,16 @@
 
     const spotsEl = document.getElementById('spots-list');
     if (!meetingSpots.length) {
-      spotsEl.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-4">Nenhum local cadastrado.</p>';
+      spotsEl.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-3">Nenhum local cadastrado.</p>';
     } else {
-      spotsEl.innerHTML = `<div class="terr-spots-grid">${meetingSpots.map((s) => `
-        <div class="terr-spot-card">
-          <div class="terr-spot-icon"><span class="material-symbols-outlined" aria-hidden="true">place</span></div>
-          <div class="flex-1 min-w-0">
-            <p class="text-[10px] font-bold uppercase tracking-wide text-secondary mb-0.5">${escapeHtml(s.weekday_label)}</p>
-            <p class="font-semibold text-primary text-sm leading-snug">${escapeHtml(s.location_name)}</p>
-            <p class="text-xs text-on-surface-variant mt-1 truncate">${escapeHtml(s.address || s.schedule_times || '—')}</p>
+      spotsEl.innerHTML = `<div class="terr-spots-list">${meetingSpots.map((s) => `
+        <div class="terr-spot-row">
+          <span class="terr-spot-day">${escapeHtml(s.weekday_label)}</span>
+          <div class="min-w-0">
+            <span class="font-semibold text-primary">${escapeHtml(s.location_name)}</span>
+            <span class="terr-spot-meta">${escapeHtml(s.address || s.schedule_times || '')}</span>
           </div>
-          <button type="button" data-del-spot="${s.id}" class="terr-sched-btn terr-sched-btn--del shrink-0 !ml-0 !px-2" title="Excluir">
+          <button type="button" data-del-spot="${s.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
           </button>
         </div>`).join('')}</div>`;

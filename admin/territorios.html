@@ -28,45 +28,42 @@
     }
     .terr-panel{display:none}.terr-panel.active{display:block}
     .terr-whatsapp-box{font-family:ui-monospace,monospace;font-size:.75rem;line-height:1.5;white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e6ef;border-radius:.75rem;padding:1rem;max-height:20rem;overflow:auto}
-    .terr-sched-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.625rem;padding:1rem 1.125rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:1rem;color:#fff}
-    .terr-sched-toolbar h2{color:#fff;margin:0;font-size:1rem}
-    .terr-sched-toolbar p{color:rgba(255,255,255,.78);margin:.125rem 0 0;font-size:.6875rem}
-    .terr-sched-toolbar .terr-sched-input{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:.625rem;padding:.375rem .625rem;font-size:.8125rem}
+    .terr-sched-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff}
+    .terr-sched-toolbar h2{color:#fff;margin:0;font-size:.875rem;line-height:1.2}
+    .terr-sched-toolbar p{color:rgba(255,255,255,.75);margin:0;font-size:.625rem}
+    .terr-sched-toolbar .terr-sched-input{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:.5rem;padding:.25rem .5rem;font-size:.75rem}
     .terr-sched-toolbar .terr-sched-input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
-    .terr-sched-toolbar-btn{display:inline-flex;align-items:center;gap:.375rem;font-size:.75rem;font-weight:700;padding:.5rem .875rem;border-radius:.625rem;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
-    .terr-sched-toolbar-btn:hover{transform:translateY(-1px)}
+    .terr-sched-toolbar-btn{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.375rem .625rem;border-radius:.5rem;border:none;cursor:pointer}
     .terr-sched-toolbar-btn--ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
     .terr-sched-toolbar-btn--accent{background:#c8a96e;color:#0f3462}
-    .terr-sched-grid{display:flex;flex-direction:column;gap:.875rem}
-    .terr-sched-card{background:#fff;border:1px solid #e2e6ef;border-radius:1rem;overflow:hidden;transition:box-shadow .18s ease,border-color .18s ease}
-    .terr-sched-card:hover{box-shadow:0 8px 28px rgba(15,52,98,.09);border-color:#c5d4ea}
-    .terr-sched-card__head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.875rem 1.125rem;background:linear-gradient(180deg,#f7f9fc 0%,#fff 100%);border-bottom:1px solid #eef0f4}
-    .terr-sched-day{display:inline-flex;align-items:center;gap:.375rem;font-size:.875rem;font-weight:800;color:#0f3462;font-family:'Plus Jakarta Sans',Inter,sans-serif}
-    .terr-sched-day .material-symbols-outlined{font-size:1.125rem}
-    .terr-sched-day--weekend{color:#047857}
-    .terr-sched-time{display:inline-flex;align-items:center;gap:.25rem;font-size:.75rem;font-weight:700;color:#3b5e97;background:#eef3fa;padding:.3125rem .75rem;border-radius:9999px;white-space:nowrap}
-    .terr-sched-card__body{padding:1rem 1.125rem;display:grid;gap:.875rem}
-    @media(min-width:640px){.terr-sched-card__body{grid-template-columns:1fr 1fr}}
-    .terr-sched-field label{display:block;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:.3125rem}
-    .terr-sched-field p{margin:0;font-size:.875rem;color:#1b1c1c;line-height:1.45;font-weight:500}
-    .terr-sched-field p.text-muted{color:#9ca3af;font-style:italic;font-weight:400}
-    .terr-sched-field--full{grid-column:1/-1}
-    .terr-sched-suggestion{display:flex;align-items:flex-start;gap:.5rem;font-size:.8125rem;color:#5c4a1f;background:linear-gradient(135deg,#fef9ee 0%,#fdf6e7 100%);border:1px solid #f0e4c8;border-radius:.75rem;padding:.625rem .875rem;line-height:1.45}
-    .terr-sched-suggestion .material-symbols-outlined{font-size:1rem;color:#c8a96e;flex-shrink:0;margin-top:.0625rem}
-    .terr-sched-actions{display:flex;flex-wrap:wrap;gap:.5rem;padding:.75rem 1.125rem;border-top:1px solid #eef0f4;background:#fafbfc}
-    .terr-sched-btn{display:inline-flex;align-items:center;gap:.3125rem;font-size:.75rem;font-weight:700;padding:.4375rem .875rem;border-radius:.5625rem;border:1px solid transparent;cursor:pointer;transition:background .12s ease}
-    .terr-sched-btn .material-symbols-outlined{font-size:1rem}
-    .terr-sched-btn--edit{color:#3b5e97;border-color:#c5d4ea;background:#fff}
-    .terr-sched-btn--edit:hover{background:#eef3fa}
-    .terr-sched-btn--del{color:#ba1a1a;border-color:#fecaca;background:#fff;margin-left:auto}
-    .terr-sched-btn--del:hover{background:#fef2f2}
-    .terr-spots-grid{display:grid;gap:.625rem}
-    @media(min-width:640px){.terr-spots-grid{grid-template-columns:repeat(2,1fr)}}
-    .terr-spot-card{display:flex;align-items:flex-start;gap:.75rem;padding:.875rem 1rem;background:#f8fafc;border:1px solid #e8ecf2;border-radius:.875rem}
-    .terr-spot-icon{display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border-radius:.625rem;background:#eef3fa;color:#3b5e97;flex-shrink:0}
-    .terr-spot-icon .material-symbols-outlined{font-size:1.125rem}
-    .terr-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2.5rem 1.5rem;color:#6b7280}
-    .terr-empty .material-symbols-outlined{font-size:2.5rem;color:#c5d4ea;margin-bottom:.75rem}
+    .terr-sched-toolbar-btn .material-symbols-outlined{font-size:1rem}
+    .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
+    .terr-sched-panel{min-width:44rem}
+    .terr-sched-row{display:grid;grid-template-columns:5.25rem minmax(6rem,1.05fr) minmax(5.5rem,.95fr) minmax(6rem,1fr) 3.25rem minmax(5rem,1fr) 3.5rem;gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-sched-row:last-child{border-bottom:none}
+    .terr-sched-row:not(.terr-sched-row--head):hover{background:#fafbfc}
+    .terr-sched-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-sched-day-pill{display:inline-flex;align-items:center;gap:.1875rem;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.3125rem;background:#eef3fa;color:#0f3462;white-space:nowrap}
+    .terr-sched-day-pill .material-symbols-outlined{font-size:.875rem}
+    .terr-sched-row--weekend .terr-sched-day-pill{background:#ecfdf5;color:#047857}
+    .terr-sched-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1b1c1c}
+    .terr-sched-cell--dirigente{font-weight:600;color:#0f3462}
+    .terr-sched-cell--muted{color:#9ca3af;font-style:italic}
+    .terr-sched-time{font-size:.6875rem;font-weight:700;color:#3b5e97;text-align:center}
+    .terr-sched-sugg{font-size:.6875rem;color:#5c4a1f;background:#fef9ee;border:1px solid #f0e4c8;padding:.0625rem .3125rem;border-radius:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-sched-row-actions{display:flex;gap:0;justify-content:flex-end}
+    .terr-sched-icon-btn{display:inline-flex;padding:.1875rem;border:none;background:transparent;color:#3b5e97;cursor:pointer;border-radius:.3125rem;line-height:0}
+    .terr-sched-icon-btn .material-symbols-outlined{font-size:1.0625rem}
+    .terr-sched-icon-btn:hover{background:#eef3fa}
+    .terr-sched-icon-btn--del{color:#ba1a1a}
+    .terr-sched-icon-btn--del:hover{background:#fef2f2}
+    .terr-spots-list{border-top:1px solid #eef0f4}
+    .terr-spot-row{display:grid;grid-template-columns:4.5rem 1fr auto;gap:.5rem;align-items:center;padding:.4375rem 0;border-bottom:1px solid #eef0f4;font-size:.8125rem}
+    .terr-spot-row:last-child{border-bottom:none}
+    .terr-spot-day{font-size:.6875rem;font-weight:800;color:#3b5e97;text-transform:uppercase;letter-spacing:.03em}
+    .terr-spot-meta{font-size:.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.5rem 1rem;color:#6b7280;background:#fff;border:1px solid #e2e6ef;border-radius:.75rem}
+    .terr-empty .material-symbols-outlined{font-size:1.75rem;color:#c5d4ea;margin-bottom:.375rem}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -160,14 +157,14 @@
         <h3 class="text-sm font-bold text-primary mb-2">Mensagem gerada</h3>
         <div id="semana-whatsapp" class="terr-whatsapp-box"></div>
       </div>
-      <div class="bg-white border border-outline-variant rounded-xl p-5 md:p-6">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary" aria-hidden="true">location_on</span>
+      <div class="bg-white border border-outline-variant rounded-xl p-4 md:p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-secondary text-lg" aria-hidden="true">location_on</span>
             <h3 class="font-bold text-primary text-sm">Locais de encontro</h3>
           </div>
-          <button type="button" id="btn-new-spot" class="terr-sched-btn terr-sched-btn--edit">
-            <span class="material-symbols-outlined" aria-hidden="true">add</span>Local
+          <button type="button" id="btn-new-spot" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost !text-secondary !border-secondary/30 !bg-secondary/5 text-[11px] px-2 py-1">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>Local
           </button>
         </div>
         <div id="spots-list"><p class="text-sm text-on-surface-variant">Carregando…</p></div>
@@ -237,6 +234,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060519"></script>
-    <script src="../js/admin/territory-system.js?v=2026060520"></script>
+    <script src="../js/admin/territory-system.js?v=2026060521"></script>
 </body>
 </html>
