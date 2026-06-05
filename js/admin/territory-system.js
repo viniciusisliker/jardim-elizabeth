@@ -17,7 +17,7 @@
   let profiles = [];
   let overseers = [];
   let activeAssignments = [];
-  let weekSchedule = [];
+  let weekTemplate = [];
   let history = [];
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
@@ -85,20 +85,19 @@
     activeAssignments = data || [];
   }
 
-  async function loadWeekSchedule() {
+  async function loadWeekTemplate() {
     const { data, error } = await client
-      .from('territory_assignments')
+      .from('territory_week_schedule')
       .select(`
-        id, week_start, work_date, work_time, meeting_point, notes,
-        location_name, schedule_times, suggestion, observation_override,
+        id, weekday_label, sort_order, dirigente_name, territory_code,
+        location_name, schedule_times, suggestion, suggestion_note, observations,
         profile_id, territory_id,
         profiles ( full_name ),
         territories ( num, display_name )
       `)
-      .eq('week_start', currentWeek)
-      .order('work_date', { ascending: true });
+      .order('sort_order', { ascending: true });
     if (error) throw error;
-    weekSchedule = data || [];
+    weekTemplate = data || [];
   }
 
   async function loadHistory() {
@@ -131,7 +130,7 @@
       loadProfiles(),
       loadOverseers(),
       loadActiveAssignments(),
-      loadWeekSchedule(),
+      loadWeekTemplate(),
       loadHistory(),
       loadMeetingSpots()
     ]);
@@ -260,21 +259,51 @@
     });
   }
 
+  function scheduleDirigente(row) {
+    return profileName(row.profiles) || row.dirigente_name || '—';
+  }
+
+  function scheduleTerritory(row) {
+    if (row.territories) return H.territoryLabel(row.territories);
+    return row.territory_code || '—';
+  }
+
+  function scheduleSuggestion(row) {
+    if (!row.suggestion) return '—';
+    return row.suggestion_note ? `${row.suggestion} · ${row.suggestion_note}` : row.suggestion;
+  }
+
   function renderSemana() {
     document.getElementById('semana-week').value = currentWeek;
     const el = document.getElementById('semana-list');
-    if (!weekSchedule.length) {
-      el.innerHTML = `<p class="text-sm text-on-surface-variant mb-3">Nenhuma linha para a semana de ${escapeHtml(H.formatWeekRange(currentWeek))}.</p>`;
+    if (!weekTemplate.length) {
+      el.innerHTML = '<p class="text-sm text-on-surface-variant mb-3">Nenhuma linha no cronograma. Importe da planilha ou adicione acima.</p>';
     } else {
-      el.innerHTML = weekSchedule.map((r) => `
-        <div class="terr-table-row terr-table-row--6 text-sm py-3 border-b border-outline-variant/50">
-          <span class="text-on-surface-variant">${escapeHtml(H.formatWeekday(r.work_date))}</span>
-          <span class="font-medium text-primary">${escapeHtml(profileName(r.profiles))}</span>
-          <span>${escapeHtml(r.observation_override || H.territoryLabel(r.territories))}</span>
-          <span class="text-xs text-on-surface-variant">${escapeHtml(r.location_name || r.meeting_point || '—')}</span>
-          <span class="text-xs text-on-surface-variant">${escapeHtml(r.schedule_times || (r.work_time ? H.formatTime(r.work_time) : '—'))}</span>
-          <button type="button" data-del-schedule="${r.id}" class="text-xs font-semibold text-error justify-self-start">Excluir</button>
-        </div>`).join('');
+      el.innerHTML = `
+        <div class="terr-sched-wrap">
+          <div class="terr-table-row terr-table-row--sched text-[10px] font-bold uppercase text-on-surface-variant pb-1 border-b">
+            <span>Dia</span><span>Dirigente</span><span>Território</span><span>Local</span><span>Horários</span><span>Sugestão</span><span>Observações</span><span></span>
+          </div>
+          ${weekTemplate.map((r) => `
+          <div class="terr-table-row terr-table-row--sched text-sm py-3 border-b border-outline-variant/50">
+            <span class="font-medium text-on-surface-variant">${escapeHtml(r.weekday_label)}</span>
+            <span class="font-medium text-primary">${escapeHtml(scheduleDirigente(r))}</span>
+            <span>${escapeHtml(scheduleTerritory(r))}</span>
+            <span class="text-xs text-on-surface-variant">${escapeHtml(r.location_name || '—')}</span>
+            <span class="text-xs text-on-surface-variant whitespace-nowrap">${escapeHtml(r.schedule_times || '—')}</span>
+            <span class="text-xs text-on-surface-variant">${escapeHtml(scheduleSuggestion(r))}</span>
+            <span class="text-xs text-on-surface-variant">${escapeHtml(r.observations || '—')}</span>
+            <div class="flex gap-2 justify-self-start">
+              <button type="button" data-edit-schedule="${r.id}" class="text-xs font-semibold text-secondary">Editar</button>
+              <button type="button" data-del-schedule="${r.id}" class="text-xs font-semibold text-error">Excluir</button>
+            </div>
+          </div>`).join('')}
+        </div>`;
+      el.querySelectorAll('[data-edit-schedule]').forEach((btn) =>
+        btn.addEventListener('click', () =>
+          openScheduleFormModal(weekTemplate.find((r) => r.id === btn.dataset.editSchedule))
+        )
+      );
       el.querySelectorAll('[data-del-schedule]').forEach((btn) =>
         btn.addEventListener('click', () => deleteScheduleRow(btn.dataset.delSchedule))
       );
@@ -429,7 +458,7 @@
 
   async function deleteScheduleRow(id) {
     if (!window.confirm('Excluir esta linha do cronograma?')) return;
-    const { error } = await client.from('territory_assignments').delete().eq('id', id);
+    const { error } = await client.from('territory_week_schedule').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
     else { showToast(toast, 'Linha removida.'); await refresh(); }
   }
@@ -495,32 +524,50 @@
     });
   }
 
-  function openScheduleFormModal() {
+  function openScheduleFormModal(existing) {
+    const row = existing || null;
+    const isEdit = Boolean(row);
     const wrap = document.createElement('div');
     wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
     wrap.innerHTML = `
-      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-md space-y-3 shadow-xl">
-        <h3 class="font-bold text-primary">Nova linha do cronograma</h3>
-        <label class="block text-xs font-semibold text-primary">Dirigente
-          <select name="profile_id" required class="mt-1 w-full rounded-lg border-outline-variant text-sm">${overseerOptions()}</select>
+      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-lg space-y-3 shadow-xl max-h-[90vh] overflow-y-auto">
+        <h3 class="font-bold text-primary">${isEdit ? 'Editar linha do cronograma' : 'Nova linha do cronograma'}</h3>
+        <label class="block text-xs font-semibold text-primary">Dia da semana
+          <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Terça, Quarta (Tarde)"/>
         </label>
-        <label class="block text-xs font-semibold text-primary">Dia de trabalho
-          <input name="work_date" type="date" required value="${currentWeek}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        <datalist id="cronograma-dias">${H.CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
+        <label class="block text-xs font-semibold text-primary">Dirigente (cadastrado)
+          <select name="profile_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+            <option value="">— Dupla / outro —</option>
+            ${overseerOptions(row?.profile_id)}
+          </select>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Nome do dirigente
+          <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Denison e Arnaldo"/>
         </label>
         <label class="block text-xs font-semibold text-primary">Território
           <select name="territory_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="">— Observação only —</option>
-            ${territories.map((t) => `<option value="${t.id}">T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
+            <option value="">— Selecione —</option>
+            ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
           </select>
         </label>
-        <label class="block text-xs font-semibold text-primary">Observação (WhatsApp)
-          <input name="observation_override" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Substitui o território na mensagem"/>
+        <label class="block text-xs font-semibold text-primary">Código (planilha)
+          <input name="territory_code" value="${escapeHtml(row?.territory_code || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: T4"/>
         </label>
-        <label class="block text-xs font-semibold text-primary">Local / encontro
-          <input name="location_name" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        <label class="block text-xs font-semibold text-primary">Local
+          <input name="location_name" value="${escapeHtml(row?.location_name || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
         </label>
         <label class="block text-xs font-semibold text-primary">Horários
-          <input name="schedule_times" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: 14h"/>
+          <input name="schedule_times" value="${escapeHtml(row?.schedule_times || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: 16:00"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Sugestão
+          <input name="suggestion" value="${escapeHtml(row?.suggestion || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: T5"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Comentário da sugestão
+          <input name="suggestion_note" value="${escapeHtml(row?.suggestion_note || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Observações
+          <input name="observations" value="${escapeHtml(row?.observations || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
         </label>
         <div class="flex gap-2 pt-2">
           <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
@@ -529,33 +576,46 @@
       </form>`;
     document.body.appendChild(wrap);
     wrap.querySelector('[data-cancel]').addEventListener('click', () => wrap.remove());
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
     wrap.querySelector('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const workDate = fd.get('work_date');
-      const territoryId = fd.get('territory_id') || null;
-      const obs = fd.get('observation_override')?.trim() || null;
-      if (!territoryId && !obs) {
-        showToast(toast, 'Escolha um território ou preencha a observação.', true);
+      const profileId = fd.get('profile_id') || null;
+      let dirigenteName = fd.get('dirigente_name')?.trim() || null;
+      if (profileId) {
+        const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
+        dirigenteName = profileName(p) || dirigenteName;
+      }
+      if (!profileId && !dirigenteName) {
+        showToast(toast, 'Informe o dirigente.', true);
         return;
       }
-      const weekStart = H.snapToMonday(workDate);
+      const territoryId = fd.get('territory_id') || null;
+      let territoryCode = fd.get('territory_code')?.trim() || null;
+      if (territoryId && !territoryCode) {
+        const t = territories.find((tr) => tr.id === territoryId);
+        if (t) territoryCode = `T${t.num}`;
+      }
       const payload = {
-        week_start: weekStart,
-        work_date: workDate,
-        profile_id: fd.get('profile_id'),
-        observation_override: obs,
+        weekday_label: fd.get('weekday_label')?.trim(),
+        profile_id: profileId,
+        dirigente_name: dirigenteName,
+        territory_id: territoryId,
+        territory_code: territoryCode,
         location_name: fd.get('location_name')?.trim() || null,
-        meeting_point: fd.get('location_name')?.trim() || null,
-        schedule_times: fd.get('schedule_times')?.trim() || null
+        schedule_times: fd.get('schedule_times')?.trim() || null,
+        suggestion: fd.get('suggestion')?.trim() || null,
+        suggestion_note: fd.get('suggestion_note')?.trim() || null,
+        observations: fd.get('observations')?.trim() || null
       };
-      if (territoryId) payload.territory_id = territoryId;
-      const { error } = await client.from('territory_assignments').insert(payload);
       wrap.remove();
+      const req = isEdit
+        ? client.from('territory_week_schedule').update(payload).eq('id', row.id)
+        : client.from('territory_week_schedule').insert({ ...payload, sort_order: weekTemplate.length + 1 });
+      const { error } = await req;
       if (error) showToast(toast, error.message, true);
       else {
-        currentWeek = weekStart;
-        showToast(toast, 'Linha adicionada.');
+        showToast(toast, isEdit ? 'Linha atualizada.' : 'Linha adicionada.');
         await refresh();
       }
     });
@@ -605,7 +665,7 @@
 
   function copyWhatsApp() {
     const byId = Object.fromEntries(territories.map((t) => [t.id, t]));
-    const msg = H.generateWhatsAppSchedule(currentWeek, weekSchedule, byId);
+    const msg = H.generateWhatsAppSchedule(currentWeek, weekTemplate, byId);
     document.getElementById('semana-whatsapp').textContent = msg;
     document.getElementById('semana-whatsapp-wrap').classList.remove('hidden');
     navigator.clipboard?.writeText(msg).then(
@@ -683,10 +743,8 @@
       document.getElementById('terr-form').classList.add('hidden')
     );
 
-    document.getElementById('semana-week').addEventListener('change', async (e) => {
+    document.getElementById('semana-week').addEventListener('change', (e) => {
       currentWeek = H.snapToMonday(e.target.value);
-      await loadWeekSchedule();
-      renderSemana();
     });
 
     document.getElementById('btn-whatsapp').addEventListener('click', copyWhatsApp);

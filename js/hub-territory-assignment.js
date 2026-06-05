@@ -14,6 +14,15 @@
     return slug ? `territorios.html#${encodeURIComponent(slug)}` : 'territorios.html';
   }
 
+  function matchesDirigente(row, profileId, profileName) {
+    if (row.profile_id === profileId) return true;
+    if (!row.dirigente_name || !profileName) return false;
+    const hay = row.dirigente_name.toLowerCase();
+    const needle = profileName.toLowerCase();
+    const first = needle.split(/\s+/)[0];
+    return hay.includes(needle) || hay.includes(first);
+  }
+
   function renderFieldCard(a) {
     const t = a.territories || {};
     const url = mapLink(t);
@@ -35,50 +44,48 @@
       </article>`;
   }
 
-  function renderScheduleCard(a) {
-    const t = a.territories || {};
+  function renderScheduleCard(row) {
+    const t = row.territories || {};
     const url = mapLink(t);
     const mapUrl = t.map_image_url || '';
-    const obs = (a.observation_override || '').trim();
-    const title = obs || `T${t.num || '?'} · ${t.display_name || 'Território'}`;
-    const timeLine = a.schedule_times || a.work_time
-      ? `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${escapeHtml(a.schedule_times || H.formatTime(a.work_time))}</p>`
+    const title = t.num
+      ? `T${t.num} · ${t.display_name || 'Território'}`
+      : (row.territory_code || 'Cronograma da semana');
+    const timeLine = row.schedule_times
+      ? `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${escapeHtml(row.schedule_times)}</p>`
       : '';
-    const meetLine = a.location_name || a.meeting_point
-      ? `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>${escapeHtml(a.location_name || a.meeting_point)}</p>`
+    const meetLine = row.location_name
+      ? `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>${escapeHtml(row.location_name)}</p>`
       : '';
-    const notesLine = a.notes ? `<p class="hub-terr-notes">${escapeHtml(a.notes)}</p>` : '';
+    const notesLine = row.observations
+      ? `<p class="hub-terr-notes">${escapeHtml(row.observations)}</p>`
+      : '';
 
     return `
       <article class="hub-terr-card hub-terr-card--schedule">
         <div class="hub-terr-card-main">
-          <p class="hub-terr-kicker">Cronograma da semana</p>
+          <p class="hub-terr-kicker">${escapeHtml(row.weekday_label || 'Cronograma')}</p>
           <h2 class="hub-terr-title">${escapeHtml(title)}</h2>
           <div class="hub-terr-details">
-            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">date_range</span>Semana de ${escapeHtml(H.formatWeekRange(a.week_start))}</p>
-            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">event</span>${escapeHtml(H.formatWeekday(a.work_date))}, ${escapeHtml(H.formatDisplayDate(a.work_date))}</p>
+            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">date_range</span>Semana de ${escapeHtml(H.formatWeekRange(row.week_start))}</p>
+            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">event</span>${escapeHtml(H.formatWeekday(row.work_date))}, ${escapeHtml(H.formatDisplayDate(row.work_date))}</p>
             ${timeLine}
             ${meetLine}
           </div>
           ${notesLine}
-          ${!obs && t.num ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-link">Ver mapa <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>` : ''}
+          ${t.num ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-link">Ver mapa <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>` : ''}
         </div>
-        ${!obs && mapUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-map"><img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/></a>` : ''}
+        ${t.num && mapUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-map"><img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/></a>` : ''}
       </article>`;
   }
 
-  function isRelevantSchedule(workDateIso, weekStartIso) {
-    const today = H.toISODate(new Date());
-    const monday = H.toISODate(H.getMonday(new Date()));
-    if (workDateIso >= today) return true;
-    return weekStartIso === monday;
-  }
-
-  async function init(client, profileId) {
+  async function init(client, profile) {
     const section = document.getElementById('hub-territory-assignment');
     const content = document.getElementById('hub-territory-assignment-content');
-    if (!section || !content || !client || !profileId || !H) return;
+    if (!section || !content || !client || !profile?.id || !H) return;
 
+    const profileId = profile.id;
+    const profileName = profile.full_name || '';
     const today = H.toISODate(new Date());
     const monday = H.toISODate(H.getMonday(new Date()));
     const cards = [];
@@ -96,23 +103,25 @@
     if (fieldErr) console.warn('Hub field assignment:', fieldErr.message);
     else if (fieldRows?.length) cards.push(renderFieldCard(fieldRows[0]));
 
-    const { data: scheduleRows, error: schedErr } = await client
-      .from('territory_assignments')
+    const { data: templateRows, error: schedErr } = await client
+      .from('territory_week_schedule')
       .select(`
-        id, week_start, work_date, work_time, meeting_point, notes,
-        location_name, schedule_times, observation_override,
+        id, weekday_label, dirigente_name, territory_code, location_name, schedule_times, observations,
+        profile_id, territory_id,
         territories ( num, display_name, map_image_url, slug )
       `)
-      .eq('profile_id', profileId)
-      .or(`work_date.gte.${today},week_start.eq.${monday}`)
-      .order('work_date', { ascending: true })
-      .limit(8);
+      .order('sort_order', { ascending: true });
 
     if (schedErr) console.warn('Hub schedule:', schedErr.message);
     else {
-      (scheduleRows || [])
-        .filter((a) => isRelevantSchedule(a.work_date, a.week_start))
-        .forEach((a) => cards.push(renderScheduleCard(a)));
+      (templateRows || [])
+        .filter((row) => matchesDirigente(row, profileId, profileName))
+        .map((row) => {
+          const workDate = H.dateForWeekdayInWeek(monday, row.weekday_label);
+          return { ...row, week_start: monday, work_date: workDate };
+        })
+        .filter((row) => row.work_date && row.work_date >= today)
+        .forEach((row) => cards.push(renderScheduleCard(row)));
     }
 
     if (!cards.length) return;

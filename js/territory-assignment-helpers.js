@@ -156,6 +156,18 @@
     });
   }
 
+  function dateForWeekdayInWeek(weekStartIso, weekdayLabel) {
+    if (!weekStartIso || !weekdayLabel) return null;
+    const start = parseISODate(weekStartIso);
+    for (let i = 0; i < 7; i += 1) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const iso = toISODate(d);
+      if (weekdayMatchesCronograma(weekdayLabel, iso)) return iso;
+    }
+    return null;
+  }
+
   function generateWhatsAppSchedule(weekStartIso, scheduleRows, territoriesById) {
     const start = parseISODate(weekStartIso);
     const end = new Date(start);
@@ -183,8 +195,11 @@
         }
 
         const t = r.territories || territoriesById?.[r.territory_id];
-        let text = t ? `T${t.num}` : '—';
-        if (t?.display_name) text += ` - ${t.display_name}`;
+        let text = r.territory_code || '—';
+        if (t) {
+          text = `T${t.num}`;
+          if (t.display_name) text += ` - ${t.display_name}`;
+        }
         msg += `*Território:* _${text}_\n\n`;
       });
     });
@@ -217,6 +232,7 @@
     formatTime,
     weekdayLabelFromDate,
     weekdayMatchesCronograma,
+    dateForWeekdayInWeek,
     daysSince,
     computePriority,
     territoryLabel,

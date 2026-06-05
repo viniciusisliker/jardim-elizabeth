@@ -157,6 +157,47 @@ def territory_match_sql(num, display):
     return f"(SELECT id FROM public.territories t WHERE {' OR '.join(clauses)} LIMIT 1)"
 
 
+def excel_time(val):
+    if val is None or val == "":
+        return None
+    try:
+        frac = float(val)
+        if 0 <= frac < 1:
+            total_min = int(round(frac * 24 * 60))
+            return f"{total_min // 60:02d}:{total_min % 60:02d}"
+    except (TypeError, ValueError):
+        pass
+    s = str(val).strip()
+    return s or None
+
+
+def is_schedule_row(row):
+    day = (row.get("A") or "").strip()
+    if not day:
+        return False
+    n = norm(day)
+    return any(n.startswith(w) for w in ("terca", "quarta", "quinta", "sexta", "sabado", "domingo"))
+
+
+def schedule_profile_fields(dirigente_raw):
+    name = (dirigente_raw or "").strip()
+    if not name:
+        return "NULL", "NULL"
+    if " e " in norm(name):
+        return "NULL", sql_str(name)
+    profile_name = PROFILE_ALIASES.get(norm(name), name)
+    return profile_match_sql(profile_name), sql_str(name)
+
+
+def territory_num_from_code(code):
+    if not code:
+        return None
+    m = re.match(r"^(T\s*\d+)", str(code).strip(), re.I)
+    if not m:
+        return None
+    return re.sub(r"\D", "", m.group(1)).lstrip("0") or "0"
+
+
 def profile_match_sql(name):
     if not name:
         return "NULL"
@@ -196,6 +237,7 @@ def main():
         "UPDATE public.territory_active_assignments SET status = 'returned', returned_at = now() WHERE status = 'active';",
         "DELETE FROM public.territory_overseers;",
         "DELETE FROM public.territory_meeting_spots;",
+        "DELETE FROM public.territory_week_schedule;",
         "DELETE FROM public.territory_assignments;",
         "DELETE FROM public.territory_history WHERE metadata->>'source' = 'spreadsheet';",
         "DELETE FROM public.territory_history WHERE event_type = 'designacao' AND territory_id IS NULL AND profile_id IS NULL AND metadata = '{}'::jsonb;",
@@ -258,27 +300,46 @@ WHERE lower(trim(p.full_name)) = lower(trim({sql_str(profile_name)}))
    OR lower(trim(p.full_name)) LIKE lower(trim({sql_str(profile_name.split()[0])})) || '%'
 ON CONFLICT (profile_id) DO UPDATE SET preference = EXCLUDED.preference, is_active = true;""")
 
-    # Locais de encontro
+    # Locais de encontro (para na linha EQUIPAMENTO)
     sort = 0
     for row in locais_rows:
         day = (row.get("A") or "").strip()
         loc = (row.get("B") or "").strip()
-        if not day or not loc or day.upper() == "EQUIPAMENTO":
+        if not day or not loc:
             continue
+        if day.upper() == "EQUIPAMENTO" or norm(day) in ("nome", "display"):
+            break
         addr = row.get("C") or None
-        times_raw = row.get("D")
-        times = None
-        if times_raw:
-            try:
-                frac = float(times_raw)
-                total_min = int(round(frac * 24 * 60))
-                times = f"{total_min // 60:02d}:{total_min % 60:02d}"
-            except ValueError:
-                times = str(times_raw)
+        times = excel_time(row.get("D"))
         sort += 1
         lines.append(
             f"INSERT INTO public.territory_meeting_spots (weekday_label, location_name, address, schedule_times, sort_order) "
             f"VALUES ({sql_str(day)}, {sql_str(loc)}, {sql_str(addr)}, {sql_str(times)}, {sort});"
+        )
+
+    # Cronograma semanal (aba Cronograma — sheet 4)
+    sort = 0
+    for row in semana_rows:
+        if not is_schedule_row(row):
+            continue
+        sort += 1
+        day = (row.get("A") or "").strip()
+        dirigente = row.get("B") or ""
+        terr_code = (row.get("C") or "").strip()
+        loc = row.get("D") or None
+        times = excel_time(row.get("E"))
+        sugg = row.get("F") or None
+        sugg_note = row.get("G") or None
+        obs = row.get("H") or None
+        num = territory_num_from_code(terr_code)
+        prof_sql, dir_name_sql = schedule_profile_fields(dirigente)
+        terr_id_sql = territory_match_sql(num, None) if num else "NULL"
+        lines.append(
+            f"INSERT INTO public.territory_week_schedule (weekday_label, sort_order, profile_id, dirigente_name, "
+            f"territory_id, territory_code, location_name, schedule_times, suggestion, suggestion_note, observations) "
+            f"VALUES ({sql_str(day)}, {sort}, {prof_sql}, {dir_name_sql}, {terr_id_sql}, "
+            f"{sql_str(terr_code) if terr_code else 'NULL'}, {sql_str(loc)}, {sql_str(times)}, "
+            f"{sql_str(sugg)}, {sql_str(sugg_note)}, {sql_str(obs)});"
         )
 
     # Historico completo da planilha

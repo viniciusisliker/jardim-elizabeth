@@ -52,7 +52,7 @@
       window.JEHubChangelog?.init();
 
       const client = await window.JEAuth.getClient();
-      await window.JEHubTerritoryAssignment?.init(client, profile.id);
+      await window.JEHubTerritoryAssignment?.init(client, profile);
       await window.JEHubEvents?.initHubEvents(client);
     } catch (err) {
       console.warn('Hub init:', err);

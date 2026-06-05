@@ -25,6 +25,8 @@
       .terr-table-row--5{grid-template-columns:1fr 1fr 1fr 1fr auto}
       .terr-table-row--6{grid-template-columns:.8fr 1fr 1fr 1fr 1fr auto}
       .terr-table-row--hist{grid-template-columns:.9fr .9fr 1.1fr 1.2fr 1.4fr}
+      .terr-sched-wrap{overflow-x:auto}
+      .terr-table-row--sched{grid-template-columns:.8fr 1.1fr .9fr 1.1fr .7fr 1fr 1fr auto;min-width:52rem}
     }
     .terr-panel{display:none}.terr-panel.active{display:block}
     .terr-whatsapp-box{font-family:ui-monospace,monospace;font-size:.75rem;line-height:1.5;white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e6ef;border-radius:.75rem;padding:1rem;max-height:20rem;overflow:auto}
@@ -104,7 +106,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 class="font-bold text-primary">Cronograma semanal</h2>
-          <p class="text-xs text-on-surface-variant">Semana de serviço e mensagem para WhatsApp.</p>
+          <p class="text-xs text-on-surface-variant">Mesma estrutura da planilha: dia, dirigente, território, local, horários e sugestão.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <label class="text-xs font-semibold text-primary flex items-center gap-2">Semana
@@ -192,7 +194,7 @@
   <script src="../js/je-toast.js?v=2026060301"></script>
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
-  <script src="../js/territory-assignment-helpers.js?v=2026060517"></script>
-    <script src="../js/admin/territory-system.js?v=2026060518"></script>
+    <script src="../js/territory-assignment-helpers.js?v=2026060519"></script>
+    <script src="../js/admin/territory-system.js?v=2026060519"></script>
 </body>
 </html>
