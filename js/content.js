@@ -404,15 +404,28 @@
     return data;
   }
 
+  function renderEquipmentCalendar(item, variant) {
+    const icon = variant === 'display' ? 'grid_view' : 'shopping_cart';
+    const title = item.title || 'Agendamento';
+    return `
+      <article class="je-eq-cal-card">
+        <header class="je-eq-cal-head">
+          <span class="material-symbols-outlined">${icon}</span>
+          <h2>${esc(title)}</h2>
+        </header>
+        <div class="je-eq-cal-frame">
+          <iframe class="je-cal-iframe" src="${esc(item.calendar_embed_url)}" title="${esc(title)}"></iframe>
+        </div>
+      </article>`;
+  }
+
   async function loadEquipmentCalendars(containerId, slugPrefix) {
     const el = document.getElementById(containerId);
     if (!el) return;
     const items = await fetchEquipment(slugPrefix);
     if (!items) return;
-    el.innerHTML = items.map((item, i) => {
-      const sep = i > 0 ? '<div class="my-10 border-t border-[#0f3462]/20"></div>' : '';
-      return `${sep}<iframe src="${esc(item.calendar_embed_url)}" style="border:0" width="100%" height="600" frameborder="0" title="${esc(item.title)}"></iframe>`;
-    }).join('');
+    const variant = slugPrefix === 'display' ? 'display' : 'carrinho';
+    el.innerHTML = items.map((item) => renderEquipmentCalendar(item, variant)).join('');
   }
 
   function boot() {
