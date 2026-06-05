@@ -232,6 +232,53 @@
     @media(max-width:899px){
       .hub-ev-preview-card{position:static;top:auto}
     }
+
+    .hub-terr-assign{margin-bottom:1rem}
+    .hub-terr-card{
+      display:grid;gap:1.25rem;
+      background:linear-gradient(135deg,#0a2847 0%,#0f3462 52%,#1a4a7a 100%);
+      border:1px solid rgba(200,169,110,.35);border-radius:1rem;
+      padding:1.25rem 1.375rem;color:#fff;overflow:hidden;position:relative;
+    }
+    @media(min-width:768px){
+      .hub-terr-card{grid-template-columns:1fr 9.5rem;padding:1.375rem 1.5rem}
+    }
+    .hub-terr-card::before{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse 70% 80% at 100% 0%,rgba(200,169,110,.18) 0%,transparent 55%);
+    }
+    .hub-terr-card-main{position:relative;z-index:1;min-width:0}
+    .hub-terr-kicker{
+      font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;
+      color:#c8a96e;margin-bottom:0.375rem;
+    }
+    .hub-terr-title{
+      font-family:'Plus Jakarta Sans',Inter,sans-serif;
+      font-size:1.25rem;font-weight:800;line-height:1.25;margin-bottom:0.875rem;
+    }
+    @media(min-width:768px){.hub-terr-title{font-size:1.375rem}}
+    .hub-terr-details{display:grid;gap:0.375rem;margin-bottom:0.75rem}
+    .hub-terr-meta{
+      display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;color:rgba(255,255,255,.88);line-height:1.45;
+    }
+    .hub-terr-meta .material-symbols-outlined{font-size:1rem;color:#c8a96e;flex-shrink:0;margin-top:0.05rem}
+    .hub-terr-notes{
+      font-size:0.75rem;color:rgba(255,255,255,.72);line-height:1.5;
+      padding:0.625rem 0.75rem;border-radius:0.625rem;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);margin-bottom:0.75rem;
+    }
+    .hub-terr-link{
+      display:inline-flex;align-items:center;gap:0.375rem;
+      font-size:0.75rem;font-weight:700;color:#c8a96e;text-decoration:none;
+    }
+    .hub-terr-link:hover{color:#fff}
+    .hub-terr-link .material-symbols-outlined{font-size:0.9375rem}
+    .hub-terr-map{
+      position:relative;z-index:1;display:block;border-radius:0.75rem;overflow:hidden;
+      border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);aspect-ratio:1;
+    }
+    .hub-terr-map img{width:100%;height:100%;object-fit:cover;display:block}
+    .hub-terr-card + .hub-terr-card{margin-top:0.75rem}
   </style>
 </head>
 
@@ -272,6 +319,9 @@
     <div class="max-w-7xl mx-auto px-6 je-page-shell pb-12 hub-main">
 
       <div id="hub-view-home" class="hub-view">
+        <section id="hub-territory-assignment" class="hidden hub-terr-assign" aria-label="Sua designação de território">
+          <div id="hub-territory-assignment-content"></div>
+        </section>
         <div class="hub-modules-panel">
           <div class="hub-home-intro">
             <p>Selecione um módulo abaixo. Você só vê as áreas liberadas para o seu perfil ou designação.</p>
@@ -322,7 +372,7 @@
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
                 <div class="hub-module-body">
                   <h4>Territórios</h4>
-                  <p>Status, nomes e mapas do serviço de campo.</p>
+                  <p>Status, mapas e designações de dirigentes por semana.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </a>
@@ -533,6 +583,8 @@
   <script src="js/je-dialog.js?v=2026060301"></script>
   <script src="js/hub-events.js?v=2026060301"></script>
   <script src="js/hub-changelog.js"></script>
+  <script src="js/territory-assignment-helpers.js"></script>
+  <script src="js/hub-territory-assignment.js"></script>
   <script src="js/hub.js"></script>
 </body>
 </html>

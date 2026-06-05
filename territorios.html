@@ -93,21 +93,12 @@ gtag('config', 'G-PGXCZF9S9W');
     }
 
     .je-ter-toolbar {
-      display: flex;
-      flex-direction: column;
-      gap: 0.875rem;
-      margin-bottom: 1.5rem;
-    }
-    @media (min-width: 768px) {
-      .je-ter-toolbar {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-      }
+      display: block;
+      margin-bottom: 1rem;
     }
     .je-ter-search-wrap {
       position: relative;
-      flex: 1;
+      display: block;
       max-width: 24rem;
     }
     .je-ter-search-wrap .material-symbols-outlined {
@@ -133,28 +124,6 @@ gtag('config', 'G-PGXCZF9S9W');
     .je-ter-search:focus {
       border-color: #3b5e97;
       box-shadow: 0 0 0 3px rgba(59,94,151,.15);
-    }
-    .je-ter-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-    }
-    .je-ter-filter {
-      padding: 0.4375rem 0.875rem;
-      border-radius: 9999px;
-      border: 1px solid rgba(15,52,98,.12);
-      background: #fff;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #43474f;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .je-ter-filter:hover { border-color: #3b5e97; color: #0f3462; }
-    .je-ter-filter.is-active {
-      background: #0f3462;
-      border-color: #0f3462;
-      color: #fff;
     }
     .je-ter-count {
       font-size: 0.75rem;
@@ -188,10 +157,7 @@ gtag('config', 'G-PGXCZF9S9W');
     }
     .je-ter-card.is-hidden { display: none; }
     .je-ter-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
+      display: block;
     }
     .je-ter-card-num {
       font-size: 0.625rem;
@@ -200,19 +166,6 @@ gtag('config', 'G-PGXCZF9S9W');
       text-transform: uppercase;
       color: #3b5e97;
     }
-    .je-ter-status {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.2rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.5625rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .je-ter-status--disponivel { background: #e8f5ee; color: #1a7f4b; }
-    .je-ter-status--designado { background: #fef3c7; color: #b45309; }
-    .je-ter-status--concluido { background: #eff6ff; color: #0f3462; }
     .je-ter-card-title {
       font-size: 1rem;
       font-weight: 800;
@@ -410,7 +363,6 @@ gtag('config', 'G-PGXCZF9S9W');
 
     @media (max-width: 767px) {
       .je-ter-search-wrap { max-width: none; }
-      .je-ter-filters { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.25rem; }
     }
   </style>
 </head>
@@ -433,7 +385,7 @@ gtag('config', 'G-PGXCZF9S9W');
             </div>
             <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Territórios</h1>
             <p class="text-white/80 mt-3 text-sm md:text-base max-w-xl leading-relaxed">
-              Mapas das áreas de pregação da congregação — consulte o status e amplie cada território.
+              Mapas das áreas de pregação da congregação — busque e amplie cada território.
             </p>
           </div>
           <div class="je-ter-status-pill self-start">
@@ -446,26 +398,17 @@ gtag('config', 'G-PGXCZF9S9W');
 
     <div class="max-w-6xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
 
-      <div class="je-ter-toolbar">
-        <label class="je-ter-search-wrap">
+      <label class="je-ter-search-wrap je-ter-toolbar">
           <span class="material-symbols-outlined">search</span>
           <input id="je-ter-search" class="je-ter-search" type="search" placeholder="Buscar por nome ou número…" autocomplete="off"/>
-        </label>
-        <div class="je-ter-filters" role="group" aria-label="Filtrar por status">
-          <button type="button" class="je-ter-filter is-active" data-je-ter-filter="all">Todos</button>
-          <button type="button" class="je-ter-filter" data-je-ter-filter="disponivel">Disponível</button>
-          <button type="button" class="je-ter-filter" data-je-ter-filter="designado">Designado</button>
-          <button type="button" class="je-ter-filter" data-je-ter-filter="concluido">Concluído</button>
-        </div>
-      </div>
+      </label>
 
       <p id="je-ter-count" class="je-ter-count" aria-live="polite">Mostrando 19 territórios</p>
 
       <div id="cardsGrid" class="je-ter-grid">
-        <article data-nome="jardim campo limpo" data-num="01" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim campo limpo" data-num="01" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 01</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Campo Limpo</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 01">
@@ -477,10 +420,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim elizabeth a" data-num="02" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim elizabeth a" data-num="02" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 02</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Elizabeth A</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 02">
@@ -492,10 +434,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim elizabeth b" data-num="03" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim elizabeth b" data-num="03" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 03</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Elizabeth B</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 03">
@@ -507,10 +448,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim elizabeth c" data-num="04" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim elizabeth c" data-num="04" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 04</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Elizabeth C</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 04">
@@ -522,10 +462,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim elizabeth d" data-num="05" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim elizabeth d" data-num="05" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 05</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Elizabeth D</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 05">
@@ -537,10 +476,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="vila pirajussara" data-num="06" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="vila pirajussara" data-num="06" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 06</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Vila Pirajussara</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 06">
@@ -552,10 +490,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim iracema a" data-num="07" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim iracema a" data-num="07" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 07</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Iracema A</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 07">
@@ -567,10 +504,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim iracema b" data-num="08" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim iracema b" data-num="08" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 08</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Iracema B</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 08">
@@ -582,10 +518,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim helga e" data-num="09" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim helga e" data-num="09" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 09</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Helga E</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 09">
@@ -597,10 +532,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim leônidas moreira a leonidas" data-num="10" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim leônidas moreira a leonidas" data-num="10" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 10</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jd Leônidas Moreira A</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 10">
@@ -612,10 +546,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim leônidas moreira b leonidas" data-num="11" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim leônidas moreira b leonidas" data-num="11" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 11</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jd Leônidas Moreira B</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 11">
@@ -627,10 +560,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim leônidas moreira c leonidas" data-num="12" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim leônidas moreira c leonidas" data-num="12" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 12</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jd Leônidas Moreira C</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 12">
@@ -642,10 +574,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="cdhu a" data-num="13" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="cdhu a" data-num="13" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 13</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">CDHU A</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 13">
@@ -657,10 +588,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="cdhu b" data-num="14" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="cdhu b" data-num="14" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 14</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">CDHU B</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 14">
@@ -672,10 +602,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="cdhu c" data-num="15" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="cdhu c" data-num="15" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 15</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">CDHU C</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 15">
@@ -687,10 +616,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim helga a" data-num="16" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim helga a" data-num="16" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 16</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Helga A</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 16">
@@ -702,10 +630,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim helga b" data-num="17" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim helga b" data-num="17" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 17</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Helga B</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 17">
@@ -717,10 +644,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim helga c" data-num="18" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim helga c" data-num="18" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 18</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Helga C</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 18">
@@ -732,10 +658,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </button>
         </article>
 
-        <article data-nome="jardim helga d" data-num="19" data-status="disponivel" class="territory-card je-ter-card">
+        <article data-nome="jardim helga d" data-num="19" class="territory-card je-ter-card">
           <header class="je-ter-card-head">
             <span class="je-ter-card-num">Território 19</span>
-            <span class="je-ter-status je-ter-status--disponivel" data-je-status>Disponível</span>
           </header>
           <h3 class="je-ter-card-title">Jardim Helga D</h3>
           <button type="button" class="je-ter-map-thumb" data-je-map-open aria-label="Ver mapa do território 19">

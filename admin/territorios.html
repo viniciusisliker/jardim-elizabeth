@@ -5,15 +5,72 @@
   <title>Admin — Territórios | Jardim Elizabeth</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
+  <style>
+    .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+    .terr-assign-row{display:grid;gap:0.75rem;padding:0.875rem 0;border-bottom:1px solid #eef0f4}
+    .terr-assign-row:last-child{border-bottom:none}
+    @media(min-width:768px){
+      .terr-assign-row{grid-template-columns:1.4fr 1fr 1fr auto;align-items:center}
+    }
+  </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
   <div id="header"></div>
   <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
     <div class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4"><a href="../hub.html" class="text-secondary">Hub</a> / <span class="text-primary">Territórios</span></div>
     <h1 class="text-2xl font-extrabold text-primary mb-1">Gerenciar Territórios</h1>
-    <p class="text-sm text-on-surface-variant mb-6">Altere status, nomes e imagens dos 19 territórios.</p>
+    <p class="text-sm text-on-surface-variant mb-6">Altere status, nomes e imagens dos 19 territórios. Designe dirigentes por semana e dia — eles veem a designação só no Hub, quando estiver ativa.</p>
     <p id="admin-toast" class="hidden text-sm mb-4"></p>
+
+    <section class="bg-white border border-outline-variant rounded-xl p-5 md:p-6 mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-bold text-primary">Designações de dirigentes</h2>
+          <p class="text-xs text-on-surface-variant mt-1">Cada irmão designado vê território, semana, dia e horário no Hub — somente quando houver designação para ele.</p>
+        </div>
+        <button type="button" id="btn-new-assignment" class="bg-secondary text-white text-xs font-semibold px-4 py-2 rounded-lg shrink-0">Nova designação</button>
+      </div>
+      <div id="assignments-list">
+        <p class="text-sm text-on-surface-variant">Carregando designações…</p>
+      </div>
+    </section>
+
+    <form id="assign-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4 mb-8">
+      <h2 class="font-bold text-primary" id="assign-form-title">Nova designação</h2>
+      <input type="hidden" id="assign-id"/>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="block text-sm font-semibold text-primary sm:col-span-2">Irmão designado
+          <select id="assign-profile" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"></select>
+        </label>
+        <label class="block text-sm font-semibold text-primary sm:col-span-2">Território
+          <select id="assign-territory" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"></select>
+        </label>
+        <label class="block text-sm font-semibold text-primary">Semana (início)
+          <input id="assign-week" type="date" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+          <span class="text-[11px] font-normal text-on-surface-variant">Segunda-feira da semana de serviço</span>
+        </label>
+        <label class="block text-sm font-semibold text-primary">Dia de trabalho
+          <input id="assign-day" type="date" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-sm font-semibold text-primary">Horário
+          <input id="assign-time" type="time" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-sm font-semibold text-primary">Ponto de encontro
+          <input id="assign-meeting" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Salão do Reino"/>
+        </label>
+        <label class="block text-sm font-semibold text-primary sm:col-span-2">Observações
+          <textarea id="assign-notes" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Parceiro de grupo, instruções extras…"></textarea>
+        </label>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar designação</button>
+        <button id="assign-cancel" type="button" class="text-sm">Cancelar</button>
+      </div>
+    </form>
+
+    <h2 class="font-bold text-primary mb-3">Catálogo de territórios</h2>
     <div id="territory-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
     <form id="terr-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
       <h2 class="font-bold text-primary">Editar território</h2>
@@ -30,6 +87,6 @@
     </form>
   </main>
   <div id="footer"></div>
-  <script src="../js/config.js"></script><script src="../js/auth.js"></script><script src="../js/header.js"></script><script src="../js/site-loader.js"></script><script src="../js/je-toast.js?v=2026060301"></script><script src="../js/je-dialog.js?v=2026060301"></script><script src="../js/admin-core.js?v=2026060301"></script><script src="../js/admin/territorios.js"></script>
+  <script src="../js/config.js"></script><script src="../js/auth.js"></script><script src="../js/header.js"></script><script src="../js/site-loader.js"></script><script src="../js/je-toast.js?v=2026060301"></script><script src="../js/je-dialog.js?v=2026060301"></script><script src="../js/admin-core.js?v=2026060301"></script><script src="../js/territory-assignment-helpers.js"></script><script src="../js/admin/territorios.js"></script>
 </body>
 </html>
