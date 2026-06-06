@@ -215,7 +215,7 @@
     }
 
     const profile = await window.JEAuth.getCurrentProfile();
-    renderUserMenu(profile);
+    if (profile) renderUserMenu(profile);
   }
 
   function bindEvents() {
@@ -239,12 +239,33 @@
       const username = qs('login-username')?.value?.trim();
       const password = qs('login-password')?.value;
       const errorEl = qs('login-error');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+
+      if (errorEl) {
+        errorEl.classList.add('hidden');
+        errorEl.textContent = '';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.jeLabel = submitBtn.textContent;
+        submitBtn.textContent = 'Entrando…';
+      }
 
       try {
         const { profile } = await window.JEAuth.signIn(username, password);
+        const resolvedProfile = profile || await window.JEAuth.getCurrentProfile();
+
+        if (!resolvedProfile) {
+          if (errorEl) {
+            errorEl.textContent = 'Login realizado, mas não foi possível carregar seu perfil. Tente novamente em instantes.';
+            errorEl.classList.remove('hidden');
+          }
+          return;
+        }
+
         hideLoginModal();
 
-        if (window.JEAuth.canAccessHub(profile)) {
+        if (window.JEAuth.canAccessHub(resolvedProfile)) {
           window.location.href = siteUrl('hub.html');
           return;
         }
@@ -254,6 +275,11 @@
         if (errorEl) {
           errorEl.textContent = 'Usuário ou senha incorretos.';
           errorEl.classList.remove('hidden');
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitBtn.dataset.jeLabel || 'Entrar';
         }
       }
     });

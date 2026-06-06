@@ -1,148 +1,60 @@
 <!DOCTYPE html>
-<!-- 
-  <!DOCTYPE html> avisa ao navegador que este é um arquivo HTML5 moderno.
-  Sempre deve ser a primeira linha do arquivo.
--->
-
 <html class="light" lang="pt-BR">
-<!--
-  <html> é a tag raiz que envolve TODO o conteúdo da página.
-  - lang="pt-BR" diz ao navegador e leitores de tela que o idioma é português do Brasil.
-  - class="light" ativa o tema claro (existe suporte para tema escuro via class="dark").
--->
-
 <head>
-<!--
-  ============================================================
-  CABEÇALHO (<head>)
-  Tudo aqui é "invisível" para o usuário — são configurações,
-  links de fontes, estilos e scripts que o navegador precisa
-  para montar a página corretamente.
-  ============================================================
--->
-
   <meta charset="utf-8">
-  <!-- Define que o arquivo usa codificação UTF-8, o que permite acentos e caracteres especiais (ã, ç, é...) -->
-
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <!-- Faz a página se adaptar automaticamente a telas de celular e tablet (design responsivo) -->
+  <title>Jardim Elizabeth – Congregação</title>
 
-  <title>Jardim Elizabeth - Painel da Congregação</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PGXCZF9S9W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PGXCZF9S9W');
+  </script>
 
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PGXCZF9S9W"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-
-gtag('config', 'G-PGXCZF9S9W');
-</script>
-
-  <!-- ── TAILWIND CSS ─────────────────────────────────────────────────────────
-    Tailwind é uma biblioteca de estilos (CSS). Em vez de escrever CSS manual,
-    você usa classes prontas diretamente no HTML (ex: p-6 = padding de 6 unidades,
-    text-xl = texto grande, flex = layout flexível).
-    O script abaixo carrega o Tailwind pela internet — sem ele a página perde toda a aparência.
-  -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-  <!-- ── FONTES DO GOOGLE ─────────────────────────────────────────────────────
-    Carrega a fonte "Inter" (os textos da página usam ela).
-    Para trocar a fonte, substitua "Inter" por outra disponível em fonts.google.com
-    e atualize também o font-family dentro do <script> de configuração abaixo.
-  -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- ── ÍCONES MATERIAL SYMBOLS ──────────────────────────────────────────────
-    Carrega a biblioteca de ícones do Google (Material Symbols).
-    Os ícones são usados assim: <span class="material-symbols-outlined">nome_do_icone</span>
-    Para descobrir nomes de ícones: fonts.google.com/icons
-  -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-  <!-- ── CONFIGURAÇÃO DE CORES E TEMA (Tailwind Config) ───────────────────────
-    Este bloco define TODAS as cores customizadas usadas no site.
-    As cores têm nomes semânticos como "primary" (cor principal), "secondary",
-    "background", "surface", etc.
-
-    COMO TROCAR CORES:
-    Cada linha segue o padrão: "nome-da-cor": "#codigohex"
-    Exemplo: "primary": "#0f3462"  ← isso é um azul escuro
-    Você pode substituir os valores hexadecimais para mudar as cores.
-    Use ferramentas como coolors.co ou color.adobe.com para escolher paletas.
-
-    DICA: As cores mais importantes para alterar são:
-      - "primary": cor principal (azul escuro agora)
-      - "secondary": cor secundária (azul médio agora)
-      - "background": cor de fundo da página (quase branco agora)
-  -->
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            "on-tertiary-container": "#83c0ff",
-            "primary-container": "#2b4b7a",    /* Fundo de cards em destaque */
-            "surface-variant": "#e4e2e2",
-            "on-primary-fixed": "#001b3d",
-            "on-primary-container": "#9dbcf2",  /* Texto sobre primary-container */
-            "on-error-container": "#93000a",
-            "on-primary": "#ffffff",             /* Texto sobre a cor primária */
-            "on-secondary-container": "#274d85",
-            "on-secondary-fixed-variant": "#20467e",
-            "tertiary-fixed": "#d0e4ff",
-            "on-error": "#ffffff",
+            "primary-container": "#2b4b7a",
+            "on-primary-container": "#9dbcf2",
+            "on-primary": "#ffffff",
             "surface-container": "#f0eded",
-            "secondary": "#3b5e97",             /* COR SECUNDÁRIA — azul médio */
+            "secondary": "#3b5e97",
             "secondary-fixed": "#d6e3ff",
-            "error": "#ba1a1a",                 /* Cor de erros e alertas */
-            "secondary-fixed-dim": "#aac7ff",
-            "surface-bright": "#fbf9f8",
-            "inverse-on-surface": "#f2f0f0",
-            "primary": "#0f3462",               /* COR PRINCIPAL — azul escuro */
-            "surface-tint": "#405f8f",
-            "background": "#fbf9f8",            /* COR DE FUNDO da página */
-            "on-surface-variant": "#43474f",    /* Texto secundário (cinza) */
-            "inverse-surface": "#303030",
+            "error": "#ba1a1a",
+            "primary": "#0f3462",
+            "background": "#fbf9f8",
+            "on-surface-variant": "#43474f",
             "outline-variant": "#c3c6d0",
-            "on-tertiary": "#ffffff",
-            "on-background": "#1b1c1c",         /* Cor do texto principal */
-            "surface-container-highest": "#e4e2e2",
+            "on-background": "#1b1c1c",
             "surface-container-low": "#f5f3f3",
             "on-surface": "#1b1c1c",
-            "tertiary-fixed-dim": "#9bcbff",
-            "surface-dim": "#dbd9d9",
-            "on-secondary-fixed": "#001b3e",
-            "on-secondary": "#ffffff",
-            "primary-fixed-dim": "#a9c8fe",
-            "on-tertiary-fixed-variant": "#004a79",
             "outline": "#747780",
             "surface-container-high": "#eae8e7",
             "surface": "#fbf9f8",
-            "error-container": "#ffdad6",
-            "on-tertiary-fixed": "#001d34",
-            "surface-container-lowest": "#ffffff", /* Branco puro — fundo de cards */
-            "tertiary": "#00375c",
+            "surface-container-lowest": "#ffffff",
             "secondary-container": "#9cbffe",
-            "tertiary-container": "#004e80",
-            "inverse-primary": "#a9c8fe",
             "primary-fixed": "#d6e3ff",
-            "on-primary-fixed-variant": "#274776"
+            "on-primary-fixed": "#001b3d",
           },
           fontFamily: {
-            /* Para trocar a fonte: substitua "Inter" pelo nome da fonte carregada no <link> acima */
             "headline": ["Inter"],
             "body": ["Inter"],
             "label": ["Inter"]
           },
           borderRadius: {
-            /* Controla o arredondamento dos cantos dos elementos */
-            "DEFAULT": "0.5rem",  /* Padrão */
+            "DEFAULT": "0.5rem",
             "lg": "0.75rem",
             "xl": "1rem",
-            "full": "9999px"       /* Totalmente redondo (círculo/pílula) */
+            "full": "9999px"
           },
         },
       },
@@ -150,446 +62,701 @@ gtag('config', 'G-PGXCZF9S9W');
   </script>
 
   <style>
-    /* Define o estilo padrão dos ícones Material Symbols */
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined', sans-serif;
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       font-feature-settings: 'liga';
       line-height: 1;
     }
-    /* ── Atalhos rápidos (home) ───────────────────────────────────────── */
-    .je-index-shortcuts-section {
-      position: relative; z-index: 20; margin-top: -3rem;
-      width: 100%;
+
+    @keyframes jeHomeFadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .je-index-shortcuts-panel {
-      background: #fff; border: 1px solid #e2e6ef; border-radius: 1rem;
-      box-shadow: 0 8px 28px rgba(15, 52, 98, 0.1);
-      padding: 0.75rem; overflow: hidden;
-      width: 100%;
-      margin-left: auto; margin-right: auto;
+    .je-home-fade { animation: jeHomeFadeUp 0.45s ease both; }
+    .je-home-fade-2 { animation: jeHomeFadeUp 0.45s 0.08s ease both; }
+    .je-home-fade-3 { animation: jeHomeFadeUp 0.45s 0.16s ease both; }
+
+    .je-home-hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, #071f3d 0%, #0f3462 42%, #1a4a7a 100%);
+      color: #fff;
     }
-    .je-index-shortcuts-grid { display: flex; flex-direction: column; gap: 0.375rem; }
-    .je-index-shortcut {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.625rem 0.75rem; border-radius: 0.75rem;
-      border: 1px solid #e2e6ef; background: #fafbfc;
-      text-decoration: none; color: inherit;
+    .je-home-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 70% at 100% 0%, rgba(200, 169, 110, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 45% at 0% 100%, rgba(59, 94, 151, 0.35) 0%, transparent 50%);
+    }
+    .je-home-hero-inner {
+      position: relative;
+      z-index: 1;
+      padding: 2.5rem 0 3rem;
+    }
+    .je-home-hero-grid {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+    }
+    @media (min-width: 1024px) {
+      .je-home-hero-inner { padding: 3.5rem 0 4rem; }
+      .je-home-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 3rem; }
+    }
+    .je-home-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.88);
+      margin-bottom: 1rem;
+    }
+    .je-home-kicker-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+    }
+    .je-home-hero h1 {
+      font-size: clamp(1.875rem, 4vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.75rem;
+    }
+    .je-home-hero-lead {
+      font-size: clamp(1rem, 2vw, 1.125rem);
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 34rem;
+      margin: 0 0 1.25rem;
+    }
+    .je-home-hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .je-home-meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.4375rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.92);
+    }
+    .je-home-meta-pill .material-symbols-outlined { font-size: 1rem; opacity: 0.9; }
+    .je-home-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.625rem;
+    }
+    .je-home-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6875rem 1.125rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .je-home-btn:hover { transform: translateY(-1px); }
+    .je-home-btn--primary {
+      background: #fff;
+      color: #0f3462;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+    }
+    .je-home-btn--primary:hover { box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22); }
+    .je-home-btn--ghost {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .je-home-btn--ghost:hover { background: rgba(255, 255, 255, 0.16); }
+    .je-home-hero-visual {
+      position: relative;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      aspect-ratio: 4 / 3;
+      min-height: 220px;
+    }
+    .je-home-hero-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .je-home-hero-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(7, 31, 61, 0.45) 0%, transparent 45%);
+      pointer-events: none;
+    }
+    .je-home-hero-caption {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .je-home-section {
+      padding: 2.5rem 0;
+    }
+    @media (min-width: 1024px) {
+      .je-home-section { padding: 3rem 0; }
+    }
+    .je-home-section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .je-home-section-kicker {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #3b5e97;
+      margin: 0 0 0.25rem;
+    }
+    .je-home-section-title {
+      font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+      font-weight: 800;
+      color: #0f3462;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .je-home-shortcuts {
+      display: grid;
+      gap: 0.625rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) {
+      .je-home-shortcuts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .je-home-shortcuts { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.75rem; }
+    }
+    .je-home-shortcut {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 1rem 1.125rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e6ef;
+      background: #fff;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 16px rgba(15, 52, 98, 0.05);
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
     }
-    .je-index-shortcut:hover {
-      border-color: #3b5e97; background: #fff;
-      box-shadow: 0 4px 14px rgba(15, 52, 98, 0.08);
-      transform: translateY(-1px);
+    .je-home-shortcut:hover {
+      border-color: #3b5e97;
+      box-shadow: 0 8px 24px rgba(15, 52, 98, 0.1);
+      transform: translateY(-2px);
     }
-    .je-index-shortcut-icon {
-      flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 0.5rem;
-      display: flex; align-items: center; justify-content: center;
+    .je-home-shortcut-icon {
+      flex-shrink: 0;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.375rem;
+      line-height: 1;
     }
-    .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.25rem; }
-    .je-index-shortcut-text { flex: 1; min-width: 0; text-align: left; }
-    .je-index-shortcut-title {
-      display: block; font-size: 0.875rem; font-weight: 700; color: #0f3462; line-height: 1.2;
-      overflow-wrap: anywhere;
+    .je-home-shortcut-body { flex: 1; min-width: 0; }
+    .je-home-shortcut-title {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: #0f3462;
+      line-height: 1.2;
     }
-    .je-index-shortcut-desc { display: block; font-size: 0.6875rem; color: #43474f; line-height: 1.3; margin-top: 0.1rem; }
-    .je-index-shortcut-chevron {
-      flex-shrink: 0; font-size: 1rem !important; color: #c3c6d0;
-      align-self: center;
+    .je-home-shortcut-desc {
+      display: block;
+      font-size: 0.75rem;
+      color: #43474f;
+      margin-top: 0.125rem;
+      line-height: 1.35;
+    }
+    .je-home-shortcut-arrow {
+      flex-shrink: 0;
+      font-size: 1.125rem !important;
+      color: #c3c6d0;
       transition: color 0.15s, transform 0.15s;
     }
-    .je-index-shortcut:hover .je-index-shortcut-chevron { color: #3b5e97; transform: translateX(2px); }
-    .je-index-shortcut--agenda .je-index-shortcut-icon { background: #dbeafe; color: #1d4ed8; }
-    .je-index-shortcut--agenda:hover { border-color: #93c5fd; }
-    .je-index-shortcut--agendamentos .je-index-shortcut-icon { background: #d1fae5; color: #047857; }
-    .je-index-shortcut--agendamentos:hover { border-color: #6ee7b7; }
-    .je-index-shortcut--anuncios .je-index-shortcut-icon { background: #fef3c7; color: #b45309; }
-    .je-index-shortcut--anuncios:hover { border-color: #fcd34d; }
-    .je-index-shortcut--territorios .je-index-shortcut-icon { background: #e0e7ff; color: #4338ca; }
-    .je-index-shortcut--territorios:hover { border-color: #a5b4fc; }
-    .je-index-shortcut--donativos .je-index-shortcut-icon { background: #fce7f3; color: #be185d; }
-    .je-index-shortcut--donativos:hover { border-color: #f9a8d4; }
+    .je-home-shortcut:hover .je-home-shortcut-arrow {
+      color: #3b5e97;
+      transform: translateX(2px);
+    }
+    .je-home-shortcut--agenda .je-home-shortcut-icon { background: #dbeafe; }
+    .je-home-shortcut--agendamentos .je-home-shortcut-icon { background: #d1fae5; }
+    .je-home-shortcut--anuncios .je-home-shortcut-icon { background: #fef3c7; }
+    .je-home-shortcut--territorios .je-home-shortcut-icon { background: #e0e7ff; }
+    .je-home-shortcut--donativos .je-home-shortcut-icon { background: #fce7f3; }
 
-    @media (min-width: 768px) and (max-width: 1023px) {
-      .je-index-shortcuts-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.5rem;
-      }
-      .je-index-shortcut {
-        width: auto;
-        max-width: none;
-        padding: 0.625rem 0.75rem;
-      }
-      .je-index-shortcut--donativos {
-        grid-column: 1 / -1;
-        max-width: 22rem;
-        justify-self: center;
+    .je-home-dashboard {
+      display: grid;
+      gap: 1.25rem;
+    }
+    @media (min-width: 1024px) {
+      .je-home-dashboard {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 0.85fr);
+        align-items: start;
       }
     }
 
-    @media (min-width: 1024px) {
-      .je-index-shortcuts-section { margin-top: -3.5rem; }
-      .je-index-shortcuts-panel { padding: 0.625rem 0.75rem; }
-      .je-index-shortcuts-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 0.5rem;
-        width: 100%;
+    .je-home-meeting {
+      background: linear-gradient(155deg, #0f3462 0%, #2b4b7a 100%);
+      color: #fff;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 12px 32px rgba(15, 52, 98, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      height: 100%;
+    }
+    .je-home-meeting-head {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 1.25rem;
+    }
+    .je-home-meeting-head .material-symbols-outlined {
+      font-size: 1.375rem;
+      color: #c8a96e;
+    }
+    .je-home-meeting-label {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .je-home-meeting-day {
+      font-size: 1.375rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 0 0 0.375rem;
+    }
+    .je-home-meeting-time {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.82);
+      margin: 0 0 1.25rem;
+    }
+    .je-home-meeting-place {
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 0.8125rem;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.78);
+    }
+    .je-home-meeting-place strong {
+      display: block;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .je-home-card {
+      background: #fff;
+      border: 1px solid #e2e6ef;
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 20px rgba(15, 52, 98, 0.06);
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .je-home-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1.125rem 1.25rem;
+      border-bottom: 1px solid #e2e6ef;
+    }
+    .je-home-card-head-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 0;
+    }
+    .je-home-card-head-left .material-symbols-outlined {
+      font-size: 1.25rem;
+      color: #3b5e97;
+    }
+    .je-home-card-title {
+      font-size: 0.8125rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #0f3462;
+      margin: 0;
+    }
+    .je-home-card-sub {
+      font-size: 0.75rem;
+      color: #43474f;
+      font-weight: 500;
+    }
+    .je-home-card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #3b5e97;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .je-home-card-link:hover { text-decoration: underline; }
+    .je-home-card-body { flex: 1; min-height: 0; }
+
+    .je-home-news-list { list-style: none; margin: 0; padding: 0; }
+    .je-home-news-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid #eef0f4;
+      transition: background 0.15s;
+    }
+    .je-home-news-item:last-child { border-bottom: none; }
+    .je-home-news-item:hover { background: #f8fafc; }
+    .je-home-news-icon {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background: #eff6ff;
+      color: #3b5e97;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .je-home-news-icon .material-symbols-outlined { font-size: 1rem; }
+    .je-home-news-text {
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: #1b1c1c;
+      margin: 0;
+    }
+
+    .je-home-visit {
+      margin-top: 0.5rem;
+      background: linear-gradient(135deg, #f5f8fc 0%, #f0ece6 100%);
+      border: 1px solid #e2e6ef;
+      border-radius: 1.25rem;
+      padding: 1.5rem 1.25rem;
+    }
+    @media (min-width: 768px) {
+      .je-home-visit {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        padding: 1.75rem 2rem;
       }
-      .je-index-shortcut {
-        width: auto;
-        max-width: none;
-        padding: 0.5rem 0.5rem;
-        gap: 0.375rem;
-        justify-content: flex-start;
-      }
-      .je-index-shortcut-text { flex: 0 1 auto; }
-      .je-index-shortcut-icon { width: 2rem; height: 2rem; }
-      .je-index-shortcut-icon .material-symbols-outlined { font-size: 1.0625rem; }
-      .je-index-shortcut-title { font-size: 0.75rem; line-height: 1.15; }
-      .je-index-shortcut-desc { display: none; }
-      .je-index-shortcut-chevron { font-size: 0.875rem !important; margin-left: 0.125rem; }
+    }
+    .je-home-visit-copy h2 {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: #0f3462;
+      margin: 0 0 0.375rem;
+    }
+    .je-home-visit-copy p {
+      font-size: 0.875rem;
+      color: #43474f;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .je-home-visit-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    @media (min-width: 768px) {
+      .je-home-visit-actions { margin-top: 0; flex-shrink: 0; }
+    }
+    .je-home-visit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5625rem 1rem;
+      border-radius: 9999px;
+      background: #fff;
+      border: 1px solid #e2e6ef;
+      color: #0f3462;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .je-home-visit-btn:hover {
+      border-color: #3b5e97;
+      box-shadow: 0 4px 12px rgba(15, 52, 98, 0.08);
     }
 
     @media (max-width: 1023px) {
-      .je-index-hero {
-        height: auto !important;
-        min-height: clamp(280px, 48vh, 400px);
-      }
-      .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
       .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
-      .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
+      .je-home-widgets-row > * { width: 100% !important; max-width: none !important; }
+      .je-home-shortcut-desc { display: none; }
     }
     @media (max-width: 767px) {
-      .je-index-hero { min-height: clamp(260px, 42vh, 340px); }
-      .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
-      .je-index-shortcuts-section { margin-top: -2rem; }
-      .je-index-shortcuts-panel { width: 100%; }
-      .je-index-shortcuts-grid { display: flex; flex-direction: column; }
-      .je-index-shortcut { width: 100%; max-width: none; flex: 1 1 auto; min-height: 2.75rem; }
-      .je-index-shortcut-desc { display: none; }
+      .je-home-hero-inner { padding: 2rem 0 2.5rem; }
+      .je-home-hero-actions { flex-direction: column; align-items: stretch; }
+      .je-home-btn { justify-content: center; }
+      .je-home-section { padding: 2rem 0; }
       .je-home-ev-cat { font-size: 0.6875rem !important; padding: 2px 7px !important; }
     }
   </style>
-
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
-<!--
-  <body> contém tudo que o usuário VÊ na página.
-  As classes definem:
-    - bg-background: cor de fundo da página
-    - text-on-background: cor padrão do texto
-    - font-body: fonte padrão (Inter)
-    - selection:...: cores quando o usuário seleciona um texto com o mouse
--->
 
-  <!-- ══════════════════════════════════════════════════════════════════════════
-    BARRA DE NAVEGAÇÃO SUPERIOR (TopNavBar)
-    Fica fixada no topo da página (sticky) enquanto o usuário rola a página.
-    Contém: logo, links de navegação e botões de notificação/perfil.
-  ══════════════════════════════════════════════════════════════════════════ -->
 <div id="header"></div>
-  <main>
-  <!--
-    <main> agrupa o conteúdo principal da página.
-    Tudo que o usuário interage fica aqui dentro.
-  -->
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-      SEÇÃO HERO (Banner Principal)
-      A grande imagem de destaque no topo da página com título e botão.
-      Altura fixa: h-[550px] — altere o número para mudar a altura.
-    ══════════════════════════════════════════════════════════════════════ -->
-    <section class="je-index-hero relative h-[550px] flex items-end overflow-hidden">
-
-      <!-- IMAGEM DE FUNDO ──────────────────────────────────────────────────
-        O atributo src="..." define o endereço da imagem.
-        PARA TROCAR A IMAGEM: substitua a URL dentro de src="..." por:
-          - Um link de uma imagem na internet, OU
-          - O caminho de uma imagem no seu computador (ex: src="imagens/foto.jpg")
-        O atributo alt="..." é o texto descritivo para acessibilidade (leitores de tela).
-      -->
-<div class="absolute inset-0 z-0">
-  <div
-    style="
-      width: 100%;
-      height: 100%;
-      background-image: url('img/cong.jpg');
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-    "
-  ></div>
-  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-</div>
-
-      <!-- CONTEÚDO SOBRE A IMAGEM (título e botão) ───────────────────────── -->
-      <div class="max-w-7xl mx-auto px-6 relative z-10 w-full mt-auto pb-16">
-        <div class="max-w-2xl">
-
-          <!-- TÍTULO PRINCIPAL ─────────────────────────────────────────────
-            Altere o texto entre as tags <h1> para mudar o título do banner.
-          -->
-          <h1 class="text-white text-2xl md:text-3xl font-extrabold tracking-tight mb-4 leading-tight">
-            Congregação Jardim Elizabeth
-          </h1>
-
-          <!-- SUBTÍTULO ────────────────────────────────────────────────────
-            Altere o texto entre as tags <p> para mudar o subtítulo. (Se quiser adicionar)
-          -->
-          <p class="text-base md:text-lg font-light mb-6 leading-relaxed text-white/90">
+<main>
+  <section class="je-home-hero je-home-fade">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell je-home-hero-inner">
+      <div class="je-home-hero-grid">
+        <div>
+          <span class="je-home-kicker">
+            <span class="je-home-kicker-dot" aria-hidden="true"></span>
+            Congregação Cristã de Testemunhas de Jeová
+          </span>
+          <h1>Congregação Jardim Elizabeth</h1>
+          <p class="je-home-hero-lead">
+            Bem-vindo ao site da nossa congregação. Aqui você encontra a agenda, anúncios, territórios e informações úteis para o serviço de campo.
           </p>
-
-          <!-- BOTÃO DE CHAMADA (Call to Action) ───────────────────────────
-            Altere o texto "Quadro de Anúncios" para qualquer outro texto.
-            Para linkar a uma página, adicione href="..." ao botão ou envolva-o em um <a>.
-          -->
-        </div>
-      </div>
-    </section>
-    <!-- FIM DA SEÇÃO HERO ─────────────────────────────────────────────────── -->
-
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-      GRADE DE ATALHOS RÁPIDOS
-      Os 5 cards com ícones que ficam sobrepostos à imagem hero.
-      O -mt-12 faz os cards "subirem" sobre a imagem.
-    ══════════════════════════════════════════════════════════════════════ -->
-    <section class="max-w-7xl mx-auto px-6 je-page-shell je-index-shortcuts-section">
-      <div class="je-index-shortcuts-panel">
-        <div class="je-index-shortcuts-grid">
-
-          <a class="je-index-shortcut je-index-shortcut--agenda" href="agenda.html">
-            <span class="je-index-shortcut-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">calendar_month</span>
+          <div class="je-home-hero-meta">
+            <span class="je-home-meta-pill">
+              <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+              Jardim Rosana, São Paulo
             </span>
-            <span class="je-index-shortcut-text">
-              <span class="je-index-shortcut-title">Agenda</span>
-              <span class="je-index-shortcut-desc">Eventos e reuniões</span>
+            <span class="je-home-meta-pill">
+              <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+              Qua e Sáb · 19h30
             </span>
-            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
-          </a>
-
-          <a class="je-index-shortcut je-index-shortcut--agendamentos" href="agendamentos.html">
-            <span class="je-index-shortcut-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">event_available</span>
-            </span>
-            <span class="je-index-shortcut-text">
-              <span class="je-index-shortcut-title">Agendamentos</span>
-              <span class="je-index-shortcut-desc">Carrinhos e displays</span>
-            </span>
-            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
-          </a>
-
-          <a class="je-index-shortcut je-index-shortcut--anuncios" href="quadrodeanuncios.html">
-            <span class="je-index-shortcut-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">campaign</span>
-            </span>
-            <span class="je-index-shortcut-text">
-              <span class="je-index-shortcut-title">Quadro de Anúncios</span>
-              <span class="je-index-shortcut-desc">Avisos da congregação</span>
-            </span>
-            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
-          </a>
-
-          <a class="je-index-shortcut je-index-shortcut--territorios" href="territorios.html">
-            <span class="je-index-shortcut-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">map</span>
-            </span>
-            <span class="je-index-shortcut-text">
-              <span class="je-index-shortcut-title">Territórios</span>
-              <span class="je-index-shortcut-desc">Mapas do serviço de campo</span>
-            </span>
-            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
-          </a>
-
-          <a class="je-index-shortcut je-index-shortcut--donativos" href="donativos.html">
-            <span class="je-index-shortcut-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">volunteer_activism</span>
-            </span>
-            <span class="je-index-shortcut-text">
-              <span class="je-index-shortcut-title">Donativos</span>
-              <span class="je-index-shortcut-desc">Contribuições via PIX</span>
-            </span>
-            <span class="material-symbols-outlined je-index-shortcut-chevron" aria-hidden="true">arrow_forward</span>
-          </a>
-
-        </div>
-      </div>
-    </section>
-    <!-- FIM DOS ATALHOS RÁPIDOS ──────────────────────────────────────────── -->
-
-
-    <!-- ══════════════════════════════════════════════════════════════════════
-      GRADE DE CONTEÚDO PRINCIPAL
-      Layout em duas colunas: sidebar à esquerda (3 colunas) e feed à direita (9 colunas).
-      Em telas pequenas, empilha verticalmente (grid-cols-1).
-    ══════════════════════════════════════════════════════════════════════ -->
-    <div class="max-w-7xl mx-auto px-6 je-page-shell py-12">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-
-        <!-- ── COLUNA LATERAL (Sidebar) ─────────────────────────────────────
-          Ocupa 3 das 12 colunas da grid em telas grandes.
-          Em telas pequenas, aparece acima do conteúdo principal.
-        -->
-        <!-- ── LINHA: PRÓXIMA REUNIÃO + PRÓXIMOS EVENTOS lado a lado ─────── -->
-        <div class="lg:col-span-12 flex flex-col md:flex-row gap-6 items-start je-home-widgets-row">
-
-          <!-- WIDGET: PRÓXIMA REUNIÃO -->
-          <div class="bg-primary-container text-on-primary-container p-6 rounded-xl w-full md:w-72 flex-shrink-0">
-            <div class="flex items-center gap-2 mb-4">
-              <span class="material-symbols-outlined text-on-primary-container">info</span>
-              <h3 class="font-bold uppercase text-xs tracking-tighter">Próxima Reunião</h3>
-            </div>
-            <p class="text-lg font-bold mb-1" id="proxima-reuniao-dia"></p>
-            <p class="text-sm opacity-80 mb-4">Salão do Reino<br>
-                    Rua Professor Orestes Rosólia, 164<br>
-                    Jardim Rosana, São Paulo – SP<br>
-            </p>
           </div>
-
-          <!-- ══ PRÓXIMOS EVENTOS (lidos automaticamente da agenda.html) ══ -->
-          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden w-full md:w-96 flex-shrink-0">
-
-            <!-- Cabeçalho do bloco -->
-            <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:20px">event</span>
-                <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Próximos Eventos</h3>
-                <span id="proxeventos-mes" class="text-xs text-on-surface-variant font-normal ml-1"></span>
-              </div>
-            </div>
-            <div class="px-4 py-2 border-b border-outline-variant">
-              <a href="agenda.html"
-                 class="text-xs font-semibold text-secondary hover:underline flex items-center gap-1">
-                Ver agenda completa
-                <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
-              </a>
-            </div>
-
-            <!-- Lista de eventos (preenchida via JS) -->
-            <div id="proxeventos-lista" class="divide-y divide-outline-variant">
-              <div id="proxeventos-loading" class="flex items-center gap-3 px-5 py-4 text-on-surface-variant text-sm">
-                <span class="material-symbols-outlined animate-spin" style="font-size:18px">progress_activity</span>
-                Carregando eventos…
-              </div>
-            </div>
-
+          <div class="je-home-hero-actions">
+            <a href="agenda.html" class="je-home-btn je-home-btn--primary">
+              <span class="material-symbols-outlined" style="font-size:18px">calendar_month</span>
+              Ver agenda
+            </a>
+            <a href="quadrodeanuncios.html" class="je-home-btn je-home-btn--ghost">
+              <span class="material-symbols-outlined" style="font-size:18px">campaign</span>
+              Anúncios
+            </a>
           </div>
-          <!-- FIM: PRÓXIMOS EVENTOS ─────────────────────────────────────── -->
-
-<!-- ══ NOVIDADES DO SITE ══════════════════════════════════════════════════ -->
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden w-full md:w-64 flex-shrink-0">
-
-  <!-- Cabeçalho -->
-  <div class="flex items-center gap-2 px-5 py-4 border-b border-outline-variant">
-    <span class="material-symbols-outlined text-secondary" style="font-size:20px">new_releases</span>
-    <h3 class="font-bold text-primary text-sm uppercase tracking-widest">Novidades do Site</h3>
-  </div>
-
-  <!-- Lista de novidades -->
-  <ul class="divide-y divide-outline-variant">
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">search</span>
-      <p class="text-xs text-on-surface">Busca da Agenda repaginada — campo pill, contador e limpar como em Territórios</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">smartphone</span>
-      <p class="text-xs text-on-surface">Site mais confortável no celular e no tablet</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">label</span>
-      <p class="text-xs text-on-surface">Nomes dos territórios corrigidos conforme os mapas T01–T19</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">map</span>
-      <p class="text-xs text-on-surface">Busca da página Territórios com barra pill e contador de resultados</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">map</span>
-      <p class="text-xs text-on-surface">Navbar do site com emojis e menu mais fácil de navegar</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
-      <p class="text-xs text-on-surface">Seções Próxima Reunião, Próximos Eventos e Novidades na página inicial</p>
-    </li>
-
-    <li class="flex items-start gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-      <span class="material-symbols-outlined text-secondary" style="font-size:18px">star</span>
-      <p class="text-xs text-on-surface">Links de navegação adicionados no rodapé Localização</p>
-    </li>
-
-  </ul>
-</div>
-<!-- ══ FIM: NOVIDADES DO SITE ════════════════════════════════════════════ -->
-			
         </div>
-        <!-- FIM DA LINHA ───────────────────────────────────────────────── -->
-
-
-        <!-- ── FEED PRINCIPAL ───────────────────────────────────────────────
-          Ocupa 9 das 12 colunas em telas grandes.
-        -->
-        <div class="lg:col-span-9 space-y-8">
-
-          <!-- LINHA 1: reservado para futuro uso -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="je-home-hero-visual je-home-fade-2">
+          <img src="img/cong.jpg" alt="Salão do Reino da Congregação Jardim Elizabeth" width="800" height="600" decoding="async">
+          <div class="je-home-hero-caption">
+            <span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">church</span>
+            Salão do Reino
           </div>
-          <!-- FIM DA LINHA 1 ─────────────────────────────────────────────── -->
-
-
-          <!-- ── LINHA 2: WIDGET DE PROGRESSO DE LEITURA [REMOVIDO] ─────────────────── -->
-          <!--
-            Card grande com fundo azul escuro (primary).
-            Mostra o progresso de leitura do publicação atual.
-            Altere os textos e porcentagens conforme necessário.
-          -->
-
-          <!-- FIM: WIDGET DE PROGRESSO ──────────────────────────────────── -->
-
         </div>
-        <!-- FIM DO FEED PRINCIPAL ─────────────────────────────────────────── -->
-
       </div>
     </div>
-    <!-- FIM DA GRADE DE CONTEÚDO PRINCIPAL ──────────────────────────────── -->
+  </section>
 
-  </main>
-  <!-- FIM DO CONTEÚDO PRINCIPAL (<main>) ───────────────────────────────── -->
+  <section class="je-home-section je-home-fade-2">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell">
+      <div class="je-home-section-head">
+        <div>
+          <p class="je-home-section-kicker">Navegação</p>
+          <h2 class="je-home-section-title">Acesso rápido</h2>
+        </div>
+      </div>
+      <div class="je-home-shortcuts">
+        <a class="je-home-shortcut je-home-shortcut--agenda" href="agenda.html">
+          <span class="je-home-shortcut-icon" aria-hidden="true">🗓️</span>
+          <span class="je-home-shortcut-body">
+            <span class="je-home-shortcut-title">Agenda</span>
+            <span class="je-home-shortcut-desc">Eventos e reuniões</span>
+          </span>
+          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+        <a class="je-home-shortcut je-home-shortcut--agendamentos" href="agendamentos.html">
+          <span class="je-home-shortcut-icon" aria-hidden="true">📋</span>
+          <span class="je-home-shortcut-body">
+            <span class="je-home-shortcut-title">Agendamentos</span>
+            <span class="je-home-shortcut-desc">Carrinhos e displays</span>
+          </span>
+          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+        <a class="je-home-shortcut je-home-shortcut--anuncios" href="quadrodeanuncios.html">
+          <span class="je-home-shortcut-icon" aria-hidden="true">🔔</span>
+          <span class="je-home-shortcut-body">
+            <span class="je-home-shortcut-title">Quadro de Anúncios</span>
+            <span class="je-home-shortcut-desc">Avisos da congregação</span>
+          </span>
+          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+        <a class="je-home-shortcut je-home-shortcut--territorios" href="territorios.html">
+          <span class="je-home-shortcut-icon" aria-hidden="true">🗺️</span>
+          <span class="je-home-shortcut-body">
+            <span class="je-home-shortcut-title">Territórios</span>
+            <span class="je-home-shortcut-desc">Mapas do serviço de campo</span>
+          </span>
+          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+        <a class="je-home-shortcut je-home-shortcut--donativos" href="donativos.html">
+          <span class="je-home-shortcut-icon" aria-hidden="true">🤲</span>
+          <span class="je-home-shortcut-body">
+            <span class="je-home-shortcut-title">Donativos</span>
+            <span class="je-home-shortcut-desc">Contribuições via PIX</span>
+          </span>
+          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
+  <section class="je-home-section je-home-fade-3" style="padding-top: 0;">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell">
+      <div class="je-home-section-head">
+        <div>
+          <p class="je-home-section-kicker">Resumo</p>
+          <h2 class="je-home-section-title">Esta semana</h2>
+        </div>
+      </div>
 
-  <!-- ══════════════════════════════════════════════════════════════════════
-    RODAPÉ (Footer)
-    Barra inferior com logo, links legais e copyright.
-    Altere os textos e links conforme necessário.
-  ══════════════════════════════════════════════════════════════════════ -->
+      <div class="je-home-dashboard je-home-widgets-row">
+        <article class="je-home-meeting">
+          <div class="je-home-meeting-head">
+            <span class="material-symbols-outlined" aria-hidden="true">event</span>
+            <span class="je-home-meeting-label">Próxima reunião</span>
+          </div>
+          <p class="je-home-meeting-day" id="proxima-reuniao-dia"></p>
+          <p class="je-home-meeting-time">Início às 19h30</p>
+          <div class="je-home-meeting-place">
+            <strong>Salão do Reino</strong>
+            Rua Professor Orestes Rosólia, 164<br>
+            Jardim Rosana, São Paulo – SP
+          </div>
+        </article>
+
+        <article class="je-home-card">
+          <header class="je-home-card-head">
+            <div class="je-home-card-head-left">
+              <span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>
+              <div>
+                <h3 class="je-home-card-title">Próximos eventos</h3>
+                <span id="proxeventos-mes" class="je-home-card-sub"></span>
+              </div>
+            </div>
+            <a href="agenda.html" class="je-home-card-link">
+              Ver tudo
+              <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+            </a>
+          </header>
+          <div id="proxeventos-lista" class="je-home-card-body divide-y divide-outline-variant">
+            <div id="proxeventos-loading" class="flex items-center gap-3 px-5 py-5 text-on-surface-variant text-sm">
+              <span class="material-symbols-outlined animate-spin" style="font-size:18px">progress_activity</span>
+              Carregando eventos…
+            </div>
+          </div>
+        </article>
+
+        <article class="je-home-card">
+          <header class="je-home-card-head">
+            <div class="je-home-card-head-left">
+              <span class="material-symbols-outlined" aria-hidden="true">new_releases</span>
+              <h3 class="je-home-card-title">Novidades</h3>
+            </div>
+          </header>
+          <ul class="je-home-news-list je-home-card-body">
+            <li class="je-home-news-item">
+              <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">home</span></span>
+              <p class="je-home-news-text">Página inicial repaginada — hero, atalhos e painel da semana</p>
+            </li>
+            <li class="je-home-news-item">
+              <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">login</span></span>
+              <p class="je-home-news-text">Login corrigido — perfil carrega após entrar no site</p>
+            </li>
+            <li class="je-home-news-item">
+              <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">search</span></span>
+              <p class="je-home-news-text">Busca da Agenda repaginada — campo pill e contador</p>
+            </li>
+            <li class="je-home-news-item">
+              <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">smartphone</span></span>
+              <p class="je-home-news-text">Site mais confortável no celular e no tablet</p>
+            </li>
+            <li class="je-home-news-item">
+              <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">label</span></span>
+              <p class="je-home-news-text">Nomes dos territórios corrigidos conforme mapas T01–T19</p>
+            </li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="je-home-visit">
+        <div class="je-home-visit-copy">
+          <h2>Visite-nos no Salão do Reino</h2>
+          <p>Todas são bem-vindas às nossas reuniões públicas. Confira a agenda ou use o mapa para chegar até nós.</p>
+        </div>
+        <div class="je-home-visit-actions">
+          <a href="https://www.google.com/maps?q=-23.647024,-46.77835" target="_blank" rel="noopener" class="je-home-visit-btn">
+            <span class="material-symbols-outlined" style="font-size:16px">map</span>
+            Google Maps
+          </a>
+          <a href="agenda.html" class="je-home-visit-btn">
+            <span class="material-symbols-outlined" style="font-size:16px">calendar_month</span>
+            Agenda completa
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
 <div id="footer"></div>
-  <!-- FIM DO RODAPÉ ────────────────────────────────────────────────────── -->
 
-  <script>
-    function toggleMonth(header) {
-      header.closest('.month-block').classList.toggle('open');
-    }
+<script>
+  const dia = new Date().getDay();
+  const texto = [0, 1, 2, 3].includes(dia) ? 'Quarta-feira' : 'Sábado';
+  document.getElementById('proxima-reuniao-dia').textContent = texto;
+</script>
 
-    const dia = new Date().getDay();
-    const texto = [0, 1, 2, 3].includes(dia) ? 'Quarta-feira, 19h30' : 'Sábado, 19h30';
-    document.getElementById('proxima-reuniao-dia').textContent = texto;
-  </script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/header.js"></script>
+<script src="js/site-loader.js"></script>
+<script src="js/content.js"></script>
 
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/header.js"></script>
-  <script src="js/site-loader.js"></script>
-  <script src="js/content.js"></script>
-	  
 </body>
 </html>

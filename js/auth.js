@@ -28,10 +28,12 @@
     }
   }
 
-  const PROFILE_SELECT = `id, full_name, role, display_role, designation, username, can_announcements,
-    profile_access_designations (
+  const PROFILE_SELECT_BASE = 'id, full_name, role, designation, username, can_announcements';
+  const PROFILE_DESIGNATIONS = `profile_access_designations (
       access_designations ( id, slug, label, permissions, is_active )
     )`;
+  const PROFILE_SELECT = `${PROFILE_SELECT_BASE}, display_role, ${PROFILE_DESIGNATIONS}`;
+  const PROFILE_SELECT_FALLBACK = `${PROFILE_SELECT_BASE}, ${PROFILE_DESIGNATIONS}`;
 
   function enrichProfile(data) {
     if (!data) return null;
@@ -199,13 +201,28 @@
     return !!profile.can_announcements;
   }
 
-  async function fetchProfile(userId) {
+  async function queryProfile(client, userId, select, timeoutMs = SESSION_TIMEOUT_MS) {
+    try {
+      return await withTimeout(
+        client.from('profiles').select(select).eq('id', userId).maybeSingle(),
+        timeoutMs
+      );
+    } catch (err) {
+      const message = err?.message === 'timeout' ? 'timeout' : (err?.message || 'unknown');
+      return { data: null, error: { message } };
+    }
+  }
+
+  async function fetchProfile(userId, options = {}) {
     const client = await getClient();
     if (!client || !userId) return null;
 
-    const { data, error } = await withTimeout(
-      client.from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle()
-    );
+    const timeoutMs = options.timeoutMs || SESSION_TIMEOUT_MS;
+    let { data, error } = await queryProfile(client, userId, PROFILE_SELECT, timeoutMs);
+
+    if (error && /display_role|column profiles\./i.test(error.message || '')) {
+      ({ data, error } = await queryProfile(client, userId, PROFILE_SELECT_FALLBACK, timeoutMs));
+    }
 
     if (error) {
       console.warn('Erro ao carregar perfil:', error.message);
@@ -267,8 +284,10 @@
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
-    currentProfile = await fetchProfile(data.user.id);
-    if (currentProfile) writeProfileCache(currentProfile);
+    currentProfile = await fetchProfile(data.user.id, { timeoutMs: 12000 });
+    if (!currentProfile) {
+      currentProfile = await fetchProfile(data.user.id, { timeoutMs: 12000 });
+    }
     return { user: data.user, profile: currentProfile };
   }
 
