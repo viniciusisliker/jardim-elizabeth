@@ -299,8 +299,8 @@
       const card = document.querySelector(`.territory-card[data-num="${t.num}"], article[data-num="${t.num}"]`);
       if (!card) return;
       if (t.display_name) {
-        const h3 = card.querySelector('h3');
-        if (h3) h3.textContent = t.display_name;
+        const titleEl = card.querySelector('.je-ter-card-title, h3');
+        if (titleEl) titleEl.textContent = t.display_name;
       }
       if (t.map_image_url || t.num) {
         const img = card.querySelector('img');
@@ -308,7 +308,7 @@
           const src = window.JETerritoryAssignment?.resolveTerritoryMapUrl(t.map_image_url, t.num);
           if (src) {
             img.src = src;
-            img.alt = `Mapa Território ${t.num} – ${t.display_name}`;
+            img.alt = `Mapa Território ${t.num} – ${t.display_name || card.querySelector('.je-ter-card-title, h3')?.textContent || 'Território'}`;
           }
         }
       }
