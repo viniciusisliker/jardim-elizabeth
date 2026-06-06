@@ -424,7 +424,7 @@
     const dateStr = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
     const title = entry.weekday_label ? `${dateStr} · ${entry.weekday_label}` : dateStr;
 
-    const order = ['discurso', 'sentinela', 'sala_b', 'especial'];
+    const order = ['territorio', 'discurso', 'sentinela', 'sala_b', 'especial'];
     const sections = order.map((gid) => {
       const meta = WEEKEND_GROUPS[gid];
       const groupFields = WEEKEND_FIELDS.filter((f) => f.group === gid);

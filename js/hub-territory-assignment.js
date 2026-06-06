@@ -114,7 +114,9 @@
 
     if (schedErr) console.warn('Hub schedule:', schedErr.message);
     else {
+      const weekendByDate = await H.fetchWeekendAnnouncements(client, monday);
       (templateRows || [])
+        .map((row) => H.applyWeekendDirigente(row, monday, weekendByDate, []))
         .filter((row) => matchesDirigente(row, profileId, profileName))
         .map((row) => {
           const workDate = H.dateForWeekdayInWeek(monday, row.weekday_label);

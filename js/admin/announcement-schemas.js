@@ -43,6 +43,7 @@
   ];
 
   const WEEKEND_FIELDS = [
+    { key: 'dirigente_sabado', label: 'Dirigente de sábado (território)', type: 'text', group: 'territorio', hint: 'Dirige o trabalho de campo no sábado — usado no cronograma de territórios' },
     { key: 'presidente', label: 'Presidente', type: 'text', group: 'discurso' },
     { key: 'tema_discurso', label: 'Tema do discurso', type: 'text', group: 'discurso' },
     { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
@@ -55,6 +56,7 @@
   ];
 
   const WEEKEND_GROUPS = {
+    territorio: { title: 'Trabalho de campo (sábado)', icon: 'hiking' },
     discurso: { title: 'Discurso público', icon: 'record_voice_over' },
     sentinela: { title: 'Estudo da Sentinela', icon: 'menu_book' },
     sala_b: { title: 'Sala B', icon: 'groups' },

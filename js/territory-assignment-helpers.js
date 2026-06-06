@@ -168,6 +168,80 @@
     return null;
   }
 
+  function normalizeName(name) {
+    return String(name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  function resolveProfileByName(name, profiles) {
+    if (!name || !profiles?.length) return null;
+    const n = normalizeName(name);
+    const exact = profiles.find((p) => normalizeName(p.full_name) === n);
+    if (exact) return exact;
+    const first = n.split(/\s+/)[0];
+    if (!first) return null;
+    return profiles.find((p) => {
+      const full = normalizeName(p.full_name);
+      return full === first || full.startsWith(`${first} `);
+    }) || null;
+  }
+
+  function isSaturdayCronogramaDay(label) {
+    return weekdayMatchesCronograma('Sábado', label);
+  }
+
+  async function fetchWeekendAnnouncements(client, weekStartIso) {
+    const byDate = {};
+    if (!client || !weekStartIso) return byDate;
+    const saturday = dateForWeekdayInWeek(weekStartIso, 'Sábado');
+    if (!saturday) return byDate;
+    const refMonth = `${saturday.slice(0, 7)}-01`;
+    const { data: boards, error: bErr } = await client
+      .from('announcement_boards')
+      .select('id')
+      .eq('reference_month', refMonth)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(1);
+    if (bErr || !boards?.length) return byDate;
+    const { data: entries, error: eErr } = await client
+      .from('announcement_entries')
+      .select('event_date, data')
+      .eq('board_id', boards[0].id)
+      .eq('block', 'weekend');
+    if (eErr) return byDate;
+    (entries || []).forEach((e) => {
+      if (e.event_date) byDate[e.event_date] = e.data || {};
+    });
+    return byDate;
+  }
+
+  function applyWeekendDirigente(row, weekStartIso, weekendByDate, profiles) {
+    if (!isSaturdayCronogramaDay(row?.weekday_label)) return row;
+    const sat = dateForWeekdayInWeek(weekStartIso, row.weekday_label);
+    if (!sat) return row;
+    const data = weekendByDate?.[sat];
+    if (!data) return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    if (String(data.evento_especial || '').trim()) {
+      return { ...row, announcement_sat_date: sat, announcement_special: true };
+    }
+    const name = String(data.dirigente_sabado || '').trim();
+    if (!name) return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    const profile = resolveProfileByName(name, profiles);
+    return {
+      ...row,
+      announcement_sat_date: sat,
+      announcement_dirigente: name,
+      dirigente_name: name,
+      profile_id: profile?.id || null,
+      profiles: profile ? { full_name: profile.full_name } : null,
+      from_announcement: true
+    };
+  }
+
   function generateWhatsAppSchedule(weekStartIso, scheduleRows, territoriesById) {
     const start = parseISODate(weekStartIso);
     const end = new Date(start);
@@ -233,6 +307,11 @@
     weekdayLabelFromDate,
     weekdayMatchesCronograma,
     dateForWeekdayInWeek,
+    normalizeName,
+    resolveProfileByName,
+    isSaturdayCronogramaDay,
+    fetchWeekendAnnouncements,
+    applyWeekendDirigente,
     daysSince,
     computePriority,
     territoryLabel,

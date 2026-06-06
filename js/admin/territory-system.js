@@ -22,6 +22,7 @@
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
   let histFilter = { q: '', type: 'all' };
+  let weekendByDate = {};
 
   function priorityBadge(t) {
     const p = H.computePriority(t);
@@ -341,8 +342,26 @@
     });
   }
 
+  function scheduleRowsForWeek() {
+    return weekTemplate.map((row) => H.applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
+  }
+
   function scheduleDirigente(row) {
     return profileName(row.profiles) || row.dirigente_name || '—';
+  }
+
+  function scheduleDirigenteHtml(row) {
+    const name = scheduleDirigente(row);
+    if (row.from_announcement) {
+      return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
+    }
+    if (row.announcement_special) {
+      return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
+    }
+    if (row.announcement_missing && H.isSaturdayCronogramaDay(row.weekday_label)) {
+      return '<span class="terr-sched-cell--muted">Preencher no Quadro de Anúncios</span>';
+    }
+    return escapeHtml(name);
   }
 
   function scheduleTerritory(row) {
@@ -380,19 +399,22 @@
             <div class="terr-sched-row terr-sched-row--head">
               <span>Dia</span><span>Dirigente</span><span>Território</span><span>Local</span><span>Hora</span><span>Sugestão</span><span></span>
             </div>
-            ${weekTemplate.map((r) => {
+            ${scheduleRowsForWeek().map((r) => {
               const tone = scheduleDayTone(r.weekday_label);
-              const dirigente = scheduleDirigente(r);
+              const dirigenteHtml = scheduleDirigenteHtml(r);
               const territorio = scheduleTerritory(r);
               const sugg = scheduleSuggestion(r);
               const hasSugg = r.suggestion || r.suggestion_note;
+              const satHint = r.announcement_sat_date && H.isSaturdayCronogramaDay(r.weekday_label)
+                ? ` · ${H.formatDisplayDate(r.announcement_sat_date)}`
+                : '';
               return `
-            <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}">
+            <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
               <span class="terr-sched-day-pill">
                 <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
                 ${escapeHtml(r.weekday_label)}
               </span>
-              <span class="terr-sched-cell terr-sched-cell--dirigente${dirigente === '—' ? ' terr-sched-cell--muted' : ''}">${escapeHtml(dirigente)}</span>
+              <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
               <span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>
               <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
               <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
@@ -765,6 +787,7 @@
   async function refresh() {
     try {
       await reloadAll();
+      weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
       renderDashboard();
       fillDesignarSelects();
       renderDevolver();
@@ -853,15 +876,24 @@
   function openScheduleFormModal(existing) {
     const row = existing || null;
     const isEdit = Boolean(row);
+    const enriched = row ? H.applyWeekendDirigente(row, currentWeek, weekendByDate, profiles) : null;
+    const saturdayFromQuadro = enriched?.from_announcement;
     const wrap = document.createElement('div');
     wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
     wrap.innerHTML = `
       <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-lg space-y-3 shadow-xl max-h-[90vh] overflow-y-auto">
         <h3 class="font-bold text-primary">${isEdit ? 'Editar linha do cronograma' : 'Nova linha do cronograma'}</h3>
+        ${saturdayFromQuadro ? `
+        <p class="text-xs bg-[#faf6ef] border border-[#f0e4c8] text-[#5c4a1f] rounded-lg px-3 py-2">
+          O <strong>dirigente de sábado</strong> vem do Quadro de Anúncios
+          (${escapeHtml(enriched.announcement_dirigente || '')}).
+          Edite em <a href="anuncios.html" class="underline font-semibold">Quadro de Anúncios → Final de Semana</a>.
+        </p>` : ''}
         <label class="block text-xs font-semibold text-primary">Dia da semana
           <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Terça, Quarta (Tarde)"/>
         </label>
         <datalist id="cronograma-dias">${H.CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
+        ${saturdayFromQuadro ? '' : `
         <label class="block text-xs font-semibold text-primary">Dirigente (cadastrado)
           <select name="profile_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
             <option value="">— Dupla / outro —</option>
@@ -870,7 +902,7 @@
         </label>
         <label class="block text-xs font-semibold text-primary">Nome do dirigente
           <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Denison e Arnaldo"/>
-        </label>
+        </label>`}
         <label class="block text-xs font-semibold text-primary">Território
           <select name="territory_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
             <option value="">— Selecione —</option>
@@ -906,13 +938,15 @@
     wrap.querySelector('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const profileId = fd.get('profile_id') || null;
-      let dirigenteName = fd.get('dirigente_name')?.trim() || null;
-      if (profileId) {
+      const profileId = saturdayFromQuadro ? (enriched.profile_id || row.profile_id) : (fd.get('profile_id') || null);
+      let dirigenteName = saturdayFromQuadro
+        ? (enriched.dirigente_name || row.dirigente_name)
+        : (fd.get('dirigente_name')?.trim() || null);
+      if (!saturdayFromQuadro && profileId) {
         const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
         dirigenteName = profileName(p) || dirigenteName;
       }
-      if (!profileId && !dirigenteName) {
+      if (!saturdayFromQuadro && !profileId && !dirigenteName) {
         showToast(toast, 'Informe o dirigente.', true);
         return;
       }
@@ -991,7 +1025,7 @@
 
   function copyWhatsApp() {
     const byId = Object.fromEntries(territories.map((t) => [t.id, t]));
-    const msg = H.generateWhatsAppSchedule(currentWeek, weekTemplate, byId);
+    const msg = H.generateWhatsAppSchedule(currentWeek, scheduleRowsForWeek(), byId);
     document.getElementById('semana-whatsapp').textContent = msg;
     document.getElementById('semana-whatsapp-wrap').classList.remove('hidden');
     navigator.clipboard?.writeText(msg).then(
@@ -1039,8 +1073,10 @@
       }
     });
 
-    document.getElementById('semana-week').addEventListener('change', (e) => {
+    document.getElementById('semana-week').addEventListener('change', async (e) => {
       currentWeek = H.snapToMonday(e.target.value);
+      weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
+      renderSemana();
     });
 
     document.getElementById('btn-whatsapp').addEventListener('click', copyWhatsApp);

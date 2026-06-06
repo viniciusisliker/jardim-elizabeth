@@ -157,6 +157,7 @@
       return out;
     }
 
+    if (trim(d.dirigente_sabado)) pushRow(out, `Dirigente de sábado (território): ${trim(d.dirigente_sabado)}`, iso);
     if (trim(d.presidente)) pushRow(out, `Presidente: ${trim(d.presidente)}`, iso);
     if (trim(d.orador)) pushRow(out, `Orador: ${trim(d.orador)}`, iso);
     if (trim(d.leitor_sentinela) || trim(d.presidente) || trim(d.orador)) {
