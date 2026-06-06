@@ -106,8 +106,8 @@
     const { data, error } = await client
       .from('territory_history')
       .select(`
-        id, event_type, event_date, details, metadata, created_at,
-        territories ( num, display_name ),
+        id, event_type, event_date, details, metadata, created_at, territory_id,
+        territories ( num, display_name, map_image_url ),
         profiles!profile_id ( full_name )
       `)
       .order('event_date', { ascending: false })
@@ -634,6 +634,57 @@
     return entry.territories?.num || entry.metadata?.territory_num || null;
   }
 
+  function normalizeTerritoryNum(num) {
+    return String(num ?? '').replace(/^0+/, '') || '0';
+  }
+
+  function resolveHistoryTerritory(entry) {
+    if (entry.territory_id) {
+      const byId = territories.find((t) => t.id === entry.territory_id);
+      if (byId) return byId;
+    }
+    const num = historyTerritoryNum(entry);
+    if (num) {
+      const normalized = normalizeTerritoryNum(num);
+      const byNum = territories.find((t) => normalizeTerritoryNum(t.num) === normalized);
+      if (byNum) return byNum;
+    }
+    return entry.territories || null;
+  }
+
+  function historyTerritoryMapUrl(entry) {
+    return resolveHistoryTerritory(entry)?.map_image_url || null;
+  }
+
+  function historyDateTitle(iso) {
+    const d = H.parseISODate(String(iso).slice(0, 10));
+    if (!d) return '';
+    return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function historyTerritoryCell(entry) {
+    const terrNum = historyTerritoryNum(entry);
+    const terrText = entry.territories
+      ? (entry.territories.display_name || '—')
+      : (entryTerrName(entry) || historyTerritory(entry));
+    const label = historyTerritory(entry);
+    const mapUrl = historyTerritoryMapUrl(entry);
+    const inner = `
+      ${terrNum ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}
+      <span class="terr-hist-terr-name">${escapeHtml(terrText)}</span>
+      ${mapUrl ? '<span class="material-symbols-outlined terr-hist-terr-map-icon" aria-hidden="true">map</span>' : ''}`;
+
+    if (!mapUrl) {
+      return `<span class="terr-hist-terr-btn" title="${escapeHtml(label)}">${inner}</span>`;
+    }
+
+    return `
+      <button type="button" class="terr-hist-terr-btn terr-hist-terr-btn--map"
+        data-terr-map="${escapeHtml(mapUrl)}"
+        data-terr-title="${escapeHtml(label)}"
+        title="Ver mapa · ${escapeHtml(label)}">${inner}</button>`;
+  }
+
   function historyIsWeekend(entry) {
     const day = historyWeekday(entry);
     return day === 'Sábado' || day === 'Domingo';
@@ -716,18 +767,13 @@
 
     listEl.innerHTML = filtered.map((h) => {
       const obs = historyObservations(h);
-      const terrNum = historyTerritoryNum(h);
-      const terrText = h.territories
-        ? (h.territories.display_name || '—')
-        : (entryTerrName(h) || historyTerritory(h));
+      const isoDate = String(h.event_date).slice(0, 10);
       return `
       <div class="terr-hist-row terr-hist-row--${historyIsWeekend(h) ? 'weekend' : 'weekday'}">
-        <span class="terr-hist-date">${escapeHtml(H.formatDisplayDate(String(h.event_date).slice(0, 10)))}</span>
+        <span class="terr-hist-date" title="${escapeHtml(historyDateTitle(isoDate))}">${escapeHtml(H.formatShortDate(isoDate))}</span>
         <span class="terr-hist-day">${escapeHtml(historyWeekday(h))}</span>
         <span class="terr-hist-cell terr-hist-cell--dirigente${historyDirigente(h) === '—' ? ' terr-hist-cell--muted' : ''}" title="${escapeHtml(historyDirigente(h))}">${escapeHtml(historyDirigente(h))}</span>
-        <span class="terr-hist-cell" title="${escapeHtml(historyTerritory(h))}">
-          ${terrNum ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}${escapeHtml(terrText)}
-        </span>
+        <span class="terr-hist-cell">${historyTerritoryCell(h)}</span>
         <span class="terr-hist-obs${obs ? '' : ' terr-hist-obs--empty'}" title="${escapeHtml(obs || 'Sem observações')}">${historyTypeBadge(h)}${escapeHtml(obs || '—')}</span>
       </div>`;
     }).join('');
@@ -1212,12 +1258,52 @@
     );
   }
 
+  function openTerritoryMapLightbox(title, url) {
+    const box = document.getElementById('terr-map-lightbox');
+    const img = document.getElementById('terr-map-lightbox-img');
+    const titleEl = document.getElementById('terr-map-lightbox-title');
+    if (!box || !img || !url) return;
+    titleEl.textContent = title || 'Território';
+    img.src = url;
+    img.alt = title || 'Mapa do território';
+    box.classList.add('is-open');
+    box.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeTerritoryMapLightbox() {
+    const box = document.getElementById('terr-map-lightbox');
+    const img = document.getElementById('terr-map-lightbox-img');
+    if (!box) return;
+    box.classList.remove('is-open');
+    box.setAttribute('aria-hidden', 'true');
+    if (img) {
+      img.src = '';
+      img.alt = '';
+    }
+  }
+
+  function setupTerritoryMapLightbox() {
+    document.getElementById('terr-map-lightbox-close')?.addEventListener('click', closeTerritoryMapLightbox);
+    document.getElementById('terr-map-lightbox')?.addEventListener('click', (e) => {
+      if (e.target.id === 'terr-map-lightbox') closeTerritoryMapLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeTerritoryMapLightbox();
+    });
+    document.getElementById('panel-historico')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-terr-map]');
+      if (!btn) return;
+      openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
+    });
+  }
+
   async function init() {
     const profile = await guardPermission('territorios');
     if (!profile) return;
     toast = document.getElementById('admin-toast');
     client = await getClient();
     setupTabs();
+    setupTerritoryMapLightbox();
 
     ['designar-profile', 'designar-territory', 'designar-date'].forEach((id) => {
       document.getElementById(id)?.addEventListener('change', updateDesignarPreview);

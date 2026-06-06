@@ -159,19 +159,25 @@
     .terr-hist-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
     .terr-hist-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
     .terr-hist-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
-    .terr-hist-panel{min-width:40rem}
-    .terr-hist-row{display:grid;grid-template-columns:4.75rem 4.75rem minmax(6.5rem,1.05fr) minmax(6.5rem,1.1fr) minmax(5.5rem,1.25fr);gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-hist-panel{min-width:44rem}
+    .terr-hist-row{display:grid;grid-template-columns:3.25rem minmax(5.25rem,6.25rem) minmax(7rem,1fr) minmax(8.5rem,1.15fr) minmax(6.5rem,1.2fr);gap:.375rem .875rem;align-items:center;padding:.4375rem 1rem .4375rem .875rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
     .terr-hist-row:last-child{border-bottom:none}
     .terr-hist-row:not(.terr-hist-row--head):hover{background:#fafbfc}
-    .terr-hist-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
-    .terr-hist-date{font-size:.6875rem;font-weight:700;color:#3b5e97;white-space:nowrap}
-    .terr-hist-day{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.3125rem;background:#eef3fa;color:#0f3462;white-space:nowrap}
+    .terr-hist-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem 1rem .375rem .875rem;position:sticky;top:0;z-index:1}
+    .terr-hist-date{font-size:.6875rem;font-weight:700;color:#3b5e97;white-space:nowrap;text-align:left;padding-left:.125rem}
+    .terr-hist-day{display:inline-flex;align-items:center;justify-self:start;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.3125rem;background:#eef3fa;color:#0f3462;white-space:nowrap;max-width:100%}
     .terr-hist-row--weekend .terr-hist-day{background:#ecfdf5;color:#047857}
     .terr-hist-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#43474f;font-size:.75rem}
-    .terr-hist-cell--dirigente{font-weight:600;color:#0f3462}
+    .terr-hist-cell--dirigente{font-weight:600;color:#0f3462;padding-left:.125rem}
     .terr-hist-cell--muted{color:#9ca3af;font-style:italic}
-    .terr-hist-terr-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.0625rem .3125rem;border-radius:.25rem;margin-right:.25rem}
-    .terr-hist-obs{font-size:.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-hist-terr-btn{display:inline-flex;align-items:center;gap:.25rem;min-width:0;max-width:100%;padding:.125rem .3125rem .125rem .125rem;margin:-.125rem 0;border:1px solid transparent;border-radius:.375rem;background:transparent;color:inherit;font:inherit;text-align:left;cursor:default;overflow:hidden}
+    .terr-hist-terr-btn--map{cursor:pointer}
+    .terr-hist-terr-btn--map:hover{background:#eef3fa;border-color:#c5d4ea}
+    .terr-hist-terr-btn--map:focus-visible{outline:2px solid #3b5e97;outline-offset:1px}
+    .terr-hist-terr-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#43474f;font-size:.75rem}
+    .terr-hist-terr-map-icon{font-size:.875rem!important;color:#3b5e97;flex-shrink:0;opacity:.85}
+    .terr-hist-terr-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.0625rem .3125rem;border-radius:.25rem;flex-shrink:0}
+    .terr-hist-obs{font-size:.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:.125rem}
     .terr-hist-obs--empty{color:#c4c9d4;font-style:italic}
     .terr-hist-type{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;margin-right:.25rem;vertical-align:middle}
     .terr-hist-type--trabalho{background:#d1fae5;color:#047857}
@@ -299,6 +305,14 @@
     .terr-over-status--field{background:#dbeafe;color:#1d4ed8;margin-left:.1875rem}
     .terr-over-status-wrap{display:flex;flex-wrap:wrap;gap:.1875rem;align-items:center}
     .terr-over-actions{display:flex;gap:0;justify-content:flex-end}
+    .terr-map-lightbox{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(10,40,71,.88);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+    .terr-map-lightbox.is-open{opacity:1;visibility:visible}
+    .terr-map-lightbox__panel{position:relative;width:min(56rem,100%);max-height:calc(100vh - 2rem);display:flex;flex-direction:column;background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+    .terr-map-lightbox__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.875rem 1rem;border-bottom:1px solid #e2e6ef}
+    .terr-map-lightbox__title{font-size:.875rem;font-weight:800;color:#0f3462;margin:0}
+    .terr-map-lightbox__close{display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border:none;border-radius:9999px;background:#f5f8fc;color:#43474f;cursor:pointer}
+    .terr-map-lightbox__body{overflow:auto;padding:.75rem;background:#f5f8fc}
+    .terr-map-lightbox__body img{display:block;width:100%;height:auto;margin:0 auto}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -572,6 +586,19 @@
       <div id="dirigentes-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
   </main>
+  <div id="terr-map-lightbox" class="terr-map-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="terr-map-lightbox-title">
+    <div class="terr-map-lightbox__panel">
+      <div class="terr-map-lightbox__head">
+        <h3 id="terr-map-lightbox-title" class="terr-map-lightbox__title"></h3>
+        <button type="button" id="terr-map-lightbox-close" class="terr-map-lightbox__close" aria-label="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div class="terr-map-lightbox__body">
+        <img id="terr-map-lightbox-img" src="" alt=""/>
+      </div>
+    </div>
+  </div>
   <div id="footer"></div>
   <script src="../js/config.js"></script>
   <script src="../js/auth.js"></script>
@@ -581,6 +608,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060526"></script>
-    <script src="../js/admin/territory-system.js?v=2026060621"></script>
+    <script src="../js/admin/territory-system.js?v=2026060622"></script>
 </body>
 </html>
