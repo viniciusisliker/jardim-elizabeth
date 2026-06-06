@@ -143,6 +143,27 @@
     return `T${t.num} · ${t.display_name || 'Território'}`;
   }
 
+  function territoryMapFileName(num) {
+    const n = String(num ?? '').replace(/^0+/, '') || '0';
+    return `t${n.padStart(2, '0')}.jpg`;
+  }
+
+  function siteRootPrefix() {
+    const path = window.location.pathname || '/';
+    return path.includes('/admin/') ? '../' : '';
+  }
+
+  function resolveTerritoryMapUrl(url, num) {
+    let raw = String(url || '').trim();
+    if (!raw && num != null && num !== '') {
+      raw = `img/territorios/${territoryMapFileName(num)}`;
+    }
+    if (!raw) return null;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('//')) return raw;
+    if (raw.startsWith('/')) return raw;
+    return `${siteRootPrefix()}${raw.replace(/^\.\//, '')}`;
+  }
+
   function sortByPriority(territories) {
     const toneOrder = { high: 0, medium: 1, normal: 2, working: 3 };
     return [...territories].sort((a, b) => {
@@ -315,6 +336,9 @@
     daysSince,
     computePriority,
     territoryLabel,
+    territoryMapFileName,
+    siteRootPrefix,
+    resolveTerritoryMapUrl,
     sortByPriority,
     generateWhatsAppSchedule
   };

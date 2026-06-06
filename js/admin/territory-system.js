@@ -653,7 +653,9 @@
   }
 
   function historyTerritoryMapUrl(entry) {
-    return resolveHistoryTerritory(entry)?.map_image_url || null;
+    const t = resolveHistoryTerritory(entry);
+    const num = t?.num || historyTerritoryNum(entry);
+    return H.resolveTerritoryMapUrl(t?.map_image_url, num);
   }
 
   function historyDateTitle(iso) {
@@ -1262,10 +1264,22 @@
     const box = document.getElementById('terr-map-lightbox');
     const img = document.getElementById('terr-map-lightbox-img');
     const titleEl = document.getElementById('terr-map-lightbox-title');
+    const body = box?.querySelector('.terr-map-lightbox__body');
     if (!box || !img || !url) return;
     titleEl.textContent = title || 'Território';
+    img.classList.remove('hidden');
     img.src = url;
     img.alt = title || 'Mapa do território';
+    body?.querySelector('.terr-map-lightbox__fallback')?.remove();
+    img.onerror = () => {
+      img.classList.add('hidden');
+      if (body && !body.querySelector('.terr-map-lightbox__fallback')) {
+        const msg = document.createElement('p');
+        msg.className = 'terr-map-lightbox__fallback';
+        msg.textContent = 'Mapa não encontrado. Verifique a URL da imagem no catálogo de territórios.';
+        body.appendChild(msg);
+      }
+    };
     box.classList.add('is-open');
     box.setAttribute('aria-hidden', 'false');
   }
@@ -1277,9 +1291,13 @@
     box.classList.remove('is-open');
     box.setAttribute('aria-hidden', 'true');
     if (img) {
+      img.onload = null;
+      img.onerror = null;
       img.src = '';
       img.alt = '';
+      img.classList.remove('hidden');
     }
+    box.querySelector('.terr-map-lightbox__fallback')?.remove();
   }
 
   function setupTerritoryMapLightbox() {

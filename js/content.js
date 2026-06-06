@@ -283,11 +283,14 @@
         const h3 = card.querySelector('h3');
         if (h3) h3.textContent = t.display_name;
       }
-      if (t.map_image_url) {
+      if (t.map_image_url || t.num) {
         const img = card.querySelector('img');
         if (img) {
-          img.src = t.map_image_url;
-          img.alt = `Mapa Território ${t.num} – ${t.display_name}`;
+          const src = window.JETerritoryAssignment?.resolveTerritoryMapUrl(t.map_image_url, t.num);
+          if (src) {
+            img.src = src;
+            img.alt = `Mapa Território ${t.num} – ${t.display_name}`;
+          }
         }
       }
       if (t.slug) card.dataset.nome = t.slug;

@@ -26,7 +26,7 @@
   function renderFieldCard(a) {
     const t = a.territories || {};
     const url = mapLink(t);
-    const mapUrl = t.map_image_url || '';
+    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     return `
       <article class="hub-terr-card hub-terr-card--field">
         <div class="hub-terr-card-main">
@@ -47,7 +47,7 @@
   function renderScheduleCard(row) {
     const t = row.territories || {};
     const url = mapLink(t);
-    const mapUrl = t.map_image_url || '';
+    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     const title = t.num
       ? `T${t.num} · ${t.display_name || 'Território'}`
       : (row.territory_code || 'Cronograma da semana');
