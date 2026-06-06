@@ -105,7 +105,7 @@ gtag('config', 'G-PGXCZF9S9W');
       box-shadow: 0 2px 12px rgba(15, 52, 98, 0.05);
     }
     .je-ter-filters__search {
-      flex: 1 1 18rem;
+      flex: 1 1 auto;
       min-width: 0;
       display: flex;
       align-items: center;
@@ -173,6 +173,12 @@ gtag('config', 'G-PGXCZF9S9W');
     }
     @media (max-width: 639px) {
       .je-ter-filters { flex-direction: column; align-items: stretch; }
+      .je-ter-filters__search {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+      }
+      .je-ter-filters__input { font-size: 1rem; }
       .je-ter-filters__count { align-self: flex-start; }
     }
 
