@@ -92,7 +92,7 @@
     async function reloadMembers() {
       const { data, error } = await client
         .from('profiles')
-        .select('id, full_name, username, role, designation, profile_access_designations(designation_id)')
+        .select('id, full_name, username, role, display_role, designation, profile_access_designations(designation_id)')
         .order('full_name');
       if (error) {
         document.getElementById('members-table').innerHTML = `<p class="cfg-empty text-error">${escapeHtml(error.message)}</p>`;
@@ -247,7 +247,7 @@
           ? `<select data-role="${m.id}" class="cfg-field">${ROLES.map((r) =>
               `<option value="${r.value}" ${m.role === r.value ? 'selected' : ''}>${r.label}</option>`
             ).join('')}</select>`
-          : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, designation: m.designation, designations: [] }))}</span>`;
+          : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, display_role: m.display_role, designation: m.designation, designations: [] }))}</span>`;
 
         const designationInput = isSuper
           ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="cfg-field"/>`

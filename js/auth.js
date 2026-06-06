@@ -28,7 +28,7 @@
     }
   }
 
-  const PROFILE_SELECT = `id, full_name, role, designation, username, can_announcements,
+  const PROFILE_SELECT = `id, full_name, role, display_role, designation, username, can_announcements,
     profile_access_designations (
       access_designations ( id, slug, label, permissions, is_active )
     )`;
@@ -63,6 +63,7 @@
         id: profile.id,
         full_name: profile.full_name,
         role: profile.role,
+        display_role: profile.display_role || null,
         designation: profile.designation,
         username: profile.username,
         can_announcements: !!profile.can_announcements,
@@ -164,7 +165,8 @@
     const extra = profile
       ? (profile.designation || (profile.designations || []).map((d) => d.label).join(', ') || '')
       : (designation || '');
-    const base = ROLE_LABELS[role] || role;
+    const labelRole = profile?.display_role || role;
+    const base = ROLE_LABELS[labelRole] || labelRole;
     return extra ? `${base} (${extra})` : base;
   }
 
