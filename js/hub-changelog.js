@@ -2,8 +2,50 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-06-06',
+    version: '2026-06-07',
     items: [
+      {
+        date: '7 jun 2026',
+        tag: 'Agenda',
+        icon: 'search',
+        title: 'Busca no estilo Territórios',
+        body: 'Campo pill com ícone alinhado, botão limpar, contador de eventos e aviso quando nada é encontrado.'
+      },
+      {
+        date: '7 jun 2026',
+        tag: 'Site',
+        icon: 'smartphone',
+        title: 'Melhor no celular e tablet',
+        body: 'Touch targets maiores, heroes fluidos, scroll suave nas tabelas do Hub e layout mais confortável em telas menores.'
+      },
+      {
+        date: '7 jun 2026',
+        tag: 'Territórios',
+        icon: 'label',
+        title: 'Nomes alinhados aos mapas',
+        body: 'Títulos dos 19 territórios corrigidos para bater com o que está escrito em cada cartão de mapa (T01–T19).'
+      },
+      {
+        date: '7 jun 2026',
+        tag: 'Territórios',
+        icon: 'search',
+        title: 'Busca repaginada no site',
+        body: 'Barra de busca com pill, contador visível e limpar com um toque — igual à experiência da Agenda.'
+      },
+      {
+        date: '6 jun 2026',
+        tag: 'Configurações',
+        icon: 'group',
+        title: 'Equipe e Permissões repaginada',
+        body: 'Toolbar compacta, cards de membros, busca e designações de acesso mais claras no Hub.'
+      },
+      {
+        date: '6 jun 2026',
+        tag: 'Territórios',
+        icon: 'image',
+        title: 'Mapas no histórico',
+        body: 'Imagens dos territórios no admin voltaram a carregar corretamente; clique abre o mapa em tela cheia.'
+      },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
