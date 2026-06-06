@@ -10,9 +10,9 @@ UPDATE public.territories SET display_name = 'Vila Pirajussara', slug = 'vila pi
 UPDATE public.territories SET display_name = 'Jardim Iracema A', slug = 'jardim iracema a' WHERE num = '07';
 UPDATE public.territories SET display_name = 'Jardim Iracema B', slug = 'jardim iracema b' WHERE num = '08';
 UPDATE public.territories SET display_name = 'Jardim Helga E', slug = 'jardim helga e' WHERE num = '09';
-UPDATE public.territories SET display_name = convert_from(decode('4a64204cc3b46e69646173204d6f72656972612041', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira a leonidas' WHERE num = '10';
-UPDATE public.territories SET display_name = convert_from(decode('4a64204cc3b46e69646173204d6f72656972612042', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira b leonidas' WHERE num = '11';
-UPDATE public.territories SET display_name = convert_from(decode('4a64204cc3b46e69646173204d6f72656972612043', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira c leonidas' WHERE num = '12';
+UPDATE public.territories SET display_name = convert_from(decode('4a64204c65c3b46e69646173204d6f72656972612041', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira a leonidas' WHERE num = '10';
+UPDATE public.territories SET display_name = convert_from(decode('4a64204c65c3b46e69646173204d6f72656972612042', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira b leonidas' WHERE num = '11';
+UPDATE public.territories SET display_name = convert_from(decode('4a64204c65c3b46e69646173204d6f72656972612043', 'hex'), 'UTF8'), slug = 'jardim leonidas moreira c leonidas' WHERE num = '12';
 UPDATE public.territories SET display_name = 'CDHU A', slug = 'cdhu a' WHERE num = '13';
 UPDATE public.territories SET display_name = 'CDHU B', slug = 'cdhu b' WHERE num = '14';
 UPDATE public.territories SET display_name = 'CDHU C', slug = 'cdhu c' WHERE num = '15';
