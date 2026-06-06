@@ -68,11 +68,41 @@
       $('hub-ev-preview-day').textContent = day;
       $('hub-ev-preview-label-d').textContent = label;
 
-      let meta = month;
+      let meta;
+      if (future) {
+        meta = evDateLabel() || 'Eventos futuros';
+      } else {
+        meta = month;
+      }
       if (time) meta += ` · ${time}`;
-      if (highlight) meta += ' · ★ destaque';
-      if (future) meta = 'Eventos Futuros' + (time ? ` · ${time}` : '');
+      if (highlight) meta += ' · Destaque';
       $('hub-ev-preview-meta').textContent = meta;
+    }
+
+    function evDateLabel() {
+      const iso = $('hub-ev-date').value;
+      if (!iso) return '';
+      const derived = H.deriveFieldsFromDate(iso, { futureGroup: $('hub-ev-future').checked });
+      if (!derived) return '';
+      if ($('hub-ev-future').checked) {
+        const d = new Date(iso + 'T12:00:00');
+        return `${d.getDate()} de ${H.MONTHS_PT[d.getMonth()]} de ${d.getFullYear()}`;
+      }
+      return derived.month_label;
+    }
+
+    async function repairBrokenFutureLabels() {
+      const broken = events.filter((ev) => H.needsFutureLabelRepair(ev));
+      if (!broken.length) return false;
+      for (const ev of broken) {
+        const derived = H.deriveFieldsFromDate(ev.event_date, { futureGroup: true });
+        if (!derived) continue;
+        await client.from('agenda_events').update({
+          date_display: derived.date_display,
+          date_label: derived.date_label
+        }).eq('id', ev.id);
+      }
+      return true;
     }
 
     async function reload() {
@@ -85,34 +115,56 @@
         return;
       }
       events = data || [];
+      if (await repairBrokenFutureLabels()) {
+        const { data: refreshed } = await client
+          .from('agenda_events')
+          .select('*')
+          .order('event_date', { ascending: false });
+        events = refreshed || [];
+      }
       renderList();
       renderTemplateSelect();
     }
 
+    function updateEventsCount() {
+      const countEl = $('hub-events-count');
+      if (!countEl) return;
+      const n = events.length;
+      countEl.textContent = n === 1 ? '1 evento publicado' : `${n} eventos publicados`;
+    }
+
     function renderList() {
+      updateEventsCount();
       if (!events.length) {
-        list.innerHTML = '<p class="px-4 py-6 text-sm text-on-surface-variant">Nenhum evento cadastrado. Clique em <strong>Novo evento</strong> para começar.</p>';
+        list.innerHTML = '<p class="px-5 py-8 text-sm text-on-surface-variant">Nenhum evento cadastrado. Use <strong>Novo evento</strong> para começar.</p>';
         return;
       }
-      list.innerHTML = events.map((ev) => `
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 border-b border-outline-variant last:border-0">
-          <div class="flex items-start gap-3 flex-1 min-w-0">
-            <div class="text-center shrink-0 w-12">
-              <p class="text-lg font-extrabold text-primary leading-none">${esc(ev.date_display)}</p>
-              <p class="text-[10px] font-bold text-on-surface-variant uppercase">${esc(ev.date_label)}</p>
+      list.innerHTML = events.map((ev) => {
+        const chip = H.eventDateChip(ev);
+        const tags = [];
+        if (ev.month_key === 'futuros') tags.push('<span class="hub-ev-tag hub-ev-tag--future">Futuro</span>');
+        if (ev.is_highlight) tags.push('<span class="hub-ev-tag hub-ev-tag--highlight">Destaque</span>');
+        return `
+        <div class="hub-ev-row">
+          <div class="hub-ev-row-main">
+            <div class="hub-ev-row-date">
+              <p class="hub-ev-row-date-num">${esc(chip.display)}</p>
+              <p class="hub-ev-row-date-lbl">${esc(chip.label)}</p>
             </div>
-            <div class="min-w-0">
-              <span class="inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded mb-1 ${H.categoryBadgeClass(ev.category)}">${esc(ev.category)}</span>
-              <p class="font-bold text-primary text-sm truncate">${esc(ev.title)}</p>
-              <p class="text-xs text-on-surface-variant">${esc(ev.month_label)}${ev.event_time ? ` · ${esc(ev.event_time)}` : ''}${ev.is_highlight ? ' · ★ destaque' : ''}</p>
+            <div class="hub-ev-row-body">
+              <span class="hub-ev-cat-badge ${H.categoryBadgeClass(ev.category)}">${esc(ev.category)}</span>
+              <p class="hub-ev-row-title">${esc(ev.title)}</p>
+              <p class="hub-ev-row-meta">${esc(H.formatAdminListMeta(ev))}</p>
+              ${tags.length ? `<div class="hub-ev-row-tags">${tags.join('')}</div>` : ''}
             </div>
           </div>
-          <div class="flex flex-wrap gap-1.5 shrink-0">
+          <div class="hub-ev-row-actions">
             <button type="button" data-copy="${ev.id}" class="hub-ev-action hub-ev-action--copy">Copiar</button>
             <button type="button" data-edit="${ev.id}" class="hub-ev-action hub-ev-action--edit">Editar</button>
             <button type="button" data-del="${ev.id}" class="hub-ev-action hub-ev-action--del">Excluir</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
       list.querySelectorAll('[data-edit]').forEach((btn) => {
         btn.addEventListener('click', () => openForm(events.find((e) => e.id === btn.dataset.edit)));

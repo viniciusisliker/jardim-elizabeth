@@ -16,6 +16,25 @@
     .hub-ev-action--copy{color:#43474f}
     .hub-ev-action--del{color:#ba1a1a;border-color:rgba(186,26,26,.25)}
     .hub-ev-action--del:hover{background:#fff5f5;border-color:#ba1a1a}
+    .hub-ev-list-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;padding:0.875rem 1.25rem;border-bottom:1px solid #e2e6ef;background:#f8fafc}
+    .hub-ev-list-count{font-size:0.75rem;font-weight:700;color:#43474f}
+    .hub-ev-row{display:flex;flex-direction:column;gap:0.75rem;padding:1rem 1.25rem;border-bottom:1px solid #e2e6ef;transition:background .15s}
+    .hub-ev-row:last-child{border-bottom:0}
+    .hub-ev-row:hover{background:#fafbfc}
+    @media(min-width:640px){.hub-ev-row{flex-direction:row;align-items:center;gap:1rem}}
+    .hub-ev-row-main{display:flex;align-items:flex-start;gap:0.875rem;flex:1;min-width:0}
+    .hub-ev-row-date{text-align:center;flex-shrink:0;width:3.25rem}
+    .hub-ev-row-date-num{font-size:1.125rem;font-weight:800;color:#0f3462;line-height:1.1}
+    .hub-ev-row-date-lbl{font-size:0.625rem;font-weight:700;color:#43474f;text-transform:uppercase;letter-spacing:.04em;line-height:1.2;margin-top:0.125rem}
+    .hub-ev-row-body{min-width:0;flex:1}
+    .hub-ev-row-title{font-size:0.9375rem;font-weight:700;color:#0f3462;line-height:1.35;margin:0.25rem 0 0}
+    .hub-ev-row-meta{font-size:0.75rem;color:#43474f;line-height:1.4;margin-top:0.25rem}
+    .hub-ev-row-tags{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.375rem}
+    .hub-ev-tag{display:inline-flex;align-items:center;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .hub-ev-tag--future{color:#7a5200;background:rgba(200,169,110,.18);border:1px solid rgba(200,169,110,.35)}
+    .hub-ev-tag--highlight{color:#0f3462;background:#eff6ff;border:1px solid rgba(59,94,151,.2)}
+    .hub-ev-row-actions{display:flex;flex-wrap:wrap;gap:0.375rem;flex-shrink:0}
+    .hub-ev-cat-badge{display:inline-block;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.125rem 0.5rem;border-radius:0.25rem}
     .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);border-top:2px solid #0f3462;padding:1.5rem}
     @media(min-width:768px){.hub-ev-form{padding:1.75rem 2rem}}
     .hub-ev-form-layout{display:grid;gap:1.5rem}
@@ -57,7 +76,7 @@
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl font-extrabold text-primary mb-1" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Gerenciar Agenda</h1>
-        <p class="text-sm text-on-surface-variant">Eventos publicados na home e na página Agenda.</p>
+        <p class="text-sm text-on-surface-variant">Cadastre, edite e publique eventos na home e na agenda pública.</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <a href="../agenda.html" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low">
@@ -71,8 +90,8 @@
     <p id="hub-events-toast" class="hidden text-sm mb-4"></p>
 
     <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
-      <div class="px-5 py-3 border-b border-outline-variant bg-surface-container-low/50">
-        <p class="text-xs text-on-surface-variant">Clique em <strong>Editar</strong> para alterar ou em <strong>Novo evento</strong> para adicionar.</p>
+      <div class="hub-ev-list-head">
+        <p id="hub-events-count" class="hub-ev-list-count">Carregando…</p>
       </div>
       <div id="hub-events-list">
         <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando eventos…</p>
@@ -201,11 +220,11 @@
   <script src="../js/auth.js"></script>
   <script src="../js/header.js"></script>
   <script src="../js/site-loader.js"></script>
-  <script src="../js/agenda-helpers.js"></script>
+  <script src="../js/agenda-helpers.js?v=2026060801"></script>
   <script src="../js/je-toast.js?v=2026060301"></script>
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
-  <script src="../js/hub-events.js?v=2026060203"></script>
+  <script src="../js/hub-events.js?v=2026060801"></script>
   <script src="../js/admin/agenda.js"></script>
 </body>
 </html>

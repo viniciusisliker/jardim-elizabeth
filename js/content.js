@@ -32,16 +32,23 @@
     return category === 'Reuniões' || category === 'Escola' ? 'je-ag-cat--meetings' : 'je-ag-cat--special';
   }
 
+  function eventChip(ev) {
+    const H = window.JEAgendaHelpers;
+    if (H?.eventDateChip) return H.eventDateChip(ev);
+    return { display: ev.date_display || '—', label: ev.date_label || '—' };
+  }
+
   function renderEventRow(ev) {
-    const longCls = isLongDate(ev.date_display) ? ' is-long' : '';
+    const chip = eventChip(ev);
+    const longCls = isLongDate(chip.display) || isLongDate(chip.label) ? ' is-long' : '';
     const meta = [];
     if (ev.event_time) meta.push(`<span class="je-ag-meta-item"><span class="material-symbols-outlined">schedule</span>${esc(ev.event_time)}</span>`);
     if (ev.location) meta.push(`<span class="je-ag-meta-item"><span class="material-symbols-outlined">location_on</span>${esc(ev.location)}</span>`);
     return `
       <div class="je-ag-event">
         <div class="je-ag-date ${badgeClass(ev.badge_variant)}${longCls}">
-          <span class="je-ag-date-num">${esc(ev.date_display)}</span>
-          <span class="je-ag-date-lbl">${esc(ev.date_label)}</span>
+          <span class="je-ag-date-num">${esc(chip.display)}</span>
+          <span class="je-ag-date-lbl">${esc(chip.label)}</span>
         </div>
         <div class="je-ag-event-body">
           <span class="je-ag-cat ${categoryClass(ev.category)}">${esc(ev.category)}</span>
@@ -375,8 +382,9 @@
     };
 
     lista.innerHTML = firstGroup.events.map((ev) => {
+      const chip = eventChip(ev);
       const vs = variantStyle[ev.badge_variant] || variantStyle.default;
-      const isLong = isLongDate(ev.date_display);
+      const isLong = isLongDate(chip.display) || isLongDate(chip.label);
       const numSize = isLong ? '0.625rem' : '0.8125rem';
       const extras = [ev.event_time, ev.location].filter(Boolean).join(' · ');
       const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
@@ -385,8 +393,8 @@
       return `
         <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
           <div style="flex-shrink:0;width:3rem;text-align:center;border-radius:0.5rem;padding:0.5rem 0.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:${vs.bg};border:${vs.border}">
-            <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${esc(ev.date_display)}</span>
-            <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${esc(ev.date_label)}</span>
+            <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${esc(chip.display)}</span>
+            <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${esc(chip.label)}</span>
           </div>
           <div style="flex:1;min-width:0">
             <span class="je-home-ev-cat" style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${catCls};padding:1px 6px;border-radius:4px;margin-bottom:4px">${esc(ev.category)}</span>

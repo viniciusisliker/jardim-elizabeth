@@ -29,7 +29,7 @@
       return {
         event_date: isoDate,
         date_display: pad(day),
-        date_label: `${MONTHS_SHORT[month]}/${String(year).slice(-2)}`,
+        date_label: `${MONTHS_SHORT[month]} ${year}`,
         month_key: 'futuros',
         month_label: 'Eventos Futuros'
       };
@@ -42,6 +42,35 @@
       month_key: `${year}-${pad(month + 1)}`,
       month_label: `${MONTHS_PT[month]} / ${year}`
     };
+  }
+
+  function eventDateChip(ev) {
+    if (!ev) return { display: '—', label: '—' };
+    if (ev.month_key === 'futuros' && ev.event_date) {
+      const derived = deriveFieldsFromDate(ev.event_date, { futureGroup: true });
+      if (derived) return { display: derived.date_display, label: derived.date_label };
+    }
+    return { display: ev.date_display || '—', label: ev.date_label || '—' };
+  }
+
+  function formatAdminListMeta(ev) {
+    if (!ev) return '—';
+    const parts = [];
+    if (ev.month_key === 'futuros') {
+      if (ev.event_date) {
+        const d = new Date(ev.event_date + 'T12:00:00');
+        parts.push(`${d.getDate()} de ${MONTHS_PT[d.getMonth()]} de ${d.getFullYear()}`);
+      }
+    } else if (ev.month_label) {
+      parts.push(ev.month_label);
+    }
+    if (ev.event_time) parts.push(ev.event_time);
+    if (ev.location && ev.location !== DEFAULTS.location) parts.push(ev.location);
+    return parts.join(' · ') || '—';
+  }
+
+  function needsFutureLabelRepair(ev) {
+    return ev?.month_key === 'futuros' && !!ev.event_date && String(ev.date_label || '').includes('/');
   }
 
   function badgeLabel(variant) {
@@ -77,6 +106,9 @@
     CATEGORIES,
     DEFAULTS,
     deriveFieldsFromDate,
+    eventDateChip,
+    formatAdminListMeta,
+    needsFutureLabelRepair,
     badgeLabel,
     categoryBadgeClass,
     templateFromEvent
