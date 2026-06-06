@@ -110,22 +110,58 @@
 
   function initAgendaPage() {
     const search = document.getElementById('je-ag-search');
+    const clearBtn = document.getElementById('je-ag-search-clear');
+    const countEl = document.getElementById('je-ag-count');
+    const emptyEl = document.getElementById('je-ag-empty');
     const root = document.getElementById('je-agenda-months');
     if (!search || !root) return;
 
-    search.addEventListener('input', () => {
-      const query = search.value.trim().toLowerCase();
+    function events() {
+      return [...root.querySelectorAll('.je-ag-event')];
+    }
+
+    function updateClearBtn() {
+      clearBtn?.classList.toggle('hidden', !(search?.value || '').trim());
+    }
+
+    function formatCount(visible, total) {
+      if (visible === total) {
+        return total === 1 ? '1 evento' : `${total} eventos`;
+      }
+      return visible === 1 ? `1 de ${total}` : `${visible} de ${total}`;
+    }
+
+    function applySearch() {
+      const query = (search?.value || '').trim().toLowerCase();
+      const total = events().length;
+      let visible = 0;
       root.querySelectorAll('.je-ag-month').forEach((month) => {
-        let visible = 0;
+        let monthVisible = 0;
         month.querySelectorAll('.je-ag-event').forEach((row) => {
           const show = !query || row.textContent.toLowerCase().includes(query);
           row.classList.toggle('is-hidden', !show);
-          if (show) visible += 1;
+          if (show) {
+            visible += 1;
+            monthVisible += 1;
+          }
         });
-        month.classList.toggle('is-filtered-empty', visible === 0 && !!query);
-        if (query && visible > 0) month.classList.add('open');
+        month.classList.toggle('is-filtered-empty', monthVisible === 0 && !!query);
+        if (query && monthVisible > 0) month.classList.add('open');
       });
+      if (countEl) countEl.textContent = formatCount(visible, total);
+      emptyEl?.classList.toggle('is-visible', visible === 0 && !!query);
+      updateClearBtn();
+    }
+
+    search.addEventListener('input', applySearch);
+    clearBtn?.addEventListener('click', () => {
+      search.value = '';
+      applySearch();
+      search.focus();
     });
+
+    applySearch();
+    window.JEAgendaRefresh = applySearch;
   }
 
   async function loadAgenda() {
@@ -136,6 +172,7 @@
     if (!events) return;
     root.innerHTML = renderAgendaMonths(events, true);
     if (highlightsEl) highlightsEl.innerHTML = renderHighlights(events);
+    if (window.JEAgendaRefresh) window.JEAgendaRefresh();
   }
 
   async function fetchAnnouncements() {
