@@ -2,8 +2,64 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-05-31',
+    version: '2026-06-06',
     items: [
+      {
+        date: '6 jun 2026',
+        tag: 'Territórios',
+        icon: 'history',
+        title: 'Histórico mais legível',
+        body: 'Tabela realinhada e, ao clicar no território, abre o mapa cadastrado no catálogo — direto do histórico.'
+      },
+      {
+        date: '6 jun 2026',
+        tag: 'Territórios',
+        icon: 'groups',
+        title: 'Aba Dirigentes repaginada',
+        body: 'Lista compacta com preferência, dias disponíveis, status em campo e formulário rápido para adicionar irmãos.'
+      },
+      {
+        date: '6 jun 2026',
+        tag: 'Territórios',
+        icon: 'undo',
+        title: 'Devolução no estilo cronograma',
+        body: 'Cada designação ativa vira uma linha: último dia trabalhado, observação e devolução com um clique.'
+      },
+      {
+        date: '6 jun 2026',
+        tag: 'Territórios',
+        icon: 'assignment_ind',
+        title: 'Designar com resumo ao vivo',
+        body: 'Indicadores de disponíveis, dirigentes livres e painel de resumo antes de confirmar a designação.'
+      },
+      {
+        date: '5 jun 2026',
+        tag: 'Site',
+        icon: 'home',
+        title: 'Navbar do site com emojis',
+        body: 'Menu público mais visual: ícones em Agenda, Agendamentos, Donativos, Anúncios e Territórios.'
+      },
+      {
+        date: '5 jun 2026',
+        tag: 'Discursos Públicos',
+        icon: 'sync',
+        title: 'Sync com Quadro de Anúncios',
+        body: 'Ao salvar o arranjo em Recebemos, o bloco Final de Semana do quadro do mesmo mês é atualizado automaticamente.'
+      },
+      {
+        date: '5 jun 2026',
+        tag: 'Quadro de Anúncios',
+        icon: 'person',
+        title: 'Dirigente de sábado no quadro',
+        body: 'Campo no Final de Semana alimenta o cronograma de territórios após publicar o quadro — sábado fica sincronizado.'
+      },
+      {
+        date: '4 jun 2026',
+        tag: 'Territórios',
+        icon: 'dashboard',
+        title: 'Painel e catálogo renovados',
+        body: 'Visão geral com estatísticas, prioridades e catálogo compacto com edição em modal; navbar admin centralizada.'
+      },
       {
         date: '31 mai 2026',
         tag: 'Acesso',
