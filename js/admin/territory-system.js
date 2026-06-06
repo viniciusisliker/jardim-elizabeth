@@ -805,26 +805,90 @@
     renderHistoricoTable();
   }
 
+  const PREFERENCE_LABELS = {
+    meio_de_semana: 'Meio de semana',
+    final_de_semana: 'Final de semana',
+    ambos: 'Ambos'
+  };
+
+  function preferenceMeta(preference) {
+    if (preference === 'final_de_semana') return { label: PREFERENCE_LABELS.final_de_semana, className: 'terr-over-pref--weekend' };
+    if (preference === 'ambos') return { label: PREFERENCE_LABELS.ambos, className: 'terr-over-pref--both' };
+    return { label: PREFERENCE_LABELS.meio_de_semana, className: 'terr-over-pref--mid' };
+  }
+
+  function renderOverseerDayPills(overseer) {
+    const days = H.overseerDays(overseer);
+    if (days.length >= H.CRONOGRAMA_DAYS.length) {
+      return '<span class="terr-over-day">Todos</span>';
+    }
+    return days.map((day) => {
+      const weekend = ['Sábado', 'Domingo'].includes(day);
+      return `<span class="terr-over-day${weekend ? ' terr-over-day--weekend' : ''}" title="${escapeHtml(day)}">${escapeHtml(day.slice(0, 3))}</span>`;
+    }).join('');
+  }
+
   function renderDirigentes() {
     const el = document.getElementById('dirigentes-list');
+    const activeProfileIds = new Set(activeAssignments.map((a) => a.profile_id));
+    const activeOverseers = overseers.filter((o) => o.is_active !== false);
+    const inField = activeOverseers.filter((o) => activeProfileIds.has(o.profile_id)).length;
+
+    const countEl = document.getElementById('dirigentes-count');
+    const statTotal = document.getElementById('dirigentes-stat-total');
+    const statActive = document.getElementById('dirigentes-stat-active');
+    const statField = document.getElementById('dirigentes-stat-field');
+
+    if (countEl) countEl.textContent = `${overseers.length} cadastrados`;
+    if (statTotal) statTotal.textContent = String(overseers.length);
+    if (statActive) statActive.textContent = String(activeOverseers.length);
+    if (statField) statField.textContent = String(inField);
+
     if (!overseers.length) {
-      el.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhum dirigente cadastrado. Adicione acima.</p>';
+      el.innerHTML = `
+        <div class="terr-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+          <p class="text-sm font-semibold text-primary">Nenhum dirigente cadastrado</p>
+          <p class="text-xs mt-1">Use o formulário acima para adicionar irmãos aptos a receber território.</p>
+        </div>`;
       return;
     }
+
     el.innerHTML = `
-      <div class="terr-table-row terr-table-row--5 text-[10px] font-bold uppercase text-on-surface-variant pb-1 border-b hidden sm:grid">
-        <span>Dirigente</span><span>Dias</span><span>Status</span><span class="col-span-2"></span>
-      </div>
-      ${overseers.map((o) => `
-      <div class="terr-table-row terr-table-row--5 text-sm py-3 border-b border-outline-variant/40">
-        <span class="font-semibold text-primary">${escapeHtml(profileName(o.profiles))}</span>
-        <span class="text-on-surface-variant" title="${escapeHtml(H.overseerDays(o).join(', '))}">${escapeHtml(H.formatOverseerDays(o))}</span>
-        <span class="text-xs ${o.is_active !== false ? 'text-green-700' : 'text-on-surface-variant'}">${o.is_active !== false ? 'Ativo' : 'Inativo'}</span>
-        <div class="flex flex-wrap gap-3 justify-self-start sm:col-span-2">
-          <button type="button" data-edit-overseer="${o.profile_id}" class="text-xs font-semibold text-secondary">Editar</button>
-          <button type="button" data-del-overseer="${o.profile_id}" class="text-xs font-semibold text-error">Remover</button>
+      <div class="terr-over-scroll">
+        <div class="terr-over-panel">
+          <div class="terr-over-row terr-over-row--head">
+            <span>Dirigente</span><span>Preferência</span><span>Dias</span><span>Status</span><span></span>
+          </div>
+          ${overseers.map((o) => {
+            const pref = preferenceMeta(o.preference);
+            const isActive = o.is_active !== false;
+            const onField = activeProfileIds.has(o.profile_id);
+            const statusHtml = isActive
+              ? `<span class="terr-over-status-wrap"><span class="terr-over-status terr-over-status--active">Ativo</span>${onField ? '<span class="terr-over-status terr-over-status--field">Campo</span>' : ''}</span>`
+              : '<span class="terr-over-status terr-over-status--inactive">Inativo</span>';
+            return `
+          <div class="terr-over-row" title="${escapeHtml(profileName(o.profiles))}">
+            <span class="terr-over-name">
+              <span class="material-symbols-outlined" aria-hidden="true">person</span>
+              <span>${escapeHtml(profileName(o.profiles))}</span>
+            </span>
+            <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
+            <span class="terr-over-days" title="${escapeHtml(H.overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
+            <span>${statusHtml}</span>
+            <div class="terr-over-actions">
+              <button type="button" data-edit-overseer="${o.profile_id}" class="terr-sched-icon-btn" title="Editar dias">
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" data-del-overseer="${o.profile_id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Remover">
+                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+              </button>
+            </div>
+          </div>`;
+          }).join('')}
         </div>
-      </div>`).join('')}`;
+      </div>`;
+
     el.querySelectorAll('[data-edit-overseer]').forEach((btn) =>
       btn.addEventListener('click', () =>
         openOverseerEditModal(overseers.find((o) => o.profile_id === btn.dataset.editOverseer))

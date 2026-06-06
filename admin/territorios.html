@@ -255,6 +255,50 @@
     .terr-return-submit{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;border:none;border-radius:.4375rem;background:linear-gradient(135deg,#3b5e97 0%,#0f3462 100%);color:#fff;cursor:pointer;justify-self:end;box-shadow:0 1px 4px rgba(15,52,98,.18)}
     .terr-return-submit .material-symbols-outlined{font-size:1.0625rem}
     .terr-return-submit:hover{filter:brightness(1.05)}
+    .terr-over-count{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.3125rem .625rem;border-radius:9999px;background:rgba(200,169,110,.22);color:#f5e6c8;border:1px solid rgba(200,169,110,.35);white-space:nowrap}
+    .terr-over-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+    .terr-over-stat{display:flex;align-items:center;gap:.4375rem;padding:.4375rem .625rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem}
+    .terr-over-stat__icon{width:1.625rem;height:1.625rem;border-radius:.375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .terr-over-stat__icon .material-symbols-outlined{font-size:.9375rem}
+    .terr-over-stat--all .terr-over-stat__icon{background:#eef3fa;color:#0f3462}
+    .terr-over-stat--active .terr-over-stat__icon{background:#d1fae5;color:#047857}
+    .terr-over-stat--field .terr-over-stat__icon{background:#fef3c7;color:#b45309}
+    .terr-over-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
+    .terr-over-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
+    .terr-over-add{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
+    .terr-over-add__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.75rem;font-weight:800;color:#0f3462}
+    .terr-over-add__head .material-symbols-outlined{font-size:1rem;color:#3b5e97}
+    .terr-over-add__form{padding:.75rem;display:grid;gap:.625rem;align-items:end}
+    @media(min-width:768px){.terr-over-add__form{grid-template-columns:minmax(0,1.4fr) minmax(0,.85fr) auto;padding:.875rem .75rem}}
+    .terr-over-field{display:flex;flex-direction:column;gap:.3125rem}
+    .terr-over-field__label{display:flex;align-items:center;gap:.3125rem;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .terr-over-field__label .material-symbols-outlined{font-size:.9375rem;color:#3b5e97}
+    .terr-over-input{width:100%;border:1px solid #e2e6ef;border-radius:.625rem;padding:.5625rem .75rem;font-size:.8125rem;color:#1b1c1c;background:#fff}
+    .terr-over-input:focus{outline:none;border-color:#3b5e97;box-shadow:0 0 0 3px rgba(59,94,151,.12)}
+    .terr-over-submit{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;font-size:.8125rem;font-weight:800;padding:.5625rem 1rem;border-radius:.625rem;border:none;background:linear-gradient(135deg,#3b5e97 0%,#0f3462 100%);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(15,52,98,.18);white-space:nowrap}
+    .terr-over-submit .material-symbols-outlined{font-size:1.0625rem}
+    .terr-over-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
+    .terr-over-panel{min-width:38rem}
+    .terr-over-row{display:grid;grid-template-columns:minmax(6.5rem,1.15fr) minmax(5.5rem,.8fr) minmax(7rem,1.05fr) 4.5rem 4.25rem;gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-over-row:last-child{border-bottom:none}
+    .terr-over-row:not(.terr-over-row--head):hover{background:#fafbfc}
+    .terr-over-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-over-name{display:flex;align-items:center;gap:.375rem;min-width:0;font-weight:700;color:#0f3462}
+    .terr-over-name .material-symbols-outlined{font-size:1rem;color:#3b5e97;flex-shrink:0}
+    .terr-over-name span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-over-pref{font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.25rem;text-align:center;white-space:nowrap}
+    .terr-over-pref--mid{background:#eef3fa;color:#0f3462}
+    .terr-over-pref--weekend{background:#ecfdf5;color:#047857}
+    .terr-over-pref--both{background:#fef3c7;color:#b45309}
+    .terr-over-days{display:flex;flex-wrap:wrap;gap:.1875rem;min-width:0}
+    .terr-over-day{font-size:.5625rem;font-weight:800;padding:.0625rem .3125rem;border-radius:.25rem;background:#f3f4f6;color:#4b5563;white-space:nowrap}
+    .terr-over-day--weekend{background:#ecfdf5;color:#047857}
+    .terr-over-status{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.125rem .375rem;border-radius:.25rem;white-space:nowrap}
+    .terr-over-status--active{background:#d1fae5;color:#047857}
+    .terr-over-status--inactive{background:#f3f4f6;color:#6b7280}
+    .terr-over-status--field{background:#dbeafe;color:#1d4ed8;margin-left:.1875rem}
+    .terr-over-status-wrap{display:flex;flex-wrap:wrap;gap:.1875rem;align-items:center}
+    .terr-over-actions{display:flex;gap:0;justify-content:flex-end}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -476,26 +520,56 @@
     </section>
 
     <!-- DIRIGENTES -->
-    <section id="panel-dirigentes" class="terr-panel space-y-4">
-      <div class="bg-white border border-outline-variant rounded-xl p-5 md:p-6 max-w-xl">
-        <h2 class="font-bold text-primary mb-3">Adicionar dirigente</h2>
-        <form id="form-overseer" class="grid sm:grid-cols-2 gap-3">
-          <label class="block text-sm font-semibold text-primary sm:col-span-2">Irmão
-            <select id="overseer-profile" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"></select>
-          </label>
-          <label class="block text-sm font-semibold text-primary">Preferência
-            <select id="overseer-pref" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
+    <section id="panel-dirigentes" class="terr-panel space-y-3">
+      <div class="terr-sched-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Dirigentes de grupo</h2>
+          <p>Irmãos aptos a receber designação · preferência e dias disponíveis</p>
+        </div>
+        <span class="terr-over-count" id="dirigentes-count">— cadastrados</span>
+      </div>
+
+      <div class="terr-over-stats">
+        <div class="terr-over-stat terr-over-stat--all">
+          <span class="terr-over-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+          <div><p class="terr-over-stat__label">Cadastrados</p><p class="terr-over-stat__val" id="dirigentes-stat-total">—</p></div>
+        </div>
+        <div class="terr-over-stat terr-over-stat--active">
+          <span class="terr-over-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">how_to_reg</span></span>
+          <div><p class="terr-over-stat__label">Ativos</p><p class="terr-over-stat__val" id="dirigentes-stat-active">—</p></div>
+        </div>
+        <div class="terr-over-stat terr-over-stat--field">
+          <span class="terr-over-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span></span>
+          <div><p class="terr-over-stat__label">Em campo</p><p class="terr-over-stat__val" id="dirigentes-stat-field">—</p></div>
+        </div>
+      </div>
+
+      <div class="terr-over-add">
+        <div class="terr-over-add__head">
+          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+          Adicionar dirigente
+        </div>
+        <form id="form-overseer" class="terr-over-add__form">
+          <div class="terr-over-field">
+            <span class="terr-over-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão</span>
+            <select id="overseer-profile" required class="terr-over-input"></select>
+          </div>
+          <div class="terr-over-field">
+            <span class="terr-over-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Preferência</span>
+            <select id="overseer-pref" class="terr-over-input">
               <option value="meio_de_semana">Meio de semana</option>
               <option value="final_de_semana">Final de semana</option>
               <option value="ambos">Ambos</option>
             </select>
-          </label>
-          <div class="flex items-end"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Adicionar</button></div>
+          </div>
+          <button type="submit" class="terr-over-submit">
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            Adicionar
+          </button>
         </form>
       </div>
-      <div class="bg-white border border-outline-variant rounded-xl p-5">
-        <div id="dirigentes-list"><p class="text-sm text-on-surface-variant">Carregando…</p></div>
-      </div>
+
+      <div id="dirigentes-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
   </main>
   <div id="footer"></div>
@@ -507,6 +581,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060526"></script>
-    <script src="../js/admin/territory-system.js?v=2026060620"></script>
+    <script src="../js/admin/territory-system.js?v=2026060621"></script>
 </body>
 </html>
