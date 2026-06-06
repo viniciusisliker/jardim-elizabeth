@@ -325,16 +325,14 @@
       transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
     }
     .je-site-nav-emoji {
-      font-size: 1.0625rem;
+      font-size: 0.9375rem;
       line-height: 1;
       flex-shrink: 0;
-      transition: transform 0.2s cubic-bezier(0.34, 1.35, 0.64, 1);
+      opacity: 0.88;
     }
-    .je-site-nav-link:hover .je-site-nav-emoji {
-      transform: scale(1.12);
-    }
+    .je-site-nav-link:hover .je-site-nav-emoji,
     .je-site-nav-link--active .je-site-nav-emoji {
-      transform: scale(1.08);
+      opacity: 1;
     }
     .je-site-nav-link:hover {
       color: #0f3462;
@@ -577,10 +575,11 @@
     }
     .je-mobile-nav-icon .material-symbols-outlined { font-size: 1.25rem; }
     .je-mobile-nav-icon--emoji {
-      font-size: 1.3125rem;
+      font-size: 1.1875rem;
       line-height: 1;
       background: #fff;
       border: 1px solid #e8ecf2;
+      opacity: 0.95;
     }
     .je-mobile-nav-item--active .je-mobile-nav-icon--emoji {
       background: rgba(255, 255, 255, 0.2);
