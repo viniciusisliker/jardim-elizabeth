@@ -352,7 +352,7 @@
             <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${esc(ev.date_label)}</span>
           </div>
           <div style="flex:1;min-width:0">
-            <span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${catCls};padding:1px 6px;border-radius:4px;margin-bottom:4px">${esc(ev.category)}</span>
+            <span class="je-home-ev-cat" style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${catCls};padding:1px 6px;border-radius:4px;margin-bottom:4px">${esc(ev.category)}</span>
             <h3 style="font-weight:700;font-size:0.875rem;color:#1b1c1c;line-height:1.4">${esc(ev.title)}</h3>
             ${ev.description ? `<p style="font-size:0.75rem;color:#43474f;margin-top:2px">${esc(ev.description)}</p>` : ''}
             ${extras ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${esc(extras)}</p>` : ''}

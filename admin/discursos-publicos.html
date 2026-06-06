@@ -93,7 +93,20 @@
     .dp-preview-row dd{margin:0;padding:0.5rem 0.625rem;color:#1b1c1c;line-height:1.4}
     .dp-preview-empty{color:#43474f;font-style:italic;font-size:0.8125rem;line-height:1.5}
     .dp-empty-state{text-align:center;padding:2.5rem 1rem;color:#43474f;background:#fff;border:1px dashed #D9E2F3;border-radius:0.875rem}
-    @media(max-width:767px){.dp-mini-btn,.dp-save-btn,.board-load-btn,.dp-nav-arrow{min-height:2.75rem}}
+    @media(max-width:639px){
+      .board-month-toolbar__pick{flex-direction:column;align-items:stretch}
+      .board-month-toolbar__icon{display:none}
+      .board-month-toolbar__actions{width:100%}
+      .board-load-btn,.board-gcal-btn{flex:1;min-width:0}
+    }
+    @media(max-width:767px){
+      .dp-mini-btn,.dp-save-btn,.board-load-btn,.dp-nav-arrow{min-height:2.75rem}
+      .dp-char-pill,.gcal-block-btn{min-height:2.75rem;padding:.5rem .75rem}
+      .dp-toolbar{flex-direction:column;align-items:stretch;gap:.625rem}
+      .dp-toolbar-actions{width:100%;flex-wrap:wrap}
+      .dp-mini-btn{flex:1 1 calc(50% - .25rem);justify-content:center}
+      #gcal-export-close,#pdf-preview-close{min-width:2.75rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center}
+    }
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">

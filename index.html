@@ -253,19 +253,23 @@ gtag('config', 'G-PGXCZF9S9W');
     }
 
     @media (max-width: 1023px) {
-      .je-index-hero { height: 400px !important; }
+      .je-index-hero {
+        height: auto !important;
+        min-height: clamp(280px, 48vh, 400px);
+      }
       .je-index-hero .pb-16 { padding-bottom: 2.5rem; }
       .je-home-widgets-row { flex-direction: column !important; align-items: stretch !important; }
       .je-home-widgets-row > * { width: 100% !important; max-width: none !important; flex-shrink: 1 !important; }
     }
     @media (max-width: 767px) {
-      .je-index-hero { height: 340px !important; }
+      .je-index-hero { min-height: clamp(260px, 42vh, 340px); }
       .je-index-hero h1 { font-size: 1.375rem; line-height: 1.25; }
       .je-index-shortcuts-section { margin-top: -2rem; }
       .je-index-shortcuts-panel { width: 100%; }
       .je-index-shortcuts-grid { display: flex; flex-direction: column; }
-      .je-index-shortcut { width: 100%; max-width: none; flex: 1 1 auto; }
+      .je-index-shortcut { width: 100%; max-width: none; flex: 1 1 auto; min-height: 2.75rem; }
       .je-index-shortcut-desc { display: none; }
+      .je-home-ev-cat { font-size: 0.6875rem !important; padding: 2px 7px !important; }
     }
   </style>
 

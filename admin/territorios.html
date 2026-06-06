@@ -314,6 +314,23 @@
     .terr-map-lightbox__body{overflow:auto;padding:.75rem;background:#f5f8fc}
     .terr-map-lightbox__body img{display:block;width:100%;height:auto;margin:0 auto}
     .terr-map-lightbox__fallback{padding:2rem 1rem;text-align:center;font-size:.8125rem;color:#6b7280}
+    @media(max-width:1023px){
+      .terr-sched-scroll,.terr-catalog-scroll,.terr-hist-scroll,.terr-return-scroll,.terr-over-scroll{
+        -webkit-overflow-scrolling:touch;
+      }
+    }
+    @media(max-width:767px){
+      .terr-tab{min-width:2.75rem;min-height:2.75rem;padding:.5rem .625rem;justify-content:center}
+      .terr-sched-icon-btn,.terr-return-submit,.terr-map-lightbox__close{
+        min-width:2.75rem;min-height:2.75rem;padding:.375rem;display:inline-flex;align-items:center;justify-content:center
+      }
+      .terr-return-submit{width:2.75rem;height:2.75rem}
+      .terr-dash-chip,.terr-sched-toolbar-btn{min-height:2.75rem}
+      .terr-map-lightbox{padding:max(.75rem,env(safe-area-inset-top)) .75rem max(.75rem,env(safe-area-inset-bottom))}
+    }
+    @media(max-width:480px){
+      .terr-hist-stats,.terr-assign-stats,.terr-over-stats,.terr-dash-stats{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">

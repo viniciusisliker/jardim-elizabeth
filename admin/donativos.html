@@ -6,6 +6,11 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
+  <style>
+    @media (max-width: 767px) {
+      #donations-form button[type="submit"] { min-height: 2.75rem; }
+    }
+  </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
   <div id="header"></div>

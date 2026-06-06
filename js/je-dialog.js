@@ -110,6 +110,13 @@
         color: #fff;
       }
       .je-dialog__btn--danger:hover { opacity: 0.92; }
+      @media (max-width: 767px) {
+        .je-dialog-overlay {
+          align-items: flex-end;
+          padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+        }
+        .je-dialog__btn { min-height: 2.75rem; }
+      }
       @media (max-width: 480px) {
         .je-dialog__actions { flex-direction: column-reverse; }
         .je-dialog__btn { width: 100%; }

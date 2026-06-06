@@ -614,7 +614,7 @@
       #header nav > .max-w-7xl,
       #header .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
       .je-site-header-inner { min-height: 3.75rem; }
-      .je-site-brand-name { font-size: 1rem; max-width: 10rem; }
+      .je-site-brand-name { font-size: 1rem; max-width: 12rem; }
       .je-site-brand-mark { width: 2.25rem; height: 2.25rem; }
       #mobile-menu-btn,
       #profile-btn,
@@ -668,13 +668,44 @@
     }
     @media (max-width: 767px) {
       .je-site-brand-name {
-        max-width: 10rem;
+        max-width: 11rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
       #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+      #login-modal-close {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .je-ag-hero h1,
+      .je-ter-hero h1,
+      .je-don-hero h1,
+      .je-qa-hero h1,
+      .je-sch-hero h1,
+      .je-eq-hero h1 {
+        font-size: 1.625rem;
+        line-height: 1.2;
+      }
+      .je-ag-hero,
+      .je-ter-hero,
+      .je-don-hero,
+      .je-qa-hero,
+      .je-sch-hero,
+      .je-eq-hero {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+      }
+      body.min-h-screen.flex.flex-col > main.flex-1 {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+      }
       .je-footer-info {
         padding-top: 2rem;
         padding-bottom: 1.5rem;

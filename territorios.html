@@ -405,8 +405,15 @@ gtag('config', 'G-PGXCZF9S9W');
       margin: 0 auto;
     }
 
+    @media (hover: none) and (pointer: coarse) {
+      .je-ter-map-overlay { opacity: 1; }
+    }
     @media (max-width: 767px) {
       .je-ter-card { padding: 1rem; }
+      .je-ter-card:hover { transform: none; box-shadow: 0 4px 20px rgba(15,52,98,.06); }
+      .je-ter-filters__clear { width: 2.75rem; height: 2.75rem; }
+      .je-ter-lightbox-close { width: 2.75rem; height: 2.75rem; }
+      .je-ter-lightbox { padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
