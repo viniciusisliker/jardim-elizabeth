@@ -207,6 +207,7 @@
     if (!grid) return;
 
     const search = document.getElementById('je-ter-search');
+    const clearBtn = document.getElementById('je-ter-search-clear');
     const countEl = document.getElementById('je-ter-count');
     const emptyEl = document.getElementById('je-ter-empty');
     const lightbox = document.getElementById('je-ter-lightbox');
@@ -216,6 +217,19 @@
 
     function cards() {
       return [...grid.querySelectorAll('.territory-card')];
+    }
+
+    const total = cards().length;
+
+    function updateClearBtn() {
+      clearBtn?.classList.toggle('hidden', !(search?.value || '').trim());
+    }
+
+    function formatCount(visible) {
+      if (visible === total) {
+        return total === 1 ? '1 território' : `${total} territórios`;
+      }
+      return visible === 1 ? '1 de ' + total : `${visible} de ${total}`;
     }
 
     function applySearch() {
@@ -229,13 +243,18 @@
         card.classList.toggle('is-hidden', !show);
         if (show) visible += 1;
       });
-      if (countEl) {
-        countEl.textContent = visible === 1 ? 'Mostrando 1 território' : `Mostrando ${visible} territórios`;
-      }
+      if (countEl) countEl.textContent = formatCount(visible);
       emptyEl?.classList.toggle('is-visible', visible === 0);
+      updateClearBtn();
     }
 
     search?.addEventListener('input', applySearch);
+    clearBtn?.addEventListener('click', () => {
+      if (!search) return;
+      search.value = '';
+      applySearch();
+      search.focus();
+    });
 
     function openLightbox(img, title) {
       if (!lightbox || !lightboxImg || !lightboxTitle) return;

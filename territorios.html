@@ -92,44 +92,88 @@ gtag('config', 'G-PGXCZF9S9W');
       box-shadow: 0 0 0 3px rgba(74,222,128,.25);
     }
 
-    .je-ter-toolbar {
-      display: block;
-      margin-bottom: 1rem;
-    }
-    .je-ter-search-wrap {
-      position: relative;
-      display: block;
-      max-width: 24rem;
-    }
-    .je-ter-search-wrap .material-symbols-outlined {
-      position: absolute;
-      left: 0.875rem;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.125rem;
-      color: #747780;
-      pointer-events: none;
-    }
-    .je-ter-search {
-      width: 100%;
-      padding: 0.625rem 0.875rem 0.625rem 2.5rem;
-      border-radius: 9999px;
-      border: 1px solid rgba(15,52,98,.12);
+    .je-ter-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.625rem 0.875rem;
+      padding: 0.625rem 0.875rem;
+      margin-bottom: 1.25rem;
       background: #fff;
+      border: 1px solid rgba(15, 52, 98, 0.1);
+      border-radius: 0.875rem;
+      box-shadow: 0 2px 12px rgba(15, 52, 98, 0.05);
+    }
+    .je-ter-filters__search {
+      flex: 1 1 18rem;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4375rem 0.5rem 0.4375rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid #e2e6ef;
+      background: #f7f9fc;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .je-ter-filters__search:focus-within {
+      border-color: #3b5e97;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(59, 94, 151, 0.12);
+    }
+    .je-ter-filters__icon {
+      font-size: 1.125rem;
+      color: #3b5e97;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .je-ter-filters__input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
       font-size: 0.875rem;
+      line-height: 1.35;
+      padding: 0.3125rem 0;
       color: #1b1c1c;
       outline: none;
-      transition: border-color .15s, box-shadow .15s;
     }
-    .je-ter-search:focus {
-      border-color: #3b5e97;
-      box-shadow: 0 0 0 3px rgba(59,94,151,.15);
-    }
-    .je-ter-count {
-      font-size: 0.75rem;
-      font-weight: 600;
+    .je-ter-filters__input::placeholder { color: #9ca3af; }
+    .je-ter-filters__input::-webkit-search-cancel-button { display: none; }
+    .je-ter-filters__clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
+      border: none;
+      border-radius: 9999px;
+      background: transparent;
       color: #747780;
-      margin-bottom: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .je-ter-filters__clear:hover { background: #eef3fa; color: #0f3462; }
+    .je-ter-filters__clear.hidden { display: none; }
+    .je-ter-filters__clear .material-symbols-outlined { font-size: 1.0625rem; }
+    .je-ter-filters__count {
+      flex-shrink: 0;
+      margin: 0;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      background: #eef3fa;
+      color: #3b5e97;
+      white-space: nowrap;
+    }
+    @media (max-width: 639px) {
+      .je-ter-filters { flex-direction: column; align-items: stretch; }
+      .je-ter-filters__count { align-self: flex-start; }
     }
 
     .je-ter-grid {
@@ -362,7 +406,7 @@ gtag('config', 'G-PGXCZF9S9W');
     }
 
     @media (max-width: 767px) {
-      .je-ter-search-wrap { max-width: none; }
+      .je-ter-card { padding: 1rem; }
     }
   </style>
 </head>
@@ -398,12 +442,16 @@ gtag('config', 'G-PGXCZF9S9W');
 
     <div class="max-w-6xl mx-auto px-6 je-page-shell py-10 md:py-14 fade-up-2">
 
-      <label class="je-ter-search-wrap je-ter-toolbar">
-          <span class="material-symbols-outlined">search</span>
-          <input id="je-ter-search" class="je-ter-search" type="search" placeholder="Buscar por nome ou número…" autocomplete="off"/>
-      </label>
-
-      <p id="je-ter-count" class="je-ter-count" aria-live="polite">Mostrando 19 territórios</p>
+      <div class="je-ter-filters">
+        <label class="je-ter-filters__search">
+          <span class="material-symbols-outlined je-ter-filters__icon" aria-hidden="true">search</span>
+          <input id="je-ter-search" class="je-ter-filters__input" type="search" placeholder="Buscar por nome ou número…" autocomplete="off" enterkeyhint="search"/>
+          <button type="button" id="je-ter-search-clear" class="je-ter-filters__clear hidden" aria-label="Limpar busca">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </label>
+        <p id="je-ter-count" class="je-ter-filters__count" aria-live="polite">19 territórios</p>
+      </div>
 
       <div id="cardsGrid" class="je-ter-grid">
         <article data-nome="jardim campo limpo" data-num="01" class="territory-card je-ter-card">
