@@ -182,6 +182,79 @@
     .terr-hist-type--status{background:#f3f4f6;color:#4b5563}
     .terr-hist-type--default{background:#eef3fa;color:#3b5e97}
     .terr-hist-foot{padding:.375rem .75rem;font-size:.6875rem;color:#6b7280;background:#f7f9fc;border-top:1px solid #eef0f4;text-align:center}
+    .terr-assign-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff}
+    .terr-assign-toolbar h2{color:#fff;margin:0;font-size:.875rem;line-height:1.2}
+    .terr-assign-toolbar p{color:rgba(255,255,255,.75);margin:0;font-size:.625rem}
+    .terr-assign-toolbar-badge{margin-left:auto;display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.3125rem .625rem;border-radius:9999px;background:rgba(200,169,110,.22);color:#f5e6c8;border:1px solid rgba(200,169,110,.35)}
+    .terr-assign-toolbar-badge .material-symbols-outlined{font-size:.875rem}
+    .terr-assign-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+    .terr-assign-stat{display:flex;align-items:center;gap:.4375rem;padding:.4375rem .625rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem}
+    .terr-assign-stat__icon{width:1.625rem;height:1.625rem;border-radius:.375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .terr-assign-stat__icon .material-symbols-outlined{font-size:.9375rem}
+    .terr-assign-stat--avail .terr-assign-stat__icon{background:#e0e7ff;color:#4338ca}
+    .terr-assign-stat--free .terr-assign-stat__icon{background:#d1fae5;color:#047857}
+    .terr-assign-stat--busy .terr-assign-stat__icon{background:#fef3c7;color:#b45309}
+    .terr-assign-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
+    .terr-assign-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
+    .terr-assign-grid{display:grid;gap:.75rem}
+    @media(min-width:900px){.terr-assign-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start}}
+    .terr-assign-card{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
+    .terr-assign-card__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.75rem;font-weight:800;color:#0f3462}
+    .terr-assign-card__head .material-symbols-outlined{font-size:1rem;color:#3b5e97}
+    .terr-assign-form{padding:.875rem .75rem;display:grid;gap:.625rem}
+    @media(min-width:640px){.terr-assign-form{grid-template-columns:repeat(2,minmax(0,1fr));padding:1rem .875rem}}
+    .terr-assign-field{display:flex;flex-direction:column;gap:.3125rem}
+    .terr-assign-field--full{grid-column:1/-1}
+    .terr-assign-field__label{display:flex;align-items:center;gap:.3125rem;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .terr-assign-field__label .material-symbols-outlined{font-size:.9375rem;color:#3b5e97}
+    .terr-assign-input-wrap{position:relative}
+    .terr-assign-input-wrap .material-symbols-outlined{position:absolute;left:.625rem;top:50%;transform:translateY(-50%);font-size:1.0625rem;color:#9ca3af;pointer-events:none}
+    .terr-assign-input{width:100%;border:1px solid #e2e6ef;border-radius:.625rem;padding:.5625rem .75rem .5625rem 2.25rem;font-size:.8125rem;color:#1b1c1c;background:#fff;transition:border-color .15s,box-shadow .15s}
+    .terr-assign-input:focus{outline:none;border-color:#3b5e97;box-shadow:0 0 0 3px rgba(59,94,151,.12)}
+    .terr-assign-input--date{padding-left:.75rem}
+    .terr-assign-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;padding:.625rem .75rem;border-top:1px solid #eef0f4;background:#fafbfc}
+    .terr-assign-note{font-size:.6875rem;color:#6b7280;line-height:1.35;max-width:16rem}
+    .terr-assign-submit{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;font-size:.8125rem;font-weight:800;padding:.5625rem 1rem;border-radius:.625rem;border:none;background:linear-gradient(135deg,#3b5e97 0%,#0f3462 100%);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(15,52,98,.18);transition:transform .15s,box-shadow .15s}
+    .terr-assign-submit:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,52,98,.22)}
+    .terr-assign-submit .material-symbols-outlined{font-size:1.0625rem}
+    .terr-assign-preview{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden;height:100%}
+    .terr-assign-preview__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.75rem;font-weight:800;color:#0f3462}
+    .terr-assign-preview__head .material-symbols-outlined{font-size:1rem;color:#3b5e97}
+    .terr-assign-preview__body{padding:.875rem .75rem;min-height:9rem;display:flex;flex-direction:column;justify-content:center}
+    .terr-assign-preview__empty{display:flex;flex-direction:column;align-items:center;text-align:center;color:#9ca3af;font-size:.8125rem;line-height:1.4;padding:.5rem}
+    .terr-assign-preview__empty .material-symbols-outlined{font-size:1.75rem;color:#c5d4ea;margin-bottom:.375rem}
+    .terr-assign-preview__row{display:flex;align-items:flex-start;gap:.5rem;padding:.4375rem 0;border-bottom:1px solid #eef0f4;font-size:.8125rem}
+    .terr-assign-preview__row:last-child{border-bottom:none}
+    .terr-assign-preview__icon{width:1.75rem;height:1.75rem;border-radius:.4375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#eef3fa;color:#3b5e97}
+    .terr-assign-preview__icon .material-symbols-outlined{font-size:1rem}
+    .terr-assign-preview__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
+    .terr-assign-preview__value{font-weight:700;color:#0f3462;line-height:1.3;margin-top:.0625rem}
+    .terr-assign-preview__meta{font-size:.6875rem;color:#6b7280;margin-top:.125rem}
+    .terr-assign-preview__foot{margin-top:.625rem;padding:.4375rem .5rem;border-radius:.4375rem;background:#ecfdf5;border:1px solid #bbf7d0;font-size:.6875rem;color:#047857;display:flex;align-items:center;gap:.3125rem}
+    .terr-assign-preview__foot .material-symbols-outlined{font-size:.9375rem}
+    .terr-assign-busy{margin-top:.25rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem;overflow:hidden}
+    .terr-assign-busy__head{padding:.375rem .75rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;background:#f7f9fc;border-bottom:1px solid #eef0f4}
+    .terr-assign-busy__row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.75rem}
+    .terr-assign-busy__row:last-child{border-bottom:none}
+    .terr-assign-busy__person{font-weight:600;color:#0f3462;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-assign-busy__terr{font-size:.6875rem;color:#43474f;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-return-count{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.3125rem .625rem;border-radius:9999px;background:rgba(200,169,110,.22);color:#f5e6c8;border:1px solid rgba(200,169,110,.35);white-space:nowrap}
+    .terr-return-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
+    .terr-return-panel{min-width:42rem}
+    .terr-return-row{display:grid;grid-template-columns:minmax(6.5rem,1.05fr) minmax(5.5rem,.95fr) 4.75rem minmax(6.75rem,.85fr) minmax(5.5rem,1fr) 2.5rem;gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-return-row:last-child{border-bottom:none}
+    .terr-return-row:not(.terr-return-row--head):hover{background:#fafbfc}
+    .terr-return-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-return-terr{font-weight:700;color:#0f3462;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-return-terr-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.0625rem .3125rem;border-radius:.25rem;margin-right:.25rem}
+    .terr-return-dirigente{font-weight:600;color:#0f3462;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-return-assigned{font-size:.6875rem;font-weight:700;color:#3b5e97;text-align:center;white-space:nowrap}
+    .terr-return-input{width:100%;min-width:0;border:1px solid #e2e6ef;border-radius:.4375rem;padding:.3125rem .4375rem;font-size:.75rem;color:#1b1c1c;background:#fff}
+    .terr-return-input:focus{outline:none;border-color:#3b5e97;box-shadow:0 0 0 2px rgba(59,94,151,.1)}
+    .terr-return-input::placeholder{color:#c4c9d4}
+    .terr-return-submit{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;border:none;border-radius:.4375rem;background:linear-gradient(135deg,#3b5e97 0%,#0f3462 100%);color:#fff;cursor:pointer;justify-self:end;box-shadow:0 1px 4px rgba(15,52,98,.18)}
+    .terr-return-submit .material-symbols-outlined{font-size:1.0625rem}
+    .terr-return-submit:hover{filter:brightness(1.05)}
   </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
@@ -259,32 +332,100 @@
     </section>
 
     <!-- DESIGNAR -->
-    <section id="panel-designar" class="terr-panel space-y-4">
-      <div class="bg-white border border-outline-variant rounded-xl p-5 md:p-6 max-w-xl">
-        <h2 class="font-bold text-primary mb-1">Nova designação de campo</h2>
-        <p class="text-xs text-on-surface-variant mb-4">O dirigente recebe a designação no Hub. Só é permitido 1 território ativo por dirigente.</p>
-        <form id="form-designar" class="space-y-4">
-          <label class="block text-sm font-semibold text-primary">Dirigente
-            <select id="designar-profile" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"></select>
-          </label>
-          <label class="block text-sm font-semibold text-primary">Território disponível
-            <select id="designar-territory" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"></select>
-          </label>
-          <label class="block text-sm font-semibold text-primary">Data da designação
-            <input id="designar-date" type="date" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-          </label>
-          <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Confirmar designação</button>
-        </form>
+    <section id="panel-designar" class="terr-panel space-y-3">
+      <div class="terr-assign-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Nova designação de campo</h2>
+          <p>O dirigente recebe a designação no Hub · 1 território ativo por dirigente</p>
+        </div>
+        <span class="terr-assign-toolbar-badge">
+          <span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>
+          Designar
+        </span>
+      </div>
+
+      <div class="terr-assign-stats">
+        <div class="terr-assign-stat terr-assign-stat--avail">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+          <div><p class="terr-assign-stat__label">Disponíveis</p><p class="terr-assign-stat__val" id="designar-stat-avail">—</p></div>
+        </div>
+        <div class="terr-assign-stat terr-assign-stat--free">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></span>
+          <div><p class="terr-assign-stat__label">Dirigentes livres</p><p class="terr-assign-stat__val" id="designar-stat-free">—</p></div>
+        </div>
+        <div class="terr-assign-stat terr-assign-stat--busy">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">pending_actions</span></span>
+          <div><p class="terr-assign-stat__label">Em campo agora</p><p class="terr-assign-stat__val" id="designar-stat-busy">—</p></div>
+        </div>
+      </div>
+
+      <div class="terr-assign-grid">
+        <div class="terr-assign-card">
+          <div class="terr-assign-card__head">
+            <span class="material-symbols-outlined" aria-hidden="true">edit_note</span>
+            Dados da designação
+          </div>
+          <form id="form-designar">
+            <div class="terr-assign-form">
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
+                <div class="terr-assign-input-wrap">
+                  <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                  <select id="designar-profile" required class="terr-assign-input"></select>
+                </div>
+              </div>
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
+                <div class="terr-assign-input-wrap">
+                  <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                  <select id="designar-territory" required class="terr-assign-input"></select>
+                </div>
+              </div>
+              <div class="terr-assign-field terr-assign-field--full">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
+                <input id="designar-date" type="date" required class="terr-assign-input terr-assign-input--date"/>
+              </div>
+            </div>
+            <div class="terr-assign-foot">
+              <p class="terr-assign-note">Territórios listados por prioridade de cobertura. Dirigentes com designação ativa ficam desabilitados.</p>
+              <button type="submit" class="terr-assign-submit">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                Confirmar designação
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="terr-assign-preview">
+          <div class="terr-assign-preview__head">
+            <span class="material-symbols-outlined" aria-hidden="true">preview</span>
+            Resumo
+          </div>
+          <div class="terr-assign-preview__body" id="designar-preview">
+            <div class="terr-assign-preview__empty">
+              <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
+              <p>Preencha os campos ao lado para ver o resumo antes de confirmar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="designar-busy-wrap" class="terr-assign-busy hidden">
+        <p class="terr-assign-busy__head">Dirigentes com território ativo</p>
+        <div id="designar-busy-list"></div>
       </div>
     </section>
 
     <!-- DEVOLVER -->
-    <section id="panel-devolver" class="terr-panel space-y-4">
-      <div class="bg-white border border-outline-variant rounded-xl p-5 md:p-6">
-        <h2 class="font-bold text-primary mb-1">Devolver território</h2>
-        <p class="text-xs text-on-surface-variant mb-4">Somente o servo de territórios registra a devolução.</p>
-        <div id="devolver-list"><p class="text-sm text-on-surface-variant">Carregando…</p></div>
+    <section id="panel-devolver" class="terr-panel space-y-3">
+      <div class="terr-sched-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Devolver território</h2>
+          <p>Território · dirigente · último dia trabalhado · observações</p>
+        </div>
+        <span class="terr-return-count" id="devolver-count">— em campo</span>
       </div>
+      <div id="devolver-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
 
     <!-- CRONOGRAMA -->
@@ -366,6 +507,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060526"></script>
-    <script src="../js/admin/territory-system.js?v=2026060526"></script>
+    <script src="../js/admin/territory-system.js?v=2026060620"></script>
 </body>
 </html>

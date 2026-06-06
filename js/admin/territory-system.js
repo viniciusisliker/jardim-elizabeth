@@ -269,20 +269,79 @@
     bindDashLinks(document.getElementById('panel-painel'));
   }
 
+  function updateDesignarPreview() {
+    const previewEl = document.getElementById('designar-preview');
+    if (!previewEl) return;
+
+    const profileId = document.getElementById('designar-profile')?.value;
+    const territoryId = document.getElementById('designar-territory')?.value;
+    const dateVal = document.getElementById('designar-date')?.value;
+
+    if (!profileId && !territoryId && !dateVal) {
+      previewEl.innerHTML = `
+        <div class="terr-assign-preview__empty">
+          <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
+          <p>Preencha os campos ao lado para ver o resumo antes de confirmar.</p>
+        </div>`;
+      return;
+    }
+
+    const profile = profiles.find((p) => p.id === profileId);
+    const territory = territories.find((t) => t.id === territoryId);
+    const priority = territory ? H.computePriority(territory) : null;
+    const rows = [];
+
+    rows.push(`
+      <div class="terr-assign-preview__row">
+        <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">person</span></span>
+        <div>
+          <p class="terr-assign-preview__label">Dirigente</p>
+          <p class="terr-assign-preview__value">${profile ? escapeHtml(profileName(profile)) : 'Selecione…'}</p>
+        </div>
+      </div>`);
+
+    rows.push(`
+      <div class="terr-assign-preview__row">
+        <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+        <div>
+          <p class="terr-assign-preview__label">Território</p>
+          <p class="terr-assign-preview__value">${territory ? escapeHtml(H.territoryLabel(territory)) : 'Selecione…'}</p>
+          ${priority && territory ? `<p class="terr-assign-preview__meta">Prioridade ${escapeHtml(priority.label)}</p>` : ''}
+        </div>
+      </div>`);
+
+    rows.push(`
+      <div class="terr-assign-preview__row">
+        <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">event</span></span>
+        <div>
+          <p class="terr-assign-preview__label">Data</p>
+          <p class="terr-assign-preview__value">${dateVal ? escapeHtml(H.formatDisplayDate(dateVal)) : 'Selecione…'}</p>
+        </div>
+      </div>`);
+
+    const ready = profileId && territoryId && dateVal;
+    previewEl.innerHTML = rows.join('') + (ready ? `
+      <div class="terr-assign-preview__foot">
+        <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
+        O dirigente verá esta designação no Hub após confirmar.
+      </div>` : '');
+  }
+
   function fillDesignarSelects() {
     const profSel = document.getElementById('designar-profile');
     const terrSel = document.getElementById('designar-territory');
     const activeProfileIds = new Set(activeAssignments.map((a) => a.profile_id));
+    const activeOverseers = overseers.filter((o) => o.is_active !== false);
+    const freeOverseers = activeOverseers.filter((o) => !activeProfileIds.has(o.profile_id));
+    const avail = availableTerritories();
 
-    profSel.innerHTML = `<option value="">Selecione o dirigente</option>${overseers
-      .filter((o) => o.is_active !== false)
+    profSel.innerHTML = `<option value="">Selecione o dirigente</option>${activeOverseers
       .map((o) => {
         const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
         const disabled = activeProfileIds.has(o.profile_id) ? ' disabled' : '';
         return `<option value="${o.profile_id}"${disabled}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
       }).join('')}`;
 
-    const avail = availableTerritories();
     terrSel.innerHTML = `<option value="">Selecione (por prioridade)</option>${avail.map((t) => {
       const p = H.computePriority(t);
       const days = H.daysSince(t.last_worked_at);
@@ -292,6 +351,31 @@
 
     document.getElementById('designar-date').value = H.toISODate(new Date());
 
+    const statAvail = document.getElementById('designar-stat-avail');
+    const statFree = document.getElementById('designar-stat-free');
+    const statBusy = document.getElementById('designar-stat-busy');
+    if (statAvail) statAvail.textContent = String(avail.length);
+    if (statFree) statFree.textContent = String(freeOverseers.length);
+    if (statBusy) statBusy.textContent = String(activeAssignments.length);
+
+    const busyWrap = document.getElementById('designar-busy-wrap');
+    const busyList = document.getElementById('designar-busy-list');
+    if (busyWrap && busyList) {
+      if (!activeAssignments.length) {
+        busyWrap.classList.add('hidden');
+        busyList.innerHTML = '';
+      } else {
+        busyWrap.classList.remove('hidden');
+        busyList.innerHTML = activeAssignments.map((a) => `
+          <div class="terr-assign-busy__row">
+            <span class="terr-assign-busy__person">${escapeHtml(profileName(a.profiles))}</span>
+            <span class="terr-assign-busy__terr">${escapeHtml(H.territoryLabel(a.territories))}</span>
+          </div>`).join('');
+      }
+    }
+
+    updateDesignarPreview();
+
     const overseerProfileSel = document.getElementById('overseer-profile');
     const existing = new Set(overseers.map((o) => o.profile_id));
     overseerProfileSel.innerHTML = `<option value="">Selecione o irmão</option>${profiles
@@ -299,30 +383,60 @@
       .map((p) => `<option value="${p.id}">${escapeHtml(profileName(p))}</option>`).join('')}`;
   }
 
+  function formatAssignedShort(iso) {
+    if (!iso) return '—';
+    const d = new Date(String(iso).slice(0, 10) + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+  }
+
   function renderDevolver() {
     const el = document.getElementById('devolver-list');
+    const countEl = document.getElementById('devolver-count');
+    const today = H.toISODate(new Date());
+
+    if (countEl) {
+      countEl.textContent = activeAssignments.length
+        ? `${activeAssignments.length} em campo`
+        : '0 em campo';
+    }
+
     if (!activeAssignments.length) {
-      el.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhuma designação ativa para devolver.</p>';
+      el.innerHTML = `
+        <div class="terr-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">assignment_turned_in</span>
+          <p class="text-sm font-semibold text-primary">Nenhuma designação ativa</p>
+          <p class="text-xs mt-1">Todos os territórios estão disponíveis para nova designação.</p>
+        </div>`;
       return;
     }
-    el.innerHTML = activeAssignments.map((a) => `
-      <div class="border border-outline-variant rounded-xl p-4 mb-3 last:mb-0">
-        <div class="flex flex-wrap justify-between gap-2 mb-3">
-          <div>
-            <p class="font-bold text-primary">${escapeHtml(H.territoryLabel(a.territories))}</p>
-            <p class="text-xs text-on-surface-variant">Dirigente: ${escapeHtml(profileName(a.profiles))} · Designado em ${escapeHtml(H.formatDisplayDate(a.assigned_at))}</p>
+
+    el.innerHTML = `
+      <div class="terr-return-scroll">
+        <div class="terr-return-panel">
+          <div class="terr-return-row terr-return-row--head">
+            <span>Território</span><span>Dirigente</span><span>Designado</span><span>Último dia</span><span>Obs.</span><span></span>
           </div>
+          ${activeAssignments.map((a) => {
+            const t = a.territories;
+            const terrNum = t?.num ? `T${escapeHtml(t.num)}` : '';
+            const terrName = t?.display_name ? escapeHtml(t.display_name) : escapeHtml(H.territoryLabel(t));
+            return `
+          <form data-return-form="${a.id}" class="terr-return-row" title="Devolver ${escapeHtml(H.territoryLabel(t))}">
+            <span class="terr-return-terr" title="${escapeHtml(H.territoryLabel(t))}">
+              ${terrNum ? `<span class="terr-return-terr-num">${terrNum}</span>` : ''}${terrName}
+            </span>
+            <span class="terr-return-dirigente" title="${escapeHtml(profileName(a.profiles))}">${escapeHtml(profileName(a.profiles))}</span>
+            <span class="terr-return-assigned" title="${escapeHtml(H.formatDisplayDate(a.assigned_at))}">${escapeHtml(formatAssignedShort(a.assigned_at))}</span>
+            <input type="date" name="work_date" required value="${today}" class="terr-return-input" aria-label="Último dia trabalhado"/>
+            <input type="text" name="notes" class="terr-return-input" placeholder="Opcional" aria-label="Observações"/>
+            <button type="submit" class="terr-return-submit" title="Registrar devolução" aria-label="Registrar devolução">
+              <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+            </button>
+          </form>`;
+          }).join('')}
         </div>
-        <form data-return-form="${a.id}" class="grid sm:grid-cols-3 gap-3 items-end">
-          <label class="block text-xs font-semibold text-primary sm:col-span-1">Último dia trabalhado
-            <input type="date" name="work_date" required value="${H.toISODate(new Date())}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-          </label>
-          <label class="block text-xs font-semibold text-primary sm:col-span-1">Observações
-            <input type="text" name="notes" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Opcional"/>
-          </label>
-          <button type="submit" class="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg h-[38px]">Registrar devolução</button>
-        </form>
-      </div>`).join('');
+      </div>`;
 
     el.querySelectorAll('[data-return-form]').forEach((form) => {
       form.addEventListener('submit', async (e) => {
@@ -1040,6 +1154,11 @@
     toast = document.getElementById('admin-toast');
     client = await getClient();
     setupTabs();
+
+    ['designar-profile', 'designar-territory', 'designar-date'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('change', updateDesignarPreview);
+      document.getElementById(id)?.addEventListener('input', updateDesignarPreview);
+    });
 
     document.getElementById('form-designar').addEventListener('submit', async (e) => {
       e.preventDefault();
