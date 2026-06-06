@@ -9,6 +9,8 @@
     { value: 'publicador', label: 'Publicador' }
   ];
 
+  const ADMIN_ROLES = new Set(window.JE_CONFIG?.adminRoles || ['superuser', 'anciao', 'servo_ministerial']);
+
   function slugify(text) {
     return String(text || '')
       .normalize('NFD')
@@ -21,18 +23,16 @@
 
   function permissionBadges(permissions) {
     return (permissions || [])
-      .map((p) => `<span class="inline-block text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-secondary/10 text-secondary mr-1 mb-1">${escapeHtml(PERMISSION_LABELS[p] || p)}</span>`)
+      .map((p) => `<span class="cfg-des-badge">${escapeHtml(PERMISSION_LABELS[p] || p)}</span>`)
       .join('');
   }
 
   function permissionSummary(permissions) {
     const perms = permissions || [];
     if (!perms.length) {
-      return '<span class="text-xs text-on-surface-variant">Nenhum módulo — expanda para configurar</span>';
+      return '<span class="cfg-des-desc">Nenhum módulo — expanda para configurar</span>';
     }
-    return perms
-      .map((p) => `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary/10 text-secondary mr-1">${escapeHtml(PERMISSION_LABELS[p] || p)}</span>`)
-      .join('');
+    return `<div class="cfg-des-badges">${permissionBadges(perms)}</div>`;
   }
 
   async function init() {
@@ -45,6 +45,7 @@
     let members = [];
     let catalog = [];
     let expandedDesignationId = null;
+    let memberSearch = '';
 
     document.getElementById('cfg-role-note').textContent = isSuper
       ? 'Como SuperUser, você gerencia designações de acesso, cargos e atribuições da equipe.'
@@ -54,16 +55,37 @@
       document.getElementById('cfg-designations-section').classList.remove('hidden');
     }
 
+    function updateStats() {
+      const activeDes = catalog.filter((d) => d.is_active).length;
+      const adminCount = members.filter((m) => ADMIN_ROLES.has(m.role)).length;
+      const statMembers = document.getElementById('cfg-stat-members');
+      const statDes = document.getElementById('cfg-stat-designations');
+      const statAdmins = document.getElementById('cfg-stat-admins');
+      if (statMembers) statMembers.textContent = String(members.length);
+      if (statDes) statDes.textContent = String(activeDes);
+      if (statAdmins) statAdmins.textContent = String(adminCount);
+    }
+
+    function filteredMembers() {
+      const q = memberSearch.trim().toLowerCase();
+      if (!q) return members;
+      return members.filter((m) => {
+        const hay = `${m.full_name || ''} ${m.username || ''} ${m.designation || ''}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
     async function reloadCatalog() {
       const { data, error } = await client
         .from('access_designations')
         .select('*')
         .order('sort_order');
       if (error) {
-        document.getElementById('designations-catalog').innerHTML = `<p class="text-error text-sm">${escapeHtml(error.message)}</p>`;
+        document.getElementById('designations-catalog').innerHTML = `<p class="cfg-empty text-error">${escapeHtml(error.message)}</p>`;
         return;
       }
       catalog = data || [];
+      updateStats();
       renderCatalog();
     }
 
@@ -73,20 +95,21 @@
         .select('id, full_name, username, role, designation, profile_access_designations(designation_id)')
         .order('full_name');
       if (error) {
-        document.getElementById('members-table').innerHTML = `<p class="text-error text-sm p-4">${escapeHtml(error.message)}</p>`;
+        document.getElementById('members-table').innerHTML = `<p class="cfg-empty text-error">${escapeHtml(error.message)}</p>`;
         return;
       }
       members = (data || []).map((m) => ({
         ...m,
         assignedIds: new Set((m.profile_access_designations || []).map((r) => r.designation_id))
       }));
+      updateStats();
       renderMembers();
     }
 
     function renderCatalog() {
       const root = document.getElementById('designations-catalog');
       if (!catalog.length) {
-        root.innerHTML = '<p class="text-sm text-on-surface-variant">Nenhuma designação cadastrada.</p>';
+        root.innerHTML = '<p class="cfg-empty">Nenhuma designação cadastrada.</p>';
         return;
       }
 
@@ -95,14 +118,14 @@
         const permChecks = MODULE_PERMISSIONS.map((p) => {
           const checked = (d.permissions || []).includes(p);
           return isSuper
-            ? `<label class="inline-flex items-center gap-1.5 text-xs"><input type="checkbox" data-des-perm="${d.id}" data-perm="${p}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(PERMISSION_LABELS[p])}</span></label>`
-            : (checked ? `<span class="text-xs text-on-surface-variant">${escapeHtml(PERMISSION_LABELS[p])}</span>` : '');
+            ? `<label class="inline-flex items-center gap-1.5"><input type="checkbox" data-des-perm="${d.id}" data-perm="${p}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(PERMISSION_LABELS[p])}</span></label>`
+            : (checked ? `<span class="cfg-des-badge">${escapeHtml(PERMISSION_LABELS[p])}</span>` : '');
         }).join('');
 
         const hubChecked = (d.permissions || []).includes('hub');
         const hubLabel = isSuper
-          ? `<label class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary"><input type="checkbox" data-des-perm="${d.id}" data-perm="hub" ${hubChecked ? 'checked' : ''} class="rounded border-outline-variant"/><span>Hub</span></label>`
-          : (hubChecked ? '<span class="text-xs font-semibold text-primary">Hub</span>' : '');
+          ? `<label class="inline-flex items-center gap-1.5 font-semibold text-primary"><input type="checkbox" data-des-perm="${d.id}" data-perm="hub" ${hubChecked ? 'checked' : ''} class="rounded border-outline-variant"/><span>Hub</span></label>`
+          : (hubChecked ? '<span class="cfg-des-badge">Hub</span>' : '');
 
         const panelContent = expanded
           ? `
@@ -110,36 +133,36 @@
               <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Nome</label>
                 <input type="text" value="${escapeHtml(d.label)}" data-des-label="${d.id}" ${isSuper ? '' : 'readonly'}
-                  class="w-full font-bold text-primary text-sm rounded-lg border border-outline-variant px-3 py-2 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"/>
+                  class="cfg-field font-bold text-primary"/>
               </div>
               <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Descrição</label>
                 <input type="text" value="${escapeHtml(d.description || '')}" placeholder="Descrição opcional" data-des-desc="${d.id}" ${isSuper ? '' : 'readonly'}
-                  class="w-full text-sm text-on-surface-variant rounded-lg border border-outline-variant px-3 py-2 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"/>
+                  class="cfg-field text-on-surface-variant"/>
               </div>
               <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-2">Módulos permitidos</p>
                 <div class="cfg-des-perm-grid">${hubLabel}${permChecks}</div>
               </div>
               ${isSuper ? `
-                <div class="flex flex-wrap gap-2 pt-1">
-                  <button type="button" data-des-save="${d.id}" class="text-xs font-semibold px-4 py-2 rounded-lg bg-secondary text-white hover:opacity-90">Salvar</button>
-                  <button type="button" data-des-toggle="${d.id}" class="text-xs font-semibold px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-low">${d.is_active ? 'Desativar' : 'Ativar'}</button>
+                <div class="cfg-des-actions">
+                  <button type="button" data-des-save="${d.id}" class="cfg-btn cfg-btn--primary">Salvar</button>
+                  <button type="button" data-des-toggle="${d.id}" class="cfg-btn cfg-btn--ghost">${d.is_active ? 'Desativar' : 'Ativar'}</button>
                 </div>
-              ` : `<div class="text-xs pt-1">${permissionBadges(d.permissions)}</div>`}
+              ` : `<div class="cfg-des-badges">${permissionBadges(d.permissions)}</div>`}
             </div>`
           : '';
 
         return `
-          <article class="cfg-des-card ${expanded ? 'cfg-des-card--open' : ''} ${d.is_active ? '' : 'opacity-60'}">
+          <article class="cfg-des-card ${expanded ? 'cfg-des-card--open' : ''} ${d.is_active ? '' : 'cfg-des-card--inactive'}">
             <button type="button" class="cfg-des-header" data-des-select="${d.id}" aria-expanded="${expanded ? 'true' : 'false'}">
               <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-bold text-primary text-sm">${escapeHtml(d.label)}</span>
-                  ${!d.is_active ? '<span class="text-[10px] uppercase font-bold text-error">Inativa</span>' : ''}
+                  <span class="cfg-des-title">${escapeHtml(d.label)}</span>
+                  ${!d.is_active ? '<span class="cfg-des-badge cfg-des-badge--off">Inativa</span>' : ''}
                 </div>
-                ${d.description ? `<p class="text-xs text-on-surface-variant mt-0.5 line-clamp-2">${escapeHtml(d.description)}</p>` : ''}
-                ${!expanded ? `<div class="mt-2">${permissionSummary(d.permissions)}</div>` : ''}
+                ${d.description ? `<p class="cfg-des-desc line-clamp-2">${escapeHtml(d.description)}</p>` : ''}
+                ${!expanded ? permissionSummary(d.permissions) : ''}
               </div>
               <span class="material-symbols-outlined cfg-des-chevron" aria-hidden="true">${expanded ? 'expand_less' : 'expand_more'}</span>
             </button>
@@ -211,48 +234,61 @@
 
     function renderMembers() {
       const activeCatalog = catalog.filter((d) => d.is_active);
+      const list = filteredMembers();
+      const root = document.getElementById('members-table');
 
-      document.getElementById('members-table').innerHTML = members.map((m) => {
+      if (!list.length) {
+        root.innerHTML = `<p class="cfg-empty">${members.length ? 'Nenhum membro corresponde à busca.' : 'Nenhum membro cadastrado.'}</p>`;
+        return;
+      }
+
+      root.innerHTML = list.map((m) => {
         const roleSelect = isSuper
-          ? `<select data-role="${m.id}" class="text-xs rounded-lg border-outline-variant w-full">${ROLES.map((r) =>
+          ? `<select data-role="${m.id}" class="cfg-field">${ROLES.map((r) =>
               `<option value="${r.value}" ${m.role === r.value ? 'selected' : ''}>${r.label}</option>`
             ).join('')}</select>`
-          : `<span class="text-xs font-semibold text-secondary">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, designation: m.designation, designations: [] }))}</span>`;
+          : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, designation: m.designation, designations: [] }))}</span>`;
 
         const designationInput = isSuper
-          ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="text-xs w-full rounded-lg border-outline-variant px-2 py-1"/>`
-          : `<span class="text-xs text-on-surface-variant">${escapeHtml(m.designation || '—')}</span>`;
+          ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="cfg-field"/>`
+          : `<span class="text-[11px] text-on-surface-variant">${escapeHtml(m.designation || '—')}</span>`;
 
         const designationChecks = activeCatalog.length
-          ? `<div class="flex flex-wrap gap-x-3 gap-y-1">${activeCatalog.map((d) => {
+          ? `<div class="cfg-access">${activeCatalog.map((d) => {
               const checked = m.assignedIds.has(d.id);
               return isSuper
-                ? `<label class="inline-flex items-center gap-1.5 text-xs cursor-pointer"><input type="checkbox" data-member-des="${m.id}" data-des-id="${d.id}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(d.label)}</span></label>`
-                : (checked ? `<span class="text-xs font-semibold text-secondary">${escapeHtml(d.label)}</span>` : '');
+                ? `<label><input type="checkbox" data-member-des="${m.id}" data-des-id="${d.id}" ${checked ? 'checked' : ''} class="rounded border-outline-variant"/><span>${escapeHtml(d.label)}</span></label>`
+                : (checked ? `<span class="cfg-access-tag">${escapeHtml(d.label)}</span>` : '');
             }).join('')}</div>`
-          : '<span class="text-xs text-on-surface-variant">—</span>';
+          : '<span class="text-[11px] text-on-surface-variant">—</span>';
 
         return `
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 px-4 py-3 border-b border-outline-variant items-start text-sm">
-            <span class="lg:col-span-2 font-semibold text-primary">${escapeHtml(m.full_name)}</span>
-            <span class="lg:col-span-2 text-on-surface-variant text-xs">@${escapeHtml(m.username || '—')}</span>
-            <span class="lg:col-span-2">${roleSelect}</span>
-            <span class="lg:col-span-2">${designationInput}</span>
-            <span class="lg:col-span-4">${designationChecks}</span>
+          <div class="cfg-member-row">
+            <span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">
+              <span class="material-symbols-outlined" aria-hidden="true">person</span>
+              ${escapeHtml(m.full_name || '—')}
+            </span>
+            <span class="cfg-member-user" title="@${escapeHtml(m.username || '')}">@${escapeHtml(m.username || '—')}</span>
+            <span>${roleSelect}</span>
+            <span>${designationInput}</span>
+            <span>${designationChecks}</span>
           </div>`;
       }).join('');
 
       if (!isSuper) return;
 
-      document.querySelectorAll('[data-role]').forEach((sel) =>
+      root.querySelectorAll('[data-role]').forEach((sel) =>
         sel.addEventListener('change', async () => {
           const { error } = await client.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.role);
           if (error) showToast(toast, error.message, true);
-          else showToast(toast, 'Cargo atualizado.');
+          else {
+            showToast(toast, 'Cargo atualizado.');
+            await reloadMembers();
+          }
         })
       );
 
-      document.querySelectorAll('[data-member-designation]').forEach((input) => {
+      root.querySelectorAll('[data-member-designation]').forEach((input) => {
         let timer;
         input.addEventListener('input', () => {
           clearTimeout(timer);
@@ -265,7 +301,7 @@
         });
       });
 
-      document.querySelectorAll('[data-member-des]').forEach((cb) =>
+      root.querySelectorAll('[data-member-des]').forEach((cb) =>
         cb.addEventListener('change', async () => {
           const profileId = cb.dataset.memberDes;
           const designationId = cb.dataset.desId;
@@ -287,6 +323,11 @@
         })
       );
     }
+
+    document.getElementById('cfg-member-search')?.addEventListener('input', (e) => {
+      memberSearch = e.target.value;
+      renderMembers();
+    });
 
     document.getElementById('cfg-add-designation')?.addEventListener('click', async () => {
       const label = await window.JEDialog.prompt({
