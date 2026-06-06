@@ -534,7 +534,7 @@
 
     setDirty(false);
     renderAll();
-    showToast(toastEl, 'Arranjo salvo com sucesso.');
+    showToast(toastEl, 'Arranjo salvo. Orador e tema aparecem no Quadro — Final de Semana.');
   }
 
   async function init() {

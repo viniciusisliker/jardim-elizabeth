@@ -4,6 +4,7 @@
   const Schemas = window.JEAnnouncementSchemas;
   const Pdf = window.JEAnnouncementPdf;
   const Export = window.JEAnnouncementExport;
+  const Sync = window.JEWeekendDiscursosSync;
 
   let board = null;
   let entries = [];
@@ -12,6 +13,7 @@
   let gcalExportBlock = 'mecanicas';
   let savedBoards = [];
   let boardListFilter = 'all';
+  let receiveSpeechesByDate = {};
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
   const pendingPdfs = {};
   let pdfPreviewBlock = null;
@@ -39,7 +41,19 @@
   }
 
   function entryFilled(entry) {
-    return Object.values(entry.data || {}).some((v) => String(v || '').trim());
+    let data = entry.data || {};
+    if (entry.block === 'weekend' && entry.event_date) {
+      data = Sync.mergeWeekendDisplayData(entry.data, receiveSpeechesByDate[entry.event_date]).data;
+    }
+    return Object.values(data).some((v) => String(v || '').trim());
+  }
+
+  async function loadReceiveSpeeches() {
+    if (!board?.reference_month || !client) {
+      receiveSpeechesByDate = {};
+      return;
+    }
+    receiveSpeechesByDate = await Sync.fetchReceiveSpeechesByDate(client, board.reference_month);
   }
 
   function readFormIntoEntries() {
@@ -56,6 +70,7 @@
         }
       }
       card.querySelectorAll('[data-data-key]').forEach((input) => {
+        if (input.readOnly) return;
         entry.data = entry.data || {};
         entry.data[input.dataset.dataKey] = input.value;
       });
@@ -75,29 +90,33 @@
       <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></div>`;
   }
 
-  function fieldInput(field, entry, extraClass) {
-    const val = (entry.data && entry.data[field.key]) || '';
+  function fieldInput(field, entry, extraClass, opts) {
+    const o = opts || {};
+    const data = o.data || entry.data || {};
+    const val = data[field.key] || '';
     const optional = field.optional ? ' is-optional' : '';
     const filled = trim(val) ? ' is-filled' : '';
     const spanClass = extraClass || (field.fullWidth ? ' span-2' : '');
     const badge = field.optional ? '<span class="qa-field-badge">Opcional</span>' : '';
+    const discursosBadge = o.fromDiscursos ? '<span class="qa-field-badge qa-field-badge--discursos">Discursos Públicos</span>' : '';
     const hint = field.hint ? `<p class="qa-field-hint">${escapeHtml(field.hint)}</p>` : '';
+    const readonly = o.readonly ? ' readonly tabindex="-1"' : '';
 
     let control;
     if (field.type === 'select') {
-      const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
-        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
+      const options = (field.options || Schemas.CLEANING_GROUPS).map((opt) =>
+        `<option value="${escapeHtml(opt)}" ${val === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`
       ).join('');
-      control = `<select class="qa-field-control" data-data-key="${field.key}"><option value=""></option>${opts}</select>`;
+      control = `<select class="qa-field-control" data-data-key="${field.key}"${readonly}><option value=""></option>${options}</select>`;
     } else {
-      control = `<input class="qa-field-control" data-data-key="${field.key}" value="${escapeHtml(val)}"${field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : ''}/>`;
+      control = `<input class="qa-field-control" data-data-key="${field.key}" value="${escapeHtml(val)}"${field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : ''}${readonly}/>`;
     }
 
     return `
-      <div class="qa-field${optional}${filled}${spanClass}">
+      <div class="qa-field${optional}${filled}${spanClass}${o.fromDiscursos ? ' qa-field--discursos' : ''}">
         <div class="qa-field-head">
           <span class="qa-field-tag">${escapeHtml(field.label)}</span>
-          ${badge}
+          ${badge}${discursosBadge}
         </div>
         ${control}
         ${hint}
@@ -123,14 +142,20 @@
 
   function fieldsHtmlWeekend(fields, entry) {
     const groups = Schemas.WEEKEND_GROUPS;
-    const order = ['discurso', 'sentinela', 'sala_b', 'especial'];
+    const order = ['territorio', 'discurso', 'sentinela', 'sala_b', 'especial'];
+    const speech = receiveSpeechesByDate[entry.event_date];
+    const { data, discursosKeys } = Sync.mergeWeekendDisplayData(entry.data, speech);
     return order.map((gid) => {
       const meta = groups[gid];
       const groupFields = fields.filter((f) => f.group === gid);
       if (!groupFields.length || !meta) return '';
       const isSpecial = gid === 'especial';
       const gridClass = isSpecial ? 'cols-1' : '';
-      const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, isSpecial ? ' span-2' : '')).join('');
+      const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, isSpecial ? ' span-2' : '', {
+        data,
+        readonly: discursosKeys.includes(f.key),
+        fromDiscursos: discursosKeys.includes(f.key)
+      })).join('');
       return `
         <div class="qa-subsection${isSpecial ? ' qa-subsection--optional' : ''}">
           <div class="qa-subsection-head">
@@ -158,7 +183,10 @@
   function fieldsHtmlGrouped(fields, entry, block) {
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
-      return sectionShell('Discurso público e estudo', 'weekend', fieldsHtmlWeekend(fields, entry));
+      const speechHint = Object.keys(receiveSpeechesByDate).length
+        ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong> (badge dourado). Presidente, Sentinela e território editam aqui.</p>'
+        : '<p class="text-xs text-on-surface-variant mb-3">Preencha <strong>Discursos Públicos → Recebemos</strong> e salve para trazer orador e tema automaticamente.</p>';
+      return speechHint + sectionShell('Programa de final de semana', 'weekend', fieldsHtmlWeekend(fields, entry));
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
@@ -428,6 +456,7 @@
     }
 
     updateBoardLabel();
+    await loadReceiveSpeeches();
     renderAllEditors();
     return removedOtherMonth;
   }
@@ -542,6 +571,7 @@
       });
       await persistEntries(true);
       updateBoardLabel();
+      await loadReceiveSpeeches();
       renderAllEditors();
       showToast(toastEl, 'Novo quadro criado com datas do mês.');
     }
@@ -637,7 +667,10 @@
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
 
       showToast(toastEl, 'Gerando PDF…');
-      const blob = await Pdf.blockToPdfBlob(block, board, entries);
+      const pdfEntries = block === 'weekend'
+        ? Sync.mergeWeekendEntries(entries, receiveSpeechesByDate)
+        : entries;
+      const blob = await Pdf.blockToPdfBlob(block, board, pdfEntries);
 
       await persistEntries(true);
 
@@ -730,7 +763,10 @@
 
   function refreshCsvPreview() {
     readFormIntoEntries();
-    const csv = Export.buildCsvForBlock(entries, gcalExportBlock);
+    const list = gcalExportBlock === 'weekend'
+      ? Sync.mergeWeekendEntries(entries, receiveSpeechesByDate)
+      : entries;
+    const csv = Export.buildCsvForBlock(list, gcalExportBlock);
     const el = $('csv-preview');
     if (el) el.value = csv;
   }
