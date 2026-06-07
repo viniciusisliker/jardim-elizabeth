@@ -1,0 +1,155 @@
+(function () {
+  const STORAGE = 'je-terr-col-widths';
+
+  function load(key) {
+    try {
+      const raw = localStorage.getItem(`${STORAGE}:${key}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function save(key, widths) {
+    try {
+      localStorage.setItem(`${STORAGE}:${key}`, JSON.stringify(widths));
+    } catch {
+      /* ignore quota */
+    }
+  }
+
+  function toPx(n) {
+    return `${Math.max(48, Math.round(n))}px`;
+  }
+
+  function applyGrid(panel, widths) {
+    if (!panel || !widths?.length) return;
+    panel.style.setProperty('--terr-grid-cols', widths.join(' '));
+  }
+
+  function ensureColgroup(table, count) {
+    let colgroup = table.querySelector('colgroup');
+    if (!colgroup) {
+      colgroup = document.createElement('colgroup');
+      for (let i = 0; i < count; i += 1) colgroup.appendChild(document.createElement('col'));
+      table.insertBefore(colgroup, table.firstChild);
+    }
+    while (colgroup.children.length < count) colgroup.appendChild(document.createElement('col'));
+    return colgroup;
+  }
+
+  function applyTable(table, widths) {
+    if (!table || !widths?.length) return;
+    table.style.tableLayout = 'fixed';
+    table.style.width = '100%';
+    const colgroup = ensureColgroup(table, widths.length);
+    [...colgroup.children].forEach((col, i) => {
+      if (widths[i]) col.style.width = widths[i];
+    });
+  }
+
+  function headCells(headRow, includeAll) {
+    if (!headRow) return [];
+    const cells = [...headRow.children];
+    if (includeAll) return cells;
+    return cells.filter((el) => !el.classList.contains('terr-catalog-actions'));
+  }
+
+  function measureCells(row, includeAll) {
+    return headCells(row, includeAll).map((cell) => cell.getBoundingClientRect().width);
+  }
+
+  function attachHandles(headRow, applyFn, targetEl, key, defaults, includeAll) {
+    if (!headRow || headRow.querySelector('.terr-col-resize')) return;
+
+    const cells = headCells(headRow, includeAll);
+    cells.forEach((cell, index) => {
+      if (index >= cells.length - 1) return;
+      cell.classList.add('terr-col-resize-cell');
+      const handle = document.createElement('span');
+      handle.className = 'terr-col-resize';
+      handle.title = 'Arraste para redimensionar';
+      handle.setAttribute('role', 'separator');
+      handle.setAttribute('aria-orientation', 'vertical');
+      cell.appendChild(handle);
+
+      handle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let saved = load(key);
+        let widthsPx;
+        if (saved?.length === cells.length) {
+          widthsPx = saved.map((w) => parseFloat(w) || 48);
+        } else {
+          widthsPx = measureCells(headRow, includeAll);
+          if (widthsPx.length < cells.length) widthsPx = defaults.map((w) => parseFloat(w) || 80);
+        }
+
+        const startX = e.clientX;
+        const startPair = [widthsPx[index], widthsPx[index + 1]];
+        handle.classList.add('terr-col-resize--active');
+
+        const onMove = (ev) => {
+          const delta = ev.clientX - startX;
+          const total = startPair[0] + startPair[1];
+          const min = 48;
+          let left = startPair[0] + delta;
+          let right = total - left;
+          if (left < min) {
+            left = min;
+            right = total - min;
+          }
+          if (right < min) {
+            right = min;
+            left = total - min;
+          }
+          widthsPx = widthsPx.slice();
+          widthsPx[index] = left;
+          widthsPx[index + 1] = right;
+          const formatted = widthsPx.map(toPx);
+          applyFn(targetEl, formatted);
+        };
+
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.classList.remove('terr-col-resizing');
+          handle.classList.remove('terr-col-resize--active');
+          save(key, widthsPx.map(toPx));
+        };
+
+        document.body.classList.add('terr-col-resizing');
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      handle.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        localStorage.removeItem(`${STORAGE}:${key}`);
+        applyFn(targetEl, defaults);
+      });
+    });
+  }
+
+  function mountGrid({ key, panel, headSelector, defaults }) {
+    const panelEl = typeof panel === 'string' ? document.querySelector(panel) : panel;
+    if (!panelEl) return;
+    const widths = load(key) || defaults;
+    applyGrid(panelEl, widths);
+    const headRow = panelEl.querySelector(headSelector);
+    attachHandles(headRow, applyGrid, panelEl, key, defaults, false);
+  }
+
+  function mountTable({ key, table, defaults }) {
+    const tableEl = typeof table === 'string' ? document.querySelector(table) : table;
+    if (!tableEl) return;
+    const widths = load(key) || defaults;
+    applyTable(tableEl, widths);
+    const headRow = tableEl.querySelector('thead tr');
+    attachHandles(headRow, applyTable, tableEl, key, defaults, true);
+  }
+
+  window.JETerrColumnResize = { mountGrid, mountTable, reset: (key) => localStorage.removeItem(`${STORAGE}:${key}`) };
+})();

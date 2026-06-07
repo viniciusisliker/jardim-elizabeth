@@ -77,6 +77,58 @@
   let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
   let secondaryLoadPromise = null;
 
+  const TERR_COL_DEFAULTS = {
+    catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
+    sched: ['84px', '148px', '136px', '156px', '68px', '128px', '32px', '76px'],
+    hist: ['76px', '96px', '168px', '210px', '240px'],
+    over: ['220px', '136px', '200px', '88px', '72px'],
+    spots: ['72px', '280px', '48px']
+  };
+
+  function initTerrColResize(scope) {
+    const R = window.JETerrColumnResize;
+    if (!R) return;
+    if (scope === 'catalog' || !scope) {
+      R.mountTable({
+        key: 'catalog',
+        table: document.querySelector('#catalogo-grid .terr-catalog-table'),
+        defaults: TERR_COL_DEFAULTS.catalog
+      });
+    }
+    if (scope === 'sched' || !scope) {
+      R.mountGrid({
+        key: 'sched',
+        panel: document.querySelector('#semana-sched-scroll .terr-sched-panel'),
+        headSelector: '.terr-sched-row--head',
+        defaults: TERR_COL_DEFAULTS.sched
+      });
+    }
+    if (scope === 'spots' || !scope) {
+      R.mountGrid({
+        key: 'spots',
+        panel: document.querySelector('#spots-list .terr-spots-panel'),
+        headSelector: '.terr-spot-row--head',
+        defaults: TERR_COL_DEFAULTS.spots
+      });
+    }
+    if (scope === 'hist' || !scope) {
+      R.mountGrid({
+        key: 'hist',
+        panel: document.querySelector('#historico-grid .terr-hist-panel'),
+        headSelector: '.terr-hist-row--head',
+        defaults: TERR_COL_DEFAULTS.hist
+      });
+    }
+    if (scope === 'over' || !scope) {
+      R.mountGrid({
+        key: 'over',
+        panel: document.querySelector('#dirigentes-list .terr-over-panel'),
+        headSelector: '.terr-over-row--head',
+        defaults: TERR_COL_DEFAULTS.over
+      });
+    }
+  }
+
   function priorityBadge(t) {
     const p = H().computePriority(t);
     return `<span class="terr-priority terr-priority--${p.tone}">${escapeHtml(p.label)}</span>`;
@@ -1068,6 +1120,7 @@
         </div>`;
       bindSchedFilters();
       renderSemanaTable();
+      initTerrColResize('sched');
     }
 
     renderExtraDesignados();
@@ -1077,7 +1130,13 @@
     if (!meetingSpots.length) {
       spotsEl.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-3">Nenhum local cadastrado.</p>';
     } else {
-      spotsEl.innerHTML = `<div class="terr-spots-list">${meetingSpots.map((s) => `
+      spotsEl.innerHTML = `<div class="terr-spots-panel">
+        <div class="terr-spot-row terr-spot-row--head">
+          <span class="terr-col-resize-cell">Dia</span>
+          <span class="terr-col-resize-cell">Local</span>
+          <span class="terr-col-resize-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>
+        </div>
+        ${meetingSpots.map((s) => `
         <div class="terr-spot-row">
           <span class="terr-spot-day">${escapeHtml(s.weekday_label)}</span>
           <div class="min-w-0">
@@ -1087,7 +1146,9 @@
           <button type="button" data-del-spot="${s.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
           </button>
-        </div>`).join('')}</div>`;
+        </div>`).join('')}
+      </div>`;
+      initTerrColResize('spots');
       spotsEl.querySelectorAll('[data-del-spot]').forEach((btn) =>
         btn.addEventListener('click', () => deleteSpot(btn.dataset.delSpot))
       );
@@ -1702,6 +1763,7 @@
 
     bindCatalogFilters();
     renderCatalogoTable();
+    initTerrColResize('catalog');
   }
 
   function historyWeekday(entry) {
@@ -2027,6 +2089,7 @@
 
     bindHistoricoFilters();
     renderHistoricoTable();
+    initTerrColResize('hist');
   }
 
   const PREFERENCE_LABELS = {
@@ -2238,6 +2301,7 @@
 
     bindOverFilters();
     renderDirigentesTable();
+    initTerrColResize('over');
   }
 
   function openTerrFormModal(t) {
