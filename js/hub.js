@@ -99,9 +99,7 @@
         .then((html) => { if (html) partialCache.set(section.partial, html); })
         .catch(() => {});
     }
-    if (section.scripts?.length) {
-      loadSectionScripts(section.scripts).catch(() => {});
-    }
+    // Scripts are loaded on navigation — prefetching them competes with the active section.
   }
 
   function prefetchAllowedSections(profile) {

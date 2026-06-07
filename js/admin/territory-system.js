@@ -76,6 +76,13 @@
   let weekendByDate = {};
   let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
   let secondaryLoadPromise = null;
+  let assignmentByTerritoryId = new Map();
+  let catalogTableTimer = null;
+  let histTableTimer = null;
+  let catalogFilterSig = '';
+  let schedFilterSig = '';
+  let histFilterSig = '';
+  let overFilterSig = '';
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
@@ -190,6 +197,7 @@
       .order('assigned_at', { ascending: false });
     if (error) throw error;
     activeAssignments = data || [];
+    assignmentByTerritoryId = new Map(activeAssignments.map((a) => [a.territory_id, a]));
   }
 
   async function loadWeekTemplate() {
@@ -933,6 +941,12 @@
       schedFilter.time,
       [...new Set(rows.map((r) => r.schedule_times || '—'))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
     );
+    const sig = [schedFilter.day, schedFilter.dirigente, schedFilter.territorio, schedFilter.location, schedFilter.time]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== schedFilterSig;
+    schedFilterSig = sig;
+    return changed;
   }
 
   function getSortedScheduleRows(list) {
@@ -971,7 +985,6 @@
   }
 
   function getFilteredScheduleRows() {
-    syncSchedFilterOptions();
     let list = scheduleRowsForWeek();
     list = xlfApplyMapFilter(list, schedFilter.day, (r) => r.weekday_label);
     list = xlfApplyMapFilter(list, schedFilter.dirigente, (r) => scheduleDirigente(r));
@@ -1001,38 +1014,23 @@
       <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
   }
 
-  function bindSchedRowActions(root) {
-    if (!root) return;
-    root.querySelectorAll('[data-edit-schedule]').forEach((btn) =>
-      btn.addEventListener('click', () =>
-        openScheduleFormModal(weekTemplate.find((r) => r.id === btn.dataset.editSchedule))
-      )
-    );
-    root.querySelectorAll('[data-del-schedule]').forEach((btn) =>
-      btn.addEventListener('click', () => deleteScheduleRow(btn.dataset.delSchedule))
-    );
-    root.querySelectorAll('[data-return-assignment]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const assignment = activeAssignments.find((a) => a.id === btn.dataset.returnAssignment);
-        openDevolverModal(assignment);
-      });
-    });
-  }
-
   function bindSchedFilters() {
     const scroll = document.getElementById('semana-sched-scroll');
     if (!scroll) return;
     scroll.dataset.xlfScope = 'sched';
     delete scroll.dataset.xlfBound;
-    bindXlfPanel(scroll, 'sched-sort', schedFilter, schedSort, renderSemanaTable);
+    bindXlfPanel(scroll, 'sched-sort', schedFilter, schedSort, () => renderSemanaTable({ updateUi: true }));
   }
 
-  function renderSemanaTable() {
+  function renderSemanaTable(opts = {}) {
+    const { updateUi = true } = opts;
     const body = document.getElementById('semana-table-body');
     const foot = document.getElementById('semana-table-foot');
     if (!body) return;
-    xlfUpdateSortUI(document.getElementById('semana-sched-scroll'), 'sched-sort', schedSort);
-    xlfUpdateFilterUI(document.getElementById('semana-sched-scroll'), schedFilter);
+    if (updateUi) {
+      xlfUpdateSortUI(document.getElementById('semana-sched-scroll'), 'sched-sort', schedSort);
+      xlfUpdateFilterUI(document.getElementById('semana-sched-scroll'), schedFilter);
+    }
     const filtered = getFilteredScheduleRows();
     const total = scheduleRowsForWeek().length;
 
@@ -1091,13 +1089,72 @@
       </div>`;
     }).join('');
 
-    bindSchedRowActions(body);
     if (foot) {
       const activeFilters = Object.entries(schedFilter).filter(([, map]) => xlfIsActive(map)).length;
       const filterNote = activeFilters ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}` : '';
       const suffix = filtered.length < total ? ` (${total} no total)` : '';
       foot.textContent = `Exibindo ${filtered.length} linha${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
     }
+  }
+
+  function renderMeetingSpots() {
+    const spotsEl = document.getElementById('spots-list');
+    if (!spotsEl) return;
+    if (!meetingSpots.length) {
+      spotsEl.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-3">Nenhum local cadastrado.</p>';
+      return;
+    }
+    spotsEl.innerHTML = `<div class="terr-spots-panel">
+      <div class="terr-spot-row terr-spot-row--head">
+        <span class="terr-col-resize-cell">Dia</span>
+        <span class="terr-col-resize-cell">Local</span>
+        <span class="terr-col-resize-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>
+      </div>
+      ${meetingSpots.map((s) => `
+      <div class="terr-spot-row">
+        <span class="terr-spot-day">${escapeHtml(s.weekday_label)}</span>
+        <div class="min-w-0">
+          <span class="font-semibold text-primary">${escapeHtml(s.location_name)}</span>
+          <span class="terr-spot-meta">${escapeHtml(s.address || s.schedule_times || '')}</span>
+        </div>
+        <button type="button" data-del-spot="${s.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+        </button>
+      </div>`).join('')}
+    </div>`;
+    initTerrColResize('spots');
+  }
+
+  function refreshSemanaView() {
+    const weekInput = document.getElementById('semana-week');
+    if (weekInput) weekInput.value = currentWeek;
+    renderExtraDesignados();
+    renderPriorityList();
+    renderMeetingSpots();
+
+    const el = document.getElementById('semana-list');
+    if (!el) return;
+    if (!weekTemplate.length) {
+      if (document.getElementById('semana-table-body')) renderSemana();
+      else if (!el.querySelector('.terr-empty')) renderSemana();
+      return;
+    }
+    if (!document.getElementById('semana-table-body')) {
+      renderSemana();
+      return;
+    }
+
+    const filtersChanged = syncSchedFilterOptions();
+    if (filtersChanged) {
+      const head = document.querySelector('#semana-sched-scroll .terr-sched-row--head');
+      if (head) head.innerHTML = schedHeaderRow();
+      const scroll = document.getElementById('semana-sched-scroll');
+      if (scroll) {
+        delete scroll.dataset.xlfBound;
+        bindSchedFilters();
+      }
+    }
+    renderSemanaTable({ updateUi: filtersChanged });
   }
 
   function renderSemana() {
@@ -1125,34 +1182,7 @@
 
     renderExtraDesignados();
     renderPriorityList();
-
-    const spotsEl = document.getElementById('spots-list');
-    if (!meetingSpots.length) {
-      spotsEl.innerHTML = '<p class="text-xs text-on-surface-variant text-center py-3">Nenhum local cadastrado.</p>';
-    } else {
-      spotsEl.innerHTML = `<div class="terr-spots-panel">
-        <div class="terr-spot-row terr-spot-row--head">
-          <span class="terr-col-resize-cell">Dia</span>
-          <span class="terr-col-resize-cell">Local</span>
-          <span class="terr-col-resize-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>
-        </div>
-        ${meetingSpots.map((s) => `
-        <div class="terr-spot-row">
-          <span class="terr-spot-day">${escapeHtml(s.weekday_label)}</span>
-          <div class="min-w-0">
-            <span class="font-semibold text-primary">${escapeHtml(s.location_name)}</span>
-            <span class="terr-spot-meta">${escapeHtml(s.address || s.schedule_times || '')}</span>
-          </div>
-          <button type="button" data-del-spot="${s.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
-            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-          </button>
-        </div>`).join('')}
-      </div>`;
-      initTerrColResize('spots');
-      spotsEl.querySelectorAll('[data-del-spot]').forEach((btn) =>
-        btn.addEventListener('click', () => deleteSpot(btn.dataset.delSpot))
-      );
-    }
+    renderMeetingSpots();
   }
 
   function catalogTerritoryCell(t) {
@@ -1192,7 +1222,7 @@
   }
 
   function catalogCoverageMeta(t) {
-    const active = activeAssignments.find((a) => a.territory_id === t.id);
+    const active = assignmentByTerritoryId.get(t.id);
     if (t.status === 'designado') {
       const assignedIso = active?.assigned_at ? String(active.assigned_at).slice(0, 10) : null;
       const assignedLabel = assignedIso ? H().formatShortDate(assignedIso) : null;
@@ -1255,7 +1285,7 @@
   }
 
   function catalogAssignee(t) {
-    const active = activeAssignments.find((a) => a.territory_id === t.id);
+    const active = assignmentByTerritoryId.get(t.id);
     return active ? profileName(active.profiles) : '—';
   }
 
@@ -1505,6 +1535,12 @@
     xlfEnsureKeys(catalogFilter.num, territories.map((t) => String(t.num)).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b, 'pt-BR', { numeric: true })));
     xlfEnsureKeys(catalogFilter.name, [...new Set(territories.map((t) => t.display_name || '—'))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })));
     xlfEnsureKeys(catalogFilter.assignee, [...new Set(territories.map((t) => catalogAssignee(t)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })));
+    const sig = [catalogFilter.num, catalogFilter.name, catalogFilter.assignee]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== catalogFilterSig;
+    catalogFilterSig = sig;
+    return changed;
   }
 
   function catalogCoverageTone(t) {
@@ -1563,7 +1599,6 @@
   }
 
   function getFilteredCatalog() {
-    syncCatalogFilterOptions();
     let list = territories;
     const q = catalogFilter.q.trim().toLowerCase();
     if (q) {
@@ -1597,18 +1632,27 @@
     return getSortedCatalog(list);
   }
 
+  function scheduleCatalogoTable(opts = {}) {
+    clearTimeout(catalogTableTimer);
+    catalogTableTimer = setTimeout(() => renderCatalogoTable(opts), 100);
+  }
+
   function bindCatalogFilters() {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
     grid.dataset.xlfScope = 'catalog';
-    delete grid.dataset.xlfBound;
+    if (!grid.dataset.catalogSearchBound) {
+      grid.dataset.catalogSearchBound = '1';
+      grid.addEventListener('input', (e) => {
+        if (e.target.id !== 'catalog-search') return;
+        catalogFilter.q = e.target.value;
+        scheduleCatalogoTable();
+      });
+    }
     const search = grid.querySelector('#catalog-search');
     if (search && search.value !== catalogFilter.q) search.value = catalogFilter.q;
-    search?.addEventListener('input', (e) => {
-      catalogFilter.q = e.target.value;
-      renderCatalogoTable();
-    });
-    bindXlfPanel(grid, 'catalog-sort', catalogFilter, catalogSort, renderCatalogoTable);
+    delete grid.dataset.xlfBound;
+    bindXlfPanel(grid, 'catalog-sort', catalogFilter, catalogSort, () => renderCatalogoTable({ updateUi: true }));
   }
 
   function updateCatalogStats() {
@@ -1630,15 +1674,18 @@
     if (pctBar) pctBar.style.width = `${designadosPct}%`;
   }
 
-  function renderCatalogoTable() {
+  function renderCatalogoTable(opts = {}) {
+    const { updateUi = false, updateStats = false } = opts;
     const listEl = document.getElementById('catalogo-table-body');
     const footEl = document.getElementById('catalogo-foot');
     if (!listEl) return;
 
-    updateCatalogSortUI();
-    updateCatalogFilterUI();
+    if (updateUi) {
+      updateCatalogSortUI();
+      updateCatalogFilterUI();
+    }
     const filtered = getFilteredCatalog();
-    updateCatalogStats();
+    if (updateStats) updateCatalogStats();
 
     if (!filtered.length) {
       listEl.innerHTML = `
@@ -1671,10 +1718,6 @@
       </tr>`;
     }).join('');
 
-    listEl.querySelectorAll('[data-edit-terr]').forEach((btn) =>
-      btn.addEventListener('click', () => openTerrFormModal(territories.find((x) => x.id === btn.dataset.editTerr)))
-    );
-
     if (footEl) {
       const parts = [];
       if (catalogFilter.q.trim()) parts.push('busca');
@@ -1703,9 +1746,38 @@
       <th scope="col" class="terr-catalog-actions" aria-label="Ações"></th>`;
   }
 
+  function updateCatalogToolbarMeta() {
+    const grid = document.getElementById('catalogo-grid');
+    const p = grid?.querySelector('.terr-catalog-toolbar p');
+    if (!p) return;
+    const { avgDays } = territorySummaryMetrics();
+    p.textContent = `Mapas, status e cobertura · ${territories.length} territórios${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}`;
+  }
+
+  function refreshCatalogoView() {
+    const grid = document.getElementById('catalogo-grid');
+    if (!grid || !document.getElementById('catalogo-table-body')) {
+      renderCatalogo();
+      return;
+    }
+    updateCatalogToolbarMeta();
+    const filtersChanged = syncCatalogFilterOptions();
+    if (filtersChanged) {
+      const tr = grid.querySelector('thead tr');
+      if (tr) tr.innerHTML = catalogHeaderRow();
+      delete grid.dataset.xlfBound;
+      bindXlfPanel(grid, 'catalog-sort', catalogFilter, catalogSort, () => renderCatalogoTable({ updateUi: true, updateStats: true }));
+    }
+    renderCatalogoTable({ updateUi: filtersChanged, updateStats: true });
+  }
+
   function renderCatalogo() {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
+    if (document.getElementById('catalogo-table-body')) {
+      refreshCatalogoView();
+      return;
+    }
     const { designadosPct, avgDays, alta } = territorySummaryMetrics();
 
     grid.innerHTML = `
@@ -1762,7 +1834,7 @@
       </div>`;
 
     bindCatalogFilters();
-    renderCatalogoTable();
+    renderCatalogoTable({ updateUi: true, updateStats: true });
     initTerrColResize('catalog');
   }
 
@@ -1900,6 +1972,12 @@
       histFilter.eventType,
       [...new Set(history.map((h) => h.event_type || 'default'))].sort((a, b) => histEventFilterLabel(a).localeCompare(histEventFilterLabel(b), 'pt-BR', { sensitivity: 'base' }))
     );
+    const sig = [histFilter.date, histFilter.day, histFilter.dirigente, histFilter.territorio, histFilter.eventType]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== histFilterSig;
+    histFilterSig = sig;
+    return changed;
   }
 
   function histHeaderRow() {
@@ -1962,7 +2040,6 @@
   }
 
   function getFilteredHistory() {
-    syncHistFilterOptions();
     let list = history;
     const q = histFilter.q.trim().toLowerCase();
     if (q) {
@@ -1986,27 +2063,39 @@
     return getSortedHistory(list);
   }
 
+  function scheduleHistoricoTable(opts = {}) {
+    clearTimeout(histTableTimer);
+    histTableTimer = setTimeout(() => renderHistoricoTable(opts), 100);
+  }
+
   function bindHistoricoFilters() {
     const grid = document.getElementById('historico-grid');
     if (!grid) return;
     grid.dataset.xlfScope = 'hist';
-    delete grid.dataset.xlfBound;
+    if (!grid.dataset.histSearchBound) {
+      grid.dataset.histSearchBound = '1';
+      grid.addEventListener('input', (e) => {
+        if (e.target.id !== 'hist-search') return;
+        histFilter.q = e.target.value;
+        scheduleHistoricoTable();
+      });
+    }
     const search = grid.querySelector('#hist-search');
     if (search && search.value !== histFilter.q) search.value = histFilter.q;
-    search?.addEventListener('input', (e) => {
-      histFilter.q = e.target.value;
-      renderHistoricoTable();
-    });
-    bindXlfPanel(grid, 'hist-sort', histFilter, histSort, renderHistoricoTable);
+    delete grid.dataset.xlfBound;
+    bindXlfPanel(grid, 'hist-sort', histFilter, histSort, () => renderHistoricoTable({ updateUi: true }));
   }
 
-  function renderHistoricoTable() {
+  function renderHistoricoTable(opts = {}) {
+    const { updateUi = false } = opts;
     const listEl = document.getElementById('historico-table-body');
     const footEl = document.getElementById('historico-foot');
     if (!listEl) return;
 
-    updateHistSortUI();
-    updateHistFilterUI();
+    if (updateUi) {
+      updateHistSortUI();
+      updateHistFilterUI();
+    }
     const filtered = getFilteredHistory();
 
     if (!filtered.length) {
@@ -2045,6 +2134,29 @@
     }
   }
 
+  function refreshHistoricoView() {
+    const grid = document.getElementById('historico-grid');
+    if (!grid) return;
+    if (!history.length) {
+      if (document.getElementById('historico-table-body') || !grid.querySelector('.terr-empty')) renderHistorico();
+      return;
+    }
+    if (!document.getElementById('historico-table-body')) {
+      renderHistorico();
+      return;
+    }
+    const toolbarP = grid.querySelector('.terr-hist-toolbar p');
+    if (toolbarP) toolbarP.textContent = `${history.length} registro${history.length === 1 ? '' : 's'}`;
+    const filtersChanged = syncHistFilterOptions();
+    if (filtersChanged) {
+      const head = grid.querySelector('.terr-hist-row--head');
+      if (head) head.innerHTML = histHeaderRow();
+      delete grid.dataset.xlfBound;
+      bindHistoricoFilters();
+    }
+    renderHistoricoTable({ updateUi: filtersChanged });
+  }
+
   function entryTerrName(entry) {
     const label = entry.metadata?.territory_label || '';
     return label.replace(/^T?\d+\s*[-–—]?\s*/i, '').trim() || label;
@@ -2052,6 +2164,10 @@
 
   function renderHistorico() {
     const grid = document.getElementById('historico-grid');
+    if (document.getElementById('historico-table-body') && history.length) {
+      refreshHistoricoView();
+      return;
+    }
     if (!history.length) {
       grid.innerHTML = `
         <div class="terr-hist-toolbar">
@@ -2088,7 +2204,7 @@
       </div>`;
 
     bindHistoricoFilters();
-    renderHistoricoTable();
+    renderHistoricoTable({ updateUi: true });
     initTerrColResize('hist');
   }
 
@@ -2147,6 +2263,12 @@
       return (WEEKDAY_ORDER[a] || 99) - (WEEKDAY_ORDER[b] || 99);
     });
     xlfEnsureKeys(overFilter.days, sortedDays);
+    const sig = [overFilter.name, overFilter.days]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== overFilterSig;
+    overFilterSig = sig;
+    return changed;
   }
 
   function getSortedOverseers(list) {
@@ -2175,7 +2297,6 @@
   }
 
   function getFilteredOverseers() {
-    syncOverFilterOptions();
     let list = overseers;
     list = xlfApplyMapFilter(list, overFilter.name, (o) => profileName(o.profiles));
     list = xlfApplyMapFilter(list, overFilter.preference, (o) => o.preference || 'meio_de_semana');
@@ -2203,10 +2324,11 @@
     if (!scroll) return;
     scroll.dataset.xlfScope = 'over';
     delete scroll.dataset.xlfBound;
-    bindXlfPanel(scroll, 'over-sort', overFilter, overSort, renderDirigentesTable);
+    bindXlfPanel(scroll, 'over-sort', overFilter, overSort, () => renderDirigentesTable({ updateUi: true }));
   }
 
-  function renderDirigentesTable() {
+  function renderDirigentesTable(opts = {}) {
+    const { updateUi = false } = opts;
     const el = document.getElementById('dirigentes-list');
     const body = document.getElementById('dirigentes-table-body');
     const foot = document.getElementById('dirigentes-table-foot');
@@ -2221,8 +2343,10 @@
     if (statTotal) statTotal.textContent = String(overseers.length);
     if (statActive) statActive.textContent = String(activeOverseers.length);
 
-    xlfUpdateSortUI(el.querySelector('.terr-over-scroll'), 'over-sort', overSort);
-    xlfUpdateFilterUI(el.querySelector('.terr-over-scroll'), overFilter);
+    if (updateUi) {
+      xlfUpdateSortUI(el.querySelector('.terr-over-scroll'), 'over-sort', overSort);
+      xlfUpdateFilterUI(el.querySelector('.terr-over-scroll'), overFilter);
+    }
     const filtered = getFilteredOverseers();
 
     if (!filtered.length) {
@@ -2261,15 +2385,6 @@
       </div>`;
     }).join('');
 
-    body.querySelectorAll('[data-edit-overseer]').forEach((btn) =>
-      btn.addEventListener('click', () =>
-        openOverseerEditModal(overseers.find((o) => o.profile_id === btn.dataset.editOverseer))
-      )
-    );
-    body.querySelectorAll('[data-del-overseer]').forEach((btn) =>
-      btn.addEventListener('click', () => removeOverseer(btn.dataset.delOverseer))
-    );
-
     if (foot) {
       const activeFilters = Object.entries(overFilter).filter(([, map]) => xlfIsActive(map)).length;
       const filterNote = activeFilters ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}` : '';
@@ -2278,8 +2393,36 @@
     }
   }
 
+  function refreshDirigentesView() {
+    const el = document.getElementById('dirigentes-list');
+    if (!el) return;
+    if (!overseers.length) {
+      if (document.getElementById('dirigentes-table-body') || !el.querySelector('.terr-empty')) renderDirigentes();
+      return;
+    }
+    if (!document.getElementById('dirigentes-table-body')) {
+      renderDirigentes();
+      return;
+    }
+    const filtersChanged = syncOverFilterOptions();
+    if (filtersChanged) {
+      const head = el.querySelector('.terr-over-row--head');
+      if (head) head.innerHTML = overHeaderRow();
+      const scroll = el.querySelector('.terr-over-scroll');
+      if (scroll) {
+        delete scroll.dataset.xlfBound;
+        bindOverFilters();
+      }
+    }
+    renderDirigentesTable({ updateUi: filtersChanged });
+  }
+
   function renderDirigentes() {
     const el = document.getElementById('dirigentes-list');
+    if (document.getElementById('dirigentes-table-body') && overseers.length) {
+      refreshDirigentesView();
+      return;
+    }
     if (!overseers.length) {
       el.innerHTML = `
         <div class="terr-empty">
@@ -2300,7 +2443,7 @@
       </div>`;
 
     bindOverFilters();
-    renderDirigentesTable();
+    renderDirigentesTable({ updateUi: true });
     initTerrColResize('over');
   }
 
@@ -2376,11 +2519,12 @@
         console.warn('Weekend announcements:', err);
       }
       fillOverseerProfileSelect();
-      renderCatalogo();
+      if (tabsRendered.painel) refreshCatalogoView();
+      else renderCatalogo();
       tabsRendered.painel = true;
-      if (tabsRendered.semana) renderSemana();
-      if (tabsRendered.historico) renderHistorico();
-      if (tabsRendered.dirigentes) renderDirigentes();
+      if (tabsRendered.semana) refreshSemanaView();
+      if (tabsRendered.historico) refreshHistoricoView();
+      if (tabsRendered.dirigentes) refreshDirigentesView();
     } catch (err) {
       console.error('Territory refresh:', err);
       if (toast) showToast(toast, err.message || 'Erro ao carregar territórios.', true);
@@ -2664,6 +2808,51 @@
     box.querySelector('.terr-map-lightbox__fallback')?.remove();
   }
 
+  function setupDelegatedActions() {
+    if (window.__JETerrDelegatedActions) return;
+    window.__JETerrDelegatedActions = true;
+
+    document.getElementById('panel-painel')?.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-terr]');
+      if (editBtn) {
+        openTerrFormModal(territories.find((x) => x.id === editBtn.dataset.editTerr));
+      }
+    });
+
+    document.getElementById('semana-list')?.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-schedule]');
+      if (editBtn) {
+        openScheduleFormModal(weekTemplate.find((r) => r.id === editBtn.dataset.editSchedule));
+        return;
+      }
+      const delBtn = e.target.closest('[data-del-schedule]');
+      if (delBtn) {
+        deleteScheduleRow(delBtn.dataset.delSchedule);
+        return;
+      }
+      const retBtn = e.target.closest('[data-return-assignment]');
+      if (retBtn) {
+        const assignment = activeAssignments.find((a) => a.id === retBtn.dataset.returnAssignment);
+        openDevolverModal(assignment);
+      }
+    });
+
+    document.getElementById('spots-list')?.addEventListener('click', (e) => {
+      const delBtn = e.target.closest('[data-del-spot]');
+      if (delBtn) deleteSpot(delBtn.dataset.delSpot);
+    });
+
+    document.getElementById('dirigentes-list')?.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-overseer]');
+      if (editBtn) {
+        openOverseerEditModal(overseers.find((o) => o.profile_id === editBtn.dataset.editOverseer));
+        return;
+      }
+      const delBtn = e.target.closest('[data-del-overseer]');
+      if (delBtn) removeOverseer(delBtn.dataset.delOverseer);
+    });
+  }
+
   function setupTerritoryMapLightbox() {
     document.getElementById('terr-map-lightbox-close')?.addEventListener('click', closeTerritoryMapLightbox);
     document.getElementById('terr-map-lightbox')?.addEventListener('click', (e) => {
@@ -2688,7 +2877,8 @@
     if (window.__JEAdminTerritoriosInit) {
       queueNavIndicatorRefresh();
       if (!tabsRendered.painel && territories.length) {
-        renderCatalogo();
+        if (document.getElementById('catalogo-table-body')) refreshCatalogoView();
+        else renderCatalogo();
         tabsRendered.painel = true;
       }
       return true;
@@ -2712,6 +2902,7 @@
       client = await getClient();
       if (!currentWeek) currentWeek = helpers.toISODate(helpers.getMonday(new Date()));
       setupTabs();
+      setupDelegatedActions();
       setupTerritoryMapLightbox();
 
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
