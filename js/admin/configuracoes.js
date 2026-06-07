@@ -10,6 +10,8 @@
   ];
 
   const ADMIN_ROLES = new Set(window.JE_CONFIG?.adminRoles || ['superuser', 'anciao', 'servo_ministerial']);
+  const AVATAR_BUCKET = 'profile-avatars';
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
   function slugify(text) {
     return String(text || '')
@@ -39,6 +41,12 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
   }
 
+  function avatarFileExtension(file) {
+    if (file.type === 'image/png') return 'png';
+    if (file.type === 'image/webp') return 'webp';
+    return 'jpg';
+  }
+
   async function init() {
     if (window.__JEAdminConfigInit) return;
     window.__JEAdminConfigInit = true;
@@ -55,7 +63,7 @@
     let memberEmails = new Map();
 
     document.getElementById('cfg-role-note').textContent = isSuper
-      ? 'Como SuperUser, você gerencia designações, cargos, e-mails de login e atribuições da equipe.'
+      ? 'Como SuperUser, você gerencia designações, cargos, e-mails, fotos e atribuições da equipe.'
       : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.';
 
     if (isSuper) {
@@ -113,7 +121,7 @@
     async function reloadMembers() {
       const { data, error } = await client
         .from('profiles')
-        .select('id, full_name, username, role, display_role, designation, profile_access_designations(designation_id)')
+        .select('id, full_name, username, role, display_role, designation, avatar_url, profile_access_designations(designation_id)')
         .order('full_name');
       if (error) {
         document.getElementById('members-table').innerHTML = `<p class="cfg-empty text-error">${escapeHtml(error.message)}</p>`;
@@ -254,6 +262,40 @@
       }
     }
 
+    function memberAvatarHtml(member) {
+      if (window.JEAuth?.renderAvatarHtml) {
+        return window.JEAuth.renderAvatarHtml(member, { size: 26, className: 'cfg-avatar-img' });
+      }
+      return '<span class="material-symbols-outlined je-profile-avatar-fallback" aria-hidden="true">person</span>';
+    }
+
+    function memberMainCell(m) {
+      const avatarInner = memberAvatarHtml(m);
+      const avatarControl = isSuper
+        ? `<label class="cfg-avatar-btn" title="Alterar foto">
+            <input type="file" accept="image/jpeg,image/png,image/webp" data-member-avatar="${m.id}" hidden/>
+            ${avatarInner}
+          </label>
+          ${m.avatar_url ? `<button type="button" class="cfg-avatar-remove" data-member-avatar-remove="${m.id}" title="Remover foto" aria-label="Remover foto">×</button>` : ''}`
+        : `<span class="cfg-avatar-btn" aria-hidden="true">${avatarInner}</span>`;
+
+      return `
+        <div class="cfg-member-main">
+          ${avatarControl}
+          <div class="cfg-member-text">
+            <span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">${escapeHtml(m.full_name || '—')}</span>
+            <span class="cfg-member-user" title="@${escapeHtml(m.username || '')}">@${escapeHtml(m.username || '—')}</span>
+          </div>
+        </div>`;
+    }
+
+    async function removeAvatarFiles(profileId) {
+      const { data: files } = await client.storage.from(AVATAR_BUCKET).list(profileId, { limit: 20 });
+      if (!files?.length) return;
+      const paths = files.map((f) => `${profileId}/${f.name}`);
+      await client.storage.from(AVATAR_BUCKET).remove(paths);
+    }
+
     function renderMembers() {
       const activeCatalog = catalog.filter((d) => d.is_active);
       const list = filteredMembers();
@@ -285,16 +327,12 @@
           : '<span class="text-[11px] text-on-surface-variant">—</span>';
 
         const emailCell = isSuper
-          ? `<input type="email" value="${escapeHtml(memberEmails.get(m.id) || '')}" data-member-email="${m.id}" placeholder="email@exemplo.com" class="cfg-field cfg-field--email cfg-member-email" autocomplete="off"/>`
+          ? `<input type="email" value="${escapeHtml(memberEmails.get(m.id) || '')}" data-member-email="${m.id}" placeholder="email@…" class="cfg-field cfg-field--email" autocomplete="off"/>`
           : '';
 
         return `
-          <div class="cfg-member-row">
-            <span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">
-              <span class="material-symbols-outlined" aria-hidden="true">person</span>
-              ${escapeHtml(m.full_name || '—')}
-            </span>
-            <span class="cfg-member-user" title="@${escapeHtml(m.username || '')}">@${escapeHtml(m.username || '—')}</span>
+          <div class="cfg-member-row" data-member-row="${m.id}">
+            <span>${memberMainCell(m)}</span>
             ${isSuper ? `<span>${emailCell}</span>` : ''}
             <span>${roleSelect}</span>
             <span>${designationInput}</span>
@@ -303,6 +341,83 @@
       }).join('');
 
       if (!isSuper) return;
+
+      root.querySelectorAll('[data-member-avatar]').forEach((input) => {
+        input.addEventListener('change', async () => {
+          const file = input.files?.[0];
+          input.value = '';
+          const profileId = input.dataset.memberAvatar;
+          const member = members.find((m) => m.id === profileId);
+          const label = input.closest('.cfg-avatar-btn');
+          if (!file || !member) return;
+
+          if (!file.type.startsWith('image/')) {
+            showToast(toast, 'Use JPG, PNG ou WebP.', true);
+            return;
+          }
+          if (file.size > MAX_AVATAR_BYTES) {
+            showToast(toast, 'Imagem até 2 MB.', true);
+            return;
+          }
+
+          label?.classList.add('cfg-avatar-btn--busy');
+          try {
+            await removeAvatarFiles(profileId);
+            const ext = avatarFileExtension(file);
+            const path = `${profileId}/avatar.${ext}`;
+            const { error: upErr } = await client.storage.from(AVATAR_BUCKET).upload(path, file, {
+              upsert: true,
+              contentType: file.type,
+              cacheControl: '3600'
+            });
+            if (upErr) throw upErr;
+
+            const { data: pub } = client.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+            const avatarUrl = `${pub.publicUrl}?v=${Date.now()}`;
+            const { error: rpcErr } = await client.rpc('admin_update_profile_avatar', {
+              p_profile_id: profileId,
+              p_avatar_url: avatarUrl
+            });
+            if (rpcErr) throw rpcErr;
+
+            member.avatar_url = avatarUrl;
+            showToast(toast, `Foto de ${member.full_name || 'membro'} atualizada.`);
+            renderMembers();
+          } catch (err) {
+            console.error('Avatar upload:', err);
+            showToast(toast, err?.message || 'Erro ao enviar foto.', true);
+          } finally {
+            label?.classList.remove('cfg-avatar-btn--busy');
+          }
+        });
+      });
+
+      root.querySelectorAll('[data-member-avatar-remove]').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const profileId = btn.dataset.memberAvatarRemove;
+          const member = members.find((m) => m.id === profileId);
+          if (!member || !window.confirm(`Remover foto de ${member.full_name || 'membro'}?`)) return;
+
+          btn.disabled = true;
+          try {
+            await removeAvatarFiles(profileId);
+            const { error: rpcErr } = await client.rpc('admin_update_profile_avatar', {
+              p_profile_id: profileId,
+              p_avatar_url: null
+            });
+            if (rpcErr) throw rpcErr;
+            member.avatar_url = null;
+            showToast(toast, 'Foto removida.');
+            renderMembers();
+          } catch (err) {
+            showToast(toast, err?.message || 'Erro ao remover foto.', true);
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
 
       root.querySelectorAll('[data-role]').forEach((sel) =>
         sel.addEventListener('change', async () => {
