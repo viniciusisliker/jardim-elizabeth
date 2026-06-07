@@ -348,6 +348,16 @@
         hideLoginModal();
       }
     });
+
+    const desktopNavMq = window.matchMedia('(min-width: 1024px)');
+    const onDesktopNavChange = (e) => {
+      if (e.matches) closeMobileMenu();
+    };
+    if (typeof desktopNavMq.addEventListener === 'function') {
+      desktopNavMq.addEventListener('change', onDesktopNavChange);
+    } else if (typeof desktopNavMq.addListener === 'function') {
+      desktopNavMq.addListener(onDesktopNavChange);
+    }
   }
 
   window.initSiteHeader = function initSiteHeader() {

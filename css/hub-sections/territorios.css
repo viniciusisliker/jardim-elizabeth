@@ -247,6 +247,11 @@
     .terr-catalog-actions{display:flex;justify-content:flex-end}
     .terr-catalog-foot{padding:.375rem .75rem;font-size:.6875rem;color:#6b7280;background:#f7f9fc;border-top:1px solid var(--terr-grid-row);text-align:center}
     @media(max-width:767px){
+      .terr-sched-scroll,.terr-hist-scroll,.terr-catalog-scroll,.terr-return-scroll{
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior-x:contain;
+      }
+      .terr-tab{min-height:2.75rem}
       .terr-catalog-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .terr-over-scroll{overflow-x:visible;max-height:none}
       .terr-over-panel{min-width:0}

@@ -263,10 +263,28 @@
       box-shadow: 0 4px 16px rgba(15, 52, 98, 0.05);
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
     }
-    .je-home-shortcut:hover {
-      border-color: #3b5e97;
-      box-shadow: 0 8px 24px rgba(15, 52, 98, 0.1);
-      transform: translateY(-2px);
+    @media (hover: hover) and (pointer: fine) {
+      .je-home-shortcut:hover {
+        border-color: #3b5e97;
+        box-shadow: 0 8px 24px rgba(15, 52, 98, 0.1);
+        transform: translateY(-2px);
+      }
+      .je-home-shortcut:hover .je-home-shortcut-arrow {
+        color: #0f3462;
+        transform: translateX(2px);
+      }
+      .je-home-news-item:hover { background: linear-gradient(90deg, rgba(200, 169, 110, 0.08) 0%, rgba(239, 246, 255, 0.65) 100%); }
+      .je-home-news-item:hover .je-home-news-icon {
+        border-color: rgba(200, 169, 110, 0.5);
+        box-shadow: 0 2px 8px rgba(15, 52, 98, 0.1);
+        transform: translateY(-1px);
+      }
+      .je-home-news-item:hover .je-home-news-text { color: #1a5080; }
+      .je-home-meeting-map-btn:hover {
+        border-color: rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+      }
     }
     .je-home-shortcut-icon {
       flex-shrink: 0;
@@ -313,10 +331,6 @@
     @media (max-width: 767px) {
       .je-home-shortcut--donativos { grid-column: 1 / -1; }
       .je-home-shortcut-arrow { display: none; }
-    }
-    .je-home-shortcut:hover .je-home-shortcut-arrow {
-      color: #3b5e97;
-      transform: translateX(2px);
     }
     .je-home-shortcut--agenda .je-home-shortcut-icon { background: #dbeafe; }
     .je-home-shortcut--agendamentos .je-home-shortcut-icon { background: #d1fae5; }
@@ -443,11 +457,6 @@
       text-decoration: none;
       transition: border-color 0.15s, background 0.15s, color 0.15s;
     }
-    .je-home-meeting-map-btn:hover {
-      border-color: rgba(255, 255, 255, 0.28);
-      background: rgba(255, 255, 255, 0.06);
-      color: #fff;
-    }
     .je-home-meeting-map-btn svg,
     .je-home-meeting-map-btn img {
       width: 0.75rem;
@@ -560,7 +569,6 @@
       .je-home-news-item { padding: 0.75rem 1.125rem; gap: 0.75rem; }
     }
     .je-home-news-item:last-child { border-bottom: none; }
-    .je-home-news-item:hover { background: linear-gradient(90deg, rgba(200, 169, 110, 0.08) 0%, rgba(239, 246, 255, 0.65) 100%); }
     .je-home-news-icon {
       flex-shrink: 0;
       width: 2rem;
@@ -574,11 +582,6 @@
       justify-content: center;
       box-shadow: 0 1px 4px rgba(15, 52, 98, 0.07);
       transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-    }
-    .je-home-news-item:hover .je-home-news-icon {
-      border-color: rgba(200, 169, 110, 0.5);
-      box-shadow: 0 2px 8px rgba(15, 52, 98, 0.1);
-      transform: translateY(-1px);
     }
     .je-home-news-icon .material-symbols-outlined {
       font-size: 1.0625rem;
@@ -594,15 +597,12 @@
       margin: 0;
       transition: color 0.15s;
     }
-    .je-home-news-item:hover .je-home-news-text { color: #1a5080; }
     @media (min-width: 768px) {
       .je-home-news-text { font-size: 0.875rem; line-height: 1.45; }
     }
 
-    @media (max-width: 1023px) {
-      .je-home-shortcut-desc { display: none; }
-    }
     @media (max-width: 767px) {
+      .je-home-shortcut-desc { display: none; }
       .je-home-section-kicker { display: none; }
       .je-home-section-block:first-of-type .je-home-section-head { display: none; }
       .je-home-section-block:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }

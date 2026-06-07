@@ -148,10 +148,14 @@ gtag('config', 'G-PGXCZF9S9W');
       height: 4px;
       background: linear-gradient(90deg, #0f3462, #3b5e97);
     }
-    .je-qa-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(15,52,98,.12);
-      border-color: rgba(59,94,151,.28);
+    @media (hover: hover) and (pointer: fine) {
+      .je-qa-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(15,52,98,.12);
+        border-color: rgba(59,94,151,.28);
+      }
+      .je-qa-card:hover .je-qa-card-icon { transform: scale(1.06); }
+      .je-qa-card:hover .je-qa-card-cta { gap: 0.625rem; }
     }
     .je-qa-card--org::before { background: linear-gradient(90deg, #b45309, #fcd34d); }
     .je-qa-card--midweek::before { background: linear-gradient(90deg, #0f3462, #3b5e97); }
@@ -174,7 +178,6 @@ gtag('config', 'G-PGXCZF9S9W');
       flex-shrink: 0;
       transition: transform .2s;
     }
-    .je-qa-card:hover .je-qa-card-icon { transform: scale(1.06); }
     .je-qa-card--org .je-qa-card-icon { background: #fef3c7; color: #b45309; }
     .je-qa-card--midweek .je-qa-card-icon { background: #eff6ff; color: #0f3462; }
     .je-qa-card--weekend .je-qa-card-icon { background: linear-gradient(135deg, #eff6ff, #faf6ef); color: #0f3462; }
@@ -223,7 +226,6 @@ gtag('config', 'G-PGXCZF9S9W');
       color: #3b5e97;
       transition: gap .2s;
     }
-    .je-qa-card:hover .je-qa-card-cta { gap: 0.625rem; }
 
     .je-qa-history-head {
       display: flex;

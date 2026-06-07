@@ -737,6 +737,12 @@
       .je-site-icon-btn { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
       #hub-nav-btn.is-auth-visible { display: flex !important; }
       #profile-dropdown { max-width: min(18rem, calc(100vw - 2rem)); }
+      #profile-dropdown-content a,
+      #profile-dropdown-content button {
+        min-height: 2.75rem;
+        display: flex;
+        align-items: center;
+      }
       .je-footer-info { padding-top: 2.5rem; padding-bottom: 2rem; }
       .je-footer-info > .je-footer-shell,
       .je-footer-info > .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
@@ -788,6 +794,14 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      .je-home-meeting-map-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+      }
+      .je-home-meeting-map-btn svg,
+      .je-home-meeting-map-btn img { width: 1rem; height: 1rem; }
       #login-modal { padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); align-items: flex-end; }
       #login-modal > .relative { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
       #login-modal-close {
@@ -855,6 +869,10 @@
       }
       .je-footer-brand { font-size: 1rem; }
       .je-footer-copy { text-align: center; line-height: 1.5; font-size: 0.75rem; max-width: 20rem; }
+    }
+    @media (max-width: 480px) {
+      #hub-nav-btn.is-auth-visible { display: none !important; }
+      .je-site-brand-name { max-width: 9rem; }
     }
   `;
 

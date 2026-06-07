@@ -274,12 +274,18 @@
       .hub-hero .max-w-7xl{padding-left:1rem;padding-right:1rem}
       .hub-main{padding-left:1rem;padding-right:1rem}
       .hub-user-chip{width:100%;min-width:0}
+      .hub-hero-crumb{flex-wrap:wrap;row-gap:0.25rem}
+      #hub-hero-crumb-section{max-width:min(100%,14rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .hub-changelog-btn{min-height:2.75rem}
+      .hub-module-card{min-height:3rem}
+      .hub-ev-action{min-height:2.75rem;padding:0.5rem 0.75rem}
+      #hub-btn-new-event,
+      #hub-view-agenda > .flex.flex-wrap.justify-end a{min-height:2.75rem;display:inline-flex;align-items:center}
     }
     @media(max-width:767px){
       .hub-user-chip{width:100%;min-width:0}
-      .hub-changelog-btn{width:100%;justify-content:center;min-height:2.75rem}
+      .hub-changelog-btn{width:100%;justify-content:center}
       .hub-module-card{min-height:3.25rem}
-      .hub-ev-action{min-height:2.75rem;padding:0.5rem 0.75rem}
       .hub-ev-cat-pill{min-height:2.75rem;padding:0.5rem 0.75rem}
       #hub-changelog-close{min-width:2.75rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center}
       .hub-terr-card{padding:1.125rem}
@@ -350,7 +356,7 @@
     <section class="hub-hero py-10 md:py-12 pb-14 md:pb-16 shrink-0">
       <div class="hub-hero-grid" aria-hidden="true"></div>
       <div class="max-w-7xl mx-auto px-6 relative w-full">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest mb-5">
+        <div class="hub-hero-crumb flex items-center gap-2 text-xs font-semibold uppercase tracking-widest mb-5">
           <a href="index.html" class="text-white/60 hover:text-white transition-colors" title="Site público"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
           <a href="index.html" class="text-white/60 hover:text-white transition-colors">Jardim Elizabeth</a>
           <span class="text-white/40">/</span>
@@ -685,7 +691,7 @@
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
-  <script src="js/hub-sections.js?v=2026060925"></script>
+  <script src="js/hub-sections.js?v=2026060926"></script>
   <script src="js/hub-events.js?v=2026060801"></script>
   <script src="js/hub-changelog.js?v=2026060922"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060910"></script>
