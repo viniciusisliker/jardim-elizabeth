@@ -202,6 +202,8 @@
     .hub-module-card--discursos:hover{border-color:#c4b5fd}
     .hub-module-card--agendamentos .hub-module-icon{background:#d1fae5;color:#047857}
     .hub-module-card--agendamentos:hover{border-color:#6ee7b7}
+    .hub-module-card--carrinhos .hub-module-icon{background:#ccfbf1;color:#0f766e}
+    .hub-module-card--carrinhos:hover{border-color:#5eead4}
     .hub-module-card--territorios .hub-module-icon{background:#e0e7ff;color:#4338ca}
     .hub-module-card--territorios:hover{border-color:#a5b4fc}
     .hub-module-card--donativos .hub-module-icon{background:#fce7f3;color:#be185d}
@@ -449,11 +451,19 @@
           <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Organização e campo</h3>
             <div class="hub-module-grid">
+              <button type="button" data-hub-tab="carrinhos-displays" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--carrinhos">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span></span>
+                <div class="hub-module-body">
+                  <h4>Carrinhos e Displays</h4>
+                  <p>Cronograma semanal, publicadores e mensagem WhatsApp.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
               <button type="button" data-hub-tab="agendamentos" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></span>
                 <div class="hub-module-body">
                   <h4>Agendamentos</h4>
-                  <p>Calendários de carrinhos e displays.</p>
+                  <p>Calendários Google nas páginas públicas.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -517,6 +527,7 @@
       </div>
 
       <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-carrinhos-displays" class="hub-view hidden hub-view--wide"></div>
 
       <div id="hub-view-donativos" class="hub-view hidden">
         <div class="hub-section-panel mx-auto w-full">

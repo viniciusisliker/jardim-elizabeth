@@ -82,7 +82,27 @@
       hero: {
         kicker: 'Organização e campo',
         title: 'Agendamentos',
-        subtitle: 'Calendários Google em Carrinhos e Displays — slugs carrinho-* e display-*.',
+        subtitle: 'Links de calendário Google — slugs carrinho-* e display-* nas páginas públicas.',
+        showChangelog: false,
+        showBack: true
+      }
+    },
+    'carrinhos-displays': {
+      id: 'carrinhos-displays',
+      hash: 'carrinhos-displays',
+      permission: 'agendamentos',
+      viewId: 'hub-view-carrinhos-displays',
+      partial: 'hub/sections/carrinhos-displays.html',
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060934'],
+      scripts: [
+        'js/equipment-schedule-helpers.js?v=2026060934',
+        'js/admin/carrinhos-displays.js?v=2026060934'
+      ],
+      initKey: 'JEAdminCarrinhosDisplays',
+      hero: {
+        kicker: 'Organização e campo',
+        title: 'Carrinhos e Displays',
+        subtitle: 'Publicadores habilitados, cronograma semanal fixo ou temporário e mensagem pronta para WhatsApp.',
         showChangelog: false,
         showBack: true
       }

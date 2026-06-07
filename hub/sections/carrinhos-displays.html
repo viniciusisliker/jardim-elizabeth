@@ -1,0 +1,169 @@
+    <div class="eq-nav-stage">
+      <div class="eq-nav-glow" aria-hidden="true"></div>
+      <div class="eq-nav-scroll">
+        <nav id="eq-nav" class="eq-nav" aria-label="Abas de carrinhos e displays">
+          <span id="eq-nav-indicator" class="eq-nav-indicator" aria-hidden="true"></span>
+          <button type="button" class="eq-tab active" data-eq-tab="cronograma" title="Cronograma" aria-label="Cronograma">
+            <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+            <span class="eq-tab-label">Cronograma</span>
+          </button>
+          <button type="button" class="eq-tab" data-eq-tab="publicadores" title="Publicadores" aria-label="Publicadores">
+            <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+            <span class="eq-tab-label">Publicadores</span>
+          </button>
+          <button type="button" class="eq-tab" data-eq-tab="checklist" title="Checklist" aria-label="Checklist">
+            <span class="material-symbols-outlined" aria-hidden="true">checklist</span>
+            <span class="eq-tab-label">Checklist</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <section id="eq-panel-cronograma" class="eq-panel active space-y-4">
+      <div class="eq-sched-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Cronograma semanal</h2>
+          <p>Fixos repetem toda semana · temporários só na semana (domingo a sábado)</p>
+        </div>
+        <label class="text-[10px] font-bold uppercase tracking-wide text-white/80 flex items-center gap-2">Semana ref.
+          <input id="eq-week" type="date" class="eq-sched-input"/>
+        </label>
+        <button type="button" id="eq-btn-whatsapp" class="eq-sched-toolbar-btn eq-sched-toolbar-btn--ghost" title="Copiar mensagem para WhatsApp">
+          <svg class="eq-wa-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button type="button" id="eq-btn-new-slot" class="eq-sched-toolbar-btn eq-sched-toolbar-btn--accent">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>Nova linha
+        </button>
+      </div>
+
+      <div id="eq-sched-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
+
+      <div id="eq-whatsapp-wrap" class="hidden">
+        <h3 class="text-sm font-bold text-primary mb-2">Mensagem gerada</h3>
+        <div id="eq-whatsapp" class="eq-whatsapp-box"></div>
+      </div>
+    </section>
+
+    <section id="eq-panel-publicadores" class="eq-panel space-y-3">
+      <div class="eq-sched-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Publicadores habilitados</h2>
+          <p>Referência da aba Carrinho e Display · quem pode servir e em quais dias</p>
+        </div>
+        <span class="eq-over-count shrink-0" id="eq-pub-count">— cadastrados</span>
+      </div>
+
+      <div class="eq-over-add">
+        <div class="eq-over-add__head">
+          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+          Adicionar publicador
+        </div>
+        <form id="eq-form-publisher" class="eq-over-add__form">
+          <div class="eq-over-field">
+            <span class="eq-over-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
+            <select id="eq-publisher-profile" required class="eq-over-input"></select>
+          </div>
+          <div class="eq-over-field">
+            <span class="eq-over-field__label"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>Serviços</span>
+            <div class="eq-pub-flags">
+              <label class="eq-pub-flag"><input type="checkbox" id="eq-pub-carrinho" checked/> Carrinho</label>
+              <label class="eq-pub-flag"><input type="checkbox" id="eq-pub-display" checked/> Display</label>
+            </div>
+          </div>
+          <div class="eq-over-field eq-over-field--wide">
+            <span class="eq-over-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Dias disponíveis</span>
+            <div id="eq-pub-days" class="eq-pub-days"></div>
+          </div>
+          <button type="submit" class="eq-over-submit">Adicionar</button>
+        </form>
+      </div>
+
+      <div id="eq-pub-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
+    </section>
+
+    <section id="eq-panel-checklist" class="eq-panel space-y-3">
+      <div class="eq-checklist-card">
+        <h2>Checklist semanal</h2>
+        <p class="eq-checklist-intro">Fluxo de referência — substitui o Todoist para o cronograma pronto no WhatsApp.</p>
+        <ol class="eq-checklist">
+          <li>
+            <strong>Enviar mensagem de voluntários do carrinho</strong>
+            <span>Recorrente · confirmar quem pode servir na semana</span>
+          </li>
+          <li>
+            <strong>Enviar cronograma dos Carrinhos e do Display</strong>
+            <span>Segunda e Terça · slots fixos de carrinho/display</span>
+          </li>
+          <li>
+            <strong>Enviar enquete semanal</strong>
+            <span>Terça a domingo · disponibilidade dos irmãos</span>
+          </li>
+          <li>
+            <strong>Devolver os territórios</strong>
+            <span>Capturar dados da enquete do WhatsApp</span>
+          </li>
+          <li>
+            <strong>Analisar disponibilidade</strong>
+            <span>Cruzar enquete com publicadores habilitados e territórios livres</span>
+          </li>
+          <li>
+            <strong>Montar cronograma e copiar mensagem</strong>
+            <span>Use a aba Cronograma → WhatsApp para gerar o texto da semana</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <div id="eq-slot-modal" class="eq-modal" aria-hidden="true">
+      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-slot-modal-title">
+        <div class="eq-modal__head">
+          <h2 id="eq-slot-modal-title">Linha do cronograma</h2>
+          <button type="button" id="eq-slot-modal-close" class="eq-modal__close" aria-label="Fechar">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="eq-slot-form" class="eq-modal__body">
+          <input type="hidden" id="eq-slot-id"/>
+          <div class="eq-modal-grid">
+            <label>Dia
+              <select id="eq-slot-day" required class="eq-over-input"></select>
+            </label>
+            <label>Período
+              <select id="eq-slot-period" required class="eq-over-input"></select>
+            </label>
+            <label>Tipo
+              <select id="eq-slot-kind" required class="eq-over-input">
+                <option value="fixed">Fixo (toda semana)</option>
+                <option value="temporary">Temporário (só esta semana)</option>
+              </select>
+            </label>
+            <label>Equipamento
+              <select id="eq-slot-type" required class="eq-over-input">
+                <option value="carrinho">Carrinho</option>
+                <option value="display">Display</option>
+              </select>
+            </label>
+            <label>Nome do equipamento
+              <input id="eq-slot-equipment" required class="eq-over-input" placeholder="SOUZA, ALMEIDA, DAMASCENO…"/>
+            </label>
+            <label>Local
+              <input id="eq-slot-location" required class="eq-over-input" placeholder="Praça, endereço…"/>
+            </label>
+            <label class="eq-modal-grid--full">Publicadores
+              <input id="eq-slot-publishers" required class="eq-over-input" placeholder="Feliciana, Uiliane, Maria de Lurdes"/>
+            </label>
+            <label>Ordem
+              <input id="eq-slot-sort" type="number" value="0" class="eq-over-input"/>
+            </label>
+          </div>
+          <div class="eq-modal__foot">
+            <button type="button" id="eq-slot-delete" class="eq-modal-btn eq-modal-btn--danger hidden">Excluir</button>
+            <div class="eq-modal__foot-actions">
+              <button type="button" id="eq-slot-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Salvar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
