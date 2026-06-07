@@ -168,9 +168,9 @@
       permission: 'settings',
       viewId: 'hub-view-configuracoes',
       partial: 'hub/sections/configuracoes.html',
-      styles: ['css/hub-sections/configuracoes.css?v=2026060926'],
+      styles: ['css/hub-sections/configuracoes.css?v=2026060952'],
       scripts: [
-        'js/admin/configuracoes.js?v=2026060902'
+        'js/admin/configuracoes.js?v=2026060952'
       ],
       initKey: 'JEAdminConfiguracoes',
       hero: {

@@ -31,13 +31,17 @@
     .cfg-card__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
     .cfg-members-scroll{overflow-x:auto}
     .cfg-members-panel{min-width:44rem}
+    .cfg-members-panel--super{min-width:54rem}
     .cfg-member-row{display:grid;grid-template-columns:minmax(7rem,1.1fr) minmax(5rem,.7fr) minmax(6.75rem,.85fr) minmax(5.5rem,.75fr) minmax(10rem,1.35fr);gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .cfg-members-panel--super .cfg-member-row{grid-template-columns:minmax(7rem,1fr) minmax(4.5rem,.65fr) minmax(9rem,1.2fr) minmax(6.25rem,.8fr) minmax(5rem,.7fr) minmax(9rem,1.2fr)}
     .cfg-member-row:last-child{border-bottom:none}
     .cfg-member-row:not(.cfg-member-row--head):hover{background:#fafbfc}
     .cfg-member-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
     .cfg-member-name{display:flex;align-items:center;gap:.3125rem;font-weight:700;color:#0f3462;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .cfg-member-name .material-symbols-outlined{font-size:.9375rem;color:#3b5e97;flex-shrink:0}
     .cfg-member-user{font-size:.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cfg-member-email{font-size:.6875rem;color:#43474f}
+    .cfg-field--email{font-size:.6875rem}
     .cfg-field{width:100%;min-width:0;border:1px solid #e2e6ef;border-radius:.4375rem;padding:.3125rem .4375rem;font-size:.6875rem;color:#1b1c1c;background:#fff}
     .cfg-field:focus{outline:none;border-color:#3b5e97;box-shadow:0 0 0 2px rgba(59,94,151,.1)}
     .cfg-role-label{font-size:.6875rem;font-weight:700;color:#3b5e97}

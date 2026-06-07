@@ -35,6 +35,10 @@
     return `<div class="cfg-des-badges">${permissionBadges(perms)}</div>`;
   }
 
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+  }
+
   async function init() {
     if (window.__JEAdminConfigInit) return;
     window.__JEAdminConfigInit = true;
@@ -48,13 +52,16 @@
     let catalog = [];
     let expandedDesignationId = null;
     let memberSearch = '';
+    let memberEmails = new Map();
 
     document.getElementById('cfg-role-note').textContent = isSuper
-      ? 'Como SuperUser, você gerencia designações de acesso, cargos e atribuições da equipe.'
+      ? 'Como SuperUser, você gerencia designações, cargos, e-mails de login e atribuições da equipe.'
       : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.';
 
     if (isSuper) {
       document.getElementById('cfg-designations-section').classList.remove('hidden');
+      document.getElementById('cfg-head-email')?.classList.remove('hidden');
+      document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--super');
     }
 
     function updateStats() {
@@ -72,9 +79,21 @@
       const q = memberSearch.trim().toLowerCase();
       if (!q) return members;
       return members.filter((m) => {
-        const hay = `${m.full_name || ''} ${m.username || ''} ${m.designation || ''}`.toLowerCase();
+        const email = memberEmails.get(m.id) || '';
+        const hay = `${m.full_name || ''} ${m.username || ''} ${m.designation || ''} ${email}`.toLowerCase();
         return hay.includes(q);
       });
+    }
+
+    async function loadMemberEmails() {
+      if (!isSuper) return;
+      const { data, error } = await client.rpc('list_team_member_emails');
+      if (error) {
+        console.warn('list_team_member_emails:', error.message);
+        memberEmails = new Map();
+        return;
+      }
+      memberEmails = new Map((data || []).map((row) => [row.profile_id, row.email || '']));
     }
 
     async function reloadCatalog() {
@@ -104,6 +123,7 @@
         ...m,
         assignedIds: new Set((m.profile_access_designations || []).map((r) => r.designation_id))
       }));
+      await loadMemberEmails();
       updateStats();
       renderMembers();
     }
@@ -264,6 +284,10 @@
             }).join('')}</div>`
           : '<span class="text-[11px] text-on-surface-variant">—</span>';
 
+        const emailCell = isSuper
+          ? `<input type="email" value="${escapeHtml(memberEmails.get(m.id) || '')}" data-member-email="${m.id}" placeholder="email@exemplo.com" class="cfg-field cfg-field--email cfg-member-email" autocomplete="off"/>`
+          : '';
+
         return `
           <div class="cfg-member-row">
             <span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">
@@ -271,6 +295,7 @@
               ${escapeHtml(m.full_name || '—')}
             </span>
             <span class="cfg-member-user" title="@${escapeHtml(m.username || '')}">@${escapeHtml(m.username || '—')}</span>
+            ${isSuper ? `<span>${emailCell}</span>` : ''}
             <span>${roleSelect}</span>
             <span>${designationInput}</span>
             <span>${designationChecks}</span>
@@ -300,6 +325,42 @@
               .eq('id', input.dataset.memberDesignation);
             if (error) showToast(toast, error.message, true);
           }, 600);
+        });
+      });
+
+      root.querySelectorAll('[data-member-email]').forEach((input) => {
+        const saveEmail = async () => {
+          const profileId = input.dataset.memberEmail;
+          const nextEmail = input.value.trim().toLowerCase();
+          const prevEmail = (memberEmails.get(profileId) || '').toLowerCase();
+          if (nextEmail === prevEmail) return;
+          if (!isValidEmail(nextEmail)) {
+            showToast(toast, 'Informe um e-mail válido.', true);
+            input.value = memberEmails.get(profileId) || '';
+            return;
+          }
+          const { error } = await client.rpc('admin_update_user_email', {
+            p_profile_id: profileId,
+            p_new_email: nextEmail
+          });
+          if (error) {
+            const msg = /duplicate|already registered|unique/i.test(error.message || '')
+              ? 'Este e-mail já está em uso por outra conta.'
+              : error.message;
+            showToast(toast, msg, true);
+            input.value = memberEmails.get(profileId) || '';
+            return;
+          }
+          memberEmails.set(profileId, nextEmail);
+          showToast(toast, 'E-mail atualizado.');
+        };
+
+        input.addEventListener('blur', saveEmail);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+          }
         });
       });
 
