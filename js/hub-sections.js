@@ -93,10 +93,10 @@
       permission: 'territorios',
       viewId: 'hub-view-territorios',
       partial: 'hub/sections/territorios.html',
-      styles: ['css/hub-sections/territorios.css?v=2026060917'],
+      styles: ['css/hub-sections/territorios.css?v=2026060918'],
       scripts: [
-        'js/territory-column-resize.js?v=2026060917',
-        'js/admin/territory-system.js?v=2026060917'
+        'js/territory-column-resize.js?v=2026060918',
+        'js/admin/territory-system.js?v=2026060918'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {

@@ -408,11 +408,58 @@
     return { total, designados, disponiveis, alta, designadosPct, avgDays };
   }
 
+  function openPriorityModal() {
+    const modal = document.getElementById('terr-priority-modal');
+    if (!modal) return;
+    renderPriorityList();
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closePriorityModal() {
+    const modal = document.getElementById('terr-priority-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function setupPriorityModal() {
+    document.getElementById('btn-priority-disponiveis')?.addEventListener('click', openPriorityModal);
+    document.getElementById('terr-priority-modal-close')?.addEventListener('click', closePriorityModal);
+    document.getElementById('terr-priority-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'terr-priority-modal') closePriorityModal();
+      if (e.target.closest('[data-go-tab]')) closePriorityModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('terr-priority-modal')?.classList.contains('is-open')) {
+        closePriorityModal();
+      }
+    });
+  }
+
   function renderPriorityList() {
     const priEl = document.getElementById('semana-priority-list');
+    const btn = document.getElementById('btn-priority-disponiveis');
+    const badge = document.getElementById('btn-priority-disponiveis-count');
+    const avail = territories.filter((t) => t.status === 'disponivel');
+    const sorted = H().sortByPriority(avail);
+    const alta = avail.filter((t) => H().computePriority(t).tone === 'high').length;
+
+    if (badge) {
+      const count = alta || avail.length;
+      badge.textContent = String(count);
+      badge.classList.toggle('hidden', !count);
+    }
+    if (btn) {
+      btn.classList.toggle('terr-sched-toolbar-btn--alert-pulse', alta > 0);
+      btn.disabled = !avail.length;
+      btn.title = avail.length
+        ? `${avail.length} disponíve${avail.length === 1 ? 'l' : 'is'}${alta ? ` · ${alta} prioridade alta` : ''}`
+        : 'Nenhum território disponível';
+    }
+
     if (!priEl) return;
-    const top = H().sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
-    priEl.innerHTML = top.length ? top.map((t) => {
+    priEl.innerHTML = sorted.length ? sorted.map((t) => {
       const days = H().daysSince(t.last_worked_at);
       return `
         <div class="terr-dash-row">
@@ -425,7 +472,7 @@
           </span>
         </div>`;
     }).join('') : '<p class="terr-dash-empty">Nenhum disponível.</p>';
-    bindDashLinks(priEl.closest('.terr-dash-card'));
+    bindDashLinks(document.getElementById('terr-priority-modal'));
   }
 
   function updateDesignarPreview() {
@@ -2903,6 +2950,7 @@
       if (!currentWeek) currentWeek = helpers.toISODate(helpers.getMonday(new Date()));
       setupTabs();
       setupDelegatedActions();
+      setupPriorityModal();
       setupTerritoryMapLightbox();
 
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
@@ -2966,6 +3014,7 @@
 
       await reloadCore();
       renderCatalogo();
+      renderPriorityList();
       tabsRendered = { painel: true, semana: false, historico: false, dirigentes: false };
       ensureSecondaryData().catch((err) => console.warn('Territory secondary load:', err));
       return true;

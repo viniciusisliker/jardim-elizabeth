@@ -38,6 +38,11 @@
         <label class="text-[10px] font-bold uppercase tracking-wide text-white/80 flex items-center gap-2">Semana ref.
           <input id="semana-week" type="date" class="terr-sched-input"/>
         </label>
+        <button type="button" id="btn-priority-disponiveis" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--alert" title="Territórios disponíveis por prioridade de cobertura">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">priority_high</span>
+          Disponíveis
+          <span id="btn-priority-disponiveis-count" class="terr-priority-alert-badge hidden" aria-hidden="true">0</span>
+        </button>
         <button type="button" id="btn-designar" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost" title="Nova designação de território">
           <span class="material-symbols-outlined text-base" aria-hidden="true">person_add</span>Designar
         </button>
@@ -51,13 +56,6 @@
       </div>
       <div id="semana-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
       <div id="semana-designados-extra"></div>
-      <div class="terr-dash-card">
-        <div class="terr-dash-card__head">
-          <span class="terr-dash-card__title"><span class="material-symbols-outlined" aria-hidden="true">priority_high</span>Prioridade (disponíveis)</span>
-          <button type="button" class="terr-dash-link" data-go-tab="painel">Painel</button>
-        </div>
-        <div id="semana-priority-list"><p class="terr-dash-empty">Carregando…</p></div>
-      </div>
       <div id="semana-whatsapp-wrap" class="hidden">
         <h3 class="text-sm font-bold text-primary mb-2">Mensagem gerada</h3>
         <div id="semana-whatsapp" class="terr-whatsapp-box"></div>
@@ -129,6 +127,24 @@
 
       <div id="dirigentes-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
+  <div id="terr-priority-modal" class="terr-priority-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="terr-priority-modal-title">
+    <div class="terr-priority-modal__panel">
+      <div class="terr-priority-modal__head">
+        <h3 id="terr-priority-modal-title" class="terr-priority-modal__title">
+          <span class="material-symbols-outlined" aria-hidden="true">priority_high</span>
+          Prioridade — disponíveis
+        </h3>
+        <button type="button" id="terr-priority-modal-close" class="terr-priority-modal__close" aria-label="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <p class="terr-priority-modal__sub">Territórios sem designação, ordenados por urgência de cobertura.</p>
+      <div id="semana-priority-list" class="terr-priority-modal__list"><p class="terr-dash-empty">Carregando…</p></div>
+      <div class="terr-priority-modal__foot">
+        <button type="button" class="terr-dash-link" data-go-tab="painel">Ver painel completo</button>
+      </div>
+    </div>
+  </div>
   <div id="terr-map-lightbox" class="terr-map-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="terr-map-lightbox-title">
     <div class="terr-map-lightbox__panel">
       <div class="terr-map-lightbox__head">

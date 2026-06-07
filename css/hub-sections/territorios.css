@@ -60,6 +60,22 @@
     .terr-sched-toolbar-btn{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.375rem .625rem;border-radius:.5rem;border:none;cursor:pointer}
     .terr-sched-toolbar-btn--ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
     .terr-sched-toolbar-btn--accent{background:#c8a96e;color:#0f3462}
+    .terr-sched-toolbar-btn--alert{background:linear-gradient(135deg,#ef4444 0%,#b91c1c 100%);color:#fff;border:1px solid rgba(255,255,255,.35);box-shadow:0 2px 10px rgba(185,28,28,.45)}
+    .terr-sched-toolbar-btn--alert:hover:not(:disabled){background:linear-gradient(135deg,#f87171 0%,#dc2626 100%)}
+    .terr-sched-toolbar-btn--alert:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+    .terr-sched-toolbar-btn--alert-pulse{animation:terr-priority-pulse 2s ease-in-out infinite}
+    @keyframes terr-priority-pulse{0%,100%{box-shadow:0 2px 10px rgba(185,28,28,.45)}50%{box-shadow:0 0 0 3px rgba(254,202,202,.55),0 2px 12px rgba(185,28,28,.55)}}
+    .terr-priority-alert-badge{display:inline-flex;align-items:center;justify-content:center;min-width:1.125rem;height:1.125rem;padding:0 .25rem;margin-left:.125rem;border-radius:9999px;background:#fff;color:#b91c1c;font-size:.5625rem;font-weight:800;line-height:1}
+    .terr-priority-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(10,40,71,.88);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+    .terr-priority-modal.is-open{opacity:1;visibility:visible}
+    .terr-priority-modal__panel{width:min(28rem,100%);max-height:calc(100vh - 2rem);display:flex;flex-direction:column;background:#fff;border-radius:1rem;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+    .terr-priority-modal__head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.875rem 1rem;border-bottom:1px solid #e2e6ef;background:linear-gradient(135deg,#fef2f2 0%,#fff 100%)}
+    .terr-priority-modal__title{display:flex;align-items:center;gap:.375rem;font-size:.875rem;font-weight:800;color:#b91c1c;margin:0}
+    .terr-priority-modal__title .material-symbols-outlined{font-size:1.125rem}
+    .terr-priority-modal__close{display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border:none;border-radius:9999px;background:#f5f8fc;color:#43474f;cursor:pointer}
+    .terr-priority-modal__sub{margin:0;padding:.625rem 1rem .5rem;font-size:.6875rem;color:#6b7280;border-bottom:1px solid #eef0f4}
+    .terr-priority-modal__list{overflow:auto;max-height:min(50vh,24rem)}
+    .terr-priority-modal__foot{display:flex;justify-content:flex-end;padding:.625rem 1rem;border-top:1px solid #eef0f4;background:#f7f9fc}
     .terr-sched-toolbar-btn .material-symbols-outlined{font-size:1rem}
     .terr-wa-icon{width:1rem;height:1rem;flex-shrink:0;display:block}
     .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
