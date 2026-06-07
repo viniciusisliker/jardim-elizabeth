@@ -23,7 +23,7 @@
     .je-footer-info {
       position: relative;
       overflow: hidden;
-      padding: 2.5rem 0 2rem;
+      padding: 3.5rem 0 2.5rem;
       background: linear-gradient(165deg, #f5f8fc 0%, #eae8e7 48%, #f0ece6 100%);
     }
     .je-footer-info::before {
@@ -37,7 +37,7 @@
         radial-gradient(ellipse 50% 40% at 0% 100%, rgba(59, 94, 151, 0.12) 0%, transparent 50%);
     }
     .je-footer-shell { position: relative; z-index: 1; }
-    .je-footer-intro { margin-bottom: 1.25rem; max-width: 28rem; }
+    .je-footer-intro { margin-bottom: 1.75rem; max-width: 28rem; }
     .je-footer-kicker {
       margin: 0 0 0.375rem;
       font-size: 0.6875rem;
@@ -60,15 +60,15 @@
     }
     @media (min-width: 768px) {
       .je-footer-grid {
-        grid-template-columns: 1.35fr 0.95fr 0.95fr;
-        align-items: start;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        align-items: stretch;
       }
     }
     .je-footer-card {
       background: rgba(255, 255, 255, 0.92);
       border: 1px solid rgba(15, 52, 98, 0.1);
-      border-radius: 0.875rem;
-      padding: 1rem 1.125rem;
+      border-radius: 1rem;
+      padding: 1.25rem 1.375rem;
       box-shadow: 0 4px 20px rgba(15, 52, 98, 0.06);
       transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
     }
@@ -83,22 +83,22 @@
     .je-footer-card-head {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      margin-bottom: 0.625rem;
+      gap: 0.75rem;
+      margin-bottom: 0.875rem;
     }
     .je-footer-card-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 2.125rem;
-      height: 2.125rem;
-      border-radius: 0.625rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
       background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       color: #0f3462;
       flex-shrink: 0;
     }
     .je-footer-card-icon .material-symbols-outlined {
-      font-size: 1.25rem;
+      font-size: 1.375rem;
       font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
     }
     .je-footer-card--meetings .je-footer-card-icon {
@@ -120,17 +120,17 @@
       font-feature-settings: 'liga';
     }
     .je-footer-title {
-      font-size: 0.9375rem;
+      font-size: 1rem;
       font-weight: 800;
       color: #0f3462;
       margin: 0;
       line-height: 1.2;
     }
     .je-footer-text {
-      font-size: 0.8125rem;
-      line-height: 1.5;
+      font-size: 0.875rem;
+      line-height: 1.6;
       color: #43474f;
-      margin: 0 0 0.625rem;
+      margin: 0 0 1rem;
     }
     .je-footer-link {
       color: #43474f;
@@ -138,30 +138,29 @@
     }
     .je-footer-link:hover { text-decoration: underline; }
     .je-footer-map-links {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.375rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     .je-footer-map-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.375rem;
-      flex: none;
-      min-width: 0;
-      width: 100%;
+      gap: 0.5rem;
+      flex: 1 1 calc(33.333% - 0.35rem);
+      min-width: 7.5rem;
       background: #f8fafc;
       border: 1px solid #e2e6ef;
       border-radius: 9999px;
-      padding: 0.375rem 0.5rem;
-      font-size: 0.6875rem;
+      padding: 0.5rem 0.875rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: #0f3462;
       text-decoration: none;
       transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
     .je-footer-map-btn svg,
-    .je-footer-map-btn-icon { flex-shrink: 0; width: 1rem; height: 1rem; object-fit: contain; }
+    .je-footer-map-btn-icon { flex-shrink: 0; width: 1.125rem; height: 1.125rem; object-fit: contain; }
     .je-footer-map-btn:hover {
       border-color: #3b5e97;
       background: #fff;
@@ -175,14 +174,14 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: 0.625rem;
     }
     .je-footer-schedule-item {
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      padding: 0.4375rem 0.625rem;
-      border-radius: 0.625rem;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.75rem;
       background: #f8fafc;
       border: 1px solid #eef0f4;
     }
@@ -190,9 +189,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2rem;
-      padding: 0.1875rem 0.3125rem;
-      border-radius: 0.4375rem;
+      min-width: 2.25rem;
+      padding: 0.25rem 0.375rem;
+      border-radius: 0.5rem;
       background: #0f3462;
       color: #fff;
       font-size: 0.6875rem;
@@ -201,21 +200,21 @@
       text-transform: uppercase;
     }
     .je-footer-schedule-detail {
-      font-size: 0.75rem;
+      font-size: 0.8125rem;
       font-weight: 600;
       color: #43474f;
-      line-height: 1.3;
+      line-height: 1.35;
     }
     .je-footer-email {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.625rem;
       width: 100%;
-      padding: 0.625rem 0.75rem;
-      border-radius: 0.625rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
       background: linear-gradient(135deg, #0f3462 0%, #1a4a7a 100%);
       color: #fff;
-      font-size: 0.75rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       text-decoration: none;
       word-break: break-all;
@@ -223,7 +222,7 @@
       box-shadow: 0 4px 14px rgba(15, 52, 98, 0.22);
     }
     .je-footer-email .material-symbols-outlined {
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       flex-shrink: 0;
       font-variation-settings: 'FILL' 0, 'wght' 500;
     }
@@ -641,25 +640,35 @@
       }
       .je-footer-card { padding: 1.125rem 1.25rem; }
       .je-footer-card:hover { transform: none; }
-      .je-footer-map-links {
-        grid-template-columns: 1fr 1fr;
+      .je-footer-map-links { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .je-footer-map-btn {
+        min-height: 2.75rem;
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        padding: 0.625rem 0.75rem;
       }
       .je-footer-map-btn:last-child { grid-column: 1 / -1; }
-      .je-footer-email { min-height: 2.5rem; font-size: 0.75rem; }
-      .je-footer-schedule-item { min-height: 2.375rem; }
+      .je-footer-email { min-height: 2.75rem; font-size: 0.8125rem; }
+      .je-footer-schedule-item { min-height: 2.75rem; }
       main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
       .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
     }
     @media (min-width: 768px) and (max-width: 1023px) {
       .je-footer-grid {
         grid-template-columns: 1fr 1fr;
-        gap: 0.875rem;
+        gap: 1rem;
       }
       .je-footer-card--location { grid-column: 1 / -1; }
       .je-footer-map-links {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        max-width: 36rem;
+        display: flex;
+        flex-wrap: wrap;
       }
+      .je-footer-map-btn {
+        flex: 1 1 calc(33.333% - 0.35rem);
+        min-width: 7rem;
+      }
+      .je-footer-map-btn:last-child { grid-column: auto; }
       .je-footer-intro { max-width: none; }
       .je-footer-headline { font-size: 1.5rem; }
     }
