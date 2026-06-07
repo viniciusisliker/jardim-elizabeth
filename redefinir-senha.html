@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redefinir senha – Jardim Elizabeth</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0f3462',
+            secondary: '#3b5e97',
+            error: '#ba1a1a',
+            'on-surface-variant': '#43474f',
+            'outline-variant': '#c3c6d0'
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    .material-symbols-outlined { font-family: 'Material Symbols Outlined', sans-serif; vertical-align: middle; }
+  </style>
+</head>
+<body class="min-h-screen bg-[#f5f8fc] font-sans text-[#1b1c1c] flex items-center justify-center p-4">
+  <main class="w-full max-w-md bg-white rounded-2xl border border-[#e2e6ef] shadow-lg p-6">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="material-symbols-outlined text-primary" aria-hidden="true">lock_reset</span>
+      <h1 class="text-lg font-bold text-primary">Nova senha</h1>
+    </div>
+    <p class="text-sm text-[#43474f] mb-5">Defina uma senha nova para continuar usando o site.</p>
+
+    <div id="reset-loading" class="text-sm text-[#43474f]">Validando link…</div>
+
+    <div id="reset-invalid" class="hidden space-y-4">
+      <p class="text-sm text-error">Este link é inválido ou expirou. Solicite um novo na tela de entrar, em <strong>Esqueci minha senha</strong>.</p>
+      <a href="index.html" class="inline-flex w-full justify-center rounded-lg bg-primary text-white font-semibold py-2.5 hover:opacity-90">Ir para o site</a>
+    </div>
+
+    <form id="reset-form" class="hidden space-y-4">
+      <label class="block">
+        <span class="block text-xs font-semibold uppercase tracking-wider text-[#43474f] mb-1">Nova senha</span>
+        <input id="reset-password" type="password" minlength="8" required autocomplete="new-password"
+          class="w-full rounded-lg border border-[#c3c6d0] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40"/>
+      </label>
+      <label class="block">
+        <span class="block text-xs font-semibold uppercase tracking-wider text-[#43474f] mb-1">Confirmar senha</span>
+        <input id="reset-password-confirm" type="password" minlength="8" required autocomplete="new-password"
+          class="w-full rounded-lg border border-[#c3c6d0] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40"/>
+      </label>
+      <p class="text-xs text-[#43474f]">Mínimo de 8 caracteres.</p>
+      <p id="reset-status" class="hidden text-sm" role="status"></p>
+      <button type="submit" class="w-full bg-primary text-white font-semibold rounded-lg py-2.5 hover:opacity-90">
+        Salvar nova senha
+      </button>
+    </form>
+
+    <div id="reset-done" class="hidden space-y-4">
+      <p class="text-sm text-primary font-medium">Senha atualizada com sucesso.</p>
+      <a href="hub.html" class="inline-flex w-full justify-center rounded-lg bg-primary text-white font-semibold py-2.5 hover:opacity-90">Abrir o Hub</a>
+      <a href="index.html" class="inline-flex w-full justify-center text-sm font-semibold text-secondary hover:underline">Voltar ao site</a>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/redefinir-senha.js"></script>
+</body>
+</html>

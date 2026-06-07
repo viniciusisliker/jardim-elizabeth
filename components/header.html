@@ -158,7 +158,10 @@
         <input id="login-username" type="text" required autocomplete="username" class="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="seu.usuario"/>
       </div>
       <div>
-        <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1">Senha</label>
+        <div class="flex items-center justify-between gap-2 mb-1">
+          <label for="login-password" class="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Senha</label>
+          <button type="button" id="login-forgot-toggle" class="text-[11px] font-semibold text-secondary hover:underline">Esqueci minha senha</button>
+        </div>
         <input id="login-password" type="password" required autocomplete="current-password" class="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="••••••••"/>
       </div>
       <p id="login-error" class="hidden text-sm text-error"></p>
@@ -166,6 +169,24 @@
         Entrar
       </button>
     </form>
+
+    <div id="login-forgot-panel" class="hidden">
+      <p class="text-sm text-on-surface-variant mb-4">Informe seu usuário. Se houver e-mail cadastrado na conta, enviaremos um link para você definir uma nova senha.</p>
+      <form id="login-forgot-form" class="space-y-4">
+        <div>
+          <label for="login-forgot-username" class="block text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-1">Usuário</label>
+          <input id="login-forgot-username" type="text" required autocomplete="username" class="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" placeholder="seu.usuario"/>
+        </div>
+        <p id="login-forgot-status" class="hidden text-sm" role="status"></p>
+        <button type="submit" class="w-full bg-primary text-white font-semibold rounded-lg py-2.5 hover:bg-primary-container transition-colors">
+          Enviar link
+        </button>
+      </form>
+      <button type="button" id="login-forgot-back" class="mt-4 w-full text-sm font-semibold text-secondary hover:underline">
+        Voltar ao login
+      </button>
+      <p class="text-xs text-on-surface-variant mt-4 text-center leading-relaxed">Sem acesso ao e-mail? Peça ajuda a um responsável pela equipe (Configurações no Hub).</p>
+    </div>
     <p class="text-xs text-on-surface-variant mt-4 text-center">Acesso restrito aos responsáveis da congregação.</p>
   </div>
 </div>

@@ -381,6 +381,37 @@
     return true;
   }
 
+  function getPasswordResetRedirectUrl() {
+    const origin = window.location.origin.replace(/\/$/, '');
+    return `${origin}/redefinir-senha.html`;
+  }
+
+  /** Envia link de redefinição ao e-mail do usuário (se existir). Resposta sempre genérica. */
+  async function requestPasswordReset(username) {
+    const client = await getClient();
+    if (!client) throw new Error('Supabase não configurado.');
+
+    const normalizedUsername = String(username || '').trim();
+    if (!normalizedUsername) throw new Error('Informe seu usuário.');
+
+    let email = null;
+    try {
+      const { data, error } = await client.rpc('get_login_email', { p_username: normalizedUsername });
+      if (!error && data) email = data;
+    } catch {
+      /* não expor se o usuário existe */
+    }
+
+    if (email) {
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: getPasswordResetRedirectUrl()
+      });
+      if (error) console.warn('requestPasswordReset:', error.message);
+    }
+
+    return true;
+  }
+
   function renderAvatarHtml(profile, { size = 40, className = '' } = {}) {
     const url = profile?.avatar_url;
     const cls = className ? ` ${className}` : '';
@@ -402,6 +433,8 @@
     signIn,
     signOut,
     updatePassword,
+    requestPasswordReset,
+    getPasswordResetRedirectUrl,
     onAuthStateChange,
     getRoleLabel,
     getRoleLabelClasses,

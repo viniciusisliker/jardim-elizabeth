@@ -45,8 +45,31 @@
 
   function hideLoginModal() {
     qs('login-modal')?.classList.add('hidden');
+    showLoginPanel();
     const form = qs('login-form');
     if (form) form.reset();
+    qs('login-forgot-form')?.reset();
+    qs('login-forgot-status')?.classList.add('hidden');
+  }
+
+  function showLoginPanel() {
+    qs('login-form')?.classList.remove('hidden');
+    qs('login-forgot-panel')?.classList.add('hidden');
+    const title = qs('login-modal')?.querySelector('h2');
+    if (title) title.textContent = 'Entrar';
+  }
+
+  function showForgotPanel() {
+    const username = qs('login-username')?.value?.trim();
+    qs('login-form')?.classList.add('hidden');
+    qs('login-forgot-panel')?.classList.remove('hidden');
+    qs('login-error')?.classList.add('hidden');
+    qs('login-forgot-status')?.classList.add('hidden');
+    const forgotUser = qs('login-forgot-username');
+    if (forgotUser && username) forgotUser.value = username;
+    const title = qs('login-modal')?.querySelector('h2');
+    if (title) title.textContent = 'Recuperar senha';
+    forgotUser?.focus();
   }
 
   function isMobileMenuOpen() {
@@ -285,6 +308,44 @@
 
     qs('login-modal-close')?.addEventListener('click', hideLoginModal);
     qs('login-modal-backdrop')?.addEventListener('click', hideLoginModal);
+    qs('login-forgot-toggle')?.addEventListener('click', showForgotPanel);
+    qs('login-forgot-back')?.addEventListener('click', showLoginPanel);
+
+    qs('login-forgot-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = qs('login-forgot-username')?.value?.trim();
+      const statusEl = qs('login-forgot-status');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+
+      if (statusEl) {
+        statusEl.className = 'text-sm text-on-surface-variant';
+        statusEl.textContent = '';
+        statusEl.classList.remove('hidden');
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.jeLabel = submitBtn.textContent;
+        submitBtn.textContent = 'Enviando…';
+      }
+
+      try {
+        await window.JEAuth.requestPasswordReset(username);
+        if (statusEl) {
+          statusEl.className = 'text-sm text-primary font-medium';
+          statusEl.textContent = 'Se o usuário tiver e-mail cadastrado, você receberá um link em instantes. Verifique também a pasta de spam.';
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'text-sm text-error';
+          statusEl.textContent = err?.message || 'Não foi possível enviar o link. Tente de novo.';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitBtn.dataset.jeLabel || 'Enviar link';
+        }
+      }
+    });
 
     qs('login-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
