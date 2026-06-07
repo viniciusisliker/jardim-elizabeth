@@ -96,7 +96,7 @@
       styles: ['css/hub-sections/carrinhos-displays.css?v=2026060934'],
       scripts: [
         'js/equipment-schedule-helpers.js?v=2026060934',
-        'js/admin/carrinhos-displays.js?v=2026060934'
+        'js/admin/carrinhos-displays.js?v=2026060935'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {

@@ -72,7 +72,7 @@
     profiles = data || [];
     const select = document.getElementById('eq-publisher-profile');
     if (!select) return;
-    const used = new Set(publishers.map((p) => p.profile_id));
+    const used = new Set(publishers.filter((p) => p.profile_id).map((p) => p.profile_id));
     select.innerHTML = ['<option value="">Selecione…</option>']
       .concat(
         profiles
@@ -86,11 +86,15 @@
     const { data, error } = await client
       .from('equipment_publishers')
       .select('*, profiles(full_name, username, avatar_url, role)')
-      .order('created_at');
+      .order('publisher_name');
     if (error) throw error;
     publishers = data || [];
     renderPublishers();
     await loadProfiles();
+  }
+
+  function publisherName(row) {
+    return row.profiles?.full_name || row.publisher_name || '—';
   }
 
   async function loadSlots() {
@@ -129,16 +133,16 @@
           <span>Irmão(ã)</span><span>Serviços</span><span>Dias</span><span>Obs.</span><span></span>
         </div>
         ${publishers.map((row) => {
-          const name = row.profiles?.full_name || '—';
+          const name = publisherName(row);
           const inactive = row.is_active === false ? ' eq-pub-inactive' : '';
           return `
-            <div class="eq-pub-row${inactive}" data-pub-id="${row.profile_id}">
+            <div class="eq-pub-row${inactive}" data-pub-id="${row.id}">
               <span class="font-semibold text-primary">${escapeHtml(name)}</span>
               <span>${escapeHtml(publisherServices(row))}</span>
               <span>${escapeHtml(helpers.formatPublisherDays(row.available_days))}</span>
               <span class="text-on-surface-variant truncate">${escapeHtml(row.notes || '—')}</span>
               <span class="eq-row-actions">
-                <button type="button" class="eq-row-btn" data-eq-toggle-pub="${row.profile_id}">
+                <button type="button" class="eq-row-btn" data-eq-toggle-pub="${row.id}">
                   ${row.is_active === false ? 'Ativar' : 'Desativar'}
                 </button>
               </span>
@@ -148,12 +152,12 @@
 
     list.querySelectorAll('[data-eq-toggle-pub]').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        const row = publishers.find((p) => p.profile_id === btn.dataset.eqTogglePub);
+        const row = publishers.find((p) => p.id === btn.dataset.eqTogglePub);
         if (!row) return;
         const { error } = await client
           .from('equipment_publishers')
           .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
-          .eq('profile_id', row.profile_id);
+          .eq('id', row.id);
         if (error) showToast(toast, error.message, true);
         else {
           showToast(toast, row.is_active === false ? 'Publicador reativado.' : 'Publicador desativado.');
@@ -327,6 +331,8 @@
       e.preventDefault();
       const profileId = document.getElementById('eq-publisher-profile').value;
       if (!profileId) return;
+      const profileRow = profiles.find((p) => p.id === profileId);
+      if (!profileRow) return;
 
       const dayInputs = document.querySelectorAll('#eq-pub-days input[name="eq-pub-day"]:checked');
       const availableDays = Array.from(dayInputs).map((input) => input.value);
@@ -335,8 +341,9 @@
         return;
       }
 
-      const { error } = await client.from('equipment_publishers').upsert({
+      const { error } = await client.from('equipment_publishers').insert({
         profile_id: profileId,
+        publisher_name: profileRow.full_name,
         can_carrinho: document.getElementById('eq-pub-carrinho').checked,
         can_display: document.getElementById('eq-pub-display').checked,
         available_days: availableDays,
