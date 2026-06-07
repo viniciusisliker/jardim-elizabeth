@@ -114,9 +114,9 @@
       permission: 'audio_video',
       viewId: 'hub-view-audio-video',
       partial: 'hub/sections/audio-video.html',
-      styles: ['css/hub-sections/audio-video.css?v=2026060970'],
+      styles: ['css/hub-sections/audio-video.css?v=2026060973'],
       scripts: [
-        'js/admin/audio-video.js?v=2026060970'
+        'js/admin/audio-video.js?v=2026060973'
       ],
       initKey: 'JEAdminAudioVideo',
       hero: {
