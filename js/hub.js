@@ -1,7 +1,31 @@
 (function () {
   const SECTIONS = window.JEHubSections || {};
-  const loadedSections = new Set(['home', 'agenda']);
+  const loadedSections = new Set(['home']);
+  const partialCache = new Map();
   let currentProfile = null;
+  let hubClient = null;
+  let agendaDataReady = false;
+  let homeExtrasReady = false;
+
+  const SCRIPT_GLOBALS = {
+    'js/admin-core.js?v=2026060902': 'JEAdmin',
+    'js/territory-assignment-helpers.js?v=2026060624': 'JETerritoryAssignment',
+    'js/admin/territory-system.js?v=2026060904': 'JEAdminTerritorios'
+  };
+
+  function renderHubUser(profile) {
+    document.getElementById('hub-user-name').textContent = profile.full_name;
+    const roleEl = document.getElementById('hub-user-role');
+    roleEl.textContent = window.JEAuth.getRoleLabel(profile);
+    roleEl.classList.toggle('text-primary', window.JEAuth.isSuperUser(profile.role));
+    roleEl.classList.toggle('font-semibold', window.JEAuth.isSuperUser(profile.role));
+    document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
+  }
+
+  async function getHubClient() {
+    if (!hubClient) hubClient = await window.JEAuth.getClient();
+    return hubClient;
+  }
 
   async function guardHubAccess() {
     if (!window.JEAuth?.hasLocalSession?.()) {
@@ -47,37 +71,30 @@
     return Object.values(SECTIONS).find((s) => s.hash === key) || null;
   }
 
-  const INIT_FLAGS = {
-    anuncios: '__JEAdminAnunciosInit',
-    discursos: '__JEAdminDiscursosInit',
-    agendamentos: '__JEAdminAgendamentosInit',
-    territorios: '__JEAdminTerritoriosInit',
-    donativos: '__JEAdminDonativosInit',
-    configuracoes: '__JEAdminConfigInit'
-  };
+  async function loadSectionScripts(scripts) {
+    if (!scripts?.length) return;
+    const coreSrc = scripts.find((src) => src.includes('admin-core.js'));
+    const rest = coreSrc ? scripts.filter((src) => src !== coreSrc) : scripts;
 
-  function resetSectionState(sectionId) {
-    const section = SECTIONS[sectionId];
-    if (!section) return;
-    loadedSections.delete(sectionId);
-    const flag = INIT_FLAGS[sectionId];
-    if (flag) delete window[flag];
-    if (section.initKey) delete window[section.initKey];
-    section.scripts?.forEach((src) => {
-      document.querySelector(`script[src="${src}"]`)?.remove();
-    });
-    if (!section.partial) return;
-    const el = document.getElementById(section.viewId);
-    if (!el) return;
-    el.innerHTML = '';
-    el.dataset.mounted = '0';
+    if (coreSrc && !window.JEAdmin) {
+      await loadScript(coreSrc, { requiredGlobal: SCRIPT_GLOBALS[coreSrc] || 'JEAdmin' });
+    }
+    await Promise.all(
+      rest.map((src) => loadScript(src, { requiredGlobal: SCRIPT_GLOBALS[src] || null }))
+    );
   }
 
-  function unmountPartialSections(keepId) {
-    Object.values(SECTIONS).forEach((s) => {
-      if (!s.partial || s.id === keepId) return;
-      resetSectionState(s.id);
-    });
+  async function ensureAgendaDataReady() {
+    if (agendaDataReady) return;
+    await window.JEHubEvents?.initHubEvents(await getHubClient());
+    agendaDataReady = true;
+    loadedSections.add('agenda');
+  }
+
+  async function ensureHomeExtras() {
+    if (homeExtrasReady || !currentProfile) return;
+    await window.JEHubTerritoryAssignment?.init(await getHubClient(), currentProfile);
+    homeExtrasReady = true;
   }
 
   function loadScript(src, { requiredGlobal = null } = {}) {
@@ -171,31 +188,33 @@
   }
 
   async function ensureSectionReady(section) {
-    if (!section || loadedSections.has(section.id)) return;
+    if (!section) return;
+    if (section.id === 'agenda') await ensureAgendaDataReady();
+    if (loadedSections.has(section.id)) return;
 
+    const loads = [];
     if (section.styles?.length) {
-      for (const href of section.styles) await loadCss(href);
+      loads.push(Promise.all(section.styles.map((href) => loadCss(href))));
     }
-
     if (section.partial) {
-      const el = document.getElementById(section.viewId);
-      if (el && el.dataset.mounted !== '1') {
-        const res = await fetch(section.partial);
-        if (!res.ok) throw new Error(`Partial ${section.partial}`);
-        el.innerHTML = await res.text();
+      loads.push((async () => {
+        const el = document.getElementById(section.viewId);
+        if (!el || el.dataset.mounted === '1') return;
+        let html = partialCache.get(section.partial);
+        if (!html) {
+          const res = await fetch(section.partial);
+          if (!res.ok) throw new Error(`Partial ${section.partial}`);
+          html = await res.text();
+          partialCache.set(section.partial, html);
+        }
+        el.innerHTML = html;
         el.dataset.mounted = '1';
-      }
+      })());
     }
+    if (loads.length) await Promise.all(loads);
 
     if (section.scripts?.length) {
-      const scriptGlobals = {
-        'js/admin-core.js?v=2026060902': 'JEAdmin',
-        'js/territory-assignment-helpers.js?v=2026060624': 'JETerritoryAssignment',
-        'js/admin/territory-system.js?v=2026060904': 'JEAdminTerritorios'
-      };
-      for (const src of section.scripts) {
-        await loadScript(src, { requiredGlobal: scriptGlobals[src] || null });
-      }
+      await loadSectionScripts(section.scripts);
     }
 
     const mod = section.initKey ? window[section.initKey] : null;
@@ -219,9 +238,6 @@
       if (targetId !== 'home') return navigateTo('home', { replaceHash: true });
     }
 
-    unmountPartialSections(targetId);
-    if (section.partial) resetSectionState(targetId);
-
     try {
       await ensureSectionReady(section);
     } catch (err) {
@@ -232,6 +248,7 @@
 
     showViews(targetId);
     updateHero(section);
+    if (targetId === 'home') ensureHomeExtras().catch((err) => console.warn('Hub home extras:', err));
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (replaceHash) {
@@ -261,40 +278,60 @@
     });
   }
 
+  async function finishHubBoot(access) {
+    currentProfile = access.profile;
+    renderHubUser(currentProfile);
+    setupHubRouter();
+    applyHubModuleVisibility(currentProfile);
+    window.JEHubChangelog?.init();
+    document.body.classList.remove('hub-auth-pending');
+
+    hubClient = await window.JEAuth.getClient();
+    const fromHash = sectionByHash(location.hash);
+    await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+  }
+
   async function initHub() {
     try {
+      if (!window.JEAuth?.hasLocalSession?.()) {
+        window.location.replace('index.html');
+        return;
+      }
+
+      const cached = window.JEAuth.getCachedProfile?.();
+      if (cached && window.JEAuth.canAccessHub(cached)) {
+        currentProfile = cached;
+        renderHubUser(cached);
+        setupHubRouter();
+        applyHubModuleVisibility(cached);
+        window.JEHubChangelog?.init();
+        document.body.classList.remove('hub-auth-pending');
+
+        const fromHash = sectionByHash(location.hash);
+        await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+
+        guardHubAccess()
+          .then(async (access) => {
+            if (!access) return;
+            currentProfile = access.profile;
+            renderHubUser(currentProfile);
+            applyHubModuleVisibility(currentProfile);
+            hubClient = await window.JEAuth.getClient();
+          })
+          .catch((err) => console.warn('Hub auth refresh:', err));
+        return;
+      }
+
       const access = await guardHubAccess();
       if (!access) return;
-
-      currentProfile = access.profile;
-
-      document.getElementById('hub-user-name').textContent = currentProfile.full_name;
-      document.getElementById('hub-user-role').textContent = window.JEAuth.getRoleLabel(currentProfile);
-
-      if (window.JEAuth.isSuperUser(currentProfile.role)) {
-        document.getElementById('hub-user-role').classList.add('text-primary', 'font-semibold');
-      }
-      document.getElementById('hub-user-username').textContent = currentProfile.username ? `@${currentProfile.username}` : '';
-
-      setupHubRouter();
-      applyHubModuleVisibility(currentProfile);
-      window.JEHubChangelog?.init();
-      document.body.classList.remove('hub-auth-pending');
-
-      const client = await window.JEAuth.getClient();
-      await window.JEHubTerritoryAssignment?.init(client, currentProfile);
-      await window.JEHubEvents?.initHubEvents(client);
-      loadedSections.add('agenda');
-
-      const fromHash = sectionByHash(location.hash);
-      await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+      await finishHubBoot(access);
     } catch (err) {
       console.warn('Hub init:', err);
       window.location.href = 'index.html';
     }
   }
 
-  window.JEHubRouter = { navigateTo, SECTIONS };
+  window.JEHubRouter = { navigateTo, SECTIONS, getProfile: () => currentProfile };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHub);

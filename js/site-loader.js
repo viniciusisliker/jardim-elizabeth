@@ -826,7 +826,12 @@
   async function boot() {
     ensureFavicon();
     ensureMaterialSymbols();
-    await materialSymbolsReady();
+    const isHubPage = /hub\.html$/i.test(location.pathname) || /\/hub\/?$/i.test(location.pathname);
+    if (isHubPage) {
+      materialSymbolsReady();
+    } else {
+      await materialSymbolsReady();
+    }
 
     loadComponent(`${assetBase}/components/header.html`, 'header', () => {
       highlightActiveNav();

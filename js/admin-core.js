@@ -22,6 +22,15 @@
   }
 
   async function guardPermission(permission) {
+    if (window.JEHubRouter?.getProfile) {
+      const profile = window.JEHubRouter.getProfile() || await window.JEAuth.getCurrentProfile();
+      if (!profile || !window.JEAuth.hasPermission(profile, permission)) {
+        authDeny();
+        return null;
+      }
+      return profile;
+    }
+
     await window.JEAuth.getClient();
     let session = await window.JEAuth.getSession();
     if (!session) {

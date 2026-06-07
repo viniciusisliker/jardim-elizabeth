@@ -235,6 +235,11 @@
         showLoginModal();
         return;
       }
+      const cached = window.JEAuth?.getCachedProfile?.();
+      if (cached && window.JEAuth.canAccessHub(cached)) {
+        window.location.href = siteUrl('hub.html');
+        return;
+      }
       const profile = await window.JEAuth?.getCurrentProfile?.();
       if (!profile || !window.JEAuth.canAccessHub(profile)) {
         setHubNavVisible(false);

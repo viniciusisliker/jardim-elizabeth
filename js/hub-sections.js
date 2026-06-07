@@ -34,7 +34,6 @@
       partial: 'hub/sections/anuncios.html',
       styles: ['css/hub-sections/anuncios.css?v=2026060902'],
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
         'js/admin/weekend-discursos-sync.js?v=2026060527',
@@ -60,7 +59,6 @@
       partial: 'hub/sections/discursos.html',
       styles: ['css/hub-sections/discursos.css?v=2026060902'],
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/admin/discursos-publicos.js?v=2026060902'
       ],
       initKey: 'JEAdminDiscursos',
@@ -78,7 +76,6 @@
       permission: 'agendamentos',
       viewId: 'hub-view-agendamentos',
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/admin/agendamentos.js?v=2026060902'
       ],
       initKey: 'JEAdminAgendamentos',
@@ -98,7 +95,6 @@
       partial: 'hub/sections/territorios.html',
       styles: ['css/hub-sections/territorios.css?v=2026060902'],
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/territory-assignment-helpers.js?v=2026060624',
         'js/admin/territory-system.js?v=2026060904'
       ],
@@ -117,7 +113,6 @@
       permission: 'donativos',
       viewId: 'hub-view-donativos',
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/admin/donativos.js?v=2026060902'
       ],
       initKey: 'JEAdminDonativos',
@@ -137,7 +132,6 @@
       partial: 'hub/sections/configuracoes.html',
       styles: ['css/hub-sections/configuracoes.css?v=2026060902'],
       scripts: [
-        'js/admin-core.js?v=2026060902',
         'js/admin/configuracoes.js?v=2026060902'
       ],
       initKey: 'JEAdminConfiguracoes',
