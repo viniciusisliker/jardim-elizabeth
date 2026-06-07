@@ -72,8 +72,9 @@
     .terr-sched-icon-btn--del:hover{background:#fef2f2}
     .terr-sched-icon-btn--return{color:#b45309}
     .terr-sched-icon-btn--return:hover{background:#fef3c7}
-    .terr-sched-cell--assigned{font-weight:700;color:#047857}
-    .terr-sched-assigned-badge{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;background:#d1fae5;color:#047857;margin-left:.25rem;vertical-align:middle}
+    .terr-sched-cell--assigned{display:inline-flex;align-items:center;gap:.25rem;max-width:100%;min-width:0;font-weight:700;color:#047857;overflow:visible;white-space:normal}
+    .terr-sched-assigned-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .terr-sched-assigned-badge{display:inline-flex;flex-shrink:0;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;background:#d1fae5;color:#047857;vertical-align:middle}
     .terr-sched-designados{margin-top:.5rem;background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
     .terr-sched-designados__head{padding:.4375rem .75rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;background:#f7f9fc;border-bottom:1px solid #eef0f4}
     .terr-sched-designados__row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem}

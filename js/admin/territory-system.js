@@ -589,17 +589,72 @@
     return t?.id || null;
   }
 
-  function findAssignmentForScheduleRow(row) {
+  function resolveScheduleTerritory(row) {
     const terrId = resolveScheduleTerritoryId(row);
-    if (!terrId) return null;
-    return activeAssignments.find((a) => a.territory_id === terrId) || null;
+    if (terrId) {
+      return territories.find((t) => t.id === terrId) || row.territories || null;
+    }
+    if (row.territories?.num != null) {
+      const normalized = normalizeTerritoryNum(row.territories.num);
+      return territories.find((t) => normalizeTerritoryNum(t.num) === normalized) || row.territories;
+    }
+    const code = row.territory_code || '';
+    const match = code.match(/T?\s*(\d+)/i);
+    if (match) {
+      const normalized = normalizeTerritoryNum(match[1]);
+      return territories.find((t) => normalizeTerritoryNum(t.num) === normalized) || null;
+    }
+    return row.territories || null;
+  }
+
+  function findAssignmentForScheduleRow(row) {
+    const terr = resolveScheduleTerritory(row);
+    if (terr) {
+      let assignment = activeAssignments.find((a) => a.territory_id === terr.id);
+      if (!assignment) {
+        assignment = activeAssignments.find(
+          (a) => normalizeTerritoryNum(a.territories?.num) === normalizeTerritoryNum(terr.num)
+        );
+      }
+      if (assignment) return assignment;
+      if (terr.status === 'designado') {
+        return {
+          id: null,
+          territory_id: terr.id,
+          profiles: null,
+          territories: terr,
+          assigned_at: null,
+          _statusOnly: true
+        };
+      }
+    }
+
+    const code = row.territory_code || '';
+    const match = code.match(/T?\s*(\d+)/i);
+    if (match) {
+      const normalized = normalizeTerritoryNum(match[1]);
+      return activeAssignments.find(
+        (a) => normalizeTerritoryNum(a.territories?.num) === normalized
+      ) || null;
+    }
+    return null;
+  }
+
+  function scheduleAssignmentTitle(assignment) {
+    if (!assignment) return '';
+    const person = profileName(assignment.profiles);
+    return person !== '—' ? person : 'Em campo';
   }
 
   function scheduleTerritoryIdsForWeek() {
     const ids = new Set();
     scheduleRowsForWeek().forEach((row) => {
-      const id = resolveScheduleTerritoryId(row);
-      if (id) ids.add(id);
+      const terr = resolveScheduleTerritory(row);
+      if (terr?.id) ids.add(terr.id);
+      else {
+        const id = resolveScheduleTerritoryId(row);
+        if (id) ids.add(id);
+      }
     });
     return ids;
   }
@@ -710,14 +765,17 @@
               const territorio = scheduleTerritory(r);
               const assignment = findAssignmentForScheduleRow(r);
               const territorioHtml = assignment
-                ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(profileName(assignment.profiles))}">${escapeHtml(territorio)}<span class="terr-sched-assigned-badge">Designado</span></span>`
+                ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
+                    <span class="terr-sched-assigned-text">${escapeHtml(territorio)}</span>
+                    <span class="terr-sched-assigned-badge">Designado</span>
+                  </span>`
                 : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
               const sugg = scheduleSuggestion(r);
               const hasSugg = r.suggestion || r.suggestion_note;
               const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
                 ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
                 : '';
-              const returnBtn = assignment
+              const returnBtn = assignment?.id
                 ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
                     <span class="material-symbols-outlined" aria-hidden="true">undo</span>
                   </button>`
