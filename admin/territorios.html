@@ -87,20 +87,61 @@
     .terr-spot-meta{font-size:.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .terr-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.5rem 1rem;color:#6b7280;background:#fff;border:1px solid #e2e6ef;border-radius:.75rem}
     .terr-empty .material-symbols-outlined{font-size:1.75rem;color:#c5d4ea;margin-bottom:.375rem}
-    .terr-catalog-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
-    .terr-catalog-panel{min-width:36rem}
-    .terr-catalog-row{display:grid;grid-template-columns:2.5rem minmax(7rem,1.2fr) 5.5rem minmax(5rem,1fr) 5rem 3.5rem 2.5rem;gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-catalog-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff;margin-bottom:.5rem}
+    .terr-catalog-toolbar h2{color:#fff;margin:0;font-size:.875rem;line-height:1.2}
+    .terr-catalog-toolbar p{color:rgba(255,255,255,.75);margin:0;font-size:.625rem}
+    .terr-catalog-toolbar-search{margin-left:auto;display:flex;align-items:center;gap:.375rem;min-width:0;flex:1 1 10rem;max-width:16rem}
+    .terr-catalog-toolbar-search .material-symbols-outlined{font-size:1rem;color:rgba(255,255,255,.65)}
+    .terr-catalog-input{flex:1;min-width:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:.5rem;padding:.3125rem .5rem;font-size:.75rem}
+    .terr-catalog-input::placeholder{color:rgba(255,255,255,.55)}
+    .terr-catalog-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-bottom:.5rem}
+    .terr-catalog-stat{display:flex;align-items:center;gap:.4375rem;padding:.4375rem .625rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem}
+    .terr-catalog-stat__icon{width:1.625rem;height:1.625rem;border-radius:.375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .terr-catalog-stat__icon .material-symbols-outlined{font-size:.9375rem}
+    .terr-catalog-stat--all .terr-catalog-stat__icon{background:#eef3fa;color:#0f3462}
+    .terr-catalog-stat--work .terr-catalog-stat__icon{background:#d1fae5;color:#047857}
+    .terr-catalog-stat--avail .terr-catalog-stat__icon{background:#e0e7ff;color:#4338ca}
+    .terr-catalog-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
+    .terr-catalog-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
+    .terr-catalog-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
+    .terr-catalog-panel{min-width:0}
+    @media(min-width:900px){.terr-catalog-panel{min-width:42rem}}
+    .terr-catalog-row{display:grid;grid-template-columns:3rem minmax(7.5rem,1.35fr) 5.25rem minmax(5rem,1fr) minmax(4.5rem,.75fr) 2.75rem;gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
     .terr-catalog-row:last-child{border-bottom:none}
     .terr-catalog-row:not(.terr-catalog-row--head):hover{background:#fafbfc}
     .terr-catalog-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
     .terr-catalog-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.125rem .375rem;border-radius:.25rem;text-align:center}
-    .terr-catalog-name{font-weight:600;color:#0f3462;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-catalog-name{min-width:0}
     .terr-catalog-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#43474f;font-size:.75rem}
     .terr-catalog-cell--muted{color:#9ca3af;font-style:italic}
-    .terr-catalog-status{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.125rem .375rem;border-radius:.25rem;text-align:center}
+    .terr-catalog-status{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.125rem .375rem;border-radius:.25rem;text-align:center;white-space:nowrap}
     .terr-catalog-status--designado{background:#d1fae5;color:#047857}
     .terr-catalog-status--disponivel{background:#e0e7ff;color:#4338ca}
+    .terr-catalog-meta{display:inline-flex;align-items:center;gap:.3125rem;min-width:0;font-size:.6875rem;color:#6b7280;white-space:nowrap}
     .terr-catalog-priority .terr-priority{font-size:.5625rem;padding:.0625rem .3125rem}
+    .terr-catalog-actions{display:flex;justify-content:flex-end}
+    .terr-catalog-foot{padding:.375rem .75rem;font-size:.6875rem;color:#6b7280;background:#f7f9fc;border-top:1px solid #eef0f4;text-align:center}
+    @media(max-width:767px){
+      .terr-catalog-scroll{overflow-x:visible}
+      .terr-catalog-panel{min-width:0}
+      .terr-catalog-row--head{display:none}
+      .terr-catalog-row:not(.terr-catalog-row--head){
+        grid-template-columns:1fr auto;
+        grid-template-areas:
+          "terr actions"
+          "status status"
+          "assign assign"
+          "meta meta";
+        gap:.375rem .5rem;
+        padding:.625rem .75rem;
+      }
+      .terr-catalog-num{display:none}
+      .terr-catalog-name{grid-area:terr}
+      .terr-catalog-status{grid-area:status;justify-self:start}
+      .terr-catalog-assign{grid-area:assign}
+      .terr-catalog-meta{grid-area:meta}
+      .terr-catalog-actions{grid-area:actions;align-self:start}
+    }
     .terr-dash-hero{display:flex;flex-wrap:wrap;align-items:center;gap:.625rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff;margin-bottom:.25rem}
     .terr-dash-hero h2{margin:0;font-size:.875rem;line-height:1.2;color:#fff}
     .terr-dash-hero p{margin:.125rem 0 0;font-size:.6875rem;color:rgba(255,255,255,.78)}
@@ -329,7 +370,7 @@
       .terr-map-lightbox{padding:max(.75rem,env(safe-area-inset-top)) .75rem max(.75rem,env(safe-area-inset-bottom))}
     }
     @media(max-width:480px){
-      .terr-hist-stats,.terr-assign-stats,.terr-over-stats,.terr-dash-stats{grid-template-columns:1fr}
+      .terr-hist-stats,.terr-assign-stats,.terr-over-stats,.terr-dash-stats,.terr-catalog-stats{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -626,6 +667,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060624"></script>
+    <script src="../js/admin/territory-system.js?v=2026060802"></script>
 </body>
 </html>

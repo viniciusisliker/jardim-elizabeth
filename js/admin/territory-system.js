@@ -22,6 +22,7 @@
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
   let histFilter = { q: '', type: 'all' };
+  let catalogFilter = { q: '' };
   let weekendByDate = {};
 
   function priorityBadge(t) {
@@ -576,38 +577,155 @@
     }
   }
 
+  function catalogTerritoryCell(t) {
+    const label = H.territoryLabel(t);
+    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num);
+    const inner = `
+      <span class="terr-hist-terr-num">T${escapeHtml(String(t.num))}</span>
+      <span class="terr-hist-terr-name">${escapeHtml(t.display_name || '—')}</span>
+      ${mapUrl ? '<span class="material-symbols-outlined terr-hist-terr-map-icon" aria-hidden="true">map</span>' : ''}`;
+
+    if (!mapUrl) {
+      return `<span class="terr-hist-terr-btn" title="${escapeHtml(label)}">${inner}</span>`;
+    }
+
+    return `
+      <button type="button" class="terr-hist-terr-btn terr-hist-terr-btn--map"
+        data-terr-map="${escapeHtml(mapUrl)}"
+        data-terr-title="${escapeHtml(label)}"
+        title="Ver mapa · ${escapeHtml(label)}">${inner}</button>`;
+  }
+
+  function getFilteredCatalog() {
+    const q = catalogFilter.q.trim().toLowerCase();
+    if (!q) return territories;
+    return territories.filter((t) => {
+      const active = activeAssignments.find((a) => a.territory_id === t.id);
+      const assignee = active ? profileName(active.profiles) : '';
+      const p = H.computePriority(t);
+      return [
+        t.num,
+        t.display_name,
+        t.status,
+        STATUS_LABELS[t.status],
+        assignee,
+        p.label
+      ].join(' ').toLowerCase().includes(q);
+    });
+  }
+
+  function bindCatalogFilters() {
+    const grid = document.getElementById('catalogo-grid');
+    if (!grid) return;
+    const search = grid.querySelector('#catalog-search');
+    if (search && search.value !== catalogFilter.q) search.value = catalogFilter.q;
+    search?.addEventListener('input', (e) => {
+      catalogFilter.q = e.target.value;
+      renderCatalogoTable();
+    });
+  }
+
+  function renderCatalogoTable() {
+    const listEl = document.getElementById('catalogo-table-body');
+    const footEl = document.getElementById('catalogo-foot');
+    if (!listEl) return;
+
+    const filtered = getFilteredCatalog();
+    const designados = territories.filter((t) => t.status === 'designado').length;
+    const disponiveis = territories.length - designados;
+
+    const countAll = document.getElementById('catalog-count-all');
+    const countWork = document.getElementById('catalog-count-work');
+    const countAvail = document.getElementById('catalog-count-avail');
+    if (countAll) countAll.textContent = String(territories.length);
+    if (countWork) countWork.textContent = String(designados);
+    if (countAvail) countAvail.textContent = String(disponiveis);
+
+    if (!filtered.length) {
+      listEl.innerHTML = `
+        <div class="terr-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${territories.length ? 'Nenhum território corresponde à busca.' : 'Nenhum território cadastrado.'}</p>
+        </div>`;
+      if (footEl) footEl.textContent = '';
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((t) => {
+      const active = activeAssignments.find((a) => a.territory_id === t.id);
+      const assignee = active ? profileName(active.profiles) : '—';
+      const days = H.daysSince(t.last_worked_at);
+      const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
+      const daysLabel = days !== null ? `${days} dias sem cobertura` : 'Sem registro de cobertura';
+      return `
+      <div class="terr-catalog-row">
+        <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
+        <span class="terr-catalog-name">${catalogTerritoryCell(t)}</span>
+        <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
+        <span class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</span>
+        <span class="terr-catalog-meta" title="${escapeHtml(daysLabel)}">
+          ${priorityBadge(t)}
+          <span>${days !== null ? `${days}d` : '—'}</span>
+        </span>
+        <span class="terr-catalog-actions">
+          <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
+        </span>
+      </div>`;
+    }).join('');
+
+    listEl.querySelectorAll('[data-edit-terr]').forEach((btn) =>
+      btn.addEventListener('click', () => openTerrFormModal(territories.find((x) => x.id === btn.dataset.editTerr)))
+    );
+
+    if (footEl) {
+      const suffix = filtered.length < territories.length ? ` (${territories.length} no total)` : '';
+      footEl.textContent = `Exibindo ${filtered.length} território${filtered.length === 1 ? '' : 's'}${suffix}`;
+    }
+  }
+
   function renderCatalogo() {
     const grid = document.getElementById('catalogo-grid');
+    if (!grid) return;
+
     grid.innerHTML = `
+      <div class="terr-catalog-toolbar">
+        <div>
+          <h2>Catálogo de territórios</h2>
+          <p>Mapas, status e designações · ${territories.length} territórios</p>
+        </div>
+        <div class="terr-catalog-toolbar-search">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input id="catalog-search" type="search" class="terr-catalog-input" placeholder="Buscar nome, número, status…" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="terr-catalog-stats">
+        <div class="terr-catalog-stat terr-catalog-stat--all">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+          <div><p class="terr-catalog-stat__label">Total</p><p class="terr-catalog-stat__val" id="catalog-count-all">${territories.length}</p></div>
+        </div>
+        <div class="terr-catalog-stat terr-catalog-stat--work">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span></span>
+          <div><p class="terr-catalog-stat__label">Designados</p><p class="terr-catalog-stat__val" id="catalog-count-work">0</p></div>
+        </div>
+        <div class="terr-catalog-stat terr-catalog-stat--avail">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">inventory</span></span>
+          <div><p class="terr-catalog-stat__label">Disponíveis</p><p class="terr-catalog-stat__val" id="catalog-count-avail">0</p></div>
+        </div>
+      </div>
       <div class="terr-catalog-scroll">
         <div class="terr-catalog-panel">
           <div class="terr-catalog-row terr-catalog-row--head">
-            <span>T</span><span>Território</span><span>Status</span><span>Designado</span><span>Prioridade</span><span>Dias</span><span></span>
+            <span>T</span><span>Território</span><span>Status</span><span>Designado</span><span>Prioridade · Dias</span><span></span>
           </div>
-          ${territories.map((t) => {
-            const active = activeAssignments.find((a) => a.territory_id === t.id);
-            const assignee = active ? profileName(active.profiles) : '—';
-            const days = H.daysSince(t.last_worked_at);
-            const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
-            return `
-          <div class="terr-catalog-row">
-            <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
-            <span class="terr-catalog-name" title="${escapeHtml(t.display_name)}">${escapeHtml(t.display_name)}</span>
-            <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
-            <span class="terr-catalog-cell${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</span>
-            <span class="terr-catalog-priority">${priorityBadge(t)}</span>
-            <span class="terr-catalog-cell" title="${days !== null ? `${days} dias sem cobertura` : 'Sem registro'}">${days !== null ? `${days}d` : '—'}</span>
-            <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
-              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-            </button>
-          </div>`;
-          }).join('')}
+          <div id="catalogo-table-body"></div>
+          <p id="catalogo-foot" class="terr-catalog-foot"></p>
         </div>
       </div>`;
 
-    grid.querySelectorAll('[data-edit-terr]').forEach((btn) =>
-      btn.addEventListener('click', () => openTerrFormModal(territories.find((t) => t.id === btn.dataset.editTerr)))
-    );
+    bindCatalogFilters();
+    renderCatalogoTable();
   }
 
   function historyWeekday(entry) {
@@ -1309,6 +1427,11 @@
       if (e.key === 'Escape') closeTerritoryMapLightbox();
     });
     document.getElementById('panel-historico')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-terr-map]');
+      if (!btn) return;
+      openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
+    });
+    document.getElementById('panel-catalogo')?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-terr-map]');
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
