@@ -12,6 +12,10 @@
     { value: 'active', label: 'Ativo' },
     { value: 'inactive', label: 'Inativo' }
   ];
+  const ITEM_TYPE_OPTIONS = [
+    { value: 'carrinho', label: 'Carrinho' },
+    { value: 'display', label: 'Display' }
+  ];
 
   let toast;
   let client;
@@ -31,6 +35,24 @@
   let pubSort = { col: 'name', dir: 'asc' };
   let pubFilterSig = '';
   let inlineSlotDraft = null;
+  let equipmentItems = [];
+  let itemSearch = '';
+  let itemFilter = {
+    name: {},
+    type: { carrinho: true, display: true },
+    location: {},
+    status: { active: true, inactive: true }
+  };
+  let itemSort = { col: 'name', dir: 'asc' };
+  let itemFilterSig = '';
+  let locations = [];
+  let locSearch = '';
+  let locFilter = {
+    name: {},
+    status: { active: true, inactive: true }
+  };
+  let locSort = { col: 'name', dir: 'asc' };
+  let locFilterSig = '';
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
@@ -113,6 +135,612 @@
     if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
     else renderPublishers();
     await loadProfiles();
+  }
+
+  async function loadEquipment() {
+    const { data, error } = await client
+      .from('equipment_items')
+      .select('*')
+      .order('sort_order')
+      .order('name');
+    if (error) throw error;
+    equipmentItems = data || [];
+    if (document.getElementById('eq-item-table-body')) refreshEquipmentView();
+    else renderEquipment();
+  }
+
+  function itemTypePill(row) {
+    const isDisplay = row.equipment_type === 'display';
+    return `<span class="eq-type-pill${isDisplay ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span>`;
+  }
+
+  function syncItemFilterOptions() {
+    if (!xlf) return false;
+    xlf.xlfEnsureKeys(
+      itemFilter.name,
+      [...new Set(equipmentItems.map((i) => i.name))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    xlf.xlfEnsureKeys(
+      itemFilter.location,
+      [...new Set(equipmentItems.map((i) => i.default_location || '—'))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    const sig = [itemFilter.name, itemFilter.location]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== itemFilterSig;
+    itemFilterSig = sig;
+    return changed;
+  }
+
+  function getSortedItems(list) {
+    const { col, dir } = itemSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'name':
+          cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'type':
+          cmp = a.equipment_type.localeCompare(b.equipment_type, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'location':
+          cmp = (a.default_location || '').localeCompare(b.default_location || '', 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'sort':
+          cmp = (a.sort_order || 0) - (b.sort_order || 0);
+          break;
+        case 'status':
+          cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
+          break;
+        default:
+          cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      }
+      if (cmp === 0) cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredItems() {
+    let list = equipmentItems;
+    const q = itemSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter((row) =>
+        row.name.toLowerCase().includes(q)
+        || (row.default_location || '').toLowerCase().includes(q)
+        || (row.notes || '').toLowerCase().includes(q)
+      );
+    }
+    if (!xlf) return list;
+    list = xlf.xlfApplyMapFilter(list, itemFilter.name, (i) => i.name);
+    list = xlf.xlfApplyMapFilter(list, itemFilter.type, (i) => i.equipment_type);
+    list = xlf.xlfApplyMapFilter(list, itemFilter.location, (i) => i.default_location || '—');
+    list = xlf.xlfApplyMapFilter(list, itemFilter.status, (i) => (i.is_active !== false ? 'active' : 'inactive'));
+    return getSortedItems(list);
+  }
+
+  function itemHeaderRow() {
+    syncItemFilterOptions();
+    const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(itemFilter.name));
+    const locationOpts = xlf.xlfOptionsFromKeys(Object.keys(itemFilter.location));
+    return `
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'name', label: 'Nome', filterKey: 'name', options: nameOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'type', label: 'Tipo', filterKey: 'type', options: ITEM_TYPE_OPTIONS, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'location', label: 'Local padrão', filterKey: 'location', options: locationOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'sort', label: 'Ordem', wrap: 'span' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+  }
+
+  function bindItemFilters() {
+    const scroll = document.querySelector('#eq-item-list .eq-item-scroll');
+    if (!scroll || !xlf) return;
+    scroll.dataset.xlfScope = 'item';
+    delete scroll.dataset.xlfBound;
+    xlf.bindXlfPanel(scroll, 'item-sort', itemFilter, itemSort, () => renderEquipmentTable({ updateUi: true }));
+  }
+
+  function refreshEquipmentView() {
+    const list = document.getElementById('eq-item-list');
+    if (!list) return;
+    if (!equipmentItems.length) {
+      renderEquipment();
+      return;
+    }
+    if (!document.getElementById('eq-item-table-body')) {
+      renderEquipment();
+      return;
+    }
+    const filtersChanged = syncItemFilterOptions();
+    if (filtersChanged) {
+      const head = list.querySelector('.eq-item-row--head');
+      if (head) head.innerHTML = itemHeaderRow();
+      const scroll = list.querySelector('.eq-item-scroll');
+      if (scroll) {
+        delete scroll.dataset.xlfBound;
+        bindItemFilters();
+      }
+    }
+    renderEquipmentTable({ updateUi: filtersChanged });
+  }
+
+  function updateItemStats() {
+    const active = equipmentItems.filter((i) => i.is_active !== false);
+    const countEl = document.getElementById('eq-item-count');
+    const statTotal = document.getElementById('eq-item-stat-total');
+    const statActive = document.getElementById('eq-item-stat-active');
+    const statCart = document.getElementById('eq-item-stat-carrinho');
+    const statDisplay = document.getElementById('eq-item-stat-display');
+
+    if (countEl) countEl.textContent = `${equipmentItems.length} cadastrados`;
+    if (statTotal) statTotal.textContent = String(equipmentItems.length);
+    if (statActive) statActive.textContent = String(active.length);
+    if (statCart) statCart.textContent = String(equipmentItems.filter((i) => i.equipment_type === 'carrinho').length);
+    if (statDisplay) statDisplay.textContent = String(equipmentItems.filter((i) => i.equipment_type === 'display').length);
+  }
+
+  function renderEquipmentTable(opts = {}) {
+    const { updateUi = false } = opts;
+    const body = document.getElementById('eq-item-table-body');
+    const foot = document.getElementById('eq-item-table-foot');
+    const list = document.getElementById('eq-item-list');
+    if (!body) return;
+
+    updateItemStats();
+    if (updateUi && xlf) {
+      xlf.xlfUpdateSortUI(list?.querySelector('.eq-item-scroll'), 'item-sort', itemSort);
+      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-item-scroll'), itemFilter);
+    }
+    const filtered = getFilteredItems();
+
+    if (!filtered.length) {
+      body.innerHTML = `
+        <div class="eq-pub-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${equipmentItems.length ? 'Nenhum equipamento corresponde ao filtro.' : 'Nenhum equipamento cadastrado.'}</p>
+        </div>`;
+      if (foot) foot.textContent = '';
+      return;
+    }
+
+    body.innerHTML = filtered.map((row) => {
+      const isActive = row.is_active !== false;
+      const inactiveClass = isActive ? '' : ' eq-item-row--inactive';
+      const statusHtml = isActive
+        ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
+        : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
+      const toggleTitle = isActive ? 'Desativar' : 'Reativar';
+      const toggleIcon = isActive ? 'toggle_off' : 'toggle_on';
+      const toggleClass = isActive ? 'eq-pub-icon-btn eq-pub-icon-btn--off' : 'eq-pub-icon-btn';
+
+      return `
+        <div class="eq-item-row${inactiveClass}" data-item-id="${row.id}" title="${escapeHtml(row.name)}">
+          <span class="eq-item-name">${escapeHtml(row.name)}</span>
+          <span>${itemTypePill(row)}</span>
+          <span class="eq-item-location">${escapeHtml(row.default_location || '—')}</span>
+          <span class="eq-item-sort">${escapeHtml(String(row.sort_order ?? 0))}</span>
+          <span class="eq-pub-status-cell">${statusHtml}</span>
+          <span class="eq-pub-actions">
+            <button type="button" class="eq-pub-icon-btn" data-eq-edit-item="${row.id}" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+            <button type="button" class="${toggleClass}" data-eq-toggle-item="${row.id}" title="${toggleTitle}">
+              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+            </button>
+          </span>
+        </div>`;
+    }).join('');
+
+    if (foot) {
+      const activeFilters = xlf
+        ? Object.entries(itemFilter).filter(([, map]) => xlf.xlfIsActive(map)).length
+        : 0;
+      const filterNote = activeFilters
+        ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}`
+        : '';
+      const suffix = filtered.length < equipmentItems.length ? ` (${equipmentItems.length} no total)` : '';
+      foot.textContent = `Exibindo ${filtered.length} equipamento${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
+    }
+  }
+
+  function renderEquipment() {
+    const list = document.getElementById('eq-item-list');
+    if (!list) return;
+
+    if (!equipmentItems.length) {
+      updateItemStats();
+      list.innerHTML = `
+        <div class="eq-pub-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+          <p class="text-sm font-semibold text-primary">Nenhum equipamento cadastrado</p>
+          <p class="text-xs mt-1">Use o botão <strong>Adicionar equipamento</strong> para incluir carrinhos e displays.</p>
+        </div>`;
+      return;
+    }
+
+    if (!document.getElementById('eq-item-table-body')) {
+      list.innerHTML = `
+        <div class="eq-item-scroll">
+          <div class="eq-item-panel">
+            <div class="eq-item-row eq-item-row--head">${xlf ? itemHeaderRow() : `
+              <span>Nome</span>
+              <span>Tipo</span>
+              <span>Local padrão</span>
+              <span>Ordem</span>
+              <span>Status</span>
+              <span></span>`}
+            </div>
+            <div id="eq-item-table-body"></div>
+            <p id="eq-item-table-foot" class="eq-pub-foot"></p>
+          </div>
+        </div>`;
+      bindItemFilters();
+    }
+
+    renderEquipmentTable({ updateUi: true });
+  }
+
+  function ensureItemModalPortal() {
+    const modal = document.getElementById('eq-item-modal');
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function resetItemForm() {
+    document.getElementById('eq-form-item')?.reset();
+    document.getElementById('eq-item-id').value = '';
+    document.getElementById('eq-item-sort').value = '0';
+    document.getElementById('eq-item-type').value = 'carrinho';
+  }
+
+  function openItemModal(item) {
+    ensureItemModalPortal();
+    const modal = document.getElementById('eq-item-modal');
+    if (!modal) return;
+    resetItemForm();
+    document.getElementById('eq-item-modal-title').textContent = item ? 'Editar equipamento' : 'Adicionar equipamento';
+    if (item) {
+      document.getElementById('eq-item-id').value = item.id;
+      document.getElementById('eq-item-name').value = item.name;
+      document.getElementById('eq-item-type').value = item.equipment_type;
+      document.getElementById('eq-item-location').value = item.default_location || '';
+      document.getElementById('eq-item-sort').value = String(item.sort_order ?? 0);
+      document.getElementById('eq-item-notes').value = item.notes || '';
+    }
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('eq-item-name')?.focus();
+  }
+
+  function closeItemModal() {
+    const modal = document.getElementById('eq-item-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    resetItemForm();
+  }
+
+  async function saveItem(e) {
+    e.preventDefault();
+    const id = document.getElementById('eq-item-id').value;
+    const payload = {
+      name: document.getElementById('eq-item-name').value.trim(),
+      equipment_type: document.getElementById('eq-item-type').value,
+      default_location: document.getElementById('eq-item-location').value.trim(),
+      sort_order: parseInt(document.getElementById('eq-item-sort').value, 10) || 0,
+      notes: document.getElementById('eq-item-notes').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    if (!payload.name) {
+      showToast(toast, 'Informe o nome do equipamento.', true);
+      return;
+    }
+
+    const { error } = id
+      ? await client.from('equipment_items').update(payload).eq('id', id)
+      : await client.from('equipment_items').insert({ ...payload, is_active: true });
+
+    if (error) {
+      showToast(toast, error.message.includes('equipment_items_name_type_unique')
+        ? 'Já existe um equipamento com este nome e tipo.'
+        : error.message, true);
+      return;
+    }
+
+    showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
+    closeItemModal();
+    await loadEquipment();
+  }
+
+  async function loadLocations() {
+    const { data, error } = await client
+      .from('equipment_locations')
+      .select('*')
+      .order('sort_order')
+      .order('name');
+    if (error) throw error;
+    locations = data || [];
+    if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
+    else renderLocations();
+  }
+
+  function syncLocFilterOptions() {
+    if (!xlf) return false;
+    xlf.xlfEnsureKeys(
+      locFilter.name,
+      [...new Set(locations.map((l) => l.name))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    const sig = Object.keys(locFilter.name).join('\0');
+    const changed = sig !== locFilterSig;
+    locFilterSig = sig;
+    return changed;
+  }
+
+  function getSortedLocations(list) {
+    const { col, dir } = locSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'name':
+          cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'sort':
+          cmp = (a.sort_order || 0) - (b.sort_order || 0);
+          break;
+        case 'status':
+          cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
+          break;
+        default:
+          cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      }
+      if (cmp === 0) cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredLocations() {
+    let list = locations;
+    const q = locSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter((row) =>
+        row.name.toLowerCase().includes(q)
+        || (row.notes || '').toLowerCase().includes(q)
+      );
+    }
+    if (!xlf) return list;
+    list = xlf.xlfApplyMapFilter(list, locFilter.name, (l) => l.name);
+    list = xlf.xlfApplyMapFilter(list, locFilter.status, (l) => (l.is_active !== false ? 'active' : 'inactive'));
+    return getSortedLocations(list);
+  }
+
+  function locHeaderRow() {
+    syncLocFilterOptions();
+    const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(locFilter.name));
+    return `
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'name', label: 'Local', filterKey: 'name', options: nameOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'sort', label: 'Ordem', wrap: 'span' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+  }
+
+  function bindLocFilters() {
+    const scroll = document.querySelector('#eq-loc-list .eq-loc-scroll');
+    if (!scroll || !xlf) return;
+    scroll.dataset.xlfScope = 'loc';
+    delete scroll.dataset.xlfBound;
+    xlf.bindXlfPanel(scroll, 'loc-sort', locFilter, locSort, () => renderLocationsTable({ updateUi: true }));
+  }
+
+  function refreshLocationsView() {
+    const list = document.getElementById('eq-loc-list');
+    if (!list) return;
+    if (!locations.length) {
+      renderLocations();
+      return;
+    }
+    if (!document.getElementById('eq-loc-table-body')) {
+      renderLocations();
+      return;
+    }
+    const filtersChanged = syncLocFilterOptions();
+    if (filtersChanged) {
+      const head = list.querySelector('.eq-loc-row--head');
+      if (head) head.innerHTML = locHeaderRow();
+      const scroll = list.querySelector('.eq-loc-scroll');
+      if (scroll) {
+        delete scroll.dataset.xlfBound;
+        bindLocFilters();
+      }
+    }
+    renderLocationsTable({ updateUi: filtersChanged });
+  }
+
+  function updateLocStats() {
+    const active = locations.filter((l) => l.is_active !== false);
+    const countEl = document.getElementById('eq-loc-count');
+    const statTotal = document.getElementById('eq-loc-stat-total');
+    const statActive = document.getElementById('eq-loc-stat-active');
+
+    if (countEl) countEl.textContent = `${locations.length} cadastrados`;
+    if (statTotal) statTotal.textContent = String(locations.length);
+    if (statActive) statActive.textContent = String(active.length);
+  }
+
+  function renderLocationsTable(opts = {}) {
+    const { updateUi = false } = opts;
+    const body = document.getElementById('eq-loc-table-body');
+    const foot = document.getElementById('eq-loc-table-foot');
+    const list = document.getElementById('eq-loc-list');
+    if (!body) return;
+
+    updateLocStats();
+    if (updateUi && xlf) {
+      xlf.xlfUpdateSortUI(list?.querySelector('.eq-loc-scroll'), 'loc-sort', locSort);
+      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-loc-scroll'), locFilter);
+    }
+    const filtered = getFilteredLocations();
+
+    if (!filtered.length) {
+      body.innerHTML = `
+        <div class="eq-pub-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
+        </div>`;
+      if (foot) foot.textContent = '';
+      return;
+    }
+
+    body.innerHTML = filtered.map((row) => {
+      const isActive = row.is_active !== false;
+      const inactiveClass = isActive ? '' : ' eq-loc-row--inactive';
+      const statusHtml = isActive
+        ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
+        : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
+      const toggleTitle = isActive ? 'Desativar' : 'Reativar';
+      const toggleIcon = isActive ? 'toggle_off' : 'toggle_on';
+      const toggleClass = isActive ? 'eq-pub-icon-btn eq-pub-icon-btn--off' : 'eq-pub-icon-btn';
+      const notesHint = row.notes ? ` · ${row.notes}` : '';
+
+      return `
+        <div class="eq-loc-row${inactiveClass}" data-loc-id="${row.id}" title="${escapeHtml(row.name + notesHint)}">
+          <span class="eq-loc-name">
+            <span class="material-symbols-outlined eq-loc-pin" aria-hidden="true">location_on</span>
+            <span>${escapeHtml(row.name)}</span>
+          </span>
+          <span class="eq-loc-sort">${escapeHtml(String(row.sort_order ?? 0))}</span>
+          <span class="eq-pub-status-cell">${statusHtml}</span>
+          <span class="eq-pub-actions">
+            <button type="button" class="eq-pub-icon-btn" data-eq-edit-loc="${row.id}" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+            <button type="button" class="${toggleClass}" data-eq-toggle-loc="${row.id}" title="${toggleTitle}">
+              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+            </button>
+          </span>
+        </div>`;
+    }).join('');
+
+    if (foot) {
+      const activeFilters = xlf
+        ? Object.entries(locFilter).filter(([, map]) => xlf.xlfIsActive(map)).length
+        : 0;
+      const filterNote = activeFilters
+        ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}`
+        : '';
+      const suffix = filtered.length < locations.length ? ` (${locations.length} no total)` : '';
+      foot.textContent = `Exibindo ${filtered.length} local${filtered.length === 1 ? '' : 'is'}${suffix}${filterNote}`;
+    }
+  }
+
+  function renderLocations() {
+    const list = document.getElementById('eq-loc-list');
+    if (!list) return;
+
+    if (!locations.length) {
+      updateLocStats();
+      list.innerHTML = `
+        <div class="eq-pub-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+          <p class="text-sm font-semibold text-primary">Nenhum local cadastrado</p>
+          <p class="text-xs mt-1">Use o botão <strong>Adicionar local</strong> para cadastrar praças e pontos fixos.</p>
+        </div>`;
+      return;
+    }
+
+    if (!document.getElementById('eq-loc-table-body')) {
+      list.innerHTML = `
+        <div class="eq-loc-scroll">
+          <div class="eq-loc-panel">
+            <div class="eq-loc-row eq-loc-row--head">${xlf ? locHeaderRow() : `
+              <span>Local</span>
+              <span>Ordem</span>
+              <span>Status</span>
+              <span></span>`}
+            </div>
+            <div id="eq-loc-table-body"></div>
+            <p id="eq-loc-table-foot" class="eq-pub-foot"></p>
+          </div>
+        </div>`;
+      bindLocFilters();
+    }
+
+    renderLocationsTable({ updateUi: true });
+  }
+
+  function ensureLocModalPortal() {
+    const modal = document.getElementById('eq-loc-modal');
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function resetLocForm() {
+    document.getElementById('eq-form-loc')?.reset();
+    document.getElementById('eq-loc-id').value = '';
+    document.getElementById('eq-loc-sort').value = '0';
+  }
+
+  function openLocModal(row) {
+    ensureLocModalPortal();
+    const modal = document.getElementById('eq-loc-modal');
+    if (!modal) return;
+    resetLocForm();
+    document.getElementById('eq-loc-modal-title').textContent = row ? 'Editar local' : 'Adicionar local';
+    if (row) {
+      document.getElementById('eq-loc-id').value = row.id;
+      document.getElementById('eq-loc-name').value = row.name;
+      document.getElementById('eq-loc-sort').value = String(row.sort_order ?? 0);
+      document.getElementById('eq-loc-notes').value = row.notes || '';
+    }
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('eq-loc-name')?.focus();
+  }
+
+  function closeLocModal() {
+    const modal = document.getElementById('eq-loc-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    resetLocForm();
+  }
+
+  async function saveLoc(e) {
+    e.preventDefault();
+    const id = document.getElementById('eq-loc-id').value;
+    const payload = {
+      name: document.getElementById('eq-loc-name').value.trim(),
+      sort_order: parseInt(document.getElementById('eq-loc-sort').value, 10) || 0,
+      notes: document.getElementById('eq-loc-notes').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    if (!payload.name) {
+      showToast(toast, 'Informe o nome do local.', true);
+      return;
+    }
+
+    const { error } = id
+      ? await client.from('equipment_locations').update(payload).eq('id', id)
+      : await client.from('equipment_locations').insert({ ...payload, is_active: true });
+
+    if (error) {
+      showToast(toast, error.message.includes('equipment_locations_name_unique')
+        ? 'Já existe um local com este nome.'
+        : error.message, true);
+      return;
+    }
+
+    showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
+    closeLocModal();
+    await loadLocations();
   }
 
   function publisherName(row) {
@@ -794,6 +1422,8 @@
     setupTabs();
     fillSelectOptions();
     ensurePublisherModalPortal();
+    ensureItemModalPortal();
+    ensureLocModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = helpers.snapToWeekStart(e.target.value);
@@ -804,6 +1434,8 @@
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
+    document.getElementById('eq-btn-add-item')?.addEventListener('click', () => openItemModal(null));
+    document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => openLocModal(null));
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
 
     document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
@@ -851,6 +1483,72 @@
     document.getElementById('eq-pub-search')?.addEventListener('input', (e) => {
       pubSearch = e.target.value;
       renderPublishersTable();
+    });
+
+    document.getElementById('eq-item-search')?.addEventListener('input', (e) => {
+      itemSearch = e.target.value;
+      renderEquipmentTable();
+    });
+
+    document.getElementById('eq-item-modal-close')?.addEventListener('click', closeItemModal);
+    document.getElementById('eq-item-cancel')?.addEventListener('click', closeItemModal);
+    document.getElementById('eq-item-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'eq-item-modal') closeItemModal();
+    });
+    document.getElementById('eq-form-item')?.addEventListener('submit', saveItem);
+
+    document.getElementById('eq-loc-search')?.addEventListener('input', (e) => {
+      locSearch = e.target.value;
+      renderLocationsTable();
+    });
+
+    document.getElementById('eq-loc-modal-close')?.addEventListener('click', closeLocModal);
+    document.getElementById('eq-loc-cancel')?.addEventListener('click', closeLocModal);
+    document.getElementById('eq-loc-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'eq-loc-modal') closeLocModal();
+    });
+    document.getElementById('eq-form-loc')?.addEventListener('submit', saveLoc);
+
+    document.getElementById('eq-panel-locais')?.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('[data-eq-edit-loc]');
+      if (editBtn) {
+        openLocModal(locations.find((l) => l.id === editBtn.dataset.eqEditLoc));
+        return;
+      }
+      const toggleBtn = e.target.closest('[data-eq-toggle-loc]');
+      if (!toggleBtn) return;
+      const row = locations.find((l) => l.id === toggleBtn.dataset.eqToggleLoc);
+      if (!row) return;
+      const { error } = await client
+        .from('equipment_locations')
+        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .eq('id', row.id);
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, row.is_active === false ? 'Local reativado.' : 'Local desativado.');
+        await loadLocations();
+      }
+    });
+
+    document.getElementById('eq-panel-equipamentos')?.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('[data-eq-edit-item]');
+      if (editBtn) {
+        openItemModal(equipmentItems.find((i) => i.id === editBtn.dataset.eqEditItem));
+        return;
+      }
+      const toggleBtn = e.target.closest('[data-eq-toggle-item]');
+      if (!toggleBtn) return;
+      const row = equipmentItems.find((i) => i.id === toggleBtn.dataset.eqToggleItem);
+      if (!row) return;
+      const { error } = await client
+        .from('equipment_items')
+        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .eq('id', row.id);
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, row.is_active === false ? 'Equipamento reativado.' : 'Equipamento desativado.');
+        await loadEquipment();
+      }
     });
 
     document.getElementById('eq-panel-publicadores')?.addEventListener('click', async (e) => {
@@ -902,7 +1600,7 @@
     });
 
     try {
-      await Promise.all([loadPublishers(), loadSlots()]);
+      await Promise.all([loadPublishers(), loadSlots(), loadEquipment(), loadLocations()]);
     } catch (err) {
       console.error('Carrinhos e Displays:', err);
       const msg = String(err?.message || err);
@@ -910,7 +1608,7 @@
       if (list) {
         list.innerHTML = `<div class="eq-sched-card p-5 text-sm text-error">Não foi possível carregar os dados.${msg ? ` (${escapeHtml(msg)})` : ''}</div>`;
       }
-      showToast(toast, msg.includes('equipment_') ? 'Tabelas do cronograma ainda não existem no Supabase.' : msg, true);
+      showToast(toast, msg.includes('equipment_') ? 'Tabelas de Carrinhos e Displays ainda não existem no Supabase.' : msg, true);
       throw err;
     }
 

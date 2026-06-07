@@ -93,17 +93,17 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060941'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060951'],
       scripts: [
         'js/equipment-schedule-helpers.js?v=2026060934',
         'js/admin/table-xlf.js?v=2026060939',
-        'js/admin/carrinhos-displays.js?v=2026060941'
+        'js/admin/carrinhos-displays.js?v=2026060951'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
         kicker: 'Organização e campo',
         title: 'Carrinhos e Displays',
-        subtitle: 'Publicadores habilitados, cronograma semanal fixo ou temporário e mensagem pronta para WhatsApp.',
+        subtitle: 'Publicadores, equipamentos, locais, cronograma semanal e mensagem pronta para WhatsApp.',
         showChangelog: false,
         showBack: true
       }
