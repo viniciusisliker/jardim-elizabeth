@@ -196,14 +196,12 @@
     });
   }
 
-  function renderDashboard() {
+  function territorySummaryMetrics() {
     const total = territories.length;
-    const disponiveis = territories.filter((t) => t.status === 'disponivel').length;
     const designados = activeAssignments.length;
+    const disponiveis = territories.filter((t) => t.status === 'disponivel').length;
     const alta = territories.filter((t) => t.status === 'disponivel' && H.computePriority(t).tone === 'high').length;
-    const dirigentes = overseers.filter((o) => o.is_active !== false).length;
-    const emCampoPct = total ? Math.round((designados / total) * 100) : 0;
-
+    const designadosPct = total ? Math.round((designados / total) * 100) : 0;
     const availDays = territories
       .filter((t) => t.status === 'disponivel')
       .map((t) => H.daysSince(t.last_worked_at))
@@ -211,6 +209,32 @@
     const avgDays = availDays.length
       ? Math.round(availDays.reduce((a, b) => a + b, 0) / availDays.length)
       : null;
+    return { total, designados, disponiveis, alta, designadosPct, avgDays };
+  }
+
+  function renderPriorityList() {
+    const priEl = document.getElementById('semana-priority-list');
+    if (!priEl) return;
+    const top = H.sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
+    priEl.innerHTML = top.length ? top.map((t) => {
+      const days = H.daysSince(t.last_worked_at);
+      return `
+        <div class="terr-dash-row">
+          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(t))}">
+            <span class="terr-dash-terr-num">T${escapeHtml(t.num)}</span>${escapeHtml(t.display_name)}
+          </span>
+          <span class="flex items-center gap-2 shrink-0">
+            ${days !== null ? `<span class="text-[10px] text-on-surface-variant">${days}d</span>` : ''}
+            ${priorityBadge(t)}
+          </span>
+        </div>`;
+    }).join('') : '<p class="terr-dash-empty">Nenhum disponível.</p>';
+    bindDashLinks(priEl.closest('.terr-dash-card'));
+  }
+
+  function renderDashboard() {
+    const { total, designados, disponiveis, alta, designadosPct, avgDays } = territorySummaryMetrics();
+    const dirigentes = overseers.filter((o) => o.is_active !== false).length;
 
     document.getElementById('dash-hero').innerHTML = `
       <div class="flex-1 min-w-[10rem]">
@@ -218,8 +242,8 @@
         <p>${designados} de ${total} territórios em campo${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}</p>
       </div>
       <div class="terr-dash-progress" aria-hidden="true">
-        <div class="terr-dash-progress__bar"><div class="terr-dash-progress__fill" style="width:${emCampoPct}%"></div></div>
-        <p class="terr-dash-progress__label">${emCampoPct}% designados</p>
+        <div class="terr-dash-progress__bar"><div class="terr-dash-progress__fill" style="width:${designadosPct}%"></div></div>
+        <p class="terr-dash-progress__label">${designadosPct}% designados</p>
       </div>
       <div class="terr-dash-hero-actions">
         <button type="button" class="terr-dash-chip" data-action="open-designar"><span class="material-symbols-outlined" aria-hidden="true">add</span>Designar</button>
@@ -261,22 +285,6 @@
           </span>
         </div>`).join('');
     }
-
-    const priEl = document.getElementById('dash-priority-list');
-    const top = H.sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
-    priEl.innerHTML = top.length ? top.map((t) => {
-      const days = H.daysSince(t.last_worked_at);
-      return `
-        <div class="terr-dash-row">
-          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(t))}">
-            <span class="terr-dash-terr-num">T${escapeHtml(t.num)}</span>${escapeHtml(t.display_name)}
-          </span>
-          <span class="flex items-center gap-2 shrink-0">
-            ${days !== null ? `<span class="text-[10px] text-on-surface-variant">${days}d</span>` : ''}
-            ${priorityBadge(t)}
-          </span>
-        </div>`;
-    }).join('') : '<p class="terr-dash-empty">Nenhum disponível.</p>';
 
     bindDashLinks(document.getElementById('panel-painel'));
   }
@@ -768,6 +776,7 @@
     }
 
     renderExtraDesignados();
+    renderPriorityList();
 
     const spotsEl = document.getElementById('spots-list');
     if (!meetingSpots.length) {
@@ -923,21 +932,32 @@
     });
   }
 
+  function updateCatalogStats() {
+    const { total, designados, disponiveis, alta, designadosPct, avgDays } = territorySummaryMetrics();
+    const countAll = document.getElementById('catalog-count-all');
+    const countWork = document.getElementById('catalog-count-work');
+    const countAvail = document.getElementById('catalog-count-avail');
+    const countHigh = document.getElementById('catalog-count-high');
+    const countPct = document.getElementById('catalog-count-pct');
+    const countAvg = document.getElementById('catalog-count-avg');
+    const pctBar = document.getElementById('catalog-pct-bar');
+
+    if (countAll) countAll.textContent = String(total);
+    if (countWork) countWork.textContent = String(designados);
+    if (countAvail) countAvail.textContent = String(disponiveis);
+    if (countHigh) countHigh.textContent = String(alta);
+    if (countPct) countPct.textContent = `${designadosPct}%`;
+    if (countAvg) countAvg.textContent = avgDays !== null ? `${avgDays}d` : '—';
+    if (pctBar) pctBar.style.width = `${designadosPct}%`;
+  }
+
   function renderCatalogoTable() {
     const listEl = document.getElementById('catalogo-table-body');
     const footEl = document.getElementById('catalogo-foot');
     if (!listEl) return;
 
     const filtered = H.sortByPriority(getFilteredCatalog());
-    const designados = territories.filter((t) => t.status === 'designado').length;
-    const disponiveis = territories.length - designados;
-
-    const countAll = document.getElementById('catalog-count-all');
-    const countWork = document.getElementById('catalog-count-work');
-    const countAvail = document.getElementById('catalog-count-avail');
-    if (countAll) countAll.textContent = String(territories.length);
-    if (countWork) countWork.textContent = String(designados);
-    if (countAvail) countAvail.textContent = String(disponiveis);
+    updateCatalogStats();
 
     if (!filtered.length) {
       listEl.innerHTML = `
@@ -982,12 +1002,13 @@
   function renderCatalogo() {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
+    const { designadosPct, avgDays, alta } = territorySummaryMetrics();
 
     grid.innerHTML = `
       <div class="terr-catalog-toolbar">
         <div>
           <h2>Catálogo de territórios</h2>
-          <p>Mapas, status e cobertura · ${territories.length} territórios</p>
+          <p>Mapas, status e cobertura · ${territories.length} territórios${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}</p>
         </div>
         <div class="terr-catalog-toolbar-search">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
@@ -1006,6 +1027,22 @@
         <div class="terr-catalog-stat terr-catalog-stat--avail">
           <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">inventory</span></span>
           <div><p class="terr-catalog-stat__label">Disponíveis</p><p class="terr-catalog-stat__val" id="catalog-count-avail">0</p></div>
+        </div>
+        <div class="terr-catalog-stat terr-catalog-stat--high">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">warning</span></span>
+          <div><p class="terr-catalog-stat__label">Prioridade alta</p><p class="terr-catalog-stat__val" id="catalog-count-high">${alta}</p></div>
+        </div>
+        <div class="terr-catalog-stat terr-catalog-stat--pct">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">pie_chart</span></span>
+          <div class="min-w-0 flex-1">
+            <p class="terr-catalog-stat__label">% designados</p>
+            <p class="terr-catalog-stat__val" id="catalog-count-pct">${designadosPct}%</p>
+            <div class="terr-catalog-stat__bar" aria-hidden="true"><span id="catalog-pct-bar" class="terr-catalog-stat__bar-fill" style="width:${designadosPct}%"></span></div>
+          </div>
+        </div>
+        <div class="terr-catalog-stat terr-catalog-stat--avg">
+          <span class="terr-catalog-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></span>
+          <div><p class="terr-catalog-stat__label">Média cobertura</p><p class="terr-catalog-stat__val" id="catalog-count-avg">${avgDays !== null ? `${avgDays}d` : '—'}</p></div>
         </div>
       </div>
       <div class="terr-catalog-scroll">
