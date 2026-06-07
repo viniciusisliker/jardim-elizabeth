@@ -141,6 +141,28 @@
       .terr-catalog-assign{grid-area:assign}
       .terr-catalog-meta{grid-area:meta}
       .terr-catalog-actions{grid-area:actions;align-self:start}
+      .terr-over-scroll{overflow-x:visible;max-height:none}
+      .terr-over-panel{min-width:0}
+      .terr-over-row--head{display:none}
+      .terr-over-row:not(.terr-over-row--head){
+        grid-template-columns:1fr auto;
+        grid-template-areas:
+          "name actions"
+          "pref status"
+          "days days";
+        gap:.375rem .5rem;
+        padding:.625rem .75rem;
+        align-items:start;
+      }
+      .terr-over-name{grid-area:name}
+      .terr-over-pref{grid-area:pref}
+      .terr-over-days{grid-area:days}
+      .terr-over-status-cell{grid-area:status;justify-self:end;align-self:center}
+      .terr-over-actions{grid-area:actions;align-self:start}
+      .terr-over-add__form{grid-template-columns:1fr}
+      .terr-over-submit{width:100%;justify-content:center}
+      #panel-dirigentes .terr-sched-toolbar{align-items:flex-start}
+      #panel-dirigentes .terr-over-count{margin-left:0;align-self:stretch;justify-content:center}
     }
     .terr-dash-hero{display:flex;flex-wrap:wrap;align-items:center;gap:.625rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff;margin-bottom:.25rem}
     .terr-dash-hero h2{margin:0;font-size:.875rem;line-height:1.2;color:#fff}
@@ -315,8 +337,8 @@
     .terr-over-add{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
     .terr-over-add__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.75rem;font-weight:800;color:#0f3462}
     .terr-over-add__head .material-symbols-outlined{font-size:1rem;color:#3b5e97}
-    .terr-over-add__form{padding:.75rem;display:grid;gap:.625rem;align-items:end}
-    @media(min-width:768px){.terr-over-add__form{grid-template-columns:minmax(0,1.4fr) minmax(0,.85fr) auto;padding:.875rem .75rem}}
+    .terr-over-add__form{padding:.75rem;display:grid;gap:.625rem}
+    @media(min-width:768px){.terr-over-add__form{grid-template-columns:minmax(0,1.4fr) minmax(0,.85fr) auto;align-items:end;padding:.875rem .75rem}}
     .terr-over-field{display:flex;flex-direction:column;gap:.3125rem}
     .terr-over-field__label{display:flex;align-items:center;gap:.3125rem;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
     .terr-over-field__label .material-symbols-outlined{font-size:.9375rem;color:#3b5e97}
@@ -324,16 +346,19 @@
     .terr-over-input:focus{outline:none;border-color:#3b5e97;box-shadow:0 0 0 3px rgba(59,94,151,.12)}
     .terr-over-submit{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;font-size:.8125rem;font-weight:800;padding:.5625rem 1rem;border-radius:.625rem;border:none;background:linear-gradient(135deg,#3b5e97 0%,#0f3462 100%);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(15,52,98,.18);white-space:nowrap}
     .terr-over-submit .material-symbols-outlined{font-size:1.0625rem}
-    .terr-over-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
-    .terr-over-panel{min-width:38rem}
-    .terr-over-row{display:grid;grid-template-columns:minmax(6.5rem,1.15fr) minmax(5.5rem,.8fr) minmax(7rem,1.05fr) 4.5rem 4.25rem;gap:.375rem .5rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-over-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
+    .terr-over-panel{min-width:0}
+    @media(min-width:900px){.terr-over-panel{min-width:40rem}}
+    .terr-over-row{display:grid;grid-template-columns:minmax(8.5rem,1.35fr) 7rem minmax(6.5rem,1fr) minmax(5.5rem,auto) 4.75rem;gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
     .terr-over-row:last-child{border-bottom:none}
     .terr-over-row:not(.terr-over-row--head):hover{background:#fafbfc}
     .terr-over-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-over-row--head > span:nth-child(5),.terr-over-actions{justify-self:end}
     .terr-over-name{display:flex;align-items:center;gap:.375rem;min-width:0;font-weight:700;color:#0f3462}
     .terr-over-name .material-symbols-outlined{font-size:1rem;color:#3b5e97;flex-shrink:0}
     .terr-over-name span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .terr-over-pref{font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.25rem;text-align:center;white-space:nowrap}
+    .terr-over-pref{display:inline-flex;align-items:center;justify-self:start;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.25rem;white-space:nowrap}
+    .terr-over-status-cell{display:flex;align-items:center;min-width:0;justify-self:start}
     .terr-over-pref--mid{background:#eef3fa;color:#0f3462}
     .terr-over-pref--weekend{background:#ecfdf5;color:#047857}
     .terr-over-pref--both{background:#fef3c7;color:#b45309}
@@ -356,7 +381,7 @@
     .terr-map-lightbox__body img{display:block;width:100%;height:auto;margin:0 auto}
     .terr-map-lightbox__fallback{padding:2rem 1rem;text-align:center;font-size:.8125rem;color:#6b7280}
     @media(max-width:1023px){
-      .terr-sched-scroll,.terr-catalog-scroll,.terr-hist-scroll,.terr-return-scroll,.terr-over-scroll{
+      .terr-sched-scroll,.terr-catalog-scroll,.terr-hist-scroll,.terr-return-scroll{
         -webkit-overflow-scrolling:touch;
       }
     }
@@ -599,7 +624,7 @@
           <h2>Dirigentes de grupo</h2>
           <p>Irmãos aptos a receber designação · preferência e dias disponíveis</p>
         </div>
-        <span class="terr-over-count" id="dirigentes-count">— cadastrados</span>
+        <span class="terr-over-count shrink-0" id="dirigentes-count">— cadastrados</span>
       </div>
 
       <div class="terr-over-stats">
@@ -667,6 +692,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060803"></script>
+    <script src="../js/admin/territory-system.js?v=2026060804"></script>
 </body>
 </html>

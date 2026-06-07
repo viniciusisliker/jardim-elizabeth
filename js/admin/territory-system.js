@@ -1002,7 +1002,7 @@
             </span>
             <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
             <span class="terr-over-days" title="${escapeHtml(H.overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
-            <span>${statusHtml}</span>
+            <span class="terr-over-status-cell">${statusHtml}</span>
             <div class="terr-over-actions">
               <button type="button" data-edit-overseer="${o.profile_id}" class="terr-sched-icon-btn" title="Editar dias">
                 <span class="material-symbols-outlined" aria-hidden="true">edit</span>
