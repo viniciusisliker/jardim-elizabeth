@@ -73,15 +73,9 @@
 
   async function loadSectionScripts(scripts) {
     if (!scripts?.length) return;
-    const coreSrc = scripts.find((src) => src.includes('admin-core.js'));
-    const rest = coreSrc ? scripts.filter((src) => src !== coreSrc) : scripts;
-
-    if (coreSrc && !window.JEAdmin) {
-      await loadScript(coreSrc, { requiredGlobal: SCRIPT_GLOBALS[coreSrc] || 'JEAdmin' });
+    for (const src of scripts) {
+      await loadScript(src, { requiredGlobal: SCRIPT_GLOBALS[src] || null });
     }
-    await Promise.all(
-      rest.map((src) => loadScript(src, { requiredGlobal: SCRIPT_GLOBALS[src] || null }))
-    );
   }
 
   async function ensureAgendaDataReady() {
@@ -114,6 +108,14 @@
         } else if (existing.dataset.loaded === '1') {
           finish();
           return;
+        } else if (existing.dataset.hubDynamic !== '1') {
+          existing.dataset.loaded = '1';
+          finish();
+          return;
+        } else if (requiredGlobal && window[requiredGlobal]) {
+          existing.dataset.loaded = '1';
+          finish();
+          return;
         } else {
           existing.addEventListener('load', () => finish(), { once: true });
           existing.addEventListener('error', () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
@@ -123,6 +125,7 @@
 
       const el = document.createElement('script');
       el.src = src;
+      el.dataset.hubDynamic = '1';
       el.dataset.loaded = '0';
       el.onload = () => {
         el.dataset.loaded = '1';
