@@ -69,8 +69,11 @@ select.eq-sched-inline-input{padding-right:1.25rem;cursor:pointer}
 .eq-pub-stat__icon .material-symbols-outlined{font-size:.9375rem}
 .eq-pub-stat--all .eq-pub-stat__icon{background:#eef3fa;color:#0f3462}
 .eq-pub-stat--active .eq-pub-stat__icon{background:#d1fae5;color:#047857}
-.eq-pub-stat--cart .eq-pub-stat__icon{background:#ecfeff;color:#0891b2}
-.eq-pub-stat--display .eq-pub-stat__icon{background:#ede9fe;color:#6d28d9}
+.eq-pub-stat--cart .eq-pub-stat__icon{background:#eff6ff;color:inherit}
+.eq-pub-stat--display .eq-pub-stat__icon{background:linear-gradient(135deg,#eff6ff,#faf6ef);color:inherit}
+.eq-brand-icon{display:block;flex-shrink:0}
+.eq-brand-icon--cart{width:auto;height:1.0625rem}
+.eq-brand-icon--display{width:1.0625rem;height:1.0625rem}
 .eq-pub-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
 .eq-pub-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
 .eq-pub-modal-form{display:grid;gap:1rem}

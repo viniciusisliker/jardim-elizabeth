@@ -1,5 +1,5 @@
 (function () {
-  const EQUIPMENT_DAYS = ['Terça', 'Quarta', 'Quinta', 'Sexta'];
+  const EQUIPMENT_DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const PERIOD_LABELS = ['Manhã', 'Tarde'];
   const EQUIPMENT_TYPES = {
     carrinho: 'Carrinho',
@@ -121,7 +121,7 @@
 
   function formatPublisherDays(days) {
     if (!days?.length) return '—';
-    if (days.length >= EQUIPMENT_DAYS.length) return 'Ter–Sex';
+    if (days.length >= EQUIPMENT_DAYS.length) return 'Seg–Dom';
     return days.map((d) => d.slice(0, 3)).join(', ');
   }
 
