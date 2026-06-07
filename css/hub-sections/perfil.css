@@ -43,7 +43,23 @@
     .perf-info-row dd{margin:0;font-weight:600;color:#0f3462;word-break:break-word}
     .perf-info-row dd.je-role-emblem{font-size:.875rem;font-weight:700}
     .perf-foot{font-size:.6875rem;color:#6b7280;line-height:1.45;margin:0;padding:.625rem .75rem .875rem;border-top:1px solid #eef0f4;background:#fafbfc}
+    .perf-card--password{grid-column:1/-1}
+    .perf-password-body{padding:.875rem .75rem 1rem;display:grid;gap:.625rem}
+    .perf-password-fields{display:grid;gap:.625rem}
+    @media(min-width:640px){.perf-password-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .perf-field{display:grid;gap:.3125rem;font-size:.8125rem}
+    .perf-field>span{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
+    .perf-field input{
+      width:100%;min-height:2.5rem;padding:.5rem .75rem;border:1px solid #c3c6d0;border-radius:.5625rem;
+      font-size:.875rem;font-family:inherit;color:#0f3462;background:#fafafa;
+    }
+    .perf-field input:focus{outline:none;border-color:#0f3462;background:#fff;box-shadow:0 0 0 3px rgba(15,52,98,.1)}
+    .perf-hint--form{max-width:none;text-align:left;margin:0}
+    .perf-password-actions{display:flex;flex-wrap:wrap;gap:.375rem}
+    .perf-btn--loading{opacity:.7;pointer-events:none}
     @media(max-width:767px){
       .perf-btn{min-height:2.75rem;flex:1 1 calc(50% - .375rem)}
       .perf-info-row{grid-template-columns:1fr;gap:.125rem}
+      .perf-password-actions .perf-btn{flex:1 1 100%}
+      .perf-field input{min-height:2.75rem}
     }

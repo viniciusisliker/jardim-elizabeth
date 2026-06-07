@@ -32,7 +32,7 @@
       permission: 'announcements',
       viewId: 'hub-view-anuncios',
       partial: 'hub/sections/anuncios.html',
-      styles: ['css/hub-sections/anuncios.css?v=2026060902'],
+      styles: ['css/hub-sections/anuncios.css?v=2026060931'],
       scripts: [
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
@@ -40,7 +40,7 @@
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
         'js/admin/anuncios-pdf.js?v=2026060526',
-        'js/admin/anuncios.js?v=2026060902'
+        'js/admin/anuncios.js?v=2026060931'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
@@ -130,13 +130,13 @@
       permission: null,
       viewId: 'hub-view-perfil',
       partial: 'hub/sections/perfil.html',
-      styles: ['css/hub-sections/perfil.css?v=2026060923'],
-      scripts: ['js/admin/meu-perfil.js?v=2026060927'],
+      styles: ['css/hub-sections/perfil.css?v=2026060932'],
+      scripts: ['js/admin/meu-perfil.js?v=2026060932'],
       initKey: 'JEMeuPerfil',
       hero: {
         kicker: 'Minha conta',
         title: 'Meu Perfil',
-        subtitle: 'Foto, nome e informações da sua conta no site.',
+        subtitle: 'Foto, senha e informações da sua conta no site.',
         showChangelog: false,
         showBack: true
       }

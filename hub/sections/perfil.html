@@ -1,7 +1,7 @@
     <div class="perf-toolbar">
       <div>
         <h1>Meu Perfil</h1>
-        <p>Sua foto e informações da conta no site da congregação.</p>
+        <p>Sua foto, senha e informações da conta no site da congregação.</p>
       </div>
     </div>
 
@@ -55,5 +55,32 @@
           </div>
         </dl>
         <p class="perf-foot">Para alterar cargo ou permissões de módulos, fale com um responsável pela equipe.</p>
+      </section>
+
+      <section class="perf-card perf-card--password" aria-labelledby="perf-password-title">
+        <div class="perf-card__head">
+          <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+          <h2 id="perf-password-title">Alterar senha</h2>
+        </div>
+        <form id="perf-password-form" class="perf-password-body" novalidate>
+          <div class="perf-password-fields">
+            <label class="perf-field" for="perf-password-new">
+              <span>Nova senha</span>
+              <input id="perf-password-new" type="password" autocomplete="new-password" minlength="8" required/>
+            </label>
+            <label class="perf-field" for="perf-password-confirm">
+              <span>Confirmar nova senha</span>
+              <input id="perf-password-confirm" type="password" autocomplete="new-password" minlength="8" required/>
+            </label>
+          </div>
+          <p class="perf-hint perf-hint--form">Use pelo menos 8 caracteres. Você continuará conectado após a troca.</p>
+          <p id="perf-password-status" class="perf-status hidden" role="status"></p>
+          <div class="perf-password-actions">
+            <button type="submit" id="perf-password-submit" class="perf-btn perf-btn--primary">
+              <span class="material-symbols-outlined" aria-hidden="true">key</span>
+              Salvar nova senha
+            </button>
+          </div>
+        </form>
       </section>
     </div>

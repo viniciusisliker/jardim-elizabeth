@@ -186,8 +186,14 @@
     const client = await getClient();
     if (!client) return null;
     const [{ data: sections }, { data: settings }] = await Promise.all([
-      client.from('announcement_sections').select('*').eq('published', true).order('sort_order'),
-      client.from('announcement_settings').select('*').eq('id', 1).maybeSingle()
+      client.from('announcement_sections')
+        .select('slug, title, description, document_url, icon, category_tag, sort_order')
+        .eq('published', true)
+        .order('sort_order'),
+      client.from('announcement_settings')
+        .select('history_folder_url, history_description')
+        .eq('id', 1)
+        .maybeSingle()
     ]);
     if (!sections?.length) return null;
     return { sections, settings };

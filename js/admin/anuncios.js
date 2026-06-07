@@ -14,6 +14,7 @@
   let savedBoards = [];
   let boardListFilter = 'all';
   let receiveSpeechesByDate = {};
+  let receiveSpeechesMonth = null;
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
   const pendingPdfs = {};
   let pdfPreviewBlock = null;
@@ -48,12 +49,15 @@
     return Object.values(data).some((v) => String(v || '').trim());
   }
 
-  async function loadReceiveSpeeches() {
+  async function loadReceiveSpeeches(force) {
     if (!board?.reference_month || !client) {
       receiveSpeechesByDate = {};
+      receiveSpeechesMonth = null;
       return;
     }
+    if (!force && receiveSpeechesMonth === board.reference_month) return;
     receiveSpeechesByDate = await Sync.fetchReceiveSpeechesByDate(client, board.reference_month);
+    receiveSpeechesMonth = board.reference_month;
   }
 
   function readFormIntoEntries() {
@@ -224,7 +228,7 @@
       readFormIntoEntries();
       entries = entries.filter((e) => e.id !== entry.id);
       blockSelection[block] = Math.min(blockSelection[block], entriesFor(block).length - 1);
-      renderAllEditors();
+      renderBlockEditorOnly(block);
     });
     container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
     container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
@@ -346,12 +350,24 @@
     bindEntryForm(container, 'limpeza_mensal', list, idx);
   }
 
-  function renderAllEditors() {
-    renderBlockEditor('mecanicas', 'editor-mecanicas');
-    renderBlockEditor('midweek', 'editor-midweek');
-    renderBlockEditor('weekend', 'editor-weekend');
-    renderLimpezaEditor();
-    refreshCsvPreview();
+  function renderBlockEditorOnly(block) {
+    if (block === 'limpeza_mensal') {
+      renderLimpezaEditor();
+      return;
+    }
+    renderBlockEditor(block, `editor-${block}`);
+  }
+
+  function renderActiveEditors() {
+    const tab = activeEditorTab();
+    if (tab === 'mecanicas') {
+      renderBlockEditor('mecanicas', 'editor-mecanicas');
+      renderLimpezaEditor();
+    } else if (tab === 'midweek') {
+      renderBlockEditor('midweek', 'editor-midweek');
+    } else if (tab === 'weekend') {
+      renderBlockEditor('weekend', 'editor-weekend');
+    }
   }
 
   function newLocalId() {
@@ -372,7 +388,7 @@
     };
     entries.push(entry);
     blockSelection[block] = entriesFor(block).length - 1;
-    renderAllEditors();
+    renderBlockEditorOnly(block);
   }
 
   async function regenerateBlock(block) {
@@ -391,7 +407,7 @@
     });
     blockSelection[block] = 0;
     revokePendingPdf(block);
-    renderAllEditors();
+    renderBlockEditorOnly(block);
   }
 
   function resetBlockSelection() {
@@ -412,8 +428,36 @@
   }
 
   function switchToEditorTab(tab) {
-    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    const btn = document.querySelector(`#qa-board-nav .tab-btn[data-tab="${tab}"]`);
     if (btn) btn.click();
+  }
+
+  function updateBoardNavIndicator() {
+    const nav = document.getElementById('qa-board-nav');
+    const indicator = document.getElementById('qa-board-nav-indicator');
+    const active = nav?.querySelector('.qa-board-nav-link--active');
+    if (!nav || !indicator || !active) {
+      if (indicator) indicator.style.opacity = '0';
+      return;
+    }
+    const navRect = nav.getBoundingClientRect();
+    const linkRect = active.getBoundingClientRect();
+    if (!navRect.width || !linkRect.width) {
+      indicator.style.opacity = '0';
+      return;
+    }
+    indicator.style.opacity = '1';
+    indicator.style.width = `${linkRect.width}px`;
+    indicator.style.transform = `translateX(${linkRect.left - navRect.left}px)`;
+  }
+
+  function queueBoardNavIndicatorRefresh() {
+    const run = () => updateBoardNavIndicator();
+    run();
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
   }
 
   function formatBoardDate(iso) {
@@ -456,8 +500,8 @@
     }
 
     updateBoardLabel();
-    await loadReceiveSpeeches();
-    renderAllEditors();
+    await loadReceiveSpeeches(true);
+    renderActiveEditors();
     return removedOtherMonth;
   }
 
@@ -499,7 +543,7 @@
       resetBlockSelection();
       clearAllPendingPdfs();
       updateBoardLabel();
-      renderAllEditors();
+      renderActiveEditors();
     }
 
     showToast(toastEl, isDraft ? 'Rascunho excluído.' : 'Quadro excluído.');
@@ -571,8 +615,8 @@
       });
       await persistEntries(true);
       updateBoardLabel();
-      await loadReceiveSpeeches();
-      renderAllEditors();
+      await loadReceiveSpeeches(true);
+      renderActiveEditors();
       showToast(toastEl, 'Novo quadro criado com datas do mês.');
     }
     await loadPublishedList();
@@ -672,7 +716,9 @@
         : entries;
       const blob = await Pdf.blockToPdfBlob(block, board, pdfEntries);
 
-      await persistEntries(true);
+      if (entries.some((e) => String(e.id).startsWith('local-'))) {
+        await persistEntries(true);
+      }
 
       revokePendingPdf(block);
       const objectUrl = URL.createObjectURL(blob);
@@ -739,7 +785,7 @@
   }
 
   function activeEditorTab() {
-    const btn = document.querySelector('.tab-btn.tab-active[data-tab]');
+    const btn = document.querySelector('#qa-board-nav .qa-board-nav-link--active[data-tab]');
     const tab = btn?.dataset.tab;
     return ['mecanicas', 'midweek', 'weekend'].includes(tab) ? tab : 'mecanicas';
   }
@@ -885,19 +931,43 @@
   }
 
   function setupTabs() {
+    const editorTabs = ['mecanicas', 'midweek', 'weekend'];
+
     document.querySelectorAll('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         readFormIntoEntries();
         const tab = btn.dataset.tab;
-        document.querySelectorAll('.tab-btn').forEach((b) => {
-          b.classList.toggle('tab-active', b === btn);
+        const isEditorTab = editorTabs.includes(tab);
+
+        document.querySelectorAll('#qa-board-nav .tab-btn').forEach((b) => {
+          const active = isEditorTab && b === btn;
+          b.classList.toggle('qa-board-nav-link--active', active);
+          b.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        document.querySelectorAll('.tab-util-btn').forEach((b) => {
+          b.classList.toggle('tab-active', !isEditorTab && b === btn);
           b.classList.toggle('text-on-surface-variant', b !== btn);
         });
+
+        if (isEditorTab) queueBoardNavIndicatorRefresh();
+        else {
+          const indicator = document.getElementById('qa-board-nav-indicator');
+          if (indicator) indicator.style.opacity = '0';
+        }
+
         document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
         $('panel-' + tab)?.classList.remove('hidden');
         if (tab === 'published') loadPublishedList();
+        else if (board && isEditorTab) renderActiveEditors();
       });
     });
+
+    queueBoardNavIndicatorRefresh();
+    if (!window.__JEBoardNavIndicatorBound) {
+      window.__JEBoardNavIndicatorBound = true;
+      window.addEventListener('resize', queueBoardNavIndicatorRefresh);
+    }
   }
 
   function openGcalExportModal() {
@@ -928,8 +998,7 @@
 
     setupTabs();
     setupPublishedFilters();
-    await loadHistorySettings();
-    await loadPublishedList();
+    await Promise.all([loadHistorySettings(), loadPublishedList()]);
 
     $('btn-new-board').addEventListener('click', loadOrCreateBoard);
     $('btn-save-draft').addEventListener('click', saveDraft);
@@ -1000,12 +1069,19 @@
       else showToast(toastEl, 'Histórico salvo.');
     });
 
-    try {
-      await loadOrCreateBoard();
-      updatePublishButtonsState();
-    } catch (err) {
-      showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
-      console.error(err);
+    const loadBoardWhenIdle = async () => {
+      try {
+        await loadOrCreateBoard();
+        updatePublishButtonsState();
+      } catch (err) {
+        showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
+        console.error(err);
+      }
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => { loadBoardWhenIdle(); }, { timeout: 900 });
+    } else {
+      setTimeout(loadBoardWhenIdle, 0);
     }
   }
 

@@ -366,6 +366,21 @@
     return currentProfile;
   }
 
+  async function updatePassword(newPassword) {
+    const client = await getClient();
+    if (!client) throw new Error('Supabase não configurado.');
+
+    const session = await getSession();
+    if (!session?.user) throw new Error('Faça login novamente para alterar a senha.');
+
+    const password = String(newPassword || '');
+    if (password.length < 8) throw new Error('A senha deve ter pelo menos 8 caracteres.');
+
+    const { error } = await client.auth.updateUser({ password });
+    if (error) throw error;
+    return true;
+  }
+
   function renderAvatarHtml(profile, { size = 40, className = '' } = {}) {
     const url = profile?.avatar_url;
     const cls = className ? ` ${className}` : '';
@@ -386,6 +401,7 @@
     applyHeaderAuthFast,
     signIn,
     signOut,
+    updatePassword,
     onAuthStateChange,
     getRoleLabel,
     getRoleLabelClasses,

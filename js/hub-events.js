@@ -21,8 +21,9 @@
   async function initHubEvents(client) {
     const list = $('hub-events-list');
     const form = $('hub-event-form');
+    const modal = $('hub-event-modal');
     const toast = $('hub-events-toast');
-    if (!list || !form || !client) return;
+    if (!list || !form || !modal || !client) return;
 
     let events = [];
 
@@ -187,8 +188,6 @@
     }
 
     function openForm(ev, templateEv) {
-      form.classList.remove('hidden');
-      list.classList.add('hidden');
       const base = ev || (templateEv ? { ...templateEv, id: null, title: '' } : null);
       const tpl = templateEv && !ev ? H.templateFromEvent(templateEv) : null;
 
@@ -214,12 +213,14 @@
 
       $('hub-event-form-title').textContent = ev ? 'Editar evento' : (templateEv ? 'Novo evento (copiado)' : 'Novo evento');
       updatePreview();
-      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      modal.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      $('hub-ev-title')?.focus();
     }
 
     function closeForm() {
-      form.classList.add('hidden');
-      list.classList.remove('hidden');
+      modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
       $('hub-ev-template').value = '';
     }
 
@@ -237,6 +238,11 @@
 
     $('hub-btn-new-event')?.addEventListener('click', () => openForm(null));
     $('hub-btn-cancel-event')?.addEventListener('click', closeForm);
+    $('hub-event-modal-close')?.addEventListener('click', closeForm);
+    $('hub-event-modal-backdrop')?.addEventListener('click', closeForm);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeForm();
+    });
     $('hub-ev-date')?.addEventListener('change', updatePreview);
     $('hub-ev-future')?.addEventListener('change', updatePreview);
     $('hub-ev-title')?.addEventListener('input', updatePreview);

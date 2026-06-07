@@ -35,13 +35,36 @@
     </section>
     <p id="admin-toast" class="hidden text-sm mb-4"></p>
 
-    <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-6">
-      <nav class="flex flex-wrap gap-4 text-sm">
-        <button type="button" data-tab="mecanicas" class="tab-btn tab-active pb-2">Designações Mecânicas</button>
-        <button type="button" data-tab="midweek" class="tab-btn pb-2 text-on-surface-variant">Vida e Ministério</button>
-        <button type="button" data-tab="weekend" class="tab-btn pb-2 text-on-surface-variant">Final de Semana</button>
-      </nav>
-      <div class="flex gap-2 pb-2 shrink-0">
+    <div class="qa-board-nav-bar">
+      <div class="qa-board-nav-wrap">
+        <div class="qa-board-nav-stage">
+          <div class="qa-board-nav-glow" aria-hidden="true"></div>
+          <div class="qa-board-nav-scroll">
+            <nav id="qa-board-nav" class="qa-board-nav" role="tablist" aria-label="Seções do quadro">
+              <span id="qa-board-nav-indicator" class="qa-board-nav-indicator" aria-hidden="true"></span>
+              <button type="button" role="tab" data-tab="mecanicas" class="tab-btn qa-board-nav-link qa-board-nav-link--active" aria-selected="true" title="Designações Mecânicas">
+                <span class="qa-board-nav-icon qa-board-nav-icon--org" aria-hidden="true">
+                  <span class="material-symbols-outlined">build</span>
+                </span>
+                <span class="qa-board-nav-label">Designações Mecânicas</span>
+              </button>
+              <button type="button" role="tab" data-tab="midweek" class="tab-btn qa-board-nav-link" aria-selected="false" title="Meio de Semana">
+                <span class="qa-board-nav-icon qa-board-nav-icon--midweek" aria-hidden="true">
+                  <span class="material-symbols-outlined">menu_book</span>
+                </span>
+                <span class="qa-board-nav-label">Meio de Semana</span>
+              </button>
+              <button type="button" role="tab" data-tab="weekend" class="tab-btn qa-board-nav-link" aria-selected="false" title="Final de Semana">
+                <span class="qa-board-nav-icon qa-board-nav-icon--weekend" aria-hidden="true">
+                  <span class="material-symbols-outlined">record_voice_over</span>
+                </span>
+                <span class="qa-board-nav-label">Final de Semana</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div class="qa-board-util-nav">
         <button type="button" data-tab="published" class="tab-btn tab-util-btn text-on-surface-variant" title="Quadros salvos">
           <span class="material-symbols-outlined" style="font-size:18px">inventory_2</span>
           Quadros
@@ -151,7 +174,7 @@
       <div class="px-5 py-4 space-y-4">
         <div class="flex flex-wrap gap-2 border-b border-outline-variant pb-3">
           <button type="button" data-gcal-block="mecanicas" class="gcal-block-btn tab-active text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant">Mecânicas</button>
-          <button type="button" data-gcal-block="midweek" class="gcal-block-btn text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">Vida e Ministério</button>
+          <button type="button" data-gcal-block="midweek" class="gcal-block-btn text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">Meio de Semana</button>
           <button type="button" data-gcal-block="weekend" class="gcal-block-btn text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">Final de semana</button>
         </div>
         <div id="gcal-block-rules" class="bg-background rounded-xl p-4 text-sm space-y-1.5 border border-outline-variant">

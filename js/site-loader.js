@@ -256,6 +256,11 @@
       border-bottom: 1px solid rgba(15, 52, 98, 0.08);
       box-shadow: 0 4px 24px rgba(15, 52, 98, 0.06);
     }
+    /* Hero escuro logo abaixo: sem borda/sombra clara entre header e faixa azul */
+    #header:has(+ main > section[class*="-hero"]:first-child) .je-site-header {
+      border-bottom: none;
+      box-shadow: none;
+    }
     .je-site-header-accent {
       height: 3px;
       background: linear-gradient(90deg, #0a2847 0%, #0f3462 42%, #c8a96e 100%);
@@ -953,12 +958,7 @@
   async function boot() {
     ensureFavicon();
     ensureMaterialSymbols();
-    const isHubPage = /hub\.html$/i.test(location.pathname) || /\/hub\/?$/i.test(location.pathname);
-    if (isHubPage) {
-      materialSymbolsReady();
-    } else {
-      await materialSymbolsReady();
-    }
+    materialSymbolsReady();
 
     loadComponent(`${assetBase}/components/header.html`, 'header', () => {
       highlightActiveNav();

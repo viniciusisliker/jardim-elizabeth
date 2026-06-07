@@ -51,12 +51,6 @@
     }
   }
 
-  function fileExtension(file) {
-    if (file.type === 'image/png') return 'png';
-    if (file.type === 'image/webp') return 'webp';
-    return 'jpg';
-  }
-
   function formatAvatarError(err) {
     const msg = String(err?.message || err || '').toLowerCase();
     if (msg.includes('bucket not found')) {
@@ -72,6 +66,78 @@
       return 'A imagem é grande demais. Use até 2 MB.';
     }
     return err?.message || 'Erro ao processar a foto.';
+  }
+
+  function fileExtension(file) {
+    if (file.type === 'image/png') return 'png';
+    if (file.type === 'image/webp') return 'webp';
+    return 'jpg';
+  }
+
+  function formatPasswordError(err) {
+    const msg = String(err?.message || err || '').toLowerCase();
+    if (msg.includes('at least') || msg.includes('characters') || msg.includes('caracteres')) {
+      return 'A senha deve ter pelo menos 8 caracteres.';
+    }
+    if (msg.includes('same') || msg.includes('different') || msg.includes('igual')) {
+      return 'A nova senha precisa ser diferente da senha atual.';
+    }
+    if (msg.includes('session') || msg.includes('login') || msg.includes('jwt')) {
+      return 'Sua sessão expirou. Saia e entre de novo para alterar a senha.';
+    }
+    if (msg.includes('rate limit') || msg.includes('too many')) {
+      return 'Muitas tentativas seguidas. Aguarde um minuto e tente novamente.';
+    }
+    return err?.message || 'Não foi possível alterar a senha.';
+  }
+
+  function bindPasswordForm() {
+    const form = document.getElementById('perf-password-form');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    const statusEl = document.getElementById('perf-password-status');
+    const submitBtn = document.getElementById('perf-password-submit');
+    const newInput = document.getElementById('perf-password-new');
+    const confirmInput = document.getElementById('perf-password-confirm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMsg(statusEl);
+
+      const next = newInput?.value || '';
+      const confirm = confirmInput?.value || '';
+
+      if (next.length < 8) {
+        showMsg(statusEl, 'A senha deve ter pelo menos 8 caracteres.', false);
+        newInput?.focus();
+        return;
+      }
+      if (next !== confirm) {
+        showMsg(statusEl, 'As senhas não coincidem.', false);
+        confirmInput?.focus();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('perf-btn--loading');
+      showMsg(statusEl, 'Salvando nova senha…', true);
+
+      try {
+        await window.JEAuth.updatePassword(next);
+        form.reset();
+        showMsg(statusEl, 'Senha alterada com sucesso.', true);
+        window.JEToast?.show('Senha alterada com sucesso.');
+      } catch (err) {
+        console.error('Password update:', err);
+        const friendly = formatPasswordError(err);
+        showMsg(statusEl, friendly, false);
+        window.JEToast?.show(friendly, { error: true });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('perf-btn--loading');
+      }
+    });
   }
 
   async function removeAvatarFiles(client, userId) {
@@ -95,6 +161,7 @@
         renderAvatar(profile);
         renderInfo(profile);
       }
+      bindPasswordForm();
       return true;
     }
 
@@ -109,6 +176,7 @@
 
     renderAvatar(profile);
     renderInfo(profile);
+    bindPasswordForm();
 
     input?.addEventListener('change', async () => {
       const file = input.files?.[0];

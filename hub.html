@@ -207,8 +207,10 @@
     @media(min-width:768px){.hub-home-intro{padding:1.125rem 1.75rem}}
     .hub-home-intro p{font-size:0.8125rem;color:#43474f;line-height:1.5;max-width:42rem}
 
-    .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);border-top:2px solid #0f3462;padding:1.5rem}
-    @media(min-width:768px){.hub-ev-form{padding:1.75rem 2rem}}
+    .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);padding:1.25rem 1.5rem}
+    @media(min-width:768px){.hub-ev-form{padding:1.5rem 1.75rem}}
+    #hub-event-modal .hub-ev-form{background:#fff;padding:0}
+    #hub-event-modal .hub-ev-preview-card{top:0}
     .hub-ev-form-layout{display:grid;gap:1.5rem}
     @media(min-width:900px){.hub-ev-form-layout{grid-template-columns:1fr 16rem;align-items:start}}
     .hub-ev-section{background:#fff;border:1px solid #e2e6ef;border-radius:1rem;padding:1.25rem 1.375rem;margin-bottom:1rem}
@@ -288,6 +290,7 @@
       .hub-module-card{min-height:3.25rem}
       .hub-ev-cat-pill{min-height:2.75rem;padding:0.5rem 0.75rem}
       #hub-changelog-close{min-width:2.75rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center}
+      #hub-event-modal-close{min-width:2.75rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center}
       .hub-terr-card{padding:1.125rem}
       .hub-terr-link{min-height:2.75rem;align-items:center}
     }
@@ -501,7 +504,67 @@
         <div id="hub-events-list">
           <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando eventos…</p>
         </div>
-        <form id="hub-event-form" class="hidden hub-ev-form">
+      </div>
+      </div>
+
+      <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
+
+      <div id="hub-view-donativos" class="hub-view hidden">
+        <div class="hub-section-panel mx-auto w-full">
+          <form id="donations-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+            <label class="block text-sm font-semibold text-primary">Chave PIX<input id="pix-key" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Tipo da chave<input id="pix-type" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Titular<input id="holder" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Banco<input id="bank" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">URL do QR Code<input id="qr-url" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Aviso legal<textarea id="disclaimer" rows="3" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"></textarea></label>
+            <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg w-full sm:w-auto">Salvar alterações</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="hub-view-agendamentos" class="hub-view hidden">
+        <div class="hub-section-panel hub-section-panel--wide mx-auto w-full">
+          <div class="flex justify-end mb-3">
+            <button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">+ Calendário</button>
+          </div>
+          <div class="bg-white border border-outline-variant rounded-xl mb-6"><div id="schedule-list"></div></div>
+          <form id="sched-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+            <input type="hidden" id="sched-id"/>
+            <label class="block text-sm font-semibold text-primary">Slug<input id="sched-slug" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm" placeholder="carrinho-1"/></label>
+            <label class="block text-sm font-semibold text-primary">Título<input id="sched-title" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">URL embed<input id="sched-url" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Ordem<input id="sched-sort" type="number" value="0" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
+          </form>
+        </div>
+      </div>
+
+      <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-perfil" class="hub-view hidden hub-view--wide"></div>
+
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <div id="hub-event-modal" class="hidden fixed inset-0 z-[65] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="hub-event-form-title" aria-modal="true">
+    <button type="button" id="hub-event-modal-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-3xl max-h-[92vh] overflow-hidden bg-white rounded-2xl border border-outline-variant shadow-2xl flex flex-col">
+      <div class="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-3 shrink-0 bg-gradient-to-b from-[#f5f8fc] to-white">
+        <div class="flex items-start gap-3 min-w-0">
+          <span class="material-symbols-outlined text-secondary mt-0.5 shrink-0" style="font-size:28px;font-variation-settings:'FILL' 1">event</span>
+          <div class="min-w-0">
+            <h2 id="hub-event-form-title" class="font-extrabold text-primary text-lg leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Novo evento</h2>
+            <p class="text-sm text-on-surface-variant mt-0.5">Preencha os dados e publique na página da agenda.</p>
+          </div>
+        </div>
+        <button type="button" id="hub-event-modal-close" class="text-on-surface-variant hover:text-primary p-1 rounded-lg shrink-0" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1">
+        <form id="hub-event-form" class="hub-ev-form">
           <input type="hidden" id="hub-ev-id"/>
           <input type="hidden" id="hub-ev-date-display"/>
           <input type="hidden" id="hub-ev-date-label"/>
@@ -510,12 +573,7 @@
           <input type="hidden" id="hub-ev-badge" value="default"/>
           <input type="hidden" id="hub-ev-sort" value="0"/>
 
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-            <h3 id="hub-event-form-title" class="text-xl font-extrabold text-primary" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Novo evento</h3>
-            <button type="button" id="hub-btn-cancel-event" class="hub-ev-btn-ghost self-start sm:self-center">Fechar</button>
-          </div>
-
-          <div class="hub-ev-form-layout">
+          <div class="hub-ev-form-layout px-5 py-4 sm:px-6 sm:py-5">
             <div>
               <div class="hub-ev-section">
                 <p class="hub-ev-section-title">Informações principais</p>
@@ -598,6 +656,7 @@
 
               <div class="hub-ev-form-actions">
                 <button type="submit" class="hub-ev-btn-primary">Salvar e publicar no site</button>
+                <button type="button" id="hub-btn-cancel-event" class="hub-ev-btn-ghost">Cancelar</button>
               </div>
             </div>
 
@@ -618,48 +677,8 @@
           </div>
         </form>
       </div>
-      </div>
-
-      <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
-
-      <div id="hub-view-donativos" class="hub-view hidden">
-        <div class="hub-section-panel mx-auto w-full">
-          <form id="donations-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-            <label class="block text-sm font-semibold text-primary">Chave PIX<input id="pix-key" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Tipo da chave<input id="pix-type" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Titular<input id="holder" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Banco<input id="bank" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">URL do QR Code<input id="qr-url" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Aviso legal<textarea id="disclaimer" rows="3" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"></textarea></label>
-            <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg w-full sm:w-auto">Salvar alterações</button>
-          </form>
-        </div>
-      </div>
-
-      <div id="hub-view-agendamentos" class="hub-view hidden">
-        <div class="hub-section-panel hub-section-panel--wide mx-auto w-full">
-          <div class="flex justify-end mb-3">
-            <button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">+ Calendário</button>
-          </div>
-          <div class="bg-white border border-outline-variant rounded-xl mb-6"><div id="schedule-list"></div></div>
-          <form id="sched-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-            <input type="hidden" id="sched-id"/>
-            <label class="block text-sm font-semibold text-primary">Slug<input id="sched-slug" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm" placeholder="carrinho-1"/></label>
-            <label class="block text-sm font-semibold text-primary">Título<input id="sched-title" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">URL embed<input id="sched-url" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Ordem<input id="sched-sort" type="number" value="0" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
-          </form>
-        </div>
-      </div>
-
-      <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
-      <div id="hub-view-perfil" class="hub-view hidden hub-view--wide"></div>
-
     </div>
-  </main>
-
-  <div id="footer"></div>
+  </div>
 
   <div id="hub-changelog-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="hub-changelog-title" aria-modal="true">
     <button type="button" id="hub-changelog-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
@@ -692,7 +711,7 @@
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
   <script src="js/hub-sections.js?v=2026060928"></script>
-  <script src="js/hub-events.js?v=2026060801"></script>
+  <script src="js/hub-events.js?v=2026060929"></script>
   <script src="js/hub-changelog.js?v=2026060922"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060910"></script>
   <script src="js/hub-territory-assignment.js?v=2026060624"></script>
