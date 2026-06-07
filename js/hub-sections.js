@@ -93,17 +93,36 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060967'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060971'],
       scripts: [
         'js/equipment-schedule-helpers.js?v=2026060968',
         'js/admin/table-xlf.js?v=2026060939',
-        'js/admin/carrinhos-displays.js?v=2026060968'
+        'js/admin/carrinhos-displays.js?v=2026060972'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
         kicker: 'Organização e campo',
         title: 'Carrinhos e Displays',
         subtitle: 'Publicadores, equipamentos, locais, cronograma semanal e mensagem pronta para WhatsApp.',
+        showChangelog: false,
+        showBack: true
+      }
+    },
+    'audio-video': {
+      id: 'audio-video',
+      hash: 'audio-video',
+      permission: 'audio_video',
+      viewId: 'hub-view-audio-video',
+      partial: 'hub/sections/audio-video.html',
+      styles: ['css/hub-sections/audio-video.css?v=2026060970'],
+      scripts: [
+        'js/admin/audio-video.js?v=2026060970'
+      ],
+      initKey: 'JEAdminAudioVideo',
+      hero: {
+        kicker: 'Técnico e mídia',
+        title: 'Áudio e Vídeo',
+        subtitle: 'Mesa de som, projeção, checklists e notas compartilhadas da equipe.',
         showChangelog: false,
         showBack: true
       }

@@ -55,6 +55,33 @@
   };
   let locSort = { col: 'name', dir: 'asc' };
   let locFilterSig = '';
+  let catalogCache = { equipmentByType: null, locations: null };
+  let inlinePubSearchTimer = null;
+
+  function debounce(fn, wait) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), wait);
+    };
+  }
+
+  function invalidateCatalogCache() {
+    catalogCache.equipmentByType = null;
+    catalogCache.locations = null;
+  }
+
+  function enrichPublisherRow(row) {
+    const parsed = parsePublisherNotes(row.notes);
+    row._pubName = row.profiles?.full_name || row.publisher_name || '—';
+    row._grupo = parsed.grupo;
+    row._casa = parsed.casa;
+    return row;
+  }
+
+  function normalizePublishers(list) {
+    return (list || []).map(enrichPublisherRow);
+  }
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
@@ -109,23 +136,37 @@
   }
 
   function activeEquipmentForType(type) {
-    return equipmentItems
-      .filter((item) => item.is_active !== false && item.equipment_type === type)
-      .sort((a, b) => {
-        const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
-        if (sortDiff) return sortDiff;
-        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+    if (!catalogCache.equipmentByType) {
+      const byType = {};
+      equipmentItems
+        .filter((item) => item.is_active !== false)
+        .forEach((item) => {
+          if (!byType[item.equipment_type]) byType[item.equipment_type] = [];
+          byType[item.equipment_type].push(item);
+        });
+      Object.values(byType).forEach((items) => {
+        items.sort((a, b) => {
+          const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
+          if (sortDiff) return sortDiff;
+          return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+        });
       });
+      catalogCache.equipmentByType = byType;
+    }
+    return catalogCache.equipmentByType[type] || [];
   }
 
   function activeLocationsList() {
-    return locations
-      .filter((loc) => loc.is_active !== false)
-      .sort((a, b) => {
-        const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
-        if (sortDiff) return sortDiff;
-        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
-      });
+    if (!catalogCache.locations) {
+      catalogCache.locations = locations
+        .filter((loc) => loc.is_active !== false)
+        .sort((a, b) => {
+          const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
+          if (sortDiff) return sortDiff;
+          return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+        });
+    }
+    return catalogCache.locations;
   }
 
   function inlineEquipmentSelectOptions(type, selectedName) {
@@ -183,16 +224,22 @@
     }
   }
 
-  async function loadProfiles() {
-    const { data, error } = await client
-      .from('profiles')
-      .select('id, full_name, username, role, avatar_url')
-      .order('full_name');
-    if (error) throw error;
-    profiles = data || [];
+  async function loadProfiles(editingProfileId, forceReload) {
+    if (forceReload || !profiles.length) {
+      const { data, error } = await client
+        .from('profiles')
+        .select('id, full_name, username, role, avatar_url')
+        .order('full_name');
+      if (error) throw error;
+      profiles = data || [];
+    }
     const select = document.getElementById('eq-publisher-profile');
     if (!select) return;
-    const used = new Set(publishers.filter((p) => p.profile_id).map((p) => p.profile_id));
+    const used = new Set(
+      publishers
+        .filter((p) => p.profile_id && p.profile_id !== editingProfileId)
+        .map((p) => p.profile_id)
+    );
     select.innerHTML = ['<option value="">Selecione…</option>']
       .concat(
         profiles
@@ -202,19 +249,22 @@
       .join('');
   }
 
-  async function loadPublishers() {
+  async function fetchPublishers() {
     const { data, error } = await client
       .from('equipment_publishers')
       .select('*, profiles(full_name, username, avatar_url, role)')
       .order('publisher_name');
     if (error) throw error;
-    publishers = data || [];
-    if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
-    else renderPublishers();
-    await loadProfiles();
+    publishers = normalizePublishers(data || []);
   }
 
-  async function loadEquipment() {
+  async function loadPublishers() {
+    await fetchPublishers();
+    if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
+    else renderPublishers();
+  }
+
+  async function fetchEquipment() {
     const { data, error } = await client
       .from('equipment_items')
       .select('*')
@@ -222,6 +272,11 @@
       .order('name');
     if (error) throw error;
     equipmentItems = data || [];
+    invalidateCatalogCache();
+  }
+
+  async function loadEquipment() {
+    await fetchEquipment();
     if (document.getElementById('eq-item-table-body')) refreshEquipmentView();
     else renderEquipment();
   }
@@ -361,13 +416,13 @@
   }
 
   function renderEquipmentTable(opts = {}) {
-    const { updateUi = false } = opts;
+    const { updateUi = false, stats = true } = opts;
     const body = document.getElementById('eq-item-table-body');
     const foot = document.getElementById('eq-item-table-foot');
     const list = document.getElementById('eq-item-list');
     if (!body) return;
 
-    updateItemStats();
+    if (stats) updateItemStats();
     if (updateUi && xlf) {
       xlf.xlfUpdateSortUI(list?.querySelector('.eq-item-scroll'), 'item-sort', itemSort);
       xlf.xlfUpdateFilterUI(list?.querySelector('.eq-item-scroll'), itemFilter);
@@ -646,7 +701,7 @@
     }
   }
 
-  async function loadLocations() {
+  async function fetchLocations() {
     const { data, error } = await client
       .from('equipment_locations')
       .select('*')
@@ -654,6 +709,11 @@
       .order('name');
     if (error) throw error;
     locations = data || [];
+    invalidateCatalogCache();
+  }
+
+  async function loadLocations() {
+    await fetchLocations();
     if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
     else renderLocations();
   }
@@ -764,13 +824,13 @@
   }
 
   function renderLocationsTable(opts = {}) {
-    const { updateUi = false } = opts;
+    const { updateUi = false, stats = true } = opts;
     const body = document.getElementById('eq-loc-table-body');
     const foot = document.getElementById('eq-loc-table-foot');
     const list = document.getElementById('eq-loc-list');
     if (!body) return;
 
-    updateLocStats();
+    if (stats) updateLocStats();
     if (updateUi && xlf) {
       xlf.xlfUpdateSortUI(list?.querySelector('.eq-loc-scroll'), 'loc-sort', locSort);
       xlf.xlfUpdateFilterUI(list?.querySelector('.eq-loc-scroll'), locFilter);
@@ -1036,7 +1096,7 @@
   }
 
   function publisherName(row) {
-    return row.profiles?.full_name || row.publisher_name || '—';
+    return row._pubName || row.profiles?.full_name || row.publisher_name || '—';
   }
 
   function parsePublisherNames(str) {
@@ -1135,14 +1195,28 @@
     syncSlotPublishersField(prefix);
   }
 
-  async function loadSlots() {
+  async function fetchSlots() {
     const { data, error } = await client
       .from('equipment_schedule_slots')
       .select('*')
       .order('sort_order');
     if (error) throw error;
     slots = data || [];
+  }
+
+  async function loadSlots() {
+    await fetchSlots();
     renderSchedule();
+  }
+
+  function refreshAllViews() {
+    renderSchedule();
+    if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
+    else renderPublishers();
+    if (document.getElementById('eq-item-table-body')) refreshEquipmentView();
+    else renderEquipment();
+    if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
+    else renderLocations();
   }
 
   function parsePublisherNotes(notes) {
@@ -1153,6 +1227,13 @@
       grupo: grupoMatch ? grupoMatch[1].trim() : '',
       casa: casaMatch ? casaMatch[1].trim() : ''
     };
+  }
+
+  function formatPublisherNotes(grupo, casa) {
+    const parts = [];
+    if (grupo) parts.push(`Grupo: ${grupo}`);
+    if (casa) parts.push(`Casa: ${casa}`);
+    return parts.length ? parts.join(' · ') : null;
   }
 
   function publisherAvatarHtml(row) {
@@ -1205,13 +1286,13 @@
     );
     xlf.xlfEnsureKeys(
       pubFilter.grupo,
-      [...new Set(publishers.map((p) => parsePublisherNotes(p.notes).grupo || '—'))].sort((a, b) =>
+      [...new Set(publishers.map((p) => p._grupo || '—'))].sort((a, b) =>
         a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
       )
     );
     xlf.xlfEnsureKeys(
       pubFilter.casa,
-      [...new Set(publishers.map((p) => parsePublisherNotes(p.notes).casa || '—'))].sort((a, b) =>
+      [...new Set(publishers.map((p) => p._casa || '—'))].sort((a, b) =>
         a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
       )
     );
@@ -1245,10 +1326,10 @@
           cmp = pubDaySortKey(a).localeCompare(pubDaySortKey(b), 'pt-BR', { sensitivity: 'base' });
           break;
         case 'grupo':
-          cmp = parsePublisherNotes(a.notes).grupo.localeCompare(parsePublisherNotes(b.notes).grupo, 'pt-BR', { sensitivity: 'base' });
+          cmp = (a._grupo || '').localeCompare(b._grupo || '', 'pt-BR', { sensitivity: 'base' });
           break;
         case 'casa':
-          cmp = parsePublisherNotes(a.notes).casa.localeCompare(parsePublisherNotes(b.notes).casa, 'pt-BR', { sensitivity: 'base' });
+          cmp = (a._casa || '').localeCompare(b._casa || '', 'pt-BR', { sensitivity: 'base' });
           break;
         case 'status':
           cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
@@ -1266,15 +1347,16 @@
     if (q) {
       list = list.filter((row) => {
         const name = publisherName(row).toLowerCase();
-        const { grupo, casa } = parsePublisherNotes(row.notes);
-        return name.includes(q) || grupo.toLowerCase().includes(q) || casa.toLowerCase().includes(q);
+        const grupo = (row._grupo || '').toLowerCase();
+        const casa = (row._casa || '').toLowerCase();
+        return name.includes(q) || grupo.includes(q) || casa.includes(q);
       });
     }
     if (!xlf) return list;
     list = xlf.xlfApplyMapFilter(list, pubFilter.name, (p) => publisherName(p));
     list = xlf.xlfApplyMapFilter(list, pubFilter.services, (p) => publisherServiceKey(p));
-    list = xlf.xlfApplyMapFilter(list, pubFilter.grupo, (p) => parsePublisherNotes(p.notes).grupo || '—');
-    list = xlf.xlfApplyMapFilter(list, pubFilter.casa, (p) => parsePublisherNotes(p.notes).casa || '—');
+    list = xlf.xlfApplyMapFilter(list, pubFilter.grupo, (p) => p._grupo || '—');
+    list = xlf.xlfApplyMapFilter(list, pubFilter.casa, (p) => p._casa || '—');
     list = xlf.xlfApplyMapFilter(list, pubFilter.status, (p) => (p.is_active !== false ? 'active' : 'inactive'));
     if (xlf.xlfIsActive(pubFilter.days)) list = list.filter((row) => pubMatchesDayFilter(row));
     return getSortedPublishers(list);
@@ -1344,13 +1426,13 @@
   }
 
   function renderPublishersTable(opts = {}) {
-    const { updateUi = false } = opts;
+    const { updateUi = false, stats = true } = opts;
     const body = document.getElementById('eq-pub-table-body');
     const foot = document.getElementById('eq-pub-table-foot');
     const list = document.getElementById('eq-pub-list');
     if (!body) return;
 
-    updatePublisherStats();
+    if (stats) updatePublisherStats();
     if (updateUi && xlf) {
       xlf.xlfUpdateSortUI(list?.querySelector('.eq-pub-scroll'), 'pub-sort', pubSort);
       xlf.xlfUpdateFilterUI(list?.querySelector('.eq-pub-scroll'), pubFilter);
@@ -1369,7 +1451,8 @@
 
     body.innerHTML = filtered.map((row) => {
       const name = publisherName(row);
-      const { grupo, casa } = parsePublisherNotes(row.notes);
+      const grupo = row._grupo || '';
+      const casa = row._casa || '';
       const isActive = row.is_active !== false;
       const inactiveClass = isActive ? '' : ' eq-pub-row--inactive';
       const statusHtml = isActive
@@ -1391,6 +1474,9 @@
           <span class="eq-pub-meta">${casa ? `<strong>Casa:</strong> ${escapeHtml(casa)}` : '—'}</span>
           <span class="eq-pub-status-cell">${statusHtml}</span>
           <div class="eq-pub-actions">
+            <button type="button" class="eq-pub-icon-btn" data-eq-edit-pub="${row.id}" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
             <button type="button" class="${toggleClass}" data-eq-toggle-pub="${row.id}" title="${toggleTitle}">
               <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
             </button>
@@ -1689,22 +1775,56 @@
   function resetPublisherForm() {
     const form = document.getElementById('eq-form-publisher');
     form?.reset();
+    document.getElementById('eq-pub-id').value = '';
     const carrinho = document.getElementById('eq-pub-carrinho');
     const display = document.getElementById('eq-pub-display');
     if (carrinho) carrinho.checked = true;
     if (display) display.checked = true;
+    document.getElementById('eq-pub-grupo').value = '';
+    document.getElementById('eq-pub-casa').value = '';
+    document.getElementById('eq-pub-profile-wrap')?.classList.remove('hidden');
+    document.getElementById('eq-pub-edit-name')?.classList.add('hidden');
+    document.getElementById('eq-publisher-profile')?.setAttribute('required', '');
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
+    const title = document.getElementById('eq-pub-modal-title');
+    const submitBtn = document.getElementById('eq-pub-submit');
+    if (title) title.textContent = 'Adicionar publicador';
+    if (submitBtn) submitBtn.textContent = 'Adicionar';
   }
 
-  async function openPublisherModal() {
+  async function openPublisherModal(row) {
     ensurePublisherModalPortal();
     const modal = document.getElementById('eq-pub-modal');
     if (!modal) return;
     resetPublisherForm();
-    await loadProfiles();
+
+    if (row) {
+      document.getElementById('eq-pub-id').value = row.id;
+      document.getElementById('eq-pub-modal-title').textContent = 'Editar publicador';
+      document.getElementById('eq-pub-submit').textContent = 'Salvar';
+      document.getElementById('eq-pub-profile-wrap')?.classList.add('hidden');
+      document.getElementById('eq-publisher-profile')?.removeAttribute('required');
+      const editName = document.getElementById('eq-pub-edit-name');
+      const editNameText = document.getElementById('eq-pub-edit-name-text');
+      editName?.classList.remove('hidden');
+      if (editNameText) editNameText.textContent = publisherName(row);
+      document.getElementById('eq-pub-carrinho').checked = row.can_carrinho !== false;
+      document.getElementById('eq-pub-display').checked = row.can_display !== false;
+      buildDayCheckboxes(
+        document.getElementById('eq-pub-days'),
+        'eq-pub',
+        row.available_days?.length ? row.available_days : helpers.EQUIPMENT_DAYS
+      );
+      document.getElementById('eq-pub-grupo').value = row._grupo || '';
+      document.getElementById('eq-pub-casa').value = row._casa || '';
+    } else {
+      await loadProfiles();
+    }
+
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    document.getElementById('eq-publisher-profile')?.focus();
+    if (row) document.getElementById('eq-pub-grupo')?.focus();
+    else document.getElementById('eq-publisher-profile')?.focus();
   }
 
   function closePublisherModal() {
@@ -1769,7 +1889,7 @@
     });
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
-    document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
+    document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal(null));
     document.getElementById('eq-btn-add-item')?.addEventListener('click', () => startNewItemInline());
     document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => startNewLocInline());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
@@ -1835,7 +1955,8 @@
     document.getElementById('eq-sched-list')?.addEventListener('input', (e) => {
       if (e.target.id !== 'eq-inline-pub-search') return;
       syncSlotPublishersField('eq-inline');
-      renderSlotPublisherPicker('eq-inline');
+      clearTimeout(inlinePubSearchTimer);
+      inlinePubSearchTimer = setTimeout(() => renderSlotPublisherPicker('eq-inline'), 120);
     });
 
     if (!window.__JEInlinePubPopBound) {
@@ -1855,14 +1976,16 @@
       if (e.target.id === 'eq-pub-modal') closePublisherModal();
     });
 
+    const debouncedPubSearch = debounce(() => renderPublishersTable({ stats: false }), 150);
     document.getElementById('eq-pub-search')?.addEventListener('input', (e) => {
       pubSearch = e.target.value;
-      renderPublishersTable();
+      debouncedPubSearch();
     });
 
+    const debouncedItemSearch = debounce(() => renderEquipmentTable({ stats: false }), 150);
     document.getElementById('eq-item-search')?.addEventListener('input', (e) => {
       itemSearch = e.target.value;
-      renderEquipmentTable();
+      debouncedItemSearch();
     });
 
     document.getElementById('eq-item-list')?.addEventListener('click', async (e) => {
@@ -1879,9 +2002,10 @@
       }
     });
 
+    const debouncedLocSearch = debounce(() => renderLocationsTable({ stats: false }), 150);
     document.getElementById('eq-loc-search')?.addEventListener('input', (e) => {
       locSearch = e.target.value;
-      renderLocationsTable();
+      debouncedLocSearch();
     });
 
     document.getElementById('eq-loc-list')?.addEventListener('click', async (e) => {
@@ -1908,14 +2032,16 @@
       if (!toggleBtn) return;
       const row = locations.find((l) => l.id === toggleBtn.dataset.eqToggleLoc);
       if (!row) return;
+      const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_locations')
-        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .update({ is_active: nextActive, updated_at: new Date().toISOString() })
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
-        showToast(toast, row.is_active === false ? 'Local reativado.' : 'Local desativado.');
-        await loadLocations();
+        row.is_active = nextActive;
+        showToast(toast, nextActive ? 'Local reativado.' : 'Local desativado.');
+        refreshLocationsView();
       }
     });
 
@@ -1929,40 +2055,45 @@
       if (!toggleBtn) return;
       const row = equipmentItems.find((i) => i.id === toggleBtn.dataset.eqToggleItem);
       if (!row) return;
+      const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_items')
-        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .update({ is_active: nextActive, updated_at: new Date().toISOString() })
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
-        showToast(toast, row.is_active === false ? 'Equipamento reativado.' : 'Equipamento desativado.');
-        await loadEquipment();
+        row.is_active = nextActive;
+        showToast(toast, nextActive ? 'Equipamento reativado.' : 'Equipamento desativado.');
+        refreshEquipmentView();
       }
     });
 
     document.getElementById('eq-panel-publicadores')?.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('[data-eq-edit-pub]');
+      if (editBtn) {
+        openPublisherModal(publishers.find((p) => p.id === editBtn.dataset.eqEditPub));
+        return;
+      }
       const btn = e.target.closest('[data-eq-toggle-pub]');
       if (!btn) return;
       const row = publishers.find((p) => p.id === btn.dataset.eqTogglePub);
       if (!row) return;
+      const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_publishers')
-        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .update({ is_active: nextActive, updated_at: new Date().toISOString() })
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
-        showToast(toast, row.is_active === false ? 'Publicador reativado.' : 'Publicador desativado.');
-        await loadPublishers();
+        row.is_active = nextActive;
+        showToast(toast, nextActive ? 'Publicador reativado.' : 'Publicador desativado.');
+        refreshPublishersView();
       }
     });
 
     document.getElementById('eq-form-publisher')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const profileId = document.getElementById('eq-publisher-profile').value;
-      if (!profileId) return;
-      const profileRow = profiles.find((p) => p.id === profileId);
-      if (!profileRow) return;
-
+      const id = document.getElementById('eq-pub-id').value;
       const dayInputs = document.querySelectorAll('#eq-pub-days input[name="eq-pub-day"]:checked');
       const availableDays = Array.from(dayInputs).map((input) => input.value);
       if (!availableDays.length) {
@@ -1970,27 +2101,60 @@
         return;
       }
 
-      const { error } = await client.from('equipment_publishers').insert({
-        profile_id: profileId,
-        publisher_name: profileRow.full_name,
+      const grupo = document.getElementById('eq-pub-grupo').value.trim();
+      const casa = document.getElementById('eq-pub-casa').value.trim();
+      const payload = {
         can_carrinho: document.getElementById('eq-pub-carrinho').checked,
         can_display: document.getElementById('eq-pub-display').checked,
         available_days: availableDays,
-        is_active: true,
+        notes: formatPublisherNotes(grupo, casa),
         updated_at: new Date().toISOString()
-      });
+      };
+
+      if (id) {
+        const row = publishers.find((p) => p.id === id);
+        if (!row) return;
+        if (row.profile_id) {
+          const profileRow = profiles.find((p) => p.id === row.profile_id)
+            || row.profiles;
+          if (profileRow?.full_name) payload.publisher_name = profileRow.full_name;
+        }
+        const { error } = await client.from('equipment_publishers').update(payload).eq('id', id);
+        if (error) showToast(toast, error.message, true);
+        else {
+          Object.assign(row, payload);
+          enrichPublisherRow(row);
+          showToast(toast, 'Publicador atualizado.');
+          closePublisherModal();
+          refreshPublishersView();
+        }
+        return;
+      }
+
+      const profileId = document.getElementById('eq-publisher-profile').value;
+      if (!profileId) return;
+      const profileRow = profiles.find((p) => p.id === profileId);
+      if (!profileRow) return;
+
+      const { data: inserted, error } = await client.from('equipment_publishers').insert({
+        profile_id: profileId,
+        publisher_name: profileRow.full_name,
+        ...payload,
+        is_active: true
+      }).select('*, profiles(full_name, username, avatar_url, role)').single();
 
       if (error) showToast(toast, error.message, true);
       else {
+        if (inserted) publishers.push(enrichPublisherRow(inserted));
         showToast(toast, 'Publicador adicionado.');
         closePublisherModal();
-        await loadPublishers();
+        refreshPublishersView();
       }
     });
 
     try {
-      await loadPublishers();
-      await Promise.all([loadSlots(), loadEquipment(), loadLocations()]);
+      await Promise.all([fetchPublishers(), fetchSlots(), fetchEquipment(), fetchLocations()]);
+      refreshAllViews();
     } catch (err) {
       console.error('Carrinhos e Displays:', err);
       const msg = String(err?.message || err);

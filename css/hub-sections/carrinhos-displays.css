@@ -84,6 +84,7 @@ select.eq-sched-inline-input{padding-right:1.25rem;cursor:pointer}
 .eq-pub-field{display:flex;flex-direction:column;gap:.3125rem}
 .eq-pub-field__label{display:flex;align-items:center;gap:.3125rem;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
 .eq-pub-field__label .material-symbols-outlined{font-size:.9375rem;color:#3b5e97}
+.eq-pub-edit-name{margin:0;padding:.5625rem .75rem;border:1px solid #e2e6ef;border-radius:.625rem;background:#f7f9fc;font-size:.875rem;font-weight:700;color:#0f3462}
 .eq-pub-svc-toggles{display:flex;flex-wrap:wrap;gap:.375rem}
 .eq-pub-svc{display:inline-flex;align-items:center;gap:.3125rem;font-size:.6875rem;font-weight:800;padding:.3125rem .5625rem;border-radius:9999px;border:1px solid #e2e6ef;background:#f8fafc;cursor:pointer;user-select:none}
 .eq-pub-svc input{accent-color:#0f3462}

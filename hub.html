@@ -207,6 +207,8 @@
     .hub-module-card--agendamentos:hover{border-color:#6ee7b7}
     .hub-module-card--carrinhos .hub-module-icon{background:#ecfeff;color:#0891b2}
     .hub-module-card--carrinhos:hover{border-color:#67e8f9}
+    .hub-module-card--av .hub-module-icon{background:#ede9fe;color:#6d28d9}
+    .hub-module-card--av:hover{border-color:#c4b5fd}
     .hub-module-card--territorios .hub-module-icon{background:#e0e7ff;color:#4338ca}
     .hub-module-card--territorios:hover{border-color:#a5b4fc}
     .hub-module-card--donativos .hub-module-icon{background:#fce7f3;color:#be185d}
@@ -418,7 +420,7 @@
         </section>
         <div class="hub-modules-panel">
           <div class="hub-home-intro">
-            <p>Selecione um módulo abaixo. Você só vê as áreas liberadas para o seu perfil ou designação.</p>
+            <p>Selecione um módulo abaixo.</p>
           </div>
 
           <section class="hub-module-group">
@@ -482,6 +484,20 @@
           </section>
 
           <section class="hub-module-group">
+            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Técnico e mídia</h3>
+            <div class="hub-module-grid">
+              <button type="button" data-hub-tab="audio-video" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">surround_sound</span></span>
+                <div class="hub-module-body">
+                  <h4>Áudio e Vídeo</h4>
+                  <p>Mesa de som, projeção, checklists e notas da equipe.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="donativos" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
@@ -531,6 +547,7 @@
 
       <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-carrinhos-displays" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-audio-video" class="hub-view hidden hub-view--wide"></div>
 
       <div id="hub-view-donativos" class="hub-view hidden">
         <div class="hub-section-panel mx-auto w-full">
@@ -733,7 +750,7 @@
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
-  <script src="js/hub-sections.js?v=2026060928"></script>
+  <script src="js/hub-sections.js?v=2026060970"></script>
   <script src="js/hub-events.js?v=2026060929"></script>
   <script src="js/hub-changelog.js?v=2026060922"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060910"></script>

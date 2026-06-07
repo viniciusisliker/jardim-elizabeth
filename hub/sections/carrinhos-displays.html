@@ -282,10 +282,15 @@
           </button>
         </div>
         <form id="eq-form-publisher" class="eq-modal__body">
+          <input type="hidden" id="eq-pub-id" value=""/>
           <div class="eq-pub-modal-form">
-            <div class="eq-pub-field">
+            <div id="eq-pub-profile-wrap" class="eq-pub-field">
               <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
               <select id="eq-publisher-profile" required class="eq-modal-input"></select>
+            </div>
+            <div id="eq-pub-edit-name" class="eq-pub-field hidden">
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
+              <p class="eq-pub-edit-name" id="eq-pub-edit-name-text"></p>
             </div>
             <div class="eq-pub-field">
               <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">category</span>Serviços</span>
@@ -298,11 +303,21 @@
               <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Dias disponíveis</span>
               <div id="eq-pub-days" class="eq-pub-day-picks"></div>
             </div>
+            <div class="eq-modal-grid">
+              <label class="eq-pub-field">
+                <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Grupo</span>
+                <input id="eq-pub-grupo" type="text" class="eq-modal-input" placeholder="Ex.: Campo Limpo" autocomplete="off"/>
+              </label>
+              <label class="eq-pub-field">
+                <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">home</span>Casa</span>
+                <input id="eq-pub-casa" type="text" class="eq-modal-input" placeholder="Ex.: Lúcia" autocomplete="off"/>
+              </label>
+            </div>
           </div>
           <div class="eq-modal__foot">
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-pub-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
-              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Adicionar</button>
+              <button type="submit" id="eq-pub-submit" class="eq-modal-btn eq-modal-btn--primary">Adicionar</button>
             </div>
           </div>
         </form>
