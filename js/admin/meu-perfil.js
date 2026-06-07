@@ -57,6 +57,23 @@
     return 'jpg';
   }
 
+  function formatAvatarError(err) {
+    const msg = String(err?.message || err || '').toLowerCase();
+    if (msg.includes('bucket not found')) {
+      return 'O armazenamento de fotos ainda não está configurado. Avise quem cuida do sistema.';
+    }
+    if (msg.includes('update_my_profile_avatar') || msg.includes('avatar_url')) {
+      return 'Seu perfil ainda não está pronto para foto. Avise quem cuida do sistema.';
+    }
+    if (msg.includes('row-level security') || msg.includes('permission') || msg.includes('policy')) {
+      return 'Sem permissão para alterar a foto. Tente sair e entrar de novo.';
+    }
+    if (msg.includes('payload too large') || msg.includes('entity too large')) {
+      return 'A imagem é grande demais. Use até 2 MB.';
+    }
+    return err?.message || 'Erro ao processar a foto.';
+  }
+
   async function removeAvatarFiles(client, userId) {
     const { data: files } = await client.storage.from(BUCKET).list(userId, { limit: 20 });
     if (!files?.length) return;
@@ -134,8 +151,9 @@
         window.JEToast?.show('Foto de perfil atualizada.');
       } catch (err) {
         console.error('Avatar upload:', err);
-        showMsg(statusEl, err.message || 'Erro ao enviar foto.', false);
-        window.JEToast?.show(err.message || 'Erro ao enviar foto.', { error: true });
+        const friendly = formatAvatarError(err);
+        showMsg(statusEl, friendly, false);
+        window.JEToast?.show(friendly, { error: true });
       } finally {
         uploadBtn?.classList.remove('perf-btn--loading');
       }
@@ -158,8 +176,9 @@
         window.JEToast?.show('Foto removida.');
       } catch (err) {
         console.error('Avatar remove:', err);
-        showMsg(statusEl, err.message || 'Erro ao remover foto.', false);
-        window.JEToast?.show(err.message || 'Erro ao remover foto.', { error: true });
+        const friendly = formatAvatarError(err);
+        showMsg(statusEl, friendly, false);
+        window.JEToast?.show(friendly, { error: true });
       } finally {
         removeBtn.disabled = false;
       }

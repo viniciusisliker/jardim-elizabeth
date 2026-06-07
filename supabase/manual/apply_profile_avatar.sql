@@ -1,0 +1,2 @@
+-- Execute no SQL Editor do Supabase se o upload de foto retornar "Bucket not found".
+-- Copie e rode o conteúdo de: supabase/migrations/20260609210000_profile_avatar.sql
