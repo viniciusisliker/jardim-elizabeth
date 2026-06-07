@@ -297,7 +297,15 @@
     });
   }
 
+  function ensureSlotModalPortal() {
+    const modal = document.getElementById('eq-slot-modal');
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  }
+
   function openSlotModal(item) {
+    ensureSlotModalPortal();
     const modal = document.getElementById('eq-slot-modal');
     const deleteBtn = document.getElementById('eq-slot-delete');
     if (!modal) return;
@@ -401,6 +409,7 @@
 
     setupTabs();
     fillSelectOptions();
+    ensureSlotModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = helpers.snapToWeekStart(e.target.value);

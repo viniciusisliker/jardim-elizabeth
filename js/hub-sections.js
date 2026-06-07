@@ -93,10 +93,10 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060936'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060937'],
       scripts: [
         'js/equipment-schedule-helpers.js?v=2026060934',
-        'js/admin/carrinhos-displays.js?v=2026060936'
+        'js/admin/carrinhos-displays.js?v=2026060937'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
