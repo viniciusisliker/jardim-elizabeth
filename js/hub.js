@@ -56,16 +56,23 @@
     configuracoes: '__JEAdminConfigInit'
   };
 
+  function resetSectionState(sectionId) {
+    const section = SECTIONS[sectionId];
+    if (!section) return;
+    loadedSections.delete(sectionId);
+    const flag = INIT_FLAGS[sectionId];
+    if (flag) delete window[flag];
+    if (!section.partial) return;
+    const el = document.getElementById(section.viewId);
+    if (!el) return;
+    el.innerHTML = '';
+    el.dataset.mounted = '0';
+  }
+
   function unmountPartialSections(keepId) {
     Object.values(SECTIONS).forEach((s) => {
       if (!s.partial || s.id === keepId) return;
-      const el = document.getElementById(s.viewId);
-      if (!el || el.dataset.mounted !== '1') return;
-      el.innerHTML = '';
-      el.dataset.mounted = '0';
-      loadedSections.delete(s.id);
-      const flag = INIT_FLAGS[s.id];
-      if (flag) delete window[flag];
+      resetSectionState(s.id);
     });
   }
 
@@ -162,7 +169,10 @@
     }
 
     const mod = section.initKey ? window[section.initKey] : null;
-    if (mod?.init) await mod.init();
+    if (mod?.init) {
+      const ready = await mod.init();
+      if (ready === false) throw new Error(`Init ${section.id}`);
+    }
 
     loadedSections.add(section.id);
   }
@@ -177,6 +187,7 @@
     }
 
     unmountPartialSections(targetId);
+    if (section.partial) resetSectionState(targetId);
 
     try {
       await ensureSectionReady(section);

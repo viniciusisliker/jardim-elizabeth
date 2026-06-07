@@ -1,6 +1,8 @@
 (function () {
   const { guardPermission, getClient, showToast, escapeHtml, STATUS_LABELS } = window.JEAdmin;
-  const H = window.JETerritoryAssignment;
+  function H() {
+    return window.JETerritoryAssignment;
+  }
 
   const EVENT_LABELS = {
     designacao: 'Designação',
@@ -20,7 +22,7 @@
   let weekTemplate = [];
   let history = [];
   let meetingSpots = [];
-  let currentWeek = H.toISODate(H.getMonday(new Date()));
+  let currentWeek = '';
   let histFilter = { q: '', eventType: '' };
   let histSort = { col: 'date', dir: 'desc' };
   let catalogFilter = { q: '', status: '', type: '' };
@@ -28,7 +30,7 @@
   let weekendByDate = {};
 
   function priorityBadge(t) {
-    const p = H.computePriority(t);
+    const p = H().computePriority(t);
     return `<span class="terr-priority terr-priority--${p.tone}">${escapeHtml(p.label)}</span>`;
   }
 
@@ -46,7 +48,7 @@
   }
 
   function availableTerritories() {
-    return H.sortByPriority(territories.filter((t) => t.status !== 'designado'));
+    return H().sortByPriority(territories.filter((t) => t.status !== 'designado'));
   }
 
   async function loadTerritories() {
@@ -124,7 +126,7 @@
     const { data, error } = await client.from('territory_meeting_spots').select('*');
     if (error) throw error;
     meetingSpots = (data || []).sort((a, b) =>
-      H.CRONOGRAMA_DAYS.indexOf(a.weekday_label) - H.CRONOGRAMA_DAYS.indexOf(b.weekday_label) ||
+      H().CRONOGRAMA_DAYS.indexOf(a.weekday_label) - H().CRONOGRAMA_DAYS.indexOf(b.weekday_label) ||
       (a.sort_order || 0) - (b.sort_order || 0)
     );
   }
@@ -201,11 +203,11 @@
     const total = territories.length;
     const designados = activeAssignments.length;
     const disponiveis = territories.filter((t) => t.status === 'disponivel').length;
-    const alta = territories.filter((t) => t.status === 'disponivel' && H.computePriority(t).tone === 'high').length;
+    const alta = territories.filter((t) => t.status === 'disponivel' && H().computePriority(t).tone === 'high').length;
     const designadosPct = total ? Math.round((designados / total) * 100) : 0;
     const availDays = territories
       .filter((t) => t.status === 'disponivel')
-      .map((t) => H.daysSince(t.last_worked_at))
+      .map((t) => H().daysSince(t.last_worked_at))
       .filter((d) => d !== null);
     const avgDays = availDays.length
       ? Math.round(availDays.reduce((a, b) => a + b, 0) / availDays.length)
@@ -216,12 +218,12 @@
   function renderPriorityList() {
     const priEl = document.getElementById('semana-priority-list');
     if (!priEl) return;
-    const top = H.sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
+    const top = H().sortByPriority(territories.filter((t) => t.status === 'disponivel')).slice(0, 8);
     priEl.innerHTML = top.length ? top.map((t) => {
-      const days = H.daysSince(t.last_worked_at);
+      const days = H().daysSince(t.last_worked_at);
       return `
         <div class="terr-dash-row">
-          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(t))}">
+          <span class="terr-dash-terr" title="${escapeHtml(H().territoryLabel(t))}">
             <span class="terr-dash-terr-num">T${escapeHtml(t.num)}</span>${escapeHtml(t.display_name)}
           </span>
           <span class="flex items-center gap-2 shrink-0">
@@ -252,7 +254,7 @@
 
     const profile = profiles.find((p) => p.id === profileId);
     const territory = territories.find((t) => t.id === territoryId);
-    const priority = territory ? H.computePriority(territory) : null;
+    const priority = territory ? H().computePriority(territory) : null;
     const rows = [];
 
     rows.push(`
@@ -269,7 +271,7 @@
         <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
         <div>
           <p class="terr-assign-preview__label">Território</p>
-          <p class="terr-assign-preview__value">${territory ? escapeHtml(H.territoryLabel(territory)) : 'Selecione…'}</p>
+          <p class="terr-assign-preview__value">${territory ? escapeHtml(H().territoryLabel(territory)) : 'Selecione…'}</p>
           ${priority && territory ? `<p class="terr-assign-preview__meta">Prioridade ${escapeHtml(priority.label)}</p>` : ''}
         </div>
       </div>`);
@@ -279,7 +281,7 @@
         <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">event</span></span>
         <div>
           <p class="terr-assign-preview__label">Data</p>
-          <p class="terr-assign-preview__value">${dateVal ? escapeHtml(H.formatDisplayDate(dateVal)) : 'Selecione…'}</p>
+          <p class="terr-assign-preview__value">${dateVal ? escapeHtml(H().formatDisplayDate(dateVal)) : 'Selecione…'}</p>
         </div>
       </div>`);
 
@@ -318,13 +320,13 @@
       }).join('')}`;
 
     terrSel.innerHTML = `<option value="">Selecione (por prioridade)</option>${avail.map((t) => {
-      const p = H.computePriority(t);
-      const days = H.daysSince(t.last_worked_at);
+      const p = H().computePriority(t);
+      const days = H().daysSince(t.last_worked_at);
       const extra = days !== null ? ` · ${days}d sem cobertura` : '';
       return `<option value="${t.id}">T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)} (${escapeHtml(p.label)}${escapeHtml(extra)})</option>`;
     }).join('')}`;
 
-    dateEl.value = H.toISODate(new Date());
+    dateEl.value = H().toISODate(new Date());
 
     const statAvail = document.getElementById('designar-stat-avail');
     const statFree = document.getElementById('designar-stat-free');
@@ -344,7 +346,7 @@
         busyList.innerHTML = activeAssignments.map((a) => `
           <div class="terr-assign-busy__row">
             <span class="terr-assign-busy__person">${escapeHtml(profileName(a.profiles))}</span>
-            <span class="terr-assign-busy__terr">${escapeHtml(H.territoryLabel(a.territories))}</span>
+            <span class="terr-assign-busy__terr">${escapeHtml(H().territoryLabel(a.territories))}</span>
           </div>`).join('');
       }
     }
@@ -484,8 +486,8 @@
   function openDevolverModal(assignment) {
     if (!assignment) return;
     if (document.getElementById('devolver-modal-wrap')) return;
-    const today = H.toISODate(new Date());
-    const terrLabel = H.territoryLabel(assignment.territories);
+    const today = H().toISODate(new Date());
+    const terrLabel = H().territoryLabel(assignment.territories);
     const person = profileName(assignment.profiles);
     const wrap = document.createElement('div');
     wrap.id = 'devolver-modal-wrap';
@@ -581,7 +583,7 @@
         ${extra.map((a) => `
           <div class="terr-sched-designados__row">
             <div class="min-w-0">
-              <p class="terr-sched-designados__meta">${escapeHtml(H.territoryLabel(a.territories))}</p>
+              <p class="terr-sched-designados__meta">${escapeHtml(H().territoryLabel(a.territories))}</p>
               <p class="terr-sched-designados__sub">${escapeHtml(profileName(a.profiles))} · designado ${escapeHtml(formatAssignedShort(a.assigned_at))}</p>
             </div>
             <button type="button" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost !text-[#b45309] !border-[#f0e4c8] !bg-[#fef9ee] text-[11px] px-2 py-1" data-return-assignment="${a.id}">
@@ -605,7 +607,7 @@
   }
 
   function scheduleRowsForWeek() {
-    return weekTemplate.map((row) => H.applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
+    return weekTemplate.map((row) => H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
   }
 
   function scheduleDirigente(row) {
@@ -620,14 +622,14 @@
     if (row.announcement_special) {
       return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
     }
-    if (row.announcement_missing && H.isSaturdayCronogramaDay(row.weekday_label)) {
+    if (row.announcement_missing && H().isSaturdayCronogramaDay(row.weekday_label)) {
       return '<span class="terr-sched-cell--muted">Preencher no Quadro de Anúncios</span>';
     }
     return escapeHtml(name);
   }
 
   function scheduleTerritory(row) {
-    if (row.territories) return H.territoryLabel(row.territories);
+    if (row.territories) return H().territoryLabel(row.territories);
     return row.territory_code || '—';
   }
 
@@ -671,11 +673,11 @@
                 : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
               const sugg = scheduleSuggestion(r);
               const hasSugg = r.suggestion || r.suggestion_note;
-              const satHint = r.announcement_sat_date && H.isSaturdayCronogramaDay(r.weekday_label)
-                ? ` · ${H.formatDisplayDate(r.announcement_sat_date)}`
+              const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
+                ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
                 : '';
               const returnBtn = assignment
-                ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H.territoryLabel(assignment.territories))}" aria-label="Devolver território">
+                ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
                     <span class="material-symbols-outlined" aria-hidden="true">undo</span>
                   </button>`
                 : '';
@@ -744,8 +746,8 @@
   }
 
   function catalogTerritoryCell(t) {
-    const label = H.territoryLabel(t);
-    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num);
+    const label = H().territoryLabel(t);
+    const mapUrl = H().resolveTerritoryMapUrl(t.map_image_url, t.num);
     const inner = `
       <span class="terr-hist-terr-num">T${escapeHtml(String(t.num))}</span>
       <span class="terr-hist-terr-name">${escapeHtml(t.display_name || '—')}</span>
@@ -783,17 +785,17 @@
     const active = activeAssignments.find((a) => a.territory_id === t.id);
     if (t.status === 'designado') {
       const assignedIso = active?.assigned_at ? String(active.assigned_at).slice(0, 10) : null;
-      const assignedLabel = assignedIso ? H.formatShortDate(assignedIso) : null;
+      const assignedLabel = assignedIso ? H().formatShortDate(assignedIso) : null;
       return {
         tone: 'working',
         barPct: 100,
         headline: 'Em campo',
         sub: assignedLabel ? `Designado em ${assignedLabel}` : 'Trabalho em andamento',
-        title: assignedLabel ? `Designado em ${H.formatDisplayDate(assignedIso)}` : 'Território com designação ativa'
+        title: assignedLabel ? `Designado em ${H().formatDisplayDate(assignedIso)}` : 'Território com designação ativa'
       };
     }
 
-    const days = H.daysSince(t.last_worked_at);
+    const days = H().daysSince(t.last_worked_at);
     if (days === null) {
       return {
         tone: 'unknown',
@@ -815,8 +817,8 @@
     else headline = `${days} dias`;
 
     const lastIso = String(t.last_worked_at).slice(0, 10);
-    const lastShort = H.formatShortDate(lastIso);
-    const lastLong = H.formatDisplayDate(lastIso);
+    const lastShort = H().formatShortDate(lastIso);
+    const lastLong = H().formatDisplayDate(lastIso);
     const sub = days === 0
       ? `Trabalhado hoje · ${lastShort}`
       : `${days} ${days === 1 ? 'dia' : 'dias'} sem cobertura · ${lastShort}`;
@@ -849,7 +851,7 @@
 
   function catalogCoverageDays(t) {
     if (t.status === 'designado') return -1;
-    const days = H.daysSince(t.last_worked_at);
+    const days = H().daysSince(t.last_worked_at);
     return days === null ? 99999 : days;
   }
 
@@ -940,8 +942,8 @@
     if (q) {
       list = list.filter((t) => {
         const assignee = catalogAssignee(t);
-        const p = H.computePriority(t);
-        const days = H.daysSince(t.last_worked_at);
+        const p = H().computePriority(t);
+        const days = H().daysSince(t.last_worked_at);
         const cov = catalogCoverageMeta(t);
         return [
           t.num,
@@ -1151,7 +1153,7 @@
   }
 
   function historyWeekday(entry) {
-    return entry.metadata?.weekday || H.formatWeekday(String(entry.event_date).slice(0, 10));
+    return entry.metadata?.weekday || H().formatWeekday(String(entry.event_date).slice(0, 10));
   }
 
   function historyDirigente(entry) {
@@ -1159,7 +1161,7 @@
   }
 
   function historyTerritory(entry) {
-    if (entry.territories) return H.territoryLabel(entry.territories);
+    if (entry.territories) return H().territoryLabel(entry.territories);
     return entry.metadata?.territory_label || '—';
   }
 
@@ -1195,11 +1197,11 @@
   function historyTerritoryMapUrl(entry) {
     const t = resolveHistoryTerritory(entry);
     const num = t?.num || historyTerritoryNum(entry);
-    return H.resolveTerritoryMapUrl(t?.map_image_url, num);
+    return H().resolveTerritoryMapUrl(t?.map_image_url, num);
   }
 
   function historyDateTitle(iso) {
-    const d = H.parseISODate(String(iso).slice(0, 10));
+    const d = H().parseISODate(String(iso).slice(0, 10));
     if (!d) return '';
     return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
@@ -1402,7 +1404,7 @@
       const isoDate = String(h.event_date).slice(0, 10);
       return `
       <div class="terr-hist-row terr-hist-row--${historyIsWeekend(h) ? 'weekend' : 'weekday'}">
-        <span class="terr-hist-date" title="${escapeHtml(historyDateTitle(isoDate))}">${escapeHtml(H.formatShortDate(isoDate))}</span>
+        <span class="terr-hist-date" title="${escapeHtml(historyDateTitle(isoDate))}">${escapeHtml(H().formatShortDate(isoDate))}</span>
         <span class="terr-hist-day">${escapeHtml(historyWeekday(h))}</span>
         <span class="terr-hist-cell terr-hist-cell--dirigente${historyDirigente(h) === '—' ? ' terr-hist-cell--muted' : ''}" title="${escapeHtml(historyDirigente(h))}">${escapeHtml(historyDirigente(h))}</span>
         <span class="terr-hist-cell">${historyTerritoryCell(h)}</span>
@@ -1482,8 +1484,8 @@
   }
 
   function renderOverseerDayPills(overseer) {
-    const days = H.overseerDays(overseer);
-    if (days.length >= H.CRONOGRAMA_DAYS.length) {
+    const days = H().overseerDays(overseer);
+    if (days.length >= H().CRONOGRAMA_DAYS.length) {
       return '<span class="terr-over-day">Todos</span>';
     }
     return days.map((day) => {
@@ -1533,7 +1535,7 @@
               <span>${escapeHtml(profileName(o.profiles))}</span>
             </span>
             <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
-            <span class="terr-over-days" title="${escapeHtml(H.overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
+            <span class="terr-over-days" title="${escapeHtml(H().overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
             <span class="terr-over-status-cell">${statusHtml}</span>
             <div class="terr-over-actions">
               <button type="button" data-edit-overseer="${o.profile_id}" class="terr-sched-icon-btn" title="Editar dias">
@@ -1612,7 +1614,7 @@
           p_event_type: 'edicao',
           p_territory_id: t.id,
           p_profile_id: null,
-          p_event_date: H.toISODate(new Date()),
+          p_event_date: H().toISODate(new Date()),
           p_details: 'Catálogo atualizado pelo servo de territórios',
           p_metadata: {}
         }).catch(() => {});
@@ -1624,7 +1626,7 @@
   async function refresh() {
     try {
       await reloadAll();
-      weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
+      weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
       fillOverseerProfileSelect();
       renderSemana();
       renderCatalogo();
@@ -1667,7 +1669,7 @@
 
   function openOverseerEditModal(overseer) {
     if (!overseer) return;
-    const selected = new Set(H.overseerDays(overseer));
+    const selected = new Set(H().overseerDays(overseer));
     const wrap = document.createElement('div');
     wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
     wrap.innerHTML = `
@@ -1678,7 +1680,7 @@
         </div>
         <fieldset class="grid grid-cols-2 gap-2 border-0 p-0 m-0">
           <legend class="sr-only">Dias da semana</legend>
-          ${H.CRONOGRAMA_DAYS.map((day) => `
+          ${H().CRONOGRAMA_DAYS.map((day) => `
             <label class="flex items-center gap-2 text-sm cursor-pointer rounded-lg border border-outline-variant/60 px-3 py-2 hover:bg-surface-container-low">
               <input type="checkbox" name="day" value="${escapeHtml(day)}" ${selected.has(day) ? 'checked' : ''} class="rounded border-outline-variant"/>
               <span>${escapeHtml(day)}</span>
@@ -1701,7 +1703,7 @@
       }
       const { error } = await client.from('territory_overseers').update({
         available_days: days,
-        preference: H.preferenceFromDays(days)
+        preference: H().preferenceFromDays(days)
       }).eq('profile_id', overseer.profile_id);
       wrap.remove();
       if (error) showToast(toast, error.message, true);
@@ -1715,7 +1717,7 @@
   function openScheduleFormModal(existing) {
     const row = existing || null;
     const isEdit = Boolean(row);
-    const enriched = row ? H.applyWeekendDirigente(row, currentWeek, weekendByDate, profiles) : null;
+    const enriched = row ? H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles) : null;
     const saturdayFromQuadro = enriched?.from_announcement;
     const wrap = document.createElement('div');
     wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
@@ -1731,7 +1733,7 @@
         <label class="block text-xs font-semibold text-primary">Dia da semana
           <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Terça, Quarta (Tarde)"/>
         </label>
-        <datalist id="cronograma-dias">${H.CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
+        <datalist id="cronograma-dias">${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
         ${saturdayFromQuadro ? '' : `
         <label class="block text-xs font-semibold text-primary">Dirigente (cadastrado)
           <select name="profile_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
@@ -1828,7 +1830,7 @@
         <h3 class="font-bold text-primary">Novo local de encontro</h3>
         <label class="block text-xs font-semibold text-primary">Dia
           <select name="weekday_label" required class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            ${H.CRONOGRAMA_DAYS.map((d) => `<option value="${d}">${d}</option>`).join('')}
+            ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${d}">${d}</option>`).join('')}
           </select>
         </label>
         <label class="block text-xs font-semibold text-primary">Local
@@ -1864,7 +1866,7 @@
 
   function copyWhatsApp() {
     const byId = Object.fromEntries(territories.map((t) => [t.id, t]));
-    const msg = H.generateWhatsAppSchedule(currentWeek, scheduleRowsForWeek(), byId);
+    const msg = H().generateWhatsAppSchedule(currentWeek, scheduleRowsForWeek(), byId);
     document.getElementById('semana-whatsapp').textContent = msg;
     document.getElementById('semana-whatsapp-wrap').classList.remove('hidden');
     navigator.clipboard?.writeText(msg).then(
@@ -1934,44 +1936,58 @@
   }
 
   async function init() {
-    if (window.__JEAdminTerritoriosInit) return;
-    window.__JEAdminTerritoriosInit = true;
+    if (window.__JEAdminTerritoriosInit) return true;
+    const helpers = H();
+    if (!helpers) {
+      console.error('Territórios: JETerritoryAssignment não carregado');
+      return false;
+    }
+
     const profile = await guardPermission('territorios');
-    if (!profile) return;
-    toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
-    client = await getClient();
-    setupTabs();
-    setupTerritoryMapLightbox();
+    if (!profile) return false;
 
-    document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
-    document.getElementById('btn-whatsapp').addEventListener('click', copyWhatsApp);
-    document.getElementById('btn-new-schedule').addEventListener('click', openScheduleFormModal);
-    document.getElementById('btn-new-spot').addEventListener('click', openSpotFormModal);
+    window.__JEAdminTerritoriosInit = true;
+    try {
+      toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+      client = await getClient();
+      if (!currentWeek) currentWeek = helpers.toISODate(helpers.getMonday(new Date()));
+      setupTabs();
+      setupTerritoryMapLightbox();
 
-    document.getElementById('form-overseer').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const preference = document.getElementById('overseer-pref').value;
-      const { error } = await client.from('territory_overseers').upsert({
-        profile_id: document.getElementById('overseer-profile').value,
-        preference,
-        available_days: H.daysFromPreference(preference),
-        is_active: true
+      document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
+      document.getElementById('btn-whatsapp')?.addEventListener('click', copyWhatsApp);
+      document.getElementById('btn-new-schedule')?.addEventListener('click', openScheduleFormModal);
+      document.getElementById('btn-new-spot')?.addEventListener('click', openSpotFormModal);
+
+      document.getElementById('form-overseer')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const preference = document.getElementById('overseer-pref').value;
+        const { error } = await client.from('territory_overseers').upsert({
+          profile_id: document.getElementById('overseer-profile').value,
+          preference,
+          available_days: helpers.daysFromPreference(preference),
+          is_active: true
+        });
+        if (error) showToast(toast, error.message, true);
+        else {
+          showToast(toast, 'Dirigente adicionado.');
+          e.target.reset();
+          await refresh();
+        }
       });
-      if (error) showToast(toast, error.message, true);
-      else {
-        showToast(toast, 'Dirigente adicionado.');
-        e.target.reset();
-        await refresh();
-      }
-    });
 
-    document.getElementById('semana-week').addEventListener('change', async (e) => {
-      currentWeek = H.snapToMonday(e.target.value);
-      weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
-      renderSemana();
-    });
+      document.getElementById('semana-week')?.addEventListener('change', async (e) => {
+        currentWeek = helpers.snapToMonday(e.target.value);
+        weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
+        renderSemana();
+      });
 
-    await refresh();
+      await refresh();
+      return true;
+    } catch (err) {
+      delete window.__JEAdminTerritoriosInit;
+      throw err;
+    }
   }
 
   window.JEAdminTerritorios = { init };
