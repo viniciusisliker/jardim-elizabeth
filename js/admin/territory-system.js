@@ -21,7 +21,7 @@
   let history = [];
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
-  let histFilter = { q: '', type: 'all' };
+  let histFilter = { q: '' };
   let catalogFilter = { q: '' };
   let weekendByDate = {};
 
@@ -823,10 +823,8 @@
 
   function getFilteredHistory() {
     const q = histFilter.q.trim().toLowerCase();
+    if (!q) return history;
     return history.filter((h) => {
-      if (histFilter.type === 'trabalho' && h.event_type !== 'trabalho') return false;
-      if (histFilter.type === 'sistema' && h.event_type === 'trabalho') return false;
-      if (!q) return true;
       const hay = [
         String(h.event_date).slice(0, 10),
         historyWeekday(h),
@@ -848,15 +846,6 @@
       histFilter.q = e.target.value;
       renderHistoricoTable();
     });
-    grid.querySelectorAll('[data-hist-filter]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        histFilter.type = btn.dataset.histFilter;
-        grid.querySelectorAll('[data-hist-filter]').forEach((b) =>
-          b.classList.toggle('terr-hist-filter--active', b.dataset.histFilter === histFilter.type)
-        );
-        renderHistoricoTable();
-      });
-    });
   }
 
   function renderHistoricoTable() {
@@ -865,15 +854,6 @@
     if (!listEl) return;
 
     const filtered = getFilteredHistory();
-    const trabalhoCount = history.filter((h) => h.event_type === 'trabalho').length;
-    const sistemaCount = history.length - trabalhoCount;
-
-    const countAll = document.getElementById('hist-count-all');
-    const countWork = document.getElementById('hist-count-work');
-    const countSys = document.getElementById('hist-count-sys');
-    if (countAll) countAll.textContent = String(history.length);
-    if (countWork) countWork.textContent = String(trabalhoCount);
-    if (countSys) countSys.textContent = String(sistemaCount);
 
     if (!filtered.length) {
       listEl.innerHTML = `
@@ -915,8 +895,8 @@
       grid.innerHTML = `
         <div class="terr-hist-toolbar">
           <div>
-            <h2>Histórico de trabalho de campo</h2>
-            <p>Registros importados da planilha e eventos do sistema</p>
+            <h2>Histórico</h2>
+            <p>Registros de territórios e trabalho de campo</p>
           </div>
         </div>
         <div class="terr-empty">
@@ -930,31 +910,12 @@
     grid.innerHTML = `
       <div class="terr-hist-toolbar">
         <div>
-          <h2>Histórico de trabalho de campo</h2>
-          <p>Planilha + eventos do sistema · últimos ${history.length} registros</p>
+          <h2>Histórico</h2>
+          <p>${history.length} registro${history.length === 1 ? '' : 's'}</p>
         </div>
         <div class="terr-hist-toolbar-search">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
           <input id="hist-search" type="search" class="terr-hist-input" placeholder="Buscar dirigente, território…" autocomplete="off"/>
-        </div>
-        <div class="terr-hist-filters">
-          <button type="button" class="terr-hist-filter${histFilter.type === 'all' ? ' terr-hist-filter--active' : ''}" data-hist-filter="all">Todos</button>
-          <button type="button" class="terr-hist-filter${histFilter.type === 'trabalho' ? ' terr-hist-filter--active' : ''}" data-hist-filter="trabalho">Campo</button>
-          <button type="button" class="terr-hist-filter${histFilter.type === 'sistema' ? ' terr-hist-filter--active' : ''}" data-hist-filter="sistema">Sistema</button>
-        </div>
-      </div>
-      <div class="terr-hist-stats">
-        <div class="terr-hist-stat terr-hist-stat--all">
-          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span></span>
-          <div><p class="terr-hist-stat__label">Total</p><p class="terr-hist-stat__val" id="hist-count-all">${history.length}</p></div>
-        </div>
-        <div class="terr-hist-stat terr-hist-stat--work">
-          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">hiking</span></span>
-          <div><p class="terr-hist-stat__label">Trabalho de campo</p><p class="terr-hist-stat__val" id="hist-count-work">0</p></div>
-        </div>
-        <div class="terr-hist-stat terr-hist-stat--sys">
-          <span class="terr-hist-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
-          <div><p class="terr-hist-stat__label">Eventos sistema</p><p class="terr-hist-stat__val" id="hist-count-sys">0</p></div>
         </div>
       </div>
       <div class="terr-hist-scroll">
