@@ -21,7 +21,8 @@
   let history = [];
   let meetingSpots = [];
   let currentWeek = H.toISODate(H.getMonday(new Date()));
-  let histFilter = { q: '' };
+  let histFilter = { q: '', eventType: '' };
+  let histSort = { col: 'date', dir: 'desc' };
   let catalogFilter = { q: '' };
   let weekendByDate = {};
 
@@ -821,20 +822,108 @@
     return `<span class="terr-hist-type terr-hist-type--${historyTypeClass(entry)}">${escapeHtml(label)}</span>`;
   }
 
-  function getFilteredHistory() {
-    const q = histFilter.q.trim().toLowerCase();
-    if (!q) return history;
-    return history.filter((h) => {
-      const hay = [
-        String(h.event_date).slice(0, 10),
-        historyWeekday(h),
-        historyDirigente(h),
-        historyTerritory(h),
-        historyObservations(h),
-        EVENT_LABELS[h.event_type]
-      ].join(' ').toLowerCase();
-      return hay.includes(q);
+  const WEEKDAY_ORDER = {
+    'Segunda-feira': 1,
+    Segunda: 1,
+    'Terça-feira': 2,
+    Terça: 2,
+    'Quarta-feira': 3,
+    Quarta: 3,
+    'Quinta-feira': 4,
+    Quinta: 4,
+    'Sexta-feira': 5,
+    Sexta: 5,
+    Sábado: 6,
+    Domingo: 7
+  };
+
+  const HIST_EVENT_FILTERS = ['', 'designacao', 'devolucao', 'trabalho', 'edicao', 'cronograma', 'status'];
+
+  function histEventFilterLabel(type) {
+    if (!type) return 'Todos';
+    return EVENT_LABELS[type] || type;
+  }
+
+  function renderHistEventFilters() {
+    return HIST_EVENT_FILTERS.map((type) => {
+      const active = histFilter.eventType === type;
+      return `<button type="button" class="terr-hist-filter${active ? ' terr-hist-filter--active' : ''}" data-hist-event="${type}">${escapeHtml(histEventFilterLabel(type))}</button>`;
+    }).join('');
+  }
+
+  function histSortButton(col, label) {
+    return `<button type="button" class="terr-hist-sort" data-hist-sort="${col}"><span>${label}</span><span class="material-symbols-outlined terr-hist-sort-icon" aria-hidden="true">unfold_more</span></button>`;
+  }
+
+  function updateHistSortUI() {
+    const grid = document.getElementById('historico-grid');
+    if (!grid) return;
+    grid.querySelectorAll('[data-hist-sort]').forEach((btn) => {
+      const active = histSort.col === btn.dataset.histSort;
+      btn.classList.toggle('terr-hist-sort--active', active);
+      btn.classList.toggle('terr-hist-sort--asc', active && histSort.dir === 'asc');
+      btn.classList.toggle('terr-hist-sort--desc', active && histSort.dir === 'desc');
+      const icon = btn.querySelector('.terr-hist-sort-icon');
+      if (icon) icon.textContent = active ? (histSort.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
     });
+  }
+
+  function getSortedHistory(list) {
+    const { col, dir } = histSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'date':
+          cmp = String(a.event_date).localeCompare(String(b.event_date));
+          break;
+        case 'day': {
+          const da = WEEKDAY_ORDER[historyWeekday(a)] || 99;
+          const db = WEEKDAY_ORDER[historyWeekday(b)] || 99;
+          cmp = da - db || String(a.event_date).localeCompare(String(b.event_date));
+          break;
+        }
+        case 'dirigente':
+          cmp = historyDirigente(a).localeCompare(historyDirigente(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'territorio': {
+          const na = Number(historyTerritoryNum(a)) || 9999;
+          const nb = Number(historyTerritoryNum(b)) || 9999;
+          cmp = na - nb || historyTerritory(a).localeCompare(historyTerritory(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        }
+        case 'obs':
+          cmp = (historyObservations(a) || EVENT_LABELS[a.event_type] || a.event_type || '')
+            .localeCompare(historyObservations(b) || EVENT_LABELS[b.event_type] || b.event_type || '', 'pt-BR', { sensitivity: 'base' });
+          break;
+        default:
+          cmp = 0;
+      }
+      if (cmp === 0 && col !== 'date') cmp = String(a.event_date).localeCompare(String(b.event_date));
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredHistory() {
+    let list = history;
+    const q = histFilter.q.trim().toLowerCase();
+    if (q) {
+      list = list.filter((h) => {
+        const hay = [
+          String(h.event_date).slice(0, 10),
+          historyWeekday(h),
+          historyDirigente(h),
+          historyTerritory(h),
+          historyObservations(h),
+          EVENT_LABELS[h.event_type]
+        ].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    if (histFilter.eventType) {
+      list = list.filter((h) => h.event_type === histFilter.eventType);
+    }
+    return getSortedHistory(list);
   }
 
   function bindHistoricoFilters() {
@@ -846,6 +935,27 @@
       histFilter.q = e.target.value;
       renderHistoricoTable();
     });
+    grid.querySelectorAll('[data-hist-event]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        histFilter.eventType = btn.dataset.histEvent || '';
+        grid.querySelectorAll('[data-hist-event]').forEach((b) => {
+          b.classList.toggle('terr-hist-filter--active', (b.dataset.histEvent || '') === histFilter.eventType);
+        });
+        renderHistoricoTable();
+      });
+    });
+    grid.querySelectorAll('[data-hist-sort]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const col = btn.dataset.histSort;
+        if (histSort.col === col) histSort.dir = histSort.dir === 'asc' ? 'desc' : 'asc';
+        else {
+          histSort.col = col;
+          histSort.dir = col === 'date' ? 'desc' : 'asc';
+        }
+        updateHistSortUI();
+        renderHistoricoTable();
+      });
+    });
   }
 
   function renderHistoricoTable() {
@@ -853,6 +963,7 @@
     const footEl = document.getElementById('historico-foot');
     if (!listEl) return;
 
+    updateHistSortUI();
     const filtered = getFilteredHistory();
 
     if (!filtered.length) {
@@ -879,8 +990,12 @@
     }).join('');
 
     if (footEl) {
+      const parts = [];
+      if (histFilter.q.trim()) parts.push('busca');
+      if (histFilter.eventType) parts.push(histEventFilterLabel(histFilter.eventType).toLowerCase());
+      const filterNote = parts.length ? ` · filtro: ${parts.join(', ')}` : '';
       const suffix = filtered.length < history.length ? ` (${history.length} no total)` : '';
-      footEl.textContent = `Exibindo ${filtered.length} registro${filtered.length === 1 ? '' : 's'}${suffix}`;
+      footEl.textContent = `Exibindo ${filtered.length} registro${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
     }
   }
 
@@ -917,11 +1032,12 @@
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
           <input id="hist-search" type="search" class="terr-hist-input" placeholder="Buscar dirigente, território…" autocomplete="off"/>
         </div>
+        <div class="terr-hist-filters" role="group" aria-label="Filtrar por tipo">${renderHistEventFilters()}</div>
       </div>
       <div class="terr-hist-scroll">
         <div class="terr-hist-panel">
           <div class="terr-hist-row terr-hist-row--head">
-            <span>Data</span><span>Dia</span><span>Dirigente</span><span>Território</span><span>Observações</span>
+            ${histSortButton('date', 'Data')}${histSortButton('day', 'Dia')}${histSortButton('dirigente', 'Dirigente')}${histSortButton('territorio', 'Território')}${histSortButton('obs', 'Observações')}
           </div>
           <div id="historico-table-body"></div>
           <p id="historico-foot" class="terr-hist-foot"></p>

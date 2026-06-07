@@ -208,7 +208,7 @@
     .terr-hist-input{flex:1;min-width:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:.5rem;padding:.3125rem .5rem;font-size:.75rem}
     .terr-hist-input::placeholder{color:rgba(255,255,255,.55)}
     .terr-hist-filters{display:flex;flex-wrap:wrap;gap:.3125rem;width:100%}
-    @media(min-width:640px){.terr-hist-filters{width:auto;margin-left:.25rem}}
+    @media(min-width:900px){.terr-hist-filters{width:auto;margin-left:.25rem}}
     .terr-hist-filter{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:.25rem .5rem;border-radius:9999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);cursor:pointer}
     .terr-hist-filter:hover{background:rgba(255,255,255,.18)}
     .terr-hist-filter--active{background:#c8a96e;color:#0f3462;border-color:#c8a96e}
@@ -222,16 +222,23 @@
     .terr-hist-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
     .terr-hist-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
     .terr-hist-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
-    .terr-hist-panel{min-width:44rem}
-    .terr-hist-row{display:grid;grid-template-columns:3.25rem minmax(5.25rem,6.25rem) minmax(7rem,1fr) minmax(8.5rem,1.15fr) minmax(6.5rem,1.2fr);gap:.375rem .875rem;align-items:center;padding:.4375rem 1rem .4375rem .875rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    .terr-hist-panel{min-width:0}
+    @media(min-width:900px){.terr-hist-panel{min-width:44rem}}
+    .terr-hist-row{display:grid;grid-template-columns:4.25rem 5.75rem minmax(7.5rem,1.08fr) minmax(9rem,1.22fr) minmax(6.75rem,1fr);gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
     .terr-hist-row:last-child{border-bottom:none}
     .terr-hist-row:not(.terr-hist-row--head):hover{background:#fafbfc}
-    .terr-hist-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem 1rem .375rem .875rem;position:sticky;top:0;z-index:1}
-    .terr-hist-date{font-size:.6875rem;font-weight:700;color:#3b5e97;white-space:nowrap;text-align:left;padding-left:.125rem}
+    .terr-hist-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-hist-sort{display:inline-flex;align-items:center;gap:.125rem;margin:0;padding:0;border:none;background:transparent;font:inherit;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;cursor:pointer;min-width:0;justify-self:start;text-align:left}
+    .terr-hist-sort>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-hist-sort-icon{font-size:.875rem!important;opacity:.45;flex-shrink:0}
+    .terr-hist-sort:hover{color:#0f3462}
+    .terr-hist-sort--active{color:#0f3462}
+    .terr-hist-sort--active .terr-hist-sort-icon{opacity:1;color:#3b5e97}
+    .terr-hist-date{font-size:.6875rem;font-weight:700;color:#3b5e97;white-space:nowrap;text-align:left}
     .terr-hist-day{display:inline-flex;align-items:center;justify-self:start;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.3125rem;background:#eef3fa;color:#0f3462;white-space:nowrap;max-width:100%}
     .terr-hist-row--weekend .terr-hist-day{background:#ecfdf5;color:#047857}
     .terr-hist-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#43474f;font-size:.75rem}
-    .terr-hist-cell--dirigente{font-weight:600;color:#0f3462;padding-left:.125rem}
+    .terr-hist-cell--dirigente{font-weight:600;color:#0f3462}
     .terr-hist-cell--muted{color:#9ca3af;font-style:italic}
     .terr-hist-terr-btn{display:inline-flex;align-items:center;gap:.25rem;min-width:0;max-width:100%;padding:.125rem .3125rem .125rem .125rem;margin:-.125rem 0;border:1px solid transparent;border-radius:.375rem;background:transparent;color:inherit;font:inherit;text-align:left;cursor:default;overflow:hidden}
     .terr-hist-terr-btn--map{cursor:pointer}
@@ -692,6 +699,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060804"></script>
+    <script src="../js/admin/territory-system.js?v=2026060805"></script>
 </body>
 </html>
