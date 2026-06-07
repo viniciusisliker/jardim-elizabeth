@@ -118,68 +118,6 @@
       </div>
     </section>
 
-    <div id="eq-slot-modal" class="eq-modal" aria-hidden="true">
-      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-slot-modal-title">
-        <div class="eq-modal__head">
-          <h2 id="eq-slot-modal-title">Linha do cronograma</h2>
-          <button type="button" id="eq-slot-modal-close" class="eq-modal__close" aria-label="Fechar">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-        <form id="eq-slot-form" class="eq-modal__body">
-          <input type="hidden" id="eq-slot-id"/>
-          <div class="eq-modal-grid">
-            <label>Dia
-              <select id="eq-slot-day" required class="eq-modal-input"></select>
-            </label>
-            <label>Período
-              <select id="eq-slot-period" required class="eq-modal-input"></select>
-            </label>
-            <label>Tipo
-              <select id="eq-slot-kind" required class="eq-modal-input">
-                <option value="fixed">Fixo (toda semana)</option>
-                <option value="temporary">Temporário (só esta semana)</option>
-              </select>
-            </label>
-            <label>Equipamento
-              <select id="eq-slot-type" required class="eq-modal-input">
-                <option value="carrinho">Carrinho</option>
-                <option value="display">Display</option>
-              </select>
-            </label>
-            <label>Nome do equipamento
-              <input id="eq-slot-equipment" required class="eq-modal-input" placeholder="SOUZA, ALMEIDA, DAMASCENO…"/>
-            </label>
-            <label>Local
-              <input id="eq-slot-location" required class="eq-modal-input" placeholder="Praça, endereço…"/>
-            </label>
-            <label class="eq-modal-grid--full eq-slot-pub-field">
-              <span>Publicadores</span>
-              <input type="hidden" id="eq-slot-publishers"/>
-              <div class="eq-slot-pub-picker">
-                <div class="eq-slot-pub-picker__toolbar">
-                  <input id="eq-slot-pub-search" type="search" class="eq-modal-input" placeholder="Buscar na lista…" autocomplete="off"/>
-                  <span class="eq-slot-pub-picker__hint" id="eq-slot-pub-hint">—</span>
-                </div>
-                <div id="eq-slot-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
-                <p class="eq-slot-pub-picker__summary eq-slot-pub-picker__summary--empty" id="eq-slot-pub-summary">Nenhum publicador selecionado</p>
-              </div>
-            </label>
-            <label>Ordem
-              <input id="eq-slot-sort" type="number" value="0" class="eq-modal-input"/>
-            </label>
-          </div>
-          <div class="eq-modal__foot">
-            <button type="button" id="eq-slot-delete" class="eq-modal-btn eq-modal-btn--danger hidden">Excluir</button>
-            <div class="eq-modal__foot-actions">
-              <button type="button" id="eq-slot-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
-              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Salvar</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <div id="eq-pub-modal" class="eq-modal" aria-hidden="true">
       <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-pub-modal-title">
         <div class="eq-modal__head">

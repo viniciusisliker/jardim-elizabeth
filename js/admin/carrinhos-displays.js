@@ -30,6 +30,7 @@
   };
   let pubSort = { col: 'name', dir: 'asc' };
   let pubFilterSig = '';
+  let inlineSlotDraft = null;
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
@@ -70,19 +71,17 @@
   }
 
   function fillSelectOptions() {
-    const daySel = document.getElementById('eq-slot-day');
-    const periodSel = document.getElementById('eq-slot-period');
-    if (daySel && !daySel.options.length) {
-      daySel.innerHTML = helpers.EQUIPMENT_DAYS.map((d) =>
-        `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`
-      ).join('');
-    }
-    if (periodSel && !periodSel.options.length) {
-      periodSel.innerHTML = helpers.PERIOD_LABELS.map((p) =>
-        `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`
-      ).join('');
-    }
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
+  }
+
+  function slotSelectOptions(selectedDay, selectedPeriod) {
+    const dayOpts = helpers.EQUIPMENT_DAYS.map((d) =>
+      `<option value="${escapeHtml(d)}" ${d === selectedDay ? 'selected' : ''}>${escapeHtml(d)}</option>`
+    ).join('');
+    const periodOpts = helpers.PERIOD_LABELS.map((p) =>
+      `<option value="${escapeHtml(p)}" ${p === selectedPeriod ? 'selected' : ''}>${escapeHtml(p)}</option>`
+    ).join('');
+    return { dayOpts, periodOpts };
   }
 
   async function loadProfiles() {
@@ -137,21 +136,21 @@
     return true;
   }
 
-  function getSelectedSlotPublisherNames() {
-    return Array.from(document.querySelectorAll('#eq-slot-pub-list input[name="eq-slot-pub"]:checked'))
+  function getSelectedSlotPublisherNames(prefix = 'eq-inline') {
+    return Array.from(document.querySelectorAll(`#${prefix}-pub-list input[name="${prefix}-pub"]:checked`))
       .map((input) => input.value);
   }
 
-  function syncSlotPublishersField() {
-    const field = document.getElementById('eq-slot-publishers');
-    if (field) field.value = getSelectedSlotPublisherNames().join(', ');
-    updateSlotPublisherSummary();
+  function syncSlotPublishersField(prefix = 'eq-inline') {
+    const field = document.getElementById(`${prefix}-publishers`);
+    if (field) field.value = getSelectedSlotPublisherNames(prefix).join(', ');
+    updateSlotPublisherSummary(prefix);
   }
 
-  function updateSlotPublisherSummary() {
-    const summary = document.getElementById('eq-slot-pub-summary');
+  function updateSlotPublisherSummary(prefix = 'eq-inline') {
+    const summary = document.getElementById(`${prefix}-pub-summary`);
     if (!summary) return;
-    const names = getSelectedSlotPublisherNames();
+    const names = getSelectedSlotPublisherNames(prefix);
     if (!names.length) {
       summary.textContent = 'Nenhum publicador selecionado';
       summary.classList.add('eq-slot-pub-picker__summary--empty');
@@ -163,15 +162,15 @@
       : `${names.length} selecionados: ${names.join(', ')}`;
   }
 
-  function renderSlotPublisherPicker() {
-    const container = document.getElementById('eq-slot-pub-list');
-    const hint = document.getElementById('eq-slot-pub-hint');
-    const hidden = document.getElementById('eq-slot-publishers');
+  function renderSlotPublisherPicker(prefix = 'eq-inline') {
+    const container = document.getElementById(`${prefix}-pub-list`);
+    const hint = document.getElementById(`${prefix}-pub-hint`);
+    const hidden = document.getElementById(`${prefix}-publishers`);
     if (!container) return;
 
-    const day = document.getElementById('eq-slot-day')?.value || helpers.EQUIPMENT_DAYS[0];
-    const equipmentType = document.getElementById('eq-slot-type')?.value || 'carrinho';
-    const search = document.getElementById('eq-slot-pub-search')?.value.trim().toLowerCase() || '';
+    const day = document.getElementById(`${prefix}-day`)?.value || helpers.EQUIPMENT_DAYS[0];
+    const equipmentType = document.getElementById(`${prefix}-type`)?.value || 'carrinho';
+    const search = document.getElementById(`${prefix}-pub-search`)?.value.trim().toLowerCase() || '';
     const previouslySelected = new Set(parsePublisherNames(hidden?.value).map(normalizePubName));
 
     let eligible = publishers.filter((row) => publisherEligibleForSlot(row, day, equipmentType));
@@ -190,14 +189,14 @@
 
     if (!eligible.length && !extras.length) {
       container.innerHTML = '<p class="eq-slot-pub-picker__empty">Nenhum publicador apto para este dia e equipamento. Cadastre na aba Publicadores.</p>';
-      updateSlotPublisherSummary();
+      updateSlotPublisherSummary(prefix);
       return;
     }
 
     container.innerHTML = [
       ...extras.map((name) => `
         <label class="eq-slot-pub-pick eq-slot-pub-pick--extra">
-          <input type="checkbox" name="eq-slot-pub" value="${escapeHtml(name)}" checked/>
+          <input type="checkbox" name="${prefix}-pub" value="${escapeHtml(name)}" checked/>
           <span>${escapeHtml(name)}</span>
           <span class="eq-slot-pub-pick__tag">manual</span>
         </label>`),
@@ -206,13 +205,13 @@
         const checked = previouslySelected.has(normalizePubName(name));
         return `
           <label class="eq-slot-pub-pick">
-            <input type="checkbox" name="eq-slot-pub" value="${escapeHtml(name)}" ${checked ? 'checked' : ''}/>
+            <input type="checkbox" name="${prefix}-pub" value="${escapeHtml(name)}" ${checked ? 'checked' : ''}/>
             <span>${escapeHtml(name)}</span>
           </label>`;
       })
     ].join('');
 
-    syncSlotPublishersField();
+    syncSlotPublishersField(prefix);
   }
 
   async function loadSlots() {
@@ -528,6 +527,175 @@
     renderPublishersTable({ updateUi: true });
   }
 
+  function defaultSlotDraft(item) {
+    return {
+      id: item?.id || '',
+      weekday_label: item?.weekday_label || helpers.EQUIPMENT_DAYS[0],
+      period_label: item?.period_label || 'Manhã',
+      slot_kind: item?.slot_kind || 'temporary',
+      equipment_type: item?.equipment_type || 'carrinho',
+      equipment_name: item?.equipment_name || '',
+      location_name: item?.location_name || '',
+      publisher_names: item?.publisher_names || '',
+      sort_order: item?.sort_order ?? 0
+    };
+  }
+
+  function startNewSlotInline() {
+    inlineSlotDraft = { mode: 'new', ...defaultSlotDraft(null) };
+    renderSchedule();
+  }
+
+  function startEditSlotInline(item) {
+    if (!item) return;
+    inlineSlotDraft = { mode: 'edit', ...defaultSlotDraft(item) };
+    renderSchedule();
+  }
+
+  function cancelInlineSlot() {
+    inlineSlotDraft = null;
+    renderSchedule();
+  }
+
+  function renderInlineSlotEditor(draft) {
+    const { dayOpts, periodOpts } = slotSelectOptions(draft.weekday_label, draft.period_label);
+    return `
+      <div class="eq-sched-editor" id="eq-inline-slot-form">
+        <div class="eq-sched-editor__head">
+          <span class="eq-sched-editor__title">${draft.mode === 'new' ? 'Nova linha' : 'Editar linha'}</span>
+        </div>
+        <div class="eq-sched-editor__grid">
+          <label class="eq-sched-editor__field">
+            <span>Dia</span>
+            <select id="eq-inline-day" class="eq-sched-editor__input">${dayOpts}</select>
+          </label>
+          <label class="eq-sched-editor__field">
+            <span>Período</span>
+            <select id="eq-inline-period" class="eq-sched-editor__input">${periodOpts}</select>
+          </label>
+          <label class="eq-sched-editor__field">
+            <span>Tipo</span>
+            <select id="eq-inline-kind" class="eq-sched-editor__input">
+              <option value="fixed" ${draft.slot_kind === 'fixed' ? 'selected' : ''}>Fixo (toda semana)</option>
+              <option value="temporary" ${draft.slot_kind === 'temporary' ? 'selected' : ''}>Temporário (só esta semana)</option>
+            </select>
+          </label>
+          <label class="eq-sched-editor__field">
+            <span>Equipamento</span>
+            <select id="eq-inline-type" class="eq-sched-editor__input">
+              <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
+              <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
+            </select>
+          </label>
+          <label class="eq-sched-editor__field eq-sched-editor__field--wide">
+            <span>Nome do equipamento</span>
+            <input id="eq-inline-equipment" class="eq-sched-editor__input" value="${escapeHtml(draft.equipment_name)}" placeholder="SOUZA, ALMEIDA, DAMASCENO…"/>
+          </label>
+          <label class="eq-sched-editor__field eq-sched-editor__field--wide">
+            <span>Local</span>
+            <input id="eq-inline-location" class="eq-sched-editor__input" value="${escapeHtml(draft.location_name)}" placeholder="Praça, endereço…"/>
+          </label>
+          <label class="eq-sched-editor__field">
+            <span>Ordem</span>
+            <input id="eq-inline-sort" type="number" class="eq-sched-editor__input" value="${escapeHtml(String(draft.sort_order ?? 0))}"/>
+          </label>
+        </div>
+        <div class="eq-sched-editor__pubs">
+          <span class="eq-sched-editor__pubs-label">Publicadores</span>
+          <input type="hidden" id="eq-inline-publishers" value="${escapeHtml(draft.publisher_names)}"/>
+          <div class="eq-slot-pub-picker">
+            <div class="eq-slot-pub-picker__toolbar">
+              <input id="eq-inline-pub-search" type="search" class="eq-sched-editor__input" placeholder="Buscar na lista…" autocomplete="off"/>
+              <span class="eq-slot-pub-picker__hint" id="eq-inline-pub-hint">—</span>
+            </div>
+            <div id="eq-inline-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
+            <p class="eq-slot-pub-picker__summary eq-slot-pub-picker__summary--empty" id="eq-inline-pub-summary">Nenhum publicador selecionado</p>
+          </div>
+        </div>
+        <div class="eq-sched-editor__foot">
+          ${draft.mode === 'edit' ? '<button type="button" class="eq-modal-btn eq-modal-btn--danger" data-eq-inline-delete>Excluir</button>' : '<span></span>'}
+          <div class="eq-sched-editor__foot-actions">
+            <button type="button" class="eq-modal-btn eq-modal-btn--ghost" data-eq-inline-cancel>Cancelar</button>
+            <button type="button" class="eq-modal-btn eq-modal-btn--primary" data-eq-inline-save>Salvar</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function readInlineSlotPayload() {
+    syncSlotPublishersField('eq-inline');
+    const publisherNames = document.getElementById('eq-inline-publishers')?.value.trim() || '';
+    const slotKind = document.getElementById('eq-inline-kind')?.value || 'temporary';
+    return {
+      id: inlineSlotDraft?.id || '',
+      weekday_label: document.getElementById('eq-inline-day')?.value,
+      period_label: document.getElementById('eq-inline-period')?.value,
+      slot_kind: slotKind,
+      week_start: slotKind === 'temporary' ? currentWeek : null,
+      equipment_type: document.getElementById('eq-inline-type')?.value,
+      equipment_name: document.getElementById('eq-inline-equipment')?.value.trim() || '',
+      location_name: document.getElementById('eq-inline-location')?.value.trim() || '',
+      publisher_names: publisherNames,
+      sort_order: parseInt(document.getElementById('eq-inline-sort')?.value, 10) || 0,
+      is_active: true,
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  async function saveInlineSlot() {
+    if (!inlineSlotDraft) return;
+    const payload = readInlineSlotPayload();
+    if (!payload.publisher_names) {
+      showToast(toast, 'Selecione ao menos um publicador.', true);
+      return;
+    }
+    if (!payload.equipment_name || !payload.location_name) {
+      showToast(toast, 'Preencha nome do equipamento e local.', true);
+      return;
+    }
+
+    const { id, ...data } = payload;
+    const { error } = id
+      ? await client.from('equipment_schedule_slots').update(data).eq('id', id)
+      : await client.from('equipment_schedule_slots').insert(data);
+
+    if (error) {
+      showToast(toast, error.message, true);
+      return;
+    }
+
+    showToast(toast, 'Linha salva.');
+    inlineSlotDraft = null;
+    await loadSlots();
+  }
+
+  async function deleteInlineSlot() {
+    const id = inlineSlotDraft?.id;
+    if (!id || !confirm('Excluir esta linha do cronograma?')) return;
+    const { error } = await client.from('equipment_schedule_slots').delete().eq('id', id);
+    if (error) showToast(toast, error.message, true);
+    else {
+      showToast(toast, 'Linha excluída.');
+      inlineSlotDraft = null;
+      await loadSlots();
+    }
+  }
+
+  function renderScheduleRow(row) {
+    return `
+      <div class="eq-sched-row">
+        <span><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(row.period_label)}</span>
+        <span><span class="eq-slot-kind eq-slot-kind--${row.slot_kind === 'fixed' ? 'fixed' : 'temp'}">${row.slot_kind === 'fixed' ? 'Fixo' : 'Temp.'}</span></span>
+        <span><span class="eq-type-pill${row.equipment_type === 'display' ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span></span>
+        <span>${escapeHtml(row.publisher_names || '—')}</span>
+        <span>${escapeHtml(row.equipment_name || '—')}</span>
+        <span>${escapeHtml(row.location_name || '—')}</span>
+        <span class="eq-row-actions">
+          <button type="button" class="eq-row-btn" data-eq-edit-slot="${row.id}">Editar</button>
+        </span>
+      </div>`;
+  }
+
   function renderSchedule() {
     const list = document.getElementById('eq-sched-list');
     const weekInput = document.getElementById('eq-week');
@@ -535,42 +703,26 @@
     if (!list) return;
 
     const rows = helpers.slotsForWeek(slots, currentWeek);
-    if (!rows.length) {
-      list.innerHTML = `
-        <div class="eq-sched-card p-5 text-sm text-on-surface-variant">
-          Nenhuma linha para esta semana. Adicione slots <strong>fixos</strong> (repetem sempre) ou <strong>temporários</strong> (só esta semana).
-        </div>`;
-      return;
-    }
+    const editingId = inlineSlotDraft?.mode === 'edit' ? inlineSlotDraft.id : '';
+    const displayRows = editingId ? rows.filter((row) => row.id !== editingId) : rows;
 
     list.innerHTML = `
       <div class="eq-sched-card">
         <div class="eq-sched-row eq-sched-row--head">
           <span>Dia / período</span><span>Tipo</span><span>Equip.</span><span>Publicadores</span><span>Nome</span><span>Local</span><span></span>
         </div>
-        ${rows.map((row) => `
-          <div class="eq-sched-row">
-            <span><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(row.period_label)}</span>
-            <span><span class="eq-slot-kind eq-slot-kind--${row.slot_kind === 'fixed' ? 'fixed' : 'temp'}">${row.slot_kind === 'fixed' ? 'Fixo' : 'Temp.'}</span></span>
-            <span><span class="eq-type-pill${row.equipment_type === 'display' ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span></span>
-            <span>${escapeHtml(row.publisher_names || '—')}</span>
-            <span>${escapeHtml(row.equipment_name || '—')}</span>
-            <span>${escapeHtml(row.location_name || '—')}</span>
-            <span class="eq-row-actions">
-              <button type="button" class="eq-row-btn" data-eq-edit-slot="${row.id}">Editar</button>
-            </span>
-          </div>`).join('')}
+        ${inlineSlotDraft ? renderInlineSlotEditor(inlineSlotDraft) : ''}
+        ${displayRows.length ? displayRows.map(renderScheduleRow).join('') : ''}
+        ${!displayRows.length && !inlineSlotDraft ? `
+          <div class="eq-sched-empty">
+            Nenhuma linha para esta semana. Clique em <strong>Nova linha</strong> para começar.
+          </div>` : ''}
       </div>`;
 
-    list.querySelectorAll('[data-eq-edit-slot]').forEach((btn) => {
-      btn.addEventListener('click', () => openSlotModal(slots.find((s) => s.id === btn.dataset.eqEditSlot)));
-    });
-  }
-
-  function ensureSlotModalPortal() {
-    const modal = document.getElementById('eq-slot-modal');
-    if (modal && modal.parentElement !== document.body) {
-      document.body.appendChild(modal);
+    if (inlineSlotDraft) {
+      renderSlotPublisherPicker('eq-inline');
+      document.getElementById('eq-inline-slot-form')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('eq-inline-equipment')?.focus();
     }
   }
 
@@ -610,90 +762,6 @@
     resetPublisherForm();
   }
 
-  function openSlotModal(item) {
-    ensureSlotModalPortal();
-    const modal = document.getElementById('eq-slot-modal');
-    const deleteBtn = document.getElementById('eq-slot-delete');
-    if (!modal) return;
-
-    document.getElementById('eq-slot-id').value = item?.id || '';
-    document.getElementById('eq-slot-day').value = item?.weekday_label || helpers.EQUIPMENT_DAYS[0];
-    document.getElementById('eq-slot-period').value = item?.period_label || 'Manhã';
-    document.getElementById('eq-slot-kind').value = item?.slot_kind || 'temporary';
-    document.getElementById('eq-slot-type').value = item?.equipment_type || 'carrinho';
-    document.getElementById('eq-slot-equipment').value = item?.equipment_name || '';
-    document.getElementById('eq-slot-location').value = item?.location_name || '';
-    document.getElementById('eq-slot-publishers').value = item?.publisher_names || '';
-    document.getElementById('eq-slot-sort').value = item?.sort_order ?? 0;
-    document.getElementById('eq-slot-modal-title').textContent = item ? 'Editar linha' : 'Nova linha';
-    deleteBtn.classList.toggle('hidden', !item?.id);
-    const pubSearch = document.getElementById('eq-slot-pub-search');
-    if (pubSearch) pubSearch.value = '';
-    renderSlotPublisherPicker();
-
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeSlotModal() {
-    const modal = document.getElementById('eq-slot-modal');
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.getElementById('eq-slot-form')?.reset();
-    document.getElementById('eq-slot-id').value = '';
-  }
-
-  async function saveSlot(e) {
-    e.preventDefault();
-    syncSlotPublishersField();
-    const publisherNames = document.getElementById('eq-slot-publishers').value.trim();
-    if (!publisherNames) {
-      showToast(toast, 'Selecione ao menos um publicador.', true);
-      return;
-    }
-    const id = document.getElementById('eq-slot-id').value;
-    const slotKind = document.getElementById('eq-slot-kind').value;
-    const payload = {
-      weekday_label: document.getElementById('eq-slot-day').value,
-      period_label: document.getElementById('eq-slot-period').value,
-      slot_kind: slotKind,
-      week_start: slotKind === 'temporary' ? currentWeek : null,
-      equipment_type: document.getElementById('eq-slot-type').value,
-      equipment_name: document.getElementById('eq-slot-equipment').value.trim(),
-      location_name: document.getElementById('eq-slot-location').value.trim(),
-      publisher_names: publisherNames,
-      sort_order: parseInt(document.getElementById('eq-slot-sort').value, 10) || 0,
-      is_active: true,
-      updated_at: new Date().toISOString()
-    };
-
-    const { error } = id
-      ? await client.from('equipment_schedule_slots').update(payload).eq('id', id)
-      : await client.from('equipment_schedule_slots').insert(payload);
-
-    if (error) {
-      showToast(toast, error.message, true);
-      return;
-    }
-
-    showToast(toast, 'Linha salva.');
-    closeSlotModal();
-    await loadSlots();
-  }
-
-  async function deleteSlot() {
-    const id = document.getElementById('eq-slot-id').value;
-    if (!id || !confirm('Excluir esta linha do cronograma?')) return;
-    const { error } = await client.from('equipment_schedule_slots').delete().eq('id', id);
-    if (error) showToast(toast, error.message, true);
-    else {
-      showToast(toast, 'Linha excluída.');
-      closeSlotModal();
-      await loadSlots();
-    }
-  }
-
   function copyWhatsApp() {
     const msg = helpers.generateWhatsAppEquipmentSchedule(currentWeek, slots);
     const wrap = document.getElementById('eq-whatsapp-wrap');
@@ -725,35 +793,53 @@
 
     setupTabs();
     fillSelectOptions();
-    ensureSlotModalPortal();
     ensurePublisherModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = helpers.snapToWeekStart(e.target.value);
+      inlineSlotDraft = null;
       renderSchedule();
       document.getElementById('eq-whatsapp-wrap')?.classList.add('hidden');
     });
 
-    document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => openSlotModal(null));
+    document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
-    document.getElementById('eq-slot-form')?.addEventListener('submit', saveSlot);
-    document.getElementById('eq-slot-form')?.addEventListener('change', (e) => {
-      if (e.target.name === 'eq-slot-pub') syncSlotPublishersField();
-      if (e.target.id === 'eq-slot-day' || e.target.id === 'eq-slot-type') {
-        syncSlotPublishersField();
-        renderSlotPublisherPicker();
+
+    document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('[data-eq-edit-slot]');
+      if (editBtn) {
+        startEditSlotInline(slots.find((s) => s.id === editBtn.dataset.eqEditSlot));
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-save]')) {
+        await saveInlineSlot();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-cancel]')) {
+        cancelInlineSlot();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-delete]')) {
+        await deleteInlineSlot();
       }
     });
-    document.getElementById('eq-slot-pub-search')?.addEventListener('input', () => {
-      syncSlotPublishersField();
-      renderSlotPublisherPicker();
+
+    document.getElementById('eq-sched-list')?.addEventListener('change', (e) => {
+      if (!inlineSlotDraft) return;
+      const form = document.getElementById('eq-inline-slot-form');
+      if (!form?.contains(e.target)) return;
+      if (e.target.name === 'eq-inline-pub') syncSlotPublishersField('eq-inline');
+      if (e.target.id === 'eq-inline-day' || e.target.id === 'eq-inline-type') {
+        syncSlotPublishersField('eq-inline');
+        renderSlotPublisherPicker('eq-inline');
+      }
     });
-    document.getElementById('eq-slot-cancel')?.addEventListener('click', closeSlotModal);
-    document.getElementById('eq-slot-modal-close')?.addEventListener('click', closeSlotModal);
-    document.getElementById('eq-slot-delete')?.addEventListener('click', deleteSlot);
-    document.getElementById('eq-slot-modal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'eq-slot-modal') closeSlotModal();
+
+    document.getElementById('eq-sched-list')?.addEventListener('input', (e) => {
+      if (e.target.id !== 'eq-inline-pub-search') return;
+      syncSlotPublishersField('eq-inline');
+      renderSlotPublisherPicker('eq-inline');
     });
 
     document.getElementById('eq-pub-modal-close')?.addEventListener('click', closePublisherModal);
