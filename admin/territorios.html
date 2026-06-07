@@ -115,20 +115,37 @@
     .terr-catalog-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
     .terr-catalog-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
     .terr-catalog-panel{min-width:0}
-    @media(min-width:900px){.terr-catalog-panel{min-width:42rem}}
-    .terr-catalog-row{display:grid;grid-template-columns:3rem minmax(7.5rem,1.35fr) 5.25rem minmax(5rem,1fr) minmax(4.5rem,.75fr) 2.75rem;gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
+    @media(min-width:900px){.terr-catalog-panel{min-width:52rem}}
+    .terr-catalog-row{display:grid;grid-template-columns:3rem minmax(7rem,1.2fr) minmax(6.5rem,.9fr) 5rem minmax(4.75rem,.95fr) minmax(10rem,1.25fr) 2.75rem;gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
     .terr-catalog-row:last-child{border-bottom:none}
     .terr-catalog-row:not(.terr-catalog-row--head):hover{background:#fafbfc}
     .terr-catalog-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
     .terr-catalog-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.125rem .375rem;border-radius:.25rem;text-align:center}
     .terr-catalog-name{min-width:0}
+    .terr-catalog-type{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.25rem;white-space:nowrap}
+    .terr-catalog-type--mid{background:#eef3fa;color:#0f3462}
+    .terr-catalog-type--weekend{background:#ecfdf5;color:#047857}
     .terr-catalog-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#43474f;font-size:.75rem}
     .terr-catalog-cell--muted{color:#9ca3af;font-style:italic}
     .terr-catalog-status{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.125rem .375rem;border-radius:.25rem;text-align:center;white-space:nowrap}
     .terr-catalog-status--designado{background:#d1fae5;color:#047857}
     .terr-catalog-status--disponivel{background:#e0e7ff;color:#4338ca}
-    .terr-catalog-meta{display:inline-flex;align-items:center;gap:.3125rem;min-width:0;font-size:.6875rem;color:#6b7280;white-space:nowrap}
-    .terr-catalog-priority .terr-priority{font-size:.5625rem;padding:.0625rem .3125rem}
+    .terr-catalog-cov{display:flex;flex-direction:column;gap:.25rem;min-width:0}
+    .terr-catalog-cov__bar{height:.3125rem;border-radius:9999px;background:#eef0f4;overflow:hidden}
+    .terr-catalog-cov__fill{display:block;height:100%;border-radius:9999px;transition:width .45s cubic-bezier(.4,0,.2,1)}
+    .terr-catalog-cov--fresh .terr-catalog-cov__fill{background:linear-gradient(90deg,#6366f1,#4338ca)}
+    .terr-catalog-cov--warn .terr-catalog-cov__fill{background:linear-gradient(90deg,#fbbf24,#b45309)}
+    .terr-catalog-cov--critical .terr-catalog-cov__fill{background:linear-gradient(90deg,#f87171,#b91c1c);animation:terr-cov-pulse 2.4s ease-in-out infinite}
+    .terr-catalog-cov--unknown .terr-catalog-cov__fill{background:repeating-linear-gradient(-45deg,#e5e7eb,#e5e7eb 4px,#d1d5db 4px,#d1d5db 8px)}
+    .terr-catalog-cov--working .terr-catalog-cov__fill{background:linear-gradient(90deg,#34d399,#047857);width:100%!important}
+    .terr-catalog-cov__text{display:flex;flex-wrap:wrap;align-items:baseline;gap:.1875rem .375rem;min-width:0;line-height:1.2}
+    .terr-catalog-cov__head{font-size:.75rem;font-weight:800;color:#0f3462}
+    .terr-catalog-cov--critical .terr-catalog-cov__head{color:#b91c1c}
+    .terr-catalog-cov--warn .terr-catalog-cov__head{color:#b45309}
+    .terr-catalog-cov--working .terr-catalog-cov__head{color:#047857}
+    .terr-catalog-cov--unknown .terr-catalog-cov__head{color:#6b7280}
+    .terr-catalog-cov__sub{font-size:.625rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+    @keyframes terr-cov-pulse{0%,100%{opacity:1}50%{opacity:.72}}
     .terr-catalog-actions{display:flex;justify-content:flex-end}
     .terr-catalog-foot{padding:.375rem .75rem;font-size:.6875rem;color:#6b7280;background:#f7f9fc;border-top:1px solid #eef0f4;text-align:center}
     @media(max-width:767px){
@@ -139,17 +156,19 @@
         grid-template-columns:1fr auto;
         grid-template-areas:
           "terr actions"
+          "type type"
           "status status"
           "assign assign"
-          "meta meta";
+          "cov cov";
         gap:.375rem .5rem;
         padding:.625rem .75rem;
       }
       .terr-catalog-num{display:none}
       .terr-catalog-name{grid-area:terr}
+      .terr-catalog-type{grid-area:type;justify-self:start}
       .terr-catalog-status{grid-area:status;justify-self:start}
       .terr-catalog-assign{grid-area:assign}
-      .terr-catalog-meta{grid-area:meta}
+      .terr-catalog-cov{grid-area:cov}
       .terr-catalog-actions{grid-area:actions;align-self:start}
       .terr-over-scroll{overflow-x:visible;max-height:none}
       .terr-over-panel{min-width:0}
@@ -601,6 +620,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060808"></script>
+    <script src="../js/admin/territory-system.js?v=2026060811"></script>
 </body>
 </html>

@@ -809,6 +809,86 @@
         title="Ver mapa · ${escapeHtml(label)}">${inner}</button>`;
   }
 
+  const TERRITORY_TYPE_LABELS = {
+    meio_de_semana: 'Meio de semana',
+    final_de_semana: 'Final de semana'
+  };
+
+  function catalogTypeMeta(type) {
+    if (type === 'final_de_semana') {
+      return { label: TERRITORY_TYPE_LABELS.final_de_semana, className: 'terr-catalog-type--weekend' };
+    }
+    return { label: TERRITORY_TYPE_LABELS.meio_de_semana, className: 'terr-catalog-type--mid' };
+  }
+
+  function catalogTypeCell(t) {
+    const meta = catalogTypeMeta(t.territory_type);
+    return `<span class="terr-catalog-type ${meta.className}">${escapeHtml(meta.label)}</span>`;
+  }
+
+  function catalogCoverageMeta(t) {
+    const active = activeAssignments.find((a) => a.territory_id === t.id);
+    if (t.status === 'designado') {
+      const assignedIso = active?.assigned_at ? String(active.assigned_at).slice(0, 10) : null;
+      const assignedLabel = assignedIso ? H.formatShortDate(assignedIso) : null;
+      return {
+        tone: 'working',
+        barPct: 100,
+        headline: 'Em campo',
+        sub: assignedLabel ? `Designado em ${assignedLabel}` : 'Trabalho em andamento',
+        title: assignedLabel ? `Designado em ${H.formatDisplayDate(assignedIso)}` : 'Território com designação ativa'
+      };
+    }
+
+    const days = H.daysSince(t.last_worked_at);
+    if (days === null) {
+      return {
+        tone: 'unknown',
+        barPct: 100,
+        headline: 'Sem registro',
+        sub: 'Nunca devolvido no sistema',
+        title: 'Sem data de último trabalho registrada'
+      };
+    }
+
+    const barPct = Math.min(100, Math.round((days / 28) * 100));
+    let tone = 'fresh';
+    if (days >= 28) tone = 'critical';
+    else if (days >= 14) tone = 'warn';
+
+    let headline;
+    if (days === 0) headline = 'Hoje';
+    else if (days === 1) headline = '1 dia';
+    else headline = `${days} dias`;
+
+    const lastIso = String(t.last_worked_at).slice(0, 10);
+    const lastShort = H.formatShortDate(lastIso);
+    const lastLong = H.formatDisplayDate(lastIso);
+    const sub = days === 0
+      ? `Trabalhado hoje · ${lastShort}`
+      : `${days} ${days === 1 ? 'dia' : 'dias'} sem cobertura · ${lastShort}`;
+
+    return {
+      tone,
+      barPct,
+      headline,
+      sub,
+      title: `${days} dias sem cobertura · último trabalho em ${lastLong}`
+    };
+  }
+
+  function catalogCoverageCell(t) {
+    const m = catalogCoverageMeta(t);
+    return `
+      <span class="terr-catalog-cov terr-catalog-cov--${m.tone}" title="${escapeHtml(m.title)}">
+        <span class="terr-catalog-cov__bar" aria-hidden="true"><span class="terr-catalog-cov__fill" style="width:${m.barPct}%"></span></span>
+        <span class="terr-catalog-cov__text">
+          <strong class="terr-catalog-cov__head">${escapeHtml(m.headline)}</strong>
+          <span class="terr-catalog-cov__sub">${escapeHtml(m.sub)}</span>
+        </span>
+      </span>`;
+  }
+
   function getFilteredCatalog() {
     const q = catalogFilter.q.trim().toLowerCase();
     if (!q) return territories;
@@ -816,13 +896,18 @@
       const active = activeAssignments.find((a) => a.territory_id === t.id);
       const assignee = active ? profileName(active.profiles) : '';
       const p = H.computePriority(t);
+      const days = H.daysSince(t.last_worked_at);
       return [
         t.num,
         t.display_name,
         t.status,
+        t.territory_type,
+        TERRITORY_TYPE_LABELS[t.territory_type],
         STATUS_LABELS[t.status],
         assignee,
-        p.label
+        p.label,
+        days,
+        t.last_worked_at
       ].join(' ').toLowerCase().includes(q);
     });
   }
@@ -843,7 +928,7 @@
     const footEl = document.getElementById('catalogo-foot');
     if (!listEl) return;
 
-    const filtered = getFilteredCatalog();
+    const filtered = H.sortByPriority(getFilteredCatalog());
     const designados = territories.filter((t) => t.status === 'designado').length;
     const disponiveis = territories.length - designados;
 
@@ -867,19 +952,15 @@
     listEl.innerHTML = filtered.map((t) => {
       const active = activeAssignments.find((a) => a.territory_id === t.id);
       const assignee = active ? profileName(active.profiles) : '—';
-      const days = H.daysSince(t.last_worked_at);
       const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
-      const daysLabel = days !== null ? `${days} dias sem cobertura` : 'Sem registro de cobertura';
       return `
       <div class="terr-catalog-row">
         <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
         <span class="terr-catalog-name">${catalogTerritoryCell(t)}</span>
+        ${catalogTypeCell(t)}
         <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
         <span class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</span>
-        <span class="terr-catalog-meta" title="${escapeHtml(daysLabel)}">
-          ${priorityBadge(t)}
-          <span>${days !== null ? `${days}d` : '—'}</span>
-        </span>
+        ${catalogCoverageCell(t)}
         <span class="terr-catalog-actions">
           <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
@@ -906,7 +987,7 @@
       <div class="terr-catalog-toolbar">
         <div>
           <h2>Catálogo de territórios</h2>
-          <p>Mapas, status e designações · ${territories.length} territórios</p>
+          <p>Mapas, status e cobertura · ${territories.length} territórios</p>
         </div>
         <div class="terr-catalog-toolbar-search">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
@@ -930,7 +1011,7 @@
       <div class="terr-catalog-scroll">
         <div class="terr-catalog-panel">
           <div class="terr-catalog-row terr-catalog-row--head">
-            <span>T</span><span>Território</span><span>Status</span><span>Designado</span><span>Prioridade · Dias</span><span></span>
+            <span>ID</span><span>Território</span><span>Tipo</span><span>Status</span><span>Designado</span><span>Cobertura</span><span></span>
           </div>
           <div id="catalogo-table-body"></div>
           <p id="catalogo-foot" class="terr-catalog-foot"></p>
