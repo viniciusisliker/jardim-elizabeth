@@ -1413,11 +1413,53 @@
     return list.filter((item) => keys.includes(String(valueFn(item))));
   }
 
+  function xlfResetMenuPosition(menu) {
+    if (!menu) return;
+    menu.classList.remove('terr-xlf-menu--floating');
+    menu.style.position = '';
+    menu.style.top = '';
+    menu.style.left = '';
+    menu.style.right = '';
+    menu.style.width = '';
+    menu.style.visibility = '';
+    menu.style.zIndex = '';
+  }
+
+  function xlfPositionMenu(btn, menu) {
+    const margin = 8;
+    const gap = 4;
+    menu.classList.add('terr-xlf-menu--floating');
+    menu.classList.remove('hidden');
+    menu.style.visibility = 'hidden';
+
+    requestAnimationFrame(() => {
+      const btnRect = btn.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      let left = btnRect.right - menuRect.width;
+      if (left < margin) left = margin;
+      if (left + menuRect.width > window.innerWidth - margin) {
+        left = Math.max(margin, window.innerWidth - menuRect.width - margin);
+      }
+      let top = btnRect.bottom + gap;
+      if (top + menuRect.height > window.innerHeight - margin) {
+        top = Math.max(margin, btnRect.top - menuRect.height - gap);
+      }
+      menu.style.position = 'fixed';
+      menu.style.left = `${Math.round(left)}px`;
+      menu.style.top = `${Math.round(top)}px`;
+      menu.style.right = 'auto';
+      menu.style.width = `${Math.round(menuRect.width)}px`;
+      menu.style.zIndex = '1000';
+      menu.style.visibility = '';
+    });
+  }
+
   function xlfCloseMenus(scope = null) {
     document.querySelectorAll('[data-xlf-menu]').forEach((menu) => {
       const menuScope = menu.closest('[data-xlf-scope]')?.dataset.xlfScope;
       if (scope && menuScope === scope) return;
       menu.classList.add('hidden');
+      xlfResetMenuPosition(menu);
       const trigger = menu.closest('[data-xlf-scope]')?.querySelector(`[data-xlf-trigger="${menu.dataset.xlfMenu}"]`);
       trigger?.setAttribute('aria-expanded', 'false');
     });
@@ -1514,7 +1556,7 @@
         const willOpen = menu.classList.contains('hidden');
         xlfCloseMenus();
         if (willOpen) {
-          menu.classList.remove('hidden');
+          xlfPositionMenu(btn, menu);
           btn.setAttribute('aria-expanded', 'true');
           xlfUpdateFilterUI(root, filterState);
         }
@@ -1575,6 +1617,8 @@
     if (!window.__JETerrXlfBound) {
       window.__JETerrXlfBound = true;
       document.addEventListener('click', () => xlfCloseMenus());
+      document.addEventListener('scroll', () => xlfCloseMenus(), true);
+      window.addEventListener('resize', () => xlfCloseMenus());
     }
   }
 
