@@ -260,6 +260,18 @@
     #header:has(+ main > section[class*="-hero"]:first-child) .je-site-header {
       border-bottom: none;
       box-shadow: none;
+      background: #ffffff;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    #header:has(+ main > section[class*="-hero"]:first-child) .je-site-nav {
+      box-shadow: 0 1px 2px rgba(15, 52, 98, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+    #header:has(+ main > section[class*="-hero"]:first-child) .je-site-nav-glow {
+      opacity: 0.35;
+    }
+    #header:has(+ main > section[class*="-hero"]:first-child) + main > section[class*="-hero"]:first-child {
+      margin-top: -1px;
     }
     .je-site-header-accent {
       height: 3px;
@@ -917,18 +929,19 @@
   const assetBase = isAdminPath ? '..' : '.';
 
   function ensureFavicon() {
-    const svgHref = `${assetBase}/img/icon.svg`;
+    const iconHref = `${assetBase}/img/icon.png`;
     const png32Href = `${assetBase}/img/favicon-32.png`;
     const png180Href = `${assetBase}/img/favicon-180.png`;
 
-    if (!document.querySelector('link[rel="icon"][type="image/svg+xml"]')) {
-      const svgLink = document.createElement('link');
-      svgLink.rel = 'icon';
-      svgLink.type = 'image/svg+xml';
-      svgLink.href = svgHref;
-      document.head.appendChild(svgLink);
+    if (!document.querySelector('link[rel="icon"][type="image/png"][sizes="512x512"]')) {
+      const mainLink = document.createElement('link');
+      mainLink.rel = 'icon';
+      mainLink.type = 'image/png';
+      mainLink.sizes = '512x512';
+      mainLink.href = iconHref;
+      document.head.appendChild(mainLink);
     }
-    if (!document.querySelector('link[rel="icon"][type="image/png"]')) {
+    if (!document.querySelector('link[rel="icon"][type="image/png"][sizes="32x32"]')) {
       const pngLink = document.createElement('link');
       pngLink.rel = 'icon';
       pngLink.type = 'image/png';

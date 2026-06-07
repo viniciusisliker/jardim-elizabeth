@@ -6,16 +6,32 @@
     return window.JEAuth?.getClient?.();
   }
 
-  async function fetchAgendaEvents() {
-    const client = await getClient();
-    if (!client) return null;
-    const { data, error } = await client
-      .from('agenda_events')
-      .select('*')
-      .eq('published', true)
-      .order('event_date', { ascending: false });
-    if (error || !data?.length) return null;
-    return data;
+  const AGENDA_EVENT_FIELDS = 'title,description,category,event_date,date_display,date_label,month_key,month_label,event_time,location,badge_variant,sort_order,is_highlight';
+
+  let agendaEventsCache = null;
+
+  async function fetchAgendaEvents(options = {}) {
+    const limit = options.limit || 0;
+    if (!limit && agendaEventsCache) return agendaEventsCache;
+
+    const run = async () => {
+      const client = await getClient();
+      if (!client) return null;
+      let query = client
+        .from('agenda_events')
+        .select(AGENDA_EVENT_FIELDS)
+        .eq('published', true)
+        .order('event_date', { ascending: false });
+      if (limit > 0) query = query.limit(limit);
+      const { data, error } = await query;
+      if (error || !data?.length) return null;
+      return data;
+    };
+
+    if (limit > 0) return run();
+
+    agendaEventsCache = run();
+    return agendaEventsCache;
   }
 
   function badgeClass(variant) {
@@ -367,36 +383,51 @@
     if (window.JETerritoriesRefresh) window.JETerritoriesRefresh();
   }
 
+  function renderProximosEmpty(message) {
+    const lista = document.getElementById('proxeventos-lista');
+    if (!lista) return;
+    lista.innerHTML = `<p class="px-5 py-4 text-sm text-on-surface-variant">${esc(message)}</p>`;
+  }
+
   async function loadProximosEventos() {
     const lista = document.getElementById('proxeventos-lista');
     const mesEl = document.getElementById('proxeventos-mes');
     if (!lista) return;
 
-    const events = await fetchAgendaEvents();
-    if (!events?.length) return;
+    try {
+      const events = await fetchAgendaEvents({ limit: 48 });
+      if (!events?.length) {
+        if (mesEl) mesEl.textContent = '';
+        renderProximosEmpty('Nenhum evento publicado no momento.');
+        return;
+      }
 
-    const groups = groupAgendaByMonth(events);
-    const firstGroup = groups[0]?.[1];
-    if (!firstGroup) return;
+      const groups = groupAgendaByMonth(events);
+      const firstGroup = groups[0]?.[1];
+      if (!firstGroup) {
+        if (mesEl) mesEl.textContent = '';
+        renderProximosEmpty('Nenhum evento publicado no momento.');
+        return;
+      }
 
-    if (mesEl) mesEl.textContent = '— ' + firstGroup.label;
+      if (mesEl) mesEl.textContent = '— ' + firstGroup.label;
 
-    const variantStyle = {
-      gold: { bg: 'rgba(200,169,110,0.12)', border: '1px solid #c8a96e', numColor: '#8a6a2a', lblColor: '#a07c35' },
-      primary: { bg: '#0f3462', border: 'none', numColor: '#ffffff', lblColor: 'rgba(255,255,255,0.7)' },
-      default: { bg: '#f5f3f3', border: '1px solid #c3c6d0', numColor: '#0f3462', lblColor: '#3b5e97' }
-    };
+      const variantStyle = {
+        gold: { bg: 'rgba(200,169,110,0.12)', border: '1px solid #c8a96e', numColor: '#8a6a2a', lblColor: '#a07c35' },
+        primary: { bg: '#0f3462', border: 'none', numColor: '#ffffff', lblColor: 'rgba(255,255,255,0.7)' },
+        default: { bg: '#f5f3f3', border: '1px solid #c3c6d0', numColor: '#0f3462', lblColor: '#3b5e97' }
+      };
 
-    lista.innerHTML = firstGroup.events.map((ev) => {
-      const chip = eventChip(ev);
-      const vs = variantStyle[ev.badge_variant] || variantStyle.default;
-      const isLong = isLongDate(chip.display) || isLongDate(chip.label);
-      const numSize = isLong ? '0.625rem' : '0.8125rem';
-      const extras = [ev.event_time, ev.location].filter(Boolean).join(' · ');
-      const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
-        ? 'color:#274d85;background:#d6e3ff80'
-        : 'color:#7a5200;background:rgba(200,169,110,0.15)';
-      return `
+      lista.innerHTML = firstGroup.events.map((ev) => {
+        const chip = eventChip(ev);
+        const vs = variantStyle[ev.badge_variant] || variantStyle.default;
+        const isLong = isLongDate(chip.display) || isLongDate(chip.label);
+        const numSize = isLong ? '0.625rem' : '0.8125rem';
+        const extras = [ev.event_time, ev.location].filter(Boolean).join(' · ');
+        const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
+          ? 'color:#274d85;background:#d6e3ff80'
+          : 'color:#7a5200;background:rgba(200,169,110,0.15)';
+        return `
         <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
           <div style="flex-shrink:0;width:3rem;text-align:center;border-radius:0.5rem;padding:0.5rem 0.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:${vs.bg};border:${vs.border}">
             <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${esc(chip.display)}</span>
@@ -409,7 +440,12 @@
             ${extras ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${esc(extras)}</p>` : ''}
           </div>
         </div>`;
-    }).join('');
+      }).join('');
+    } catch (err) {
+      console.error('Próximos eventos:', err);
+      if (mesEl) mesEl.textContent = '';
+      renderProximosEmpty('Não foi possível carregar os eventos.');
+    }
   }
 
   async function fetchDonations() {
@@ -475,6 +511,13 @@
   function boot() {
     initTerritoriesPage();
     initAgendaPage();
+
+    const hasHomeEvents = !!document.getElementById('proxeventos-lista');
+    if (hasHomeEvents) {
+      getClient().catch(() => {});
+      loadProximosEventos();
+    }
+
     const run = () => {
       loadAgenda();
       loadAnnouncements();
@@ -482,9 +525,8 @@
       loadDonations();
       loadEquipmentCalendars('je-carrinhos-calendars', 'carrinho');
       loadEquipmentCalendars('je-displays-calendars', 'display');
-      loadProximosEventos();
     };
-    if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2000 });
+    if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2500 });
     else setTimeout(run, 100);
   }
 
