@@ -47,6 +47,28 @@
     return Object.values(SECTIONS).find((s) => s.hash === key) || null;
   }
 
+  const INIT_FLAGS = {
+    anuncios: '__JEAdminAnunciosInit',
+    discursos: '__JEAdminDiscursosInit',
+    agendamentos: '__JEAdminAgendamentosInit',
+    territorios: '__JEAdminTerritoriosInit',
+    donativos: '__JEAdminDonativosInit',
+    configuracoes: '__JEAdminConfigInit'
+  };
+
+  function unmountPartialSections(keepId) {
+    Object.values(SECTIONS).forEach((s) => {
+      if (!s.partial || s.id === keepId) return;
+      const el = document.getElementById(s.viewId);
+      if (!el || el.dataset.mounted !== '1') return;
+      el.innerHTML = '';
+      el.dataset.mounted = '0';
+      loadedSections.delete(s.id);
+      const flag = INIT_FLAGS[s.id];
+      if (flag) delete window[flag];
+    });
+  }
+
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src="${src}"]`);
@@ -64,6 +86,21 @@
       };
       el.onerror = () => reject(new Error(`Falha ao carregar ${src}`));
       document.body.appendChild(el);
+    });
+  }
+
+  function loadCss(href) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`link[href="${href}"]`)) {
+        resolve();
+        return;
+      }
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error(`Falha ao carregar ${href}`));
+      document.head.appendChild(link);
     });
   }
 
@@ -105,16 +142,28 @@
 
   async function ensureSectionReady(section) {
     if (!section || loadedSections.has(section.id)) return;
-    if (!section.scripts?.length) {
-      loadedSections.add(section.id);
-      return;
+
+    if (section.styles?.length) {
+      for (const href of section.styles) await loadCss(href);
     }
 
-    for (const src of section.scripts) {
-      await loadScript(src);
+    if (section.partial) {
+      const el = document.getElementById(section.viewId);
+      if (el && el.dataset.mounted !== '1') {
+        const res = await fetch(section.partial);
+        if (!res.ok) throw new Error(`Partial ${section.partial}`);
+        el.innerHTML = await res.text();
+        el.dataset.mounted = '1';
+      }
     }
+
+    if (section.scripts?.length) {
+      for (const src of section.scripts) await loadScript(src);
+    }
+
     const mod = section.initKey ? window[section.initKey] : null;
     if (mod?.init) await mod.init();
+
     loadedSections.add(section.id);
   }
 
@@ -127,6 +176,8 @@
       if (targetId !== 'home') return navigateTo('home', { replaceHash: true });
     }
 
+    unmountPartialSections(targetId);
+
     try {
       await ensureSectionReady(section);
     } catch (err) {
@@ -137,9 +188,9 @@
 
     showViews(targetId);
     updateHero(section);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (replaceHash) {
-      const next = section.hash ? `#${section.hash}` : `${location.pathname}${location.search}`;
       if (section.hash) {
         if (location.hash !== `#${section.hash}`) history.replaceState(null, '', `#${section.hash}`);
       } else if (location.hash) {

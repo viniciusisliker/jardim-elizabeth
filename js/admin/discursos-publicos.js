@@ -538,11 +538,13 @@
   }
 
   async function init() {
+    if (window.__JEAdminDiscursosInit) return;
+    window.__JEAdminDiscursosInit = true;
     const profile = await guardPermission('public_speeches');
     if (!profile) return;
 
     client = await getClient();
-    toastEl = $('admin-toast');
+    toastEl = document.getElementById('hub-admin-toast') || $('admin-toast');
     $('board-month').value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
 
     $('btn-load-board').addEventListener('click', loadBoard);
@@ -565,6 +567,10 @@
     });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminDiscursos = { init };
+
+  if (!window.JEHubRouter && document.getElementById('board-month')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();

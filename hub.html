@@ -80,6 +80,7 @@
     .hub-hero-back .material-symbols-outlined{font-size:1rem}
     .hub-section-panel{max-width:42rem}
     .hub-section-panel--wide{max-width:56rem}
+    .hub-view--wide{width:100%;max-width:72rem;margin:0 auto}
     @media(max-width:767px){
       #hub-view-donativos #donations-form button[type="submit"],
       #hub-view-agendamentos #btn-new,
@@ -322,11 +323,14 @@
     .hub-terr-card + .hub-terr-card{margin-top:0.75rem}
     body.hub-auth-pending main,
     body.hub-auth-pending #footer { visibility: hidden; }
+    body.hub-auth-pending #header { visibility: hidden; }
     body.hub-auth-pending { background: #0f3462; }
   </style>
 </head>
 
-<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending hub-shell" style="font-family:'Inter',sans-serif;">
+<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
+
+  <div id="header"></div>
 
   <main class="flex-1 flex flex-col">
     <section class="hub-hero py-10 md:py-12 pb-14 md:pb-16 shrink-0">
@@ -386,22 +390,22 @@
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
-              <a href="admin/anuncios.html" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
+              <button type="button" data-hub-tab="anuncios" data-hub-requires-permission="announcements" class="hub-module-card hub-module-card--anuncios">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">campaign</span></span>
                 <div class="hub-module-body">
                   <h4>Quadro de Anúncios</h4>
                   <p>Editor por data, PDF e exportação para Google Agenda.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
-              <a href="admin/discursos-publicos.html" data-hub-requires-permission="public_speeches" class="hub-module-card hub-module-card--discursos">
+              </button>
+              <button type="button" data-hub-tab="discursos" data-hub-requires-permission="public_speeches" class="hub-module-card hub-module-card--discursos">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">record_voice_over</span></span>
                 <div class="hub-module-body">
                   <h4>Discursos Públicos</h4>
                   <p>Arranjo mensal de oradores recebidos e enviados.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
+              </button>
             </div>
           </section>
 
@@ -416,14 +420,14 @@
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
-              <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
+              <button type="button" data-hub-tab="territorios" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
                 <div class="hub-module-body">
                   <h4>Territórios</h4>
                   <p>Designação, devolução, cronograma e histórico de campo.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
+              </button>
             </div>
           </section>
 
@@ -438,18 +442,21 @@
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
-              <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
+              <button type="button" data-hub-tab="configuracoes" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
                 <div class="hub-module-body">
                   <h4>Configurações</h4>
                   <p>Usuários, cargos, designações e permissões de acesso.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
+              </button>
             </div>
           </section>
         </div>
       </div>
+
+      <div id="hub-view-anuncios" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-discursos" class="hub-view hidden hub-view--wide"></div>
 
       <div id="hub-view-agenda" class="hub-view hidden space-y-4">
       <div class="flex flex-wrap justify-end gap-2 mb-2">
@@ -588,6 +595,8 @@
       </div>
       </div>
 
+      <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
+
       <div id="hub-view-donativos" class="hub-view hidden">
         <div class="hub-section-panel mx-auto w-full">
           <form id="donations-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
@@ -619,8 +628,12 @@
         </div>
       </div>
 
+      <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
+
     </div>
   </main>
+
+  <div id="footer"></div>
 
   <div id="hub-changelog-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="hub-changelog-title" aria-modal="true">
     <button type="button" id="hub-changelog-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
@@ -647,14 +660,16 @@
   <script src="js/config.js"></script>
   <script src="js/access-permissions.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
-  <script src="js/hub-sections.js?v=2026060901"></script>
+  <script src="js/hub-sections.js?v=2026060902"></script>
   <script src="js/hub-events.js?v=2026060801"></script>
   <script src="js/hub-changelog.js?v=2026060701"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060624"></script>
   <script src="js/hub-territory-assignment.js?v=2026060624"></script>
-  <script src="js/hub.js?v=2026060901"></script>
+  <script src="js/hub.js?v=2026060902"></script>
 </body>
 </html>

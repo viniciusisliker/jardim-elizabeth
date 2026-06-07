@@ -1,0 +1,66 @@
+    <section class="board-month-toolbar" aria-label="Selecionar mês">
+      <div class="board-month-toolbar__head">
+        <div class="board-month-toolbar__pick">
+          <div class="board-month-toolbar__icon" aria-hidden="true">
+            <span class="material-symbols-outlined">calendar_month</span>
+          </div>
+          <div class="board-month-toolbar__field">
+            <label for="board-month">Mês do arranjo</label>
+            <p class="board-month-toolbar__hint">Escolha o mês e clique em carregar para abrir ou criar o rascunho.</p>
+            <input type="month" id="board-month"/>
+          </div>
+          <button type="button" id="btn-load-board" class="board-load-btn">
+            <span class="material-symbols-outlined" style="font-size:1.125rem">folder_open</span>
+            Carregar mês
+          </button>
+        </div>
+      </div>
+      <div class="board-status-bar">
+        <span class="board-status-bar__label">Arranjo atual</span>
+        <p id="board-label" class="text-sm font-bold text-primary m-0">—</p>
+      </div>
+    </section>
+
+    <p id="admin-toast" class="hidden text-sm mb-4"></p>
+
+    <div id="editor-shell" class="hidden">
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-4">
+        <nav class="flex flex-wrap gap-4 text-sm" aria-label="Direção">
+          <button type="button" data-tab="receive" class="tab-btn tab-active pb-2">Recebemos</button>
+          <button type="button" data-tab="send" class="tab-btn pb-2 text-on-surface-variant">Enviamos</button>
+        </nav>
+      </div>
+
+      <div id="dp-stats" class="dp-stats" aria-live="polite"></div>
+      <div id="dp-timeline" class="dp-timeline" role="tablist" aria-label="Linha do tempo do mês"></div>
+
+      <div class="dp-toolbar">
+        <div class="dp-toolbar-actions">
+          <button type="button" id="btn-regen-saturdays" class="dp-mini-btn"><span class="material-symbols-outlined" style="font-size:16px">refresh</span>Regenerar sábados</button>
+          <button type="button" id="btn-add-speech" class="dp-mini-btn">+ Discurso</button>
+          <button type="button" id="btn-add-convention" class="dp-mini-btn">+ Congresso</button>
+          <button type="button" id="btn-add-special" class="dp-mini-btn">+ Visita SC</button>
+          <button type="button" id="btn-add-note" class="dp-mini-btn">+ Nota</button>
+        </div>
+        <button type="button" id="btn-save" class="dp-save-btn">
+          <span class="material-symbols-outlined" style="font-size:18px">save</span>
+          Salvar arranjo
+        </button>
+      </div>
+
+      <div class="dp-workspace">
+        <nav id="dp-nav" class="dp-nav" aria-label="Entradas do mês"></nav>
+        <div id="dp-editor-host"></div>
+        <aside id="dp-preview" class="dp-preview-card" aria-live="polite">
+          <p class="dp-preview-label">Pré-visualização</p>
+          <div id="dp-preview-body" class="dp-preview-empty">Selecione uma entrada para ver o resumo.</div>
+        </aside>
+      </div>
+    </div>
+  <datalist id="characteristics-list">
+    <option value="Bíblia/Deus"></option>
+    <option value="Provações/Problemas"></option>
+    <option value="Religião/Adoração"></option>
+    <option value="Março/Agosto - SC"></option>
+    <option value="Orador Local"></option>
+  </datalist>

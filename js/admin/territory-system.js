@@ -1934,9 +1934,11 @@
   }
 
   async function init() {
+    if (window.__JEAdminTerritoriosInit) return;
+    window.__JEAdminTerritoriosInit = true;
     const profile = await guardPermission('territorios');
     if (!profile) return;
-    toast = document.getElementById('admin-toast');
+    toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
     client = await getClient();
     setupTabs();
     setupTerritoryMapLightbox();
@@ -1972,6 +1974,10 @@
     await refresh();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminTerritorios = { init };
+
+  if (!window.JEHubRouter && document.getElementById('terr-nav')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();

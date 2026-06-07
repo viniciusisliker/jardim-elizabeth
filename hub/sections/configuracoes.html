@@ -1,0 +1,61 @@
+    <div class="cfg-stats mb-3">
+      <div class="cfg-stat cfg-stat--people">
+        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+        <div><p class="cfg-stat__label">Membros</p><p class="cfg-stat__val" id="cfg-stat-members">—</p></div>
+      </div>
+      <div class="cfg-stat cfg-stat--des">
+        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">badge</span></span>
+        <div><p class="cfg-stat__label">Designações</p><p class="cfg-stat__val" id="cfg-stat-designations">—</p></div>
+      </div>
+      <div class="cfg-stat cfg-stat--roles">
+        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">shield_person</span></span>
+        <div><p class="cfg-stat__label">Com acesso admin</p><p class="cfg-stat__val" id="cfg-stat-admins">—</p></div>
+      </div>
+    </div>
+
+    <p id="admin-toast" class="hidden text-sm mb-3"></p>
+
+    <div class="cfg-note mb-4">
+      <span class="material-symbols-outlined" aria-hidden="true">info</span>
+      <span id="cfg-role-note">Carregando permissões…</span>
+    </div>
+
+    <section id="cfg-designations-section" class="mb-4 hidden">
+      <div class="cfg-section-head">
+        <div>
+          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>Designações de acesso</p>
+          <p class="cfg-section-desc">Funções com permissões de módulo — atribua aos membros abaixo.</p>
+        </div>
+        <button type="button" id="cfg-add-designation" class="cfg-btn cfg-btn--primary">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Nova designação
+        </button>
+      </div>
+      <div id="designations-catalog" class="cfg-des-list"></div>
+    </section>
+
+    <section>
+      <div class="cfg-section-head">
+        <div>
+          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">group</span>Membros da equipe</p>
+          <p class="cfg-section-desc">Cargo, designação textual e acesso por função.</p>
+        </div>
+        <label class="cfg-search-wrap">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar nome ou usuário…" autocomplete="off"/>
+        </label>
+      </div>
+
+      <div class="cfg-card">
+        <div class="cfg-members-scroll">
+          <div class="cfg-members-panel">
+            <div class="cfg-member-row cfg-member-row--head">
+              <span>Nome</span><span>Usuário</span><span>Cargo</span><span>Designação</span><span>Acesso</span>
+            </div>
+            <div id="members-table"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="cfg-foot mt-4">SuperUser, Ancião e Servo Ministerial mantêm acesso amplo. Publicadores entram no Hub somente com designação atribuída.</p>

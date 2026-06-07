@@ -9,6 +9,18 @@
     return window.location.pathname.includes('/admin/') ? '../index.html' : 'index.html';
   }
 
+  function authDeny() {
+    if (window.JEHubRouter?.navigateTo) {
+      window.JEHubRouter.navigateTo('home');
+      return;
+    }
+    window.location.href = authRedirectUrl();
+  }
+
+  function adminToastEl() {
+    return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+  }
+
   async function guardPermission(permission) {
     await window.JEAuth.getClient();
     let session = await window.JEAuth.getSession();
@@ -17,12 +29,12 @@
       session = await window.JEAuth.getSession();
     }
     if (!session) {
-      window.location.href = authRedirectUrl();
+      authDeny();
       return null;
     }
     const profile = await window.JEAuth.getCurrentProfile();
     if (!profile || !window.JEAuth.hasPermission(profile, permission)) {
-      window.location.href = authRedirectUrl();
+      authDeny();
       return null;
     }
     return profile;
@@ -40,12 +52,12 @@
       session = await window.JEAuth.getSession();
     }
     if (!session) {
-      window.location.href = authRedirectUrl();
+      authDeny();
       return null;
     }
     const profile = await window.JEAuth.getCurrentProfile();
     if (!profile || !window.JEAuth.isAdminRole(profile.role)) {
-      window.location.href = authRedirectUrl();
+      authDeny();
       return null;
     }
     return profile;
@@ -94,6 +106,7 @@
     showToast,
     escapeHtml,
     adminBreadcrumb,
+    adminToastEl,
     STATUS_LABELS
   };
 })();

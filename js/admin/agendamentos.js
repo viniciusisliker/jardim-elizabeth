@@ -6,6 +6,8 @@
   }
 
   async function init() {
+    if (window.__JEAdminAgendamentosInit) return;
+    window.__JEAdminAgendamentosInit = true;
     const profile = await guardPermission('agendamentos');
     if (!profile) return;
     const toast = toastEl();

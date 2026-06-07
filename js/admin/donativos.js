@@ -6,6 +6,8 @@
   }
 
   async function init() {
+    if (window.__JEAdminDonativosInit) return;
+    window.__JEAdminDonativosInit = true;
     const profile = await guardPermission('donativos');
     if (!profile) return;
     const toast = toastEl();

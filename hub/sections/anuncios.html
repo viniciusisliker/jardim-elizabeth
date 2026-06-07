@@ -1,0 +1,211 @@
+    <section class="board-month-toolbar" aria-label="Selecionar mês do quadro">
+      <div class="board-month-toolbar__head">
+        <div class="board-month-toolbar__pick">
+          <div class="board-month-toolbar__icon" aria-hidden="true">
+            <span class="material-symbols-outlined">calendar_month</span>
+          </div>
+          <div class="board-month-toolbar__field">
+            <label for="board-month">Mês do quadro</label>
+            <p class="board-month-toolbar__hint">Escolha o mês e clique em carregar para abrir ou criar o rascunho.</p>
+            <div class="board-month-input-wrap">
+              <input type="month" id="board-month" aria-describedby="board-label"/>
+            </div>
+          </div>
+          <div class="board-month-toolbar__actions">
+            <button type="button" id="btn-new-board" class="board-load-btn">
+              <span class="material-symbols-outlined" aria-hidden="true">folder_open</span>
+              Carregar quadro
+            </button>
+            <button type="button" id="btn-open-gcal-export" class="board-gcal-btn" title="Exportar designações para importar no Google Agenda">
+              <svg class="gcal-product-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="#4285F4" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10z"/>
+                <path fill="#EA4335" d="M5 10V6h14v4H5z"/>
+                <path fill="#FBBC04" d="M8 2v4"/>
+                <path fill="#34A853" d="M16 2v4"/>
+              </svg>
+              Google Agenda
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="board-status-bar">
+        <span class="board-status-bar__label">Quadro atual</span>
+        <p id="board-label">—</p>
+      </div>
+    </section>
+    <p id="admin-toast" class="hidden text-sm mb-4"></p>
+
+    <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-6">
+      <nav class="flex flex-wrap gap-4 text-sm">
+        <button type="button" data-tab="mecanicas" class="tab-btn tab-active pb-2">Designações Mecânicas</button>
+        <button type="button" data-tab="midweek" class="tab-btn pb-2 text-on-surface-variant">Vida e Ministério</button>
+        <button type="button" data-tab="weekend" class="tab-btn pb-2 text-on-surface-variant">Final de Semana</button>
+      </nav>
+      <div class="flex gap-2 pb-2 shrink-0">
+        <button type="button" data-tab="published" class="tab-btn tab-util-btn text-on-surface-variant" title="Quadros salvos">
+          <span class="material-symbols-outlined" style="font-size:18px">inventory_2</span>
+          Quadros
+        </button>
+        <button type="button" data-tab="config" class="tab-btn tab-util-btn text-on-surface-variant" title="Configurações" aria-label="Configurações">
+          <span class="material-symbols-outlined" style="font-size:20px">settings</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="panel-mecanicas" class="tab-panel space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-mecanicas" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar datas</button>
+          <button type="button" id="btn-add-mecanicas" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" id="btn-save-draft" class="text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-generate-pdf="mecanicas" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
+          <button type="button" data-publish-block="mecanicas" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+        </div>
+      </div>
+      <div id="editor-mecanicas" class="space-y-4"></div>
+      <div class="qa-limpeza-wrap mt-6">
+        <div class="qa-limpeza-head">Limpeza mensal</div>
+        <div class="p-4 bg-section-bg">
+        <p class="text-xs text-on-surface-variant mb-3">Fim de semana e grupo responsável — conforme planilha de referência.</p>
+        <div id="editor-limpeza" class="space-y-2"></div>
+        <button type="button" id="btn-add-limpeza" class="mt-3 text-xs font-semibold text-accent">+ Linha</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-midweek" class="tab-panel hidden space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-midweek" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar quartas</button>
+          <button type="button" id="btn-add-midweek" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-generate-pdf="midweek" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
+          <button type="button" data-publish-block="midweek" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+        </div>
+      </div>
+      <div id="editor-midweek" class="space-y-4"></div>
+    </div>
+
+    <div id="panel-weekend" class="tab-panel hidden space-y-4">
+      <div class="flex flex-wrap gap-2 justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="btn-regen-weekend" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">Regenerar sábados</button>
+          <button type="button" id="btn-add-weekend" class="text-xs font-semibold text-secondary border border-outline-variant px-3 py-1.5 rounded-lg">+ Data</button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <button type="button" data-generate-pdf="weekend" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
+          <button type="button" data-publish-block="weekend" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+        </div>
+      </div>
+      <div id="editor-weekend" class="space-y-4"></div>
+    </div>
+
+    <div id="panel-published" class="tab-panel hidden">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-bold text-primary text-lg">Quadros salvos</h2>
+          <p class="text-sm text-on-surface-variant mt-0.5">Edite um período, exclua rascunhos ou continue um quadro publicado.</p>
+        </div>
+        <div class="flex flex-wrap gap-2" id="published-filter" role="tablist" aria-label="Filtrar quadros">
+          <button type="button" data-board-filter="all" class="board-filter-btn is-active">Todos</button>
+          <button type="button" data-board-filter="draft" class="board-filter-btn">Rascunhos</button>
+          <button type="button" data-board-filter="published" class="board-filter-btn">Publicados</button>
+        </div>
+      </div>
+      <div id="published-list" class="space-y-3"></div>
+    </div>
+
+    <div id="panel-config" class="tab-panel hidden space-y-4">
+      <form id="history-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+        <h2 class="font-bold text-primary">Histórico (pasta Drive)</h2>
+        <label class="block text-sm font-semibold text-primary">URL da pasta<input id="history-url" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
+        <label class="block text-sm font-semibold text-primary">Descrição<textarea id="history-desc" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm"></textarea></label>
+        <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
+      </form>
+    </div>
+  <div id="gcal-export-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="gcal-export-title" aria-modal="true">
+    <button type="button" id="gcal-export-backdrop" class="absolute inset-0 bg-primary/40" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl border border-outline-variant shadow-xl">
+      <div class="sticky top-0 bg-white border-b border-outline-variant px-5 py-4 flex items-start justify-between gap-3 rounded-t-2xl">
+        <div class="flex items-start gap-3">
+          <svg class="gcal-product-icon mt-0.5" style="width:1.75rem;height:1.75rem" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="#4285F4" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10z"/>
+            <path fill="#EA4335" d="M5 10V6h14v4H5z"/>
+            <path fill="#FBBC04" d="M8 2v4"/>
+            <path fill="#34A853" d="M16 2v4"/>
+          </svg>
+          <div>
+            <h2 id="gcal-export-title" class="font-bold text-primary text-lg leading-tight">Enviar para o Google Agenda</h2>
+            <p class="text-sm text-on-surface-variant mt-1">Baixe um arquivo CSV com as designações do mês e importe no calendário da congregação.</p>
+          </div>
+        </div>
+        <button type="button" id="gcal-export-close" class="text-on-surface-variant hover:text-primary p-1" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="px-5 py-4 space-y-4">
+        <div class="flex flex-wrap gap-2 border-b border-outline-variant pb-3">
+          <button type="button" data-gcal-block="mecanicas" class="gcal-block-btn tab-active text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant">Mecânicas</button>
+          <button type="button" data-gcal-block="midweek" class="gcal-block-btn text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">Vida e Ministério</button>
+          <button type="button" data-gcal-block="weekend" class="gcal-block-btn text-sm font-semibold px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">Final de semana</button>
+        </div>
+        <div id="gcal-block-rules" class="bg-background rounded-xl p-4 text-sm space-y-1.5 border border-outline-variant">
+          <p class="font-bold text-primary" id="gcal-block-title">Designações Mecânicas</p>
+          <ul id="gcal-block-rules-list" class="list-disc list-inside space-y-1 text-on-surface-variant text-xs"></ul>
+        </div>
+        <div class="bg-background rounded-xl p-4 text-sm space-y-2 border border-outline-variant">
+          <p class="font-bold text-primary">Como importar no Google Agenda</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-on-surface-variant">
+            <li>Clique em <strong class="text-primary">Baixar CSV para Google Agenda</strong> abaixo.</li>
+            <li>Abra <a href="https://calendar.google.com" target="_blank" rel="noopener" class="text-secondary underline font-semibold">calendar.google.com</a> no calendário da congregação.</li>
+            <li>Menu <strong class="text-primary">⚙ Configurações</strong> → <strong class="text-primary">Importar e exportar</strong> → <strong class="text-primary">Importar</strong>.</li>
+            <li>Selecione o arquivo baixado e confirme — os eventos aparecerão no Google Agenda.</li>
+          </ol>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wide">Prévia do arquivo (formato Google Calendar)</p>
+          <textarea id="csv-preview" rows="10" class="w-full font-mono text-xs rounded-lg border-outline-variant bg-background" readonly></textarea>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 pt-1">
+          <button type="button" id="btn-download-csv" class="flex-1 flex items-center justify-center gap-2 bg-secondary text-white text-sm font-semibold px-4 py-3 rounded-lg hover:opacity-90">
+            <span class="material-symbols-outlined" style="font-size:20px">download</span>
+            Baixar CSV para Google Agenda
+          </button>
+          <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 text-sm font-semibold text-secondary border border-outline-variant px-4 py-3 rounded-lg hover:bg-background">
+            Abrir Google Agenda
+            <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdf-preview-modal" class="hidden fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="pdf-preview-title" aria-modal="true">
+    <button type="button" id="pdf-preview-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-white rounded-2xl border border-outline-variant shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-3 shrink-0">
+        <div>
+          <h2 id="pdf-preview-title" class="font-bold text-primary text-lg leading-tight">Prévia do PDF</h2>
+          <p id="pdf-preview-subtitle" class="text-sm text-on-surface-variant mt-0.5">Revise o documento. Só depois publique no site.</p>
+        </div>
+        <button type="button" id="pdf-preview-close" class="text-on-surface-variant hover:text-primary p-1 rounded-lg" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <iframe id="pdf-preview-frame" class="flex-1 w-full min-h-[50vh] sm:min-h-[60vh] bg-surface-container-low border-0" title="Prévia do PDF"></iframe>
+      <div class="px-5 py-4 border-t border-outline-variant flex flex-col sm:flex-row gap-2 shrink-0 bg-surface-container-low/50">
+        <a id="pdf-preview-open-tab" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-secondary border border-outline-variant px-4 py-2.5 rounded-lg hover:bg-white">
+          Abrir em nova aba
+          <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+        </a>
+        <button type="button" id="pdf-preview-publish" class="flex-1 inline-flex items-center justify-center gap-2 bg-secondary text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:opacity-90">
+          <span class="material-symbols-outlined" style="font-size:18px">publish</span>
+          Publicar no site
+        </button>
+      </div>
+    </div>

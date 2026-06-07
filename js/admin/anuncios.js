@@ -1,5 +1,5 @@
 (function () {
-  const { guardAnnouncements, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const { guardAnnouncements, getClient, showToast, escapeHtml, adminToastEl } = window.JEAdmin;
   const Dates = window.JEAnnouncementDates;
   const Schemas = window.JEAnnouncementSchemas;
   const Pdf = window.JEAnnouncementPdf;
@@ -917,8 +917,10 @@
   }
 
   async function init() {
+    if (window.__JEAdminAnunciosInit) return;
+    window.__JEAdminAnunciosInit = true;
     if (!(await guardAnnouncements())) return;
-    toastEl = $('admin-toast');
+    toastEl = adminToastEl() || $('admin-toast');
     client = await getClient();
 
     const now = new Date();
@@ -1007,6 +1009,10 @@
     }
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminAnuncios = { init };
+
+  if (!window.JEHubRouter && document.getElementById('board-month')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();

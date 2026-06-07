@@ -36,10 +36,12 @@
   }
 
   async function init() {
+    if (window.__JEAdminConfigInit) return;
+    window.__JEAdminConfigInit = true;
     const profile = await guardAdmin();
     if (!profile) return;
 
-    const toast = document.getElementById('admin-toast');
+    const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
     const client = await getClient();
     const isSuper = window.JEAuth.isSuperUser(profile.role);
     let members = [];
@@ -358,6 +360,10 @@
     await reloadMembers();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminConfiguracoes = { init };
+
+  if (!window.JEHubRouter && document.getElementById('members-table')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();
