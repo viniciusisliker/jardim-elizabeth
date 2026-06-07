@@ -120,6 +120,101 @@
     return row.profiles?.full_name || row.publisher_name || '—';
   }
 
+  function parsePublisherNames(str) {
+    return String(str || '').split(/[,;]/).map((s) => s.trim()).filter(Boolean);
+  }
+
+  function normalizePubName(name) {
+    return String(name).trim().toLowerCase();
+  }
+
+  function publisherEligibleForSlot(row, day, equipmentType) {
+    if (row.is_active === false) return false;
+    if (equipmentType === 'carrinho' && !row.can_carrinho) return false;
+    if (equipmentType === 'display' && !row.can_display) return false;
+    const days = row.available_days || [];
+    if (day && days.length && !days.some((d) => helpers.weekdayMatches(day, d))) return false;
+    return true;
+  }
+
+  function getSelectedSlotPublisherNames() {
+    return Array.from(document.querySelectorAll('#eq-slot-pub-list input[name="eq-slot-pub"]:checked'))
+      .map((input) => input.value);
+  }
+
+  function syncSlotPublishersField() {
+    const field = document.getElementById('eq-slot-publishers');
+    if (field) field.value = getSelectedSlotPublisherNames().join(', ');
+    updateSlotPublisherSummary();
+  }
+
+  function updateSlotPublisherSummary() {
+    const summary = document.getElementById('eq-slot-pub-summary');
+    if (!summary) return;
+    const names = getSelectedSlotPublisherNames();
+    if (!names.length) {
+      summary.textContent = 'Nenhum publicador selecionado';
+      summary.classList.add('eq-slot-pub-picker__summary--empty');
+      return;
+    }
+    summary.classList.remove('eq-slot-pub-picker__summary--empty');
+    summary.textContent = names.length === 1
+      ? `Selecionado: ${names[0]}`
+      : `${names.length} selecionados: ${names.join(', ')}`;
+  }
+
+  function renderSlotPublisherPicker() {
+    const container = document.getElementById('eq-slot-pub-list');
+    const hint = document.getElementById('eq-slot-pub-hint');
+    const hidden = document.getElementById('eq-slot-publishers');
+    if (!container) return;
+
+    const day = document.getElementById('eq-slot-day')?.value || helpers.EQUIPMENT_DAYS[0];
+    const equipmentType = document.getElementById('eq-slot-type')?.value || 'carrinho';
+    const search = document.getElementById('eq-slot-pub-search')?.value.trim().toLowerCase() || '';
+    const previouslySelected = new Set(parsePublisherNames(hidden?.value).map(normalizePubName));
+
+    let eligible = publishers.filter((row) => publisherEligibleForSlot(row, day, equipmentType));
+    if (search) {
+      eligible = eligible.filter((row) => publisherName(row).toLowerCase().includes(search));
+    }
+    eligible.sort((a, b) => publisherName(a).localeCompare(publisherName(b), 'pt-BR', { sensitivity: 'base' }));
+
+    const eligibleNorm = new Set(eligible.map((row) => normalizePubName(publisherName(row))));
+    const extras = [...previouslySelected].filter((name) => !eligibleNorm.has(name));
+
+    if (hint) {
+      const typeLabel = helpers.EQUIPMENT_TYPES[equipmentType] || equipmentType;
+      hint.textContent = `${typeLabel} · ${day} · ${eligible.length} apto${eligible.length === 1 ? '' : 's'}`;
+    }
+
+    if (!eligible.length && !extras.length) {
+      container.innerHTML = '<p class="eq-slot-pub-picker__empty">Nenhum publicador apto para este dia e equipamento. Cadastre na aba Publicadores.</p>';
+      updateSlotPublisherSummary();
+      return;
+    }
+
+    container.innerHTML = [
+      ...extras.map((name) => `
+        <label class="eq-slot-pub-pick eq-slot-pub-pick--extra">
+          <input type="checkbox" name="eq-slot-pub" value="${escapeHtml(name)}" checked/>
+          <span>${escapeHtml(name)}</span>
+          <span class="eq-slot-pub-pick__tag">manual</span>
+        </label>`),
+      ...eligible.map((row) => {
+        const name = publisherName(row);
+        const checked = previouslySelected.has(normalizePubName(name));
+        return `
+          <label class="eq-slot-pub-pick">
+            <input type="checkbox" name="eq-slot-pub" value="${escapeHtml(name)}" ${checked ? 'checked' : ''}/>
+            <span>${escapeHtml(name)}</span>
+          </label>`;
+      })
+    ].join('');
+
+    syncSlotPublishersField();
+  }
+
   async function loadSlots() {
     const { data, error } = await client
       .from('equipment_schedule_slots')
@@ -532,6 +627,9 @@
     document.getElementById('eq-slot-sort').value = item?.sort_order ?? 0;
     document.getElementById('eq-slot-modal-title').textContent = item ? 'Editar linha' : 'Nova linha';
     deleteBtn.classList.toggle('hidden', !item?.id);
+    const pubSearch = document.getElementById('eq-slot-pub-search');
+    if (pubSearch) pubSearch.value = '';
+    renderSlotPublisherPicker();
 
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
@@ -548,6 +646,12 @@
 
   async function saveSlot(e) {
     e.preventDefault();
+    syncSlotPublishersField();
+    const publisherNames = document.getElementById('eq-slot-publishers').value.trim();
+    if (!publisherNames) {
+      showToast(toast, 'Selecione ao menos um publicador.', true);
+      return;
+    }
     const id = document.getElementById('eq-slot-id').value;
     const slotKind = document.getElementById('eq-slot-kind').value;
     const payload = {
@@ -558,7 +662,7 @@
       equipment_type: document.getElementById('eq-slot-type').value,
       equipment_name: document.getElementById('eq-slot-equipment').value.trim(),
       location_name: document.getElementById('eq-slot-location').value.trim(),
-      publisher_names: document.getElementById('eq-slot-publishers').value.trim(),
+      publisher_names: publisherNames,
       sort_order: parseInt(document.getElementById('eq-slot-sort').value, 10) || 0,
       is_active: true,
       updated_at: new Date().toISOString()
@@ -634,6 +738,17 @@
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-slot-form')?.addEventListener('submit', saveSlot);
+    document.getElementById('eq-slot-form')?.addEventListener('change', (e) => {
+      if (e.target.name === 'eq-slot-pub') syncSlotPublishersField();
+      if (e.target.id === 'eq-slot-day' || e.target.id === 'eq-slot-type') {
+        syncSlotPublishersField();
+        renderSlotPublisherPicker();
+      }
+    });
+    document.getElementById('eq-slot-pub-search')?.addEventListener('input', () => {
+      syncSlotPublishersField();
+      renderSlotPublisherPicker();
+    });
     document.getElementById('eq-slot-cancel')?.addEventListener('click', closeSlotModal);
     document.getElementById('eq-slot-modal-close')?.addEventListener('click', closeSlotModal);
     document.getElementById('eq-slot-delete')?.addEventListener('click', deleteSlot);

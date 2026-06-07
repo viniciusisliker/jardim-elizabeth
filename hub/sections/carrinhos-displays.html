@@ -153,8 +153,17 @@
             <label>Local
               <input id="eq-slot-location" required class="eq-modal-input" placeholder="Praça, endereço…"/>
             </label>
-            <label class="eq-modal-grid--full">Publicadores
-              <input id="eq-slot-publishers" required class="eq-modal-input" placeholder="Feliciana, Uiliane, Maria de Lurdes"/>
+            <label class="eq-modal-grid--full eq-slot-pub-field">
+              <span>Publicadores</span>
+              <input type="hidden" id="eq-slot-publishers"/>
+              <div class="eq-slot-pub-picker">
+                <div class="eq-slot-pub-picker__toolbar">
+                  <input id="eq-slot-pub-search" type="search" class="eq-modal-input" placeholder="Buscar na lista…" autocomplete="off"/>
+                  <span class="eq-slot-pub-picker__hint" id="eq-slot-pub-hint">—</span>
+                </div>
+                <div id="eq-slot-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
+                <p class="eq-slot-pub-picker__summary eq-slot-pub-picker__summary--empty" id="eq-slot-pub-summary">Nenhum publicador selecionado</p>
+              </div>
             </label>
             <label>Ordem
               <input id="eq-slot-sort" type="number" value="0" class="eq-modal-input"/>
