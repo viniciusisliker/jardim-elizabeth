@@ -181,9 +181,19 @@
   }
 
   function bindDashLinks(root) {
-    (root || document).querySelectorAll('[data-go-tab]').forEach((el) =>
+    const scope = root || document;
+    scope.querySelectorAll('[data-go-tab]').forEach((el) =>
       el.addEventListener('click', () => goToTab(el.dataset.goTab))
     );
+    scope.querySelectorAll('[data-action="open-designar"]').forEach((el) => {
+      el.addEventListener('click', () => {
+        goToTab('semana');
+        setTimeout(() => openDesignarModal(), 60);
+      });
+    });
+    scope.querySelectorAll('[data-action="go-semana"]').forEach((el) => {
+      el.addEventListener('click', () => goToTab('semana'));
+    });
   }
 
   function renderDashboard() {
@@ -212,7 +222,7 @@
         <p class="terr-dash-progress__label">${emCampoPct}% designados</p>
       </div>
       <div class="terr-dash-hero-actions">
-        <button type="button" class="terr-dash-chip" data-go-tab="designar"><span class="material-symbols-outlined" aria-hidden="true">add</span>Designar</button>
+        <button type="button" class="terr-dash-chip" data-action="open-designar"><span class="material-symbols-outlined" aria-hidden="true">add</span>Designar</button>
         <button type="button" class="terr-dash-chip" data-go-tab="semana"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>Cronograma</button>
         <button type="button" class="terr-dash-chip" data-go-tab="historico"><span class="material-symbols-outlined" aria-hidden="true">history</span>Histórico</button>
       </div>`;
@@ -329,9 +339,20 @@
       </div>` : '');
   }
 
+  function fillOverseerProfileSelect() {
+    const overseerProfileSel = document.getElementById('overseer-profile');
+    if (!overseerProfileSel) return;
+    const existing = new Set(overseers.map((o) => o.profile_id));
+    overseerProfileSel.innerHTML = `<option value="">Selecione o irmão</option>${profiles
+      .filter((p) => !existing.has(p.id))
+      .map((p) => `<option value="${p.id}">${escapeHtml(profileName(p))}</option>`).join('')}`;
+  }
+
   function fillDesignarSelects() {
     const profSel = document.getElementById('designar-profile');
     const terrSel = document.getElementById('designar-territory');
+    const dateEl = document.getElementById('designar-date');
+    if (!profSel || !terrSel || !dateEl) return;
     const activeProfileIds = new Set(activeAssignments.map((a) => a.profile_id));
     const activeOverseers = overseers.filter((o) => o.is_active !== false);
     const freeOverseers = activeOverseers.filter((o) => !activeProfileIds.has(o.profile_id));
@@ -351,7 +372,7 @@
       return `<option value="${t.id}">T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)} (${escapeHtml(p.label)}${escapeHtml(extra)})</option>`;
     }).join('')}`;
 
-    document.getElementById('designar-date').value = H.toISODate(new Date());
+    dateEl.value = H.toISODate(new Date());
 
     const statAvail = document.getElementById('designar-stat-avail');
     const statFree = document.getElementById('designar-stat-free');
@@ -377,12 +398,251 @@
     }
 
     updateDesignarPreview();
+  }
 
-    const overseerProfileSel = document.getElementById('overseer-profile');
-    const existing = new Set(overseers.map((o) => o.profile_id));
-    overseerProfileSel.innerHTML = `<option value="">Selecione o irmão</option>${profiles
-      .filter((p) => !existing.has(p.id))
-      .map((p) => `<option value="${p.id}">${escapeHtml(profileName(p))}</option>`).join('')}`;
+  function designarModalMarkup() {
+    return `
+      <div class="terr-assign-toolbar !rounded-t-xl !rounded-b-none !mb-0">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Nova designação de campo</h2>
+          <p>O dirigente recebe a designação no Hub · 1 território ativo por dirigente</p>
+        </div>
+      </div>
+      <div class="terr-assign-stats !rounded-none !border-x !border-outline-variant/30">
+        <div class="terr-assign-stat terr-assign-stat--avail">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
+          <div><p class="terr-assign-stat__label">Disponíveis</p><p class="terr-assign-stat__val" id="designar-stat-avail">—</p></div>
+        </div>
+        <div class="terr-assign-stat terr-assign-stat--free">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></span>
+          <div><p class="terr-assign-stat__label">Dirigentes livres</p><p class="terr-assign-stat__val" id="designar-stat-free">—</p></div>
+        </div>
+        <div class="terr-assign-stat terr-assign-stat--busy">
+          <span class="terr-assign-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">pending_actions</span></span>
+          <div><p class="terr-assign-stat__label">Designados</p><p class="terr-assign-stat__val" id="designar-stat-busy">—</p></div>
+        </div>
+      </div>
+      <div class="terr-assign-grid !rounded-none border-x border-outline-variant/30">
+        <div class="terr-assign-card !border-0 !rounded-none">
+          <div class="terr-assign-card__head">
+            <span class="material-symbols-outlined" aria-hidden="true">edit_note</span>
+            Dados da designação
+          </div>
+          <form id="form-designar">
+            <div class="terr-assign-form">
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
+                <div class="terr-assign-input-wrap">
+                  <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                  <select id="designar-profile" required class="terr-assign-input"></select>
+                </div>
+              </div>
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
+                <div class="terr-assign-input-wrap">
+                  <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                  <select id="designar-territory" required class="terr-assign-input"></select>
+                </div>
+              </div>
+              <div class="terr-assign-field terr-assign-field--full">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
+                <input id="designar-date" type="date" required class="terr-assign-input terr-assign-input--date"/>
+              </div>
+            </div>
+            <div class="terr-assign-foot">
+              <p class="terr-assign-note">Territórios listados por prioridade de cobertura. Dirigentes com designação ativa ficam desabilitados.</p>
+              <button type="submit" class="terr-assign-submit">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                Confirmar designação
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="terr-assign-preview !border-0 !rounded-none">
+          <div class="terr-assign-preview__head">
+            <span class="material-symbols-outlined" aria-hidden="true">preview</span>
+            Resumo
+          </div>
+          <div class="terr-assign-preview__body" id="designar-preview">
+            <div class="terr-assign-preview__empty">
+              <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
+              <p>Preencha os campos para ver o resumo antes de confirmar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="designar-busy-wrap" class="terr-assign-busy hidden border-x border-b border-outline-variant/30 rounded-b-xl">
+        <p class="terr-assign-busy__head">Dirigentes com território ativo</p>
+        <div id="designar-busy-list"></div>
+      </div>`;
+  }
+
+  function openDesignarModal(preset = {}) {
+    if (document.getElementById('designar-modal-wrap')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'designar-modal-wrap';
+    wrap.className = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-primary/40';
+    wrap.innerHTML = `
+      <div class="bg-background w-full sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-outline-variant shadow-xl" role="dialog" aria-modal="true" aria-labelledby="designar-modal-title">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-outline-variant/60 bg-white sticky top-0 z-10">
+          <h3 id="designar-modal-title" class="font-bold text-primary text-sm">Designar território</h3>
+          <button type="button" data-close-designar class="terr-sched-icon-btn" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <div class="p-3 sm:p-4 space-y-3">${designarModalMarkup()}</div>
+      </div>`;
+    document.body.appendChild(wrap);
+    document.body.style.overflow = 'hidden';
+
+    const close = () => {
+      wrap.remove();
+      document.body.style.overflow = '';
+    };
+    wrap.querySelector('[data-close-designar]').addEventListener('click', close);
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+
+    fillDesignarSelects();
+    if (preset.profileId) document.getElementById('designar-profile').value = preset.profileId;
+    if (preset.territoryId) document.getElementById('designar-territory').value = preset.territoryId;
+    if (preset.date) document.getElementById('designar-date').value = preset.date;
+    updateDesignarPreview();
+
+    ['designar-profile', 'designar-territory', 'designar-date'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('change', updateDesignarPreview);
+      document.getElementById(id)?.addEventListener('input', updateDesignarPreview);
+    });
+
+    wrap.querySelector('#form-designar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await client.rpc('assign_territory_field', {
+        p_territory_id: document.getElementById('designar-territory').value,
+        p_profile_id: document.getElementById('designar-profile').value,
+        p_assigned_at: document.getElementById('designar-date').value
+      });
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, 'Território designado com sucesso.');
+        close();
+        await refresh();
+      }
+    });
+  }
+
+  function openDevolverModal(assignment) {
+    if (!assignment) return;
+    if (document.getElementById('devolver-modal-wrap')) return;
+    const today = H.toISODate(new Date());
+    const terrLabel = H.territoryLabel(assignment.territories);
+    const person = profileName(assignment.profiles);
+    const wrap = document.createElement('div');
+    wrap.id = 'devolver-modal-wrap';
+    wrap.className = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-primary/40';
+    wrap.innerHTML = `
+      <form class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl border border-outline-variant p-5 sm:p-6 space-y-4 shadow-xl max-h-[92vh] overflow-y-auto" role="dialog" aria-modal="true">
+        <div>
+          <h3 class="font-bold text-primary">Devolver território</h3>
+          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(terrLabel)}</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Dirigente: ${escapeHtml(person)}</p>
+        </div>
+        <label class="block text-xs font-semibold text-primary">Último dia trabalhado
+          <input name="work_date" type="date" required value="${today}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+        </label>
+        <label class="block text-xs font-semibold text-primary">Observações
+          <input name="notes" type="text" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Opcional"/>
+        </label>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="inline-flex items-center gap-1 bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">undo</span>
+            Confirmar devolução
+          </button>
+          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+        </div>
+      </form>`;
+    document.body.appendChild(wrap);
+    document.body.style.overflow = 'hidden';
+    const close = () => {
+      wrap.remove();
+      document.body.style.overflow = '';
+    };
+    wrap.querySelector('[data-cancel]').addEventListener('click', close);
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+    wrap.querySelector('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const { error } = await client.rpc('return_territory_field', {
+        p_assignment_id: assignment.id,
+        p_work_date: fd.get('work_date'),
+        p_notes: fd.get('notes') || null
+      });
+      close();
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, 'Território devolvido.');
+        await refresh();
+      }
+    });
+  }
+
+  function resolveScheduleTerritoryId(row) {
+    if (row.territory_id) return row.territory_id;
+    if (row.territories?.id) return row.territories.id;
+    const code = row.territory_code || '';
+    const match = code.match(/T?\s*(\d+)/i);
+    if (!match) return null;
+    const normalized = normalizeTerritoryNum(match[1]);
+    const t = territories.find((item) => normalizeTerritoryNum(item.num) === normalized);
+    return t?.id || null;
+  }
+
+  function findAssignmentForScheduleRow(row) {
+    const terrId = resolveScheduleTerritoryId(row);
+    if (!terrId) return null;
+    return activeAssignments.find((a) => a.territory_id === terrId) || null;
+  }
+
+  function scheduleTerritoryIdsForWeek() {
+    const ids = new Set();
+    scheduleRowsForWeek().forEach((row) => {
+      const id = resolveScheduleTerritoryId(row);
+      if (id) ids.add(id);
+    });
+    return ids;
+  }
+
+  function unmatchedActiveAssignments() {
+    const inSchedule = scheduleTerritoryIdsForWeek();
+    return activeAssignments.filter((a) => !inSchedule.has(a.territory_id));
+  }
+
+  function renderExtraDesignados() {
+    const el = document.getElementById('semana-designados-extra');
+    if (!el) return;
+    const extra = unmatchedActiveAssignments();
+    if (!extra.length) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = `
+      <div class="terr-sched-designados">
+        <p class="terr-sched-designados__head">Designados fora deste cronograma</p>
+        ${extra.map((a) => `
+          <div class="terr-sched-designados__row">
+            <div class="min-w-0">
+              <p class="terr-sched-designados__meta">${escapeHtml(H.territoryLabel(a.territories))}</p>
+              <p class="terr-sched-designados__sub">${escapeHtml(profileName(a.profiles))} · designado ${escapeHtml(formatAssignedShort(a.assigned_at))}</p>
+            </div>
+            <button type="button" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost !text-[#b45309] !border-[#f0e4c8] !bg-[#fef9ee] text-[11px] px-2 py-1" data-return-assignment="${a.id}">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">undo</span>Devolver
+            </button>
+          </div>`).join('')}
+      </div>`;
+    el.querySelectorAll('[data-return-assignment]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const assignment = activeAssignments.find((a) => a.id === btn.dataset.returnAssignment);
+        openDevolverModal(assignment);
+      });
+    });
   }
 
   function formatAssignedShort(iso) {
@@ -390,72 +650,6 @@
     const d = new Date(String(iso).slice(0, 10) + 'T12:00:00');
     if (Number.isNaN(d.getTime())) return '—';
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
-  }
-
-  function renderDevolver() {
-    const el = document.getElementById('devolver-list');
-    const countEl = document.getElementById('devolver-count');
-    const today = H.toISODate(new Date());
-
-    if (countEl) {
-      countEl.textContent = activeAssignments.length
-        ? `${activeAssignments.length} em campo`
-        : '0 em campo';
-    }
-
-    if (!activeAssignments.length) {
-      el.innerHTML = `
-        <div class="terr-empty">
-          <span class="material-symbols-outlined" aria-hidden="true">assignment_turned_in</span>
-          <p class="text-sm font-semibold text-primary">Nenhuma designação ativa</p>
-          <p class="text-xs mt-1">Todos os territórios estão disponíveis para nova designação.</p>
-        </div>`;
-      return;
-    }
-
-    el.innerHTML = `
-      <div class="terr-return-scroll">
-        <div class="terr-return-panel">
-          <div class="terr-return-row terr-return-row--head">
-            <span>Território</span><span>Dirigente</span><span>Designado</span><span>Último dia</span><span>Obs.</span><span></span>
-          </div>
-          ${activeAssignments.map((a) => {
-            const t = a.territories;
-            const terrNum = t?.num ? `T${escapeHtml(t.num)}` : '';
-            const terrName = t?.display_name ? escapeHtml(t.display_name) : escapeHtml(H.territoryLabel(t));
-            return `
-          <form data-return-form="${a.id}" class="terr-return-row" title="Devolver ${escapeHtml(H.territoryLabel(t))}">
-            <span class="terr-return-terr" title="${escapeHtml(H.territoryLabel(t))}">
-              ${terrNum ? `<span class="terr-return-terr-num">${terrNum}</span>` : ''}${terrName}
-            </span>
-            <span class="terr-return-dirigente" title="${escapeHtml(profileName(a.profiles))}">${escapeHtml(profileName(a.profiles))}</span>
-            <span class="terr-return-assigned" title="${escapeHtml(H.formatDisplayDate(a.assigned_at))}">${escapeHtml(formatAssignedShort(a.assigned_at))}</span>
-            <input type="date" name="work_date" required value="${today}" class="terr-return-input" aria-label="Último dia trabalhado"/>
-            <input type="text" name="notes" class="terr-return-input" placeholder="Opcional" aria-label="Observações"/>
-            <button type="submit" class="terr-return-submit" title="Registrar devolução" aria-label="Registrar devolução">
-              <span class="material-symbols-outlined" aria-hidden="true">undo</span>
-            </button>
-          </form>`;
-          }).join('')}
-        </div>
-      </div>`;
-
-    el.querySelectorAll('[data-return-form]').forEach((form) => {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(form);
-        const { error } = await client.rpc('return_territory_field', {
-          p_assignment_id: form.dataset.returnForm,
-          p_work_date: fd.get('work_date'),
-          p_notes: fd.get('notes') || null
-        });
-        if (error) showToast(toast, error.message, true);
-        else {
-          showToast(toast, 'Território devolvido.');
-          await refresh();
-        }
-      });
-    });
   }
 
   function scheduleRowsForWeek() {
@@ -519,10 +713,19 @@
               const tone = scheduleDayTone(r.weekday_label);
               const dirigenteHtml = scheduleDirigenteHtml(r);
               const territorio = scheduleTerritory(r);
+              const assignment = findAssignmentForScheduleRow(r);
+              const territorioHtml = assignment
+                ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(profileName(assignment.profiles))}">${escapeHtml(territorio)}<span class="terr-sched-assigned-badge">Designado</span></span>`
+                : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
               const sugg = scheduleSuggestion(r);
               const hasSugg = r.suggestion || r.suggestion_note;
               const satHint = r.announcement_sat_date && H.isSaturdayCronogramaDay(r.weekday_label)
                 ? ` · ${H.formatDisplayDate(r.announcement_sat_date)}`
+                : '';
+              const returnBtn = assignment
+                ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H.territoryLabel(assignment.territories))}" aria-label="Devolver território">
+                    <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+                  </button>`
                 : '';
               return `
             <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
@@ -531,11 +734,12 @@
                 ${escapeHtml(r.weekday_label)}
               </span>
               <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
-              <span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>
+              ${territorioHtml}
               <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
               <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
               <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
               <div class="terr-sched-row-actions">
+                ${returnBtn}
                 <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
                   <span class="material-symbols-outlined" aria-hidden="true">edit</span>
                 </button>
@@ -555,7 +759,15 @@
       el.querySelectorAll('[data-del-schedule]').forEach((btn) =>
         btn.addEventListener('click', () => deleteScheduleRow(btn.dataset.delSchedule))
       );
+      el.querySelectorAll('[data-return-assignment]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const assignment = activeAssignments.find((a) => a.id === btn.dataset.returnAssignment);
+          openDevolverModal(assignment);
+        });
+      });
     }
+
+    renderExtraDesignados();
 
     const spotsEl = document.getElementById('spots-list');
     if (!meetingSpots.length) {
@@ -1205,8 +1417,7 @@
       await reloadAll();
       weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
       renderDashboard();
-      fillDesignarSelects();
-      renderDevolver();
+      fillOverseerProfileSelect();
       renderSemana();
       renderCatalogo();
       renderHistorico();
@@ -1518,25 +1729,10 @@
     setupTabs();
     setupTerritoryMapLightbox();
 
-    ['designar-profile', 'designar-territory', 'designar-date'].forEach((id) => {
-      document.getElementById(id)?.addEventListener('change', updateDesignarPreview);
-      document.getElementById(id)?.addEventListener('input', updateDesignarPreview);
-    });
-
-    document.getElementById('form-designar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const { error } = await client.rpc('assign_territory_field', {
-        p_territory_id: document.getElementById('designar-territory').value,
-        p_profile_id: document.getElementById('designar-profile').value,
-        p_assigned_at: document.getElementById('designar-date').value
-      });
-      if (error) showToast(toast, error.message, true);
-      else {
-        showToast(toast, 'Território designado com sucesso.');
-        e.target.reset();
-        await refresh();
-      }
-    });
+    document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
+    document.getElementById('btn-whatsapp').addEventListener('click', copyWhatsApp);
+    document.getElementById('btn-new-schedule').addEventListener('click', openScheduleFormModal);
+    document.getElementById('btn-new-spot').addEventListener('click', openSpotFormModal);
 
     document.getElementById('form-overseer').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1560,10 +1756,6 @@
       weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
       renderSemana();
     });
-
-    document.getElementById('btn-whatsapp').addEventListener('click', copyWhatsApp);
-    document.getElementById('btn-new-schedule').addEventListener('click', openScheduleFormModal);
-    document.getElementById('btn-new-spot').addEventListener('click', openSpotFormModal);
 
     await refresh();
   }
