@@ -18,7 +18,7 @@
 
   async function ensureAccess(permission) {
     if (window.JEHubRouter) {
-      const profile = await window.JEAuth.getCurrentProfile();
+      const profile = window.JEHubRouter.getProfile?.() || await window.JEAuth.getCurrentProfile();
       if (!profile || !window.JEAuth.hasPermission(profile, permission)) return null;
       return profile;
     }
@@ -53,6 +53,8 @@
   };
   let catalogSort = { col: 'num', dir: 'asc' };
   let weekendByDate = {};
+  let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
+  let secondaryLoadPromise = null;
 
   function priorityBadge(t) {
     const p = H().computePriority(t);
@@ -156,6 +158,73 @@
     );
   }
 
+  async function reloadCore() {
+    const results = await Promise.allSettled([loadTerritories(), loadActiveAssignments()]);
+    const labels = ['territories', 'active'];
+    const errors = results
+      .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
+      .filter(Boolean);
+    if (errors.length && toast) {
+      showToast(toast, `Alguns dados não carregaram: ${errors[0]}`, true);
+    }
+    return errors;
+  }
+
+  async function reloadSecondary() {
+    const results = await Promise.allSettled([
+      loadProfiles(),
+      loadOverseers(),
+      loadWeekTemplate(),
+      loadHistory(),
+      loadMeetingSpots()
+    ]);
+    const labels = ['profiles', 'overseers', 'schedule', 'history', 'spots'];
+    const errors = results
+      .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
+      .filter(Boolean);
+    if (errors.length && toast) {
+      showToast(toast, `Alguns dados não carregaram: ${errors[0]}`, true);
+    }
+    try {
+      weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+    } catch (err) {
+      console.warn('Weekend announcements:', err);
+    }
+    fillOverseerProfileSelect();
+    return errors;
+  }
+
+  function ensureSecondaryData() {
+    if (secondaryLoadPromise) return secondaryLoadPromise;
+    secondaryLoadPromise = reloadSecondary().finally(() => {
+      secondaryLoadPromise = null;
+    });
+    return secondaryLoadPromise;
+  }
+
+  function activeTerrTab() {
+    return document.querySelector('[data-terr-tab].active')?.dataset.terrTab || 'painel';
+  }
+
+  async function ensureTabReady(tab) {
+    if (tab === 'painel') {
+      if (!tabsRendered.painel) renderCatalogo();
+      tabsRendered.painel = true;
+      return;
+    }
+    await ensureSecondaryData();
+    if (tab === 'semana' && !tabsRendered.semana) {
+      renderSemana();
+      tabsRendered.semana = true;
+    } else if (tab === 'historico' && !tabsRendered.historico) {
+      renderHistorico();
+      tabsRendered.historico = true;
+    } else if (tab === 'dirigentes' && !tabsRendered.dirigentes) {
+      renderDirigentes();
+      tabsRendered.dirigentes = true;
+    }
+  }
+
   async function reloadAll() {
     const results = await Promise.allSettled([
       loadTerritories(),
@@ -211,7 +280,10 @@
         document.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `panel-${tab}`));
         updateNavIndicator(btn);
         btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        if (tab === 'semana') renderSemana();
+        ensureTabReady(tab).catch((err) => {
+          console.error('Territory tab load:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar aba.', true);
+        });
       });
     });
     queueNavIndicatorRefresh();
@@ -472,6 +544,16 @@
   }
 
   function openDesignarModal(preset = {}) {
+    if (document.getElementById('designar-modal-wrap')) return;
+    ensureSecondaryData()
+      .then(() => openDesignarModalInner(preset))
+      .catch((err) => {
+        console.error('Designar modal:', err);
+        if (toast) showToast(toast, err.message || 'Erro ao carregar dados.', true);
+      });
+  }
+
+  function openDesignarModalInner(preset = {}) {
     if (document.getElementById('designar-modal-wrap')) return;
     const wrap = document.createElement('div');
     wrap.id = 'designar-modal-wrap';
@@ -1842,12 +1924,17 @@
   async function refresh() {
     try {
       await reloadAll();
-      weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+      try {
+        weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+      } catch (err) {
+        console.warn('Weekend announcements:', err);
+      }
       fillOverseerProfileSelect();
-      renderSemana();
       renderCatalogo();
-      renderHistorico();
-      renderDirigentes();
+      tabsRendered.painel = true;
+      if (tabsRendered.semana) renderSemana();
+      if (tabsRendered.historico) renderHistorico();
+      if (tabsRendered.dirigentes) renderDirigentes();
     } catch (err) {
       console.error('Territory refresh:', err);
       if (toast) showToast(toast, err.message || 'Erro ao carregar territórios.', true);
@@ -2154,6 +2241,10 @@
   async function init() {
     if (window.__JEAdminTerritoriosInit) {
       queueNavIndicatorRefresh();
+      if (!tabsRendered.painel && territories.length) {
+        renderCatalogo();
+        tabsRendered.painel = true;
+      }
       return true;
     }
     if (!bindAdmin()) {
@@ -2178,9 +2269,33 @@
       setupTerritoryMapLightbox();
 
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
-      document.getElementById('btn-whatsapp')?.addEventListener('click', copyWhatsApp);
-      document.getElementById('btn-new-schedule')?.addEventListener('click', openScheduleFormModal);
-      document.getElementById('btn-new-spot')?.addEventListener('click', openSpotFormModal);
+      document.getElementById('btn-whatsapp')?.addEventListener('click', async () => {
+        try {
+          await ensureSecondaryData();
+          copyWhatsApp();
+        } catch (err) {
+          console.error('WhatsApp cronograma:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar cronograma.', true);
+        }
+      });
+      document.getElementById('btn-new-schedule')?.addEventListener('click', async () => {
+        try {
+          await ensureSecondaryData();
+          openScheduleFormModal();
+        } catch (err) {
+          console.error('Schedule modal:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar cronograma.', true);
+        }
+      });
+      document.getElementById('btn-new-spot')?.addEventListener('click', async () => {
+        try {
+          await ensureSecondaryData();
+          openSpotFormModal();
+        } catch (err) {
+          console.error('Spot modal:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar locais.', true);
+        }
+      });
 
       document.getElementById('form-overseer')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2201,11 +2316,21 @@
 
       document.getElementById('semana-week')?.addEventListener('change', async (e) => {
         currentWeek = helpers.snapToMonday(e.target.value);
-        weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
-        renderSemana();
+        try {
+          await ensureSecondaryData();
+          weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
+          renderSemana();
+          tabsRendered.semana = true;
+        } catch (err) {
+          console.error('Semana change:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar semana.', true);
+        }
       });
 
-      await refresh();
+      await reloadCore();
+      renderCatalogo();
+      tabsRendered = { painel: true, semana: false, historico: false, dirigentes: false };
+      ensureSecondaryData().catch((err) => console.warn('Territory secondary load:', err));
       return true;
     } catch (err) {
       delete window.__JEAdminTerritoriosInit;

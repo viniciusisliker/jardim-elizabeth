@@ -1,6 +1,8 @@
 (function () {
   const SECTIONS = window.JEHubSections || {};
   const loadedSections = new Set(['home']);
+  const mountedSections = new Set(['home']);
+  const initInFlight = new Set();
   const partialCache = new Map();
   let currentProfile = null;
   let hubClient = null;
@@ -10,8 +12,15 @@
   const SCRIPT_GLOBALS = {
     'js/admin-core.js?v=2026060902': 'JEAdmin',
     'js/territory-assignment-helpers.js?v=2026060624': 'JETerritoryAssignment',
-    'js/admin/territory-system.js?v=2026060904': 'JEAdminTerritorios'
+    'js/admin/territory-system.js?v=2026060912': 'JEAdminTerritorios'
   };
+
+  function scriptGlobalFor(src) {
+    if (SCRIPT_GLOBALS[src]) return SCRIPT_GLOBALS[src];
+    const base = src.replace(/\?v=.*$/, '');
+    const match = Object.entries(SCRIPT_GLOBALS).find(([k]) => k.replace(/\?v=.*$/, '') === base);
+    return match?.[1] || null;
+  }
 
   function renderHubUser(profile) {
     document.getElementById('hub-user-name').textContent = profile.full_name;
@@ -74,8 +83,34 @@
   async function loadSectionScripts(scripts) {
     if (!scripts?.length) return;
     for (const src of scripts) {
-      await loadScript(src, { requiredGlobal: SCRIPT_GLOBALS[src] || null });
+      await loadScript(src, { requiredGlobal: scriptGlobalFor(src) });
     }
+  }
+
+  function prefetchSection(sectionId) {
+    const section = SECTIONS[sectionId];
+    if (!section || mountedSections.has(sectionId)) return;
+    section.styles?.forEach((href) => {
+      loadCss(href).catch(() => {});
+    });
+    if (section.partial && !partialCache.has(section.partial)) {
+      fetch(section.partial)
+        .then((res) => (res.ok ? res.text() : null))
+        .then((html) => { if (html) partialCache.set(section.partial, html); })
+        .catch(() => {});
+    }
+    if (section.scripts?.length) {
+      loadSectionScripts(section.scripts).catch(() => {});
+    }
+  }
+
+  function prefetchAllowedSections(profile) {
+    if (!profile) return;
+    Object.values(SECTIONS).forEach((section) => {
+      if (section.id === 'home') return;
+      if (section.permission && !window.JEAuth.hasPermission(profile, section.permission)) return;
+      prefetchSection(section.id);
+    });
   }
 
   async function ensureAgendaDataReady() {
@@ -190,10 +225,10 @@
     });
   }
 
-  async function ensureSectionReady(section) {
+  async function mountSectionShell(section) {
     if (!section) return;
     if (section.id === 'agenda') await ensureAgendaDataReady();
-    if (loadedSections.has(section.id)) return;
+    if (mountedSections.has(section.id)) return;
 
     const loads = [];
     if (section.styles?.length) {
@@ -220,16 +255,32 @@
       await loadSectionScripts(section.scripts);
     }
 
-    const mod = section.initKey ? window[section.initKey] : null;
-    if (section.initKey && !mod?.init) {
-      throw new Error(`Module ${section.initKey} not found`);
-    }
-    if (mod?.init) {
-      const ready = await mod.init();
-      if (ready === false) throw new Error(`Init ${section.id}`);
-    }
+    mountedSections.add(section.id);
+  }
 
-    loadedSections.add(section.id);
+  async function initSectionModule(section) {
+    if (!section || loadedSections.has(section.id) || initInFlight.has(section.id)) return;
+    initInFlight.add(section.id);
+
+    try {
+      const mod = section.initKey ? window[section.initKey] : null;
+      if (section.initKey && !mod?.init) {
+        throw new Error(`Module ${section.initKey} not found`);
+      }
+      if (mod?.init) {
+        const ready = await mod.init();
+        if (ready === false) throw new Error(`Init ${section.id}`);
+      }
+
+      loadedSections.add(section.id);
+    } finally {
+      initInFlight.delete(section.id);
+    }
+  }
+
+  async function ensureSectionReady(section) {
+    await mountSectionShell(section);
+    await initSectionModule(section);
   }
 
   async function navigateTo(sectionId, { replaceHash = true } = {}) {
@@ -242,7 +293,7 @@
     }
 
     try {
-      await ensureSectionReady(section);
+      await mountSectionShell(section);
     } catch (err) {
       console.error('Hub section load:', err);
       window.JEToast?.show('Erro ao carregar esta seção.', { error: true });
@@ -263,6 +314,13 @@
     }
 
     window.dispatchEvent(new CustomEvent('hub:section', { detail: { section: targetId } }));
+
+    if (!loadedSections.has(targetId)) {
+      initSectionModule(section).catch((err) => {
+        console.error('Hub section init:', err);
+        window.JEToast?.show('Erro ao carregar dados desta seção.', { error: true });
+      });
+    }
   }
 
   function setupHubRouter() {
@@ -292,6 +350,7 @@
     hubClient = await window.JEAuth.getClient();
     const fromHash = sectionByHash(location.hash);
     await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+    prefetchAllowedSections(currentProfile);
   }
 
   async function initHub() {
@@ -312,6 +371,7 @@
 
         const fromHash = sectionByHash(location.hash);
         await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+        prefetchAllowedSections(cached);
 
         guardHubAccess()
           .then(async (access) => {

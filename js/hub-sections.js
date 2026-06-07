@@ -93,9 +93,9 @@
       permission: 'territorios',
       viewId: 'hub-view-territorios',
       partial: 'hub/sections/territorios.html',
-      styles: ['css/hub-sections/territorios.css?v=2026060911'],
+      styles: ['css/hub-sections/territorios.css?v=2026060913'],
       scripts: [
-        'js/admin/territory-system.js?v=2026060911'
+        'js/admin/territory-system.js?v=2026060912'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {
