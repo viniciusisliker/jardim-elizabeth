@@ -8,6 +8,7 @@
   let slots = [];
   let publishers = [];
   let profiles = [];
+  let pubSearch = '';
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
@@ -41,7 +42,7 @@
     if (!container) return;
     const selected = new Set(selectedDays || helpers.EQUIPMENT_DAYS);
     container.innerHTML = helpers.EQUIPMENT_DAYS.map((day) => `
-      <label class="eq-pub-day">
+      <label class="eq-pub-day-pick">
         <input type="checkbox" name="${prefix}-day" value="${escapeHtml(day)}" ${selected.has(day) ? 'checked' : ''}/>
         ${escapeHtml(day.slice(0, 3))}
       </label>`).join('');
@@ -107,64 +108,154 @@
     renderSchedule();
   }
 
-  function publisherServices(row) {
-    const parts = [];
-    if (row.can_carrinho) parts.push('Carrinho');
-    if (row.can_display) parts.push('Display');
-    return parts.join(' · ') || '—';
+  function parsePublisherNotes(notes) {
+    if (!notes) return { grupo: '', casa: '' };
+    const grupoMatch = notes.match(/Grupo:\s*([^·]+)/i);
+    const casaMatch = notes.match(/Casa:\s*(.+)$/i);
+    return {
+      grupo: grupoMatch ? grupoMatch[1].trim() : '',
+      casa: casaMatch ? casaMatch[1].trim() : ''
+    };
+  }
+
+  function publisherAvatarHtml(row) {
+    const profile = row.profiles;
+    const inner = profile && window.JEAuth?.renderAvatarHtml
+      ? window.JEAuth.renderAvatarHtml(profile, { size: 28, className: 'je-profile-avatar' })
+      : '<span class="material-symbols-outlined" aria-hidden="true">person</span>';
+    return `<span class="eq-pub-avatar" aria-hidden="true">${inner}</span>`;
+  }
+
+  function renderPublisherServicePills(row) {
+    const pills = [];
+    if (row.can_carrinho) pills.push('<span class="eq-pub-svc-pill eq-pub-svc-pill--cart">Carrinho</span>');
+    if (row.can_display) pills.push('<span class="eq-pub-svc-pill eq-pub-svc-pill--display">Display</span>');
+    return pills.join('') || '<span class="eq-pub-day">—</span>';
+  }
+
+  function renderPublisherDayPills(row) {
+    const days = row.available_days || [];
+    if (!days.length) return '<span class="eq-pub-day">—</span>';
+    return days.map((day) =>
+      `<span class="eq-pub-day" title="${escapeHtml(day)}">${escapeHtml(day.slice(0, 3))}</span>`
+    ).join('');
+  }
+
+  function getFilteredPublishers() {
+    const q = pubSearch.trim().toLowerCase();
+    if (!q) return publishers;
+    return publishers.filter((row) => {
+      const name = publisherName(row).toLowerCase();
+      const { grupo, casa } = parsePublisherNotes(row.notes);
+      return name.includes(q) || grupo.toLowerCase().includes(q) || casa.toLowerCase().includes(q);
+    });
+  }
+
+  function updatePublisherStats() {
+    const active = publishers.filter((p) => p.is_active !== false);
+    const countEl = document.getElementById('eq-pub-count');
+    const statTotal = document.getElementById('eq-pub-stat-total');
+    const statActive = document.getElementById('eq-pub-stat-active');
+    const statCart = document.getElementById('eq-pub-stat-carrinho');
+    const statDisplay = document.getElementById('eq-pub-stat-display');
+
+    if (countEl) countEl.textContent = `${publishers.length} cadastrados`;
+    if (statTotal) statTotal.textContent = String(publishers.length);
+    if (statActive) statActive.textContent = String(active.length);
+    if (statCart) statCart.textContent = String(publishers.filter((p) => p.can_carrinho).length);
+    if (statDisplay) statDisplay.textContent = String(publishers.filter((p) => p.can_display).length);
+  }
+
+  function renderPublishersTable() {
+    const body = document.getElementById('eq-pub-table-body');
+    const foot = document.getElementById('eq-pub-table-foot');
+    if (!body) return;
+
+    updatePublisherStats();
+    const filtered = getFilteredPublishers();
+
+    if (!filtered.length) {
+      body.innerHTML = `
+        <div class="eq-pub-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${publishers.length ? 'Nenhum publicador corresponde à busca.' : 'Nenhum publicador cadastrado.'}</p>
+        </div>`;
+      if (foot) foot.textContent = '';
+      return;
+    }
+
+    body.innerHTML = filtered.map((row) => {
+      const name = publisherName(row);
+      const { grupo, casa } = parsePublisherNotes(row.notes);
+      const isActive = row.is_active !== false;
+      const inactiveClass = isActive ? '' : ' eq-pub-row--inactive';
+      const statusHtml = isActive
+        ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
+        : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
+      const toggleTitle = isActive ? 'Desativar' : 'Reativar';
+      const toggleIcon = isActive ? 'toggle_off' : 'toggle_on';
+      const toggleClass = isActive ? 'eq-pub-icon-btn eq-pub-icon-btn--off' : 'eq-pub-icon-btn';
+
+      return `
+        <div class="eq-pub-row${inactiveClass}" data-pub-id="${row.id}" title="${escapeHtml(name)}">
+          <span class="eq-pub-name">
+            ${publisherAvatarHtml(row)}
+            <span>${escapeHtml(name)}</span>
+          </span>
+          <span class="eq-pub-services">${renderPublisherServicePills(row)}</span>
+          <span class="eq-pub-days" title="${escapeHtml((row.available_days || []).join(', '))}">${renderPublisherDayPills(row)}</span>
+          <span class="eq-pub-meta">${grupo ? `<strong>Grupo:</strong> ${escapeHtml(grupo)}` : '—'}</span>
+          <span class="eq-pub-meta">${casa ? `<strong>Casa:</strong> ${escapeHtml(casa)}` : '—'}</span>
+          <span class="eq-pub-status-cell">${statusHtml}</span>
+          <div class="eq-pub-actions">
+            <button type="button" class="${toggleClass}" data-eq-toggle-pub="${row.id}" title="${toggleTitle}">
+              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (foot) {
+      const suffix = filtered.length < publishers.length ? ` (${publishers.length} no total)` : '';
+      foot.textContent = `Exibindo ${filtered.length} publicador${filtered.length === 1 ? '' : 'es'}${suffix}`;
+    }
   }
 
   function renderPublishers() {
     const list = document.getElementById('eq-pub-list');
-    const countEl = document.getElementById('eq-pub-count');
     if (!list) return;
 
-    const active = publishers.filter((p) => p.is_active !== false).length;
-    if (countEl) countEl.textContent = `${publishers.length} cadastrados · ${active} ativos`;
-
     if (!publishers.length) {
-      list.innerHTML = '<p class="text-sm text-on-surface-variant p-5">Nenhum publicador cadastrado ainda.</p>';
+      updatePublisherStats();
+      list.innerHTML = `
+        <div class="eq-pub-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+          <p class="text-sm font-semibold text-primary">Nenhum publicador cadastrado</p>
+          <p class="text-xs mt-1">Use o formulário acima para adicionar irmãos aptos a carrinho ou display.</p>
+        </div>`;
       return;
     }
 
-    list.innerHTML = `
-      <div class="eq-sched-card">
-        <div class="eq-pub-row eq-pub-row--head">
-          <span>Irmão(ã)</span><span>Serviços</span><span>Dias</span><span>Obs.</span><span></span>
-        </div>
-        ${publishers.map((row) => {
-          const name = publisherName(row);
-          const inactive = row.is_active === false ? ' eq-pub-inactive' : '';
-          return `
-            <div class="eq-pub-row${inactive}" data-pub-id="${row.id}">
-              <span class="font-semibold text-primary">${escapeHtml(name)}</span>
-              <span>${escapeHtml(publisherServices(row))}</span>
-              <span>${escapeHtml(helpers.formatPublisherDays(row.available_days))}</span>
-              <span class="text-on-surface-variant truncate">${escapeHtml(row.notes || '—')}</span>
-              <span class="eq-row-actions">
-                <button type="button" class="eq-row-btn" data-eq-toggle-pub="${row.id}">
-                  ${row.is_active === false ? 'Ativar' : 'Desativar'}
-                </button>
-              </span>
-            </div>`;
-        }).join('')}
-      </div>`;
+    if (!document.getElementById('eq-pub-table-body')) {
+      list.innerHTML = `
+        <div class="eq-pub-scroll">
+          <div class="eq-pub-panel">
+            <div class="eq-pub-row eq-pub-row--head">
+              <span>Irmão(ã)</span>
+              <span>Serviços</span>
+              <span>Dias</span>
+              <span>Grupo</span>
+              <span>Casa</span>
+              <span>Status</span>
+              <span></span>
+            </div>
+            <div id="eq-pub-table-body"></div>
+            <p id="eq-pub-table-foot" class="eq-pub-foot"></p>
+          </div>
+        </div>`;
+    }
 
-    list.querySelectorAll('[data-eq-toggle-pub]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const row = publishers.find((p) => p.id === btn.dataset.eqTogglePub);
-        if (!row) return;
-        const { error } = await client
-          .from('equipment_publishers')
-          .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
-          .eq('id', row.id);
-        if (error) showToast(toast, error.message, true);
-        else {
-          showToast(toast, row.is_active === false ? 'Publicador reativado.' : 'Publicador desativado.');
-          await loadPublishers();
-        }
-      });
-    });
+    renderPublishersTable();
   }
 
   function renderSchedule() {
@@ -325,6 +416,27 @@
     document.getElementById('eq-slot-delete')?.addEventListener('click', deleteSlot);
     document.getElementById('eq-slot-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'eq-slot-modal') closeSlotModal();
+    });
+
+    document.getElementById('eq-pub-search')?.addEventListener('input', (e) => {
+      pubSearch = e.target.value;
+      renderPublishersTable();
+    });
+
+    document.getElementById('eq-panel-publicadores')?.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-eq-toggle-pub]');
+      if (!btn) return;
+      const row = publishers.find((p) => p.id === btn.dataset.eqTogglePub);
+      if (!row) return;
+      const { error } = await client
+        .from('equipment_publishers')
+        .update({ is_active: row.is_active === false, updated_at: new Date().toISOString() })
+        .eq('id', row.id);
+      if (error) showToast(toast, error.message, true);
+      else {
+        showToast(toast, row.is_active === false ? 'Publicador reativado.' : 'Publicador desativado.');
+        await loadPublishers();
+      }
     });
 
     document.getElementById('eq-form-publisher')?.addEventListener('submit', async (e) => {
