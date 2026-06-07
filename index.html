@@ -419,6 +419,9 @@
       font-style: normal;
       margin: 0;
     }
+    .je-home-meeting-address-line {
+      display: block;
+    }
     .je-home-meeting-map {
       display: flex;
       align-items: center;
@@ -445,10 +448,12 @@
       background: rgba(255, 255, 255, 0.06);
       color: #fff;
     }
-    .je-home-meeting-map-btn svg {
+    .je-home-meeting-map-btn svg,
+    .je-home-meeting-map-btn img {
       width: 0.75rem;
       height: 0.75rem;
       display: block;
+      object-fit: contain;
     }
     @media (min-width: 768px) {
       .je-home-meeting-place { font-size: 0.8125rem; padding-top: 1rem; }
@@ -456,7 +461,8 @@
         width: 1.625rem;
         height: 1.625rem;
       }
-      .je-home-meeting-map-btn svg { width: 0.8125rem; height: 0.8125rem; }
+      .je-home-meeting-map-btn svg,
+      .je-home-meeting-map-btn img { width: 0.8125rem; height: 0.8125rem; }
     }
     .je-home-card {
       background: #fff;
@@ -701,8 +707,8 @@
             <strong>Salão do Reino</strong>
             <div class="je-home-meeting-place-row">
               <p class="je-home-meeting-address">
-                Rua Professor Orestes Rosólia, 164<br>
-                Jardim Rosana, São Paulo – SP
+                <span class="je-home-meeting-address-line">Rua Professor Orestes Rosólia,&nbsp;164</span>
+                <span class="je-home-meeting-address-line">Jardim Rosana, São Paulo – SP</span>
               </p>
               <div class="je-home-meeting-map">
                 <a href="https://www.google.com/maps?q=-23.647024,-46.77835"
@@ -731,9 +737,7 @@
                    target="_blank" rel="noopener"
                    class="je-home-meeting-map-btn"
                    aria-label="Abrir no Waze">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm-3.2 7.8a1.35 1.35 0 110 2.7 1.35 1.35 0 010-2.7zm6.4 0a1.35 1.35 0 110 2.7 1.35 1.35 0 010-2.7zm-4.75 4.45c.95 1.15 2.55 1.15 3.5 0 .65.75 1.55 1.2 2.55 1.2 1.1 0 2-.9 2-2 0-.55-.2-1.05-.55-1.45-1.45 1.55-3.85 1.55-5.3 0-.35.4-.55.9-.55 1.45 0 1.1.9 2 2 2 1 0 1.9-.45 2.55-1.2z"/>
-                  </svg>
+                  <img src="img/waze-logo.png" width="13" height="13" alt="" aria-hidden="true" decoding="async"/>
                 </a>
               </div>
             </div>
