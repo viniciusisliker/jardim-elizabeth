@@ -46,7 +46,11 @@
   let currentWeek = '';
   let histFilter = { q: '', eventType: '' };
   let histSort = { col: 'date', dir: 'desc' };
-  let catalogFilter = { q: '', status: '', type: '' };
+  let catalogFilter = {
+    q: '',
+    status: { designado: true, disponivel: true },
+    type: { meio_de_semana: true, final_de_semana: true }
+  };
   let catalogSort = { col: 'num', dir: 'asc' };
   let weekendByDate = {};
 
@@ -891,31 +895,102 @@
     return days === null ? 99999 : days;
   }
 
-  const CATALOG_STATUS_FILTERS = ['', 'designado', 'disponivel'];
-  const CATALOG_TYPE_FILTERS = ['', 'meio_de_semana', 'final_de_semana'];
+  const CATALOG_STATUS_OPTIONS = [
+    { value: 'designado', label: 'Designado' },
+    { value: 'disponivel', label: 'Disponível' }
+  ];
+  const CATALOG_TYPE_OPTIONS = [
+    { value: 'meio_de_semana', label: 'Meio de semana' },
+    { value: 'final_de_semana', label: 'Final de semana' }
+  ];
 
-  function catalogStatusFilterLabel(status) {
-    if (!status) return 'Todos';
-    return STATUS_LABELS[status] || status;
+  function catalogFilterMapAllTrue(map) {
+    return Object.fromEntries(Object.keys(map).map((k) => [k, true]));
   }
 
-  function catalogTypeFilterLabel(type) {
-    if (!type) return 'Todos';
-    return TERRITORY_TYPE_LABELS[type] || type;
+  function catalogFilterAllSelected(map) {
+    return Object.values(map).every(Boolean);
   }
 
-  function renderCatalogStatusFilters() {
-    return CATALOG_STATUS_FILTERS.map((status) => {
-      const active = catalogFilter.status === status;
-      return `<button type="button" class="terr-catalog-filter${active ? ' terr-catalog-filter--active' : ''}" data-catalog-status="${status}">${escapeHtml(catalogStatusFilterLabel(status))}</button>`;
-    }).join('');
+  function catalogFilterSelectedKeys(map) {
+    return Object.entries(map).filter(([, on]) => on).map(([k]) => k);
   }
 
-  function renderCatalogTypeFilters() {
-    return CATALOG_TYPE_FILTERS.map((type) => {
-      const active = catalogFilter.type === type;
-      return `<button type="button" class="terr-catalog-filter${active ? ' terr-catalog-filter--active' : ''}" data-catalog-type="${type}">${escapeHtml(catalogTypeFilterLabel(type))}</button>`;
-    }).join('');
+  function isCatalogColumnFilterActive(filterKey) {
+    if (filterKey === 'status') return !catalogFilterAllSelected(catalogFilter.status);
+    if (filterKey === 'type') return !catalogFilterAllSelected(catalogFilter.type);
+    return false;
+  }
+
+  function syncCatalogFilterSelectAll(filterKey) {
+    const grid = document.getElementById('catalogo-grid');
+    if (!grid) return;
+    const map = filterKey === 'status' ? catalogFilter.status : catalogFilter.type;
+    const selectAll = grid.querySelector(`[data-xlf-select-all="${filterKey}"]`);
+    const boxes = grid.querySelectorAll(`[data-xlf-filter="${filterKey}"]`);
+    if (!selectAll || !boxes.length) return;
+    const checked = [...boxes].filter((b) => b.checked).length;
+    selectAll.checked = checked === boxes.length;
+    selectAll.indeterminate = checked > 0 && checked < boxes.length;
+  }
+
+  function updateCatalogFilterUI() {
+    const grid = document.getElementById('catalogo-grid');
+    if (!grid) return;
+    ['status', 'type'].forEach((filterKey) => {
+      const active = isCatalogColumnFilterActive(filterKey);
+      grid.querySelectorAll(`[data-xlf-trigger="${filterKey}"]`).forEach((btn) => {
+        btn.classList.toggle('terr-xlf-filter-btn--active', active);
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (icon) icon.textContent = active ? 'filter_alt' : 'filter_list';
+      });
+      grid.querySelectorAll(`[data-xlf-filter="${filterKey}"]`).forEach((box) => {
+        box.checked = !!catalogFilter[filterKey][box.value];
+      });
+      syncCatalogFilterSelectAll(filterKey);
+    });
+  }
+
+  function closeCatalogFilterMenus(exceptKey = null) {
+    document.querySelectorAll('[data-xlf-menu]').forEach((menu) => {
+      if (exceptKey && menu.dataset.xlfMenu === exceptKey) return;
+      menu.classList.add('hidden');
+      const trigger = document.querySelector(`[data-xlf-trigger="${menu.dataset.xlfMenu}"]`);
+      trigger?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function catalogFilterHeader(col, label, filterKey, options) {
+    const active = isCatalogColumnFilterActive(filterKey);
+    const checks = options.map((o) => `
+      <label class="terr-xlf-check">
+        <input type="checkbox" data-xlf-filter="${filterKey}" value="${o.value}" ${catalogFilter[filterKey][o.value] ? 'checked' : ''}>
+        <span>${escapeHtml(o.label)}</span>
+      </label>`).join('');
+    return `<th scope="col">
+      <div class="terr-xlf-head">
+        <button type="button" class="terr-catalog-sort" data-catalog-sort="${col}">
+          <span>${label}</span>
+          <span class="material-symbols-outlined terr-catalog-sort-icon" aria-hidden="true">unfold_more</span>
+        </button>
+        <div class="terr-xlf-filter">
+          <button type="button" class="terr-xlf-filter-btn${active ? ' terr-xlf-filter-btn--active' : ''}" data-xlf-trigger="${filterKey}" aria-expanded="false" aria-haspopup="true" aria-label="Filtrar ${label}" title="Filtrar">
+            <span class="material-symbols-outlined" aria-hidden="true">${active ? 'filter_alt' : 'filter_list'}</span>
+          </button>
+          <div class="terr-xlf-menu hidden" data-xlf-menu="${filterKey}" role="dialog" aria-label="Filtrar ${label}">
+            <p class="terr-xlf-menu-title">${escapeHtml(label)}</p>
+            <label class="terr-xlf-check terr-xlf-check--all">
+              <input type="checkbox" data-xlf-select-all="${filterKey}" ${catalogFilterAllSelected(catalogFilter[filterKey]) ? 'checked' : ''}>
+              <span>(Selecionar tudo)</span>
+            </label>
+            <div class="terr-xlf-checks">${checks}</div>
+            <div class="terr-xlf-menu-actions">
+              <button type="button" class="terr-xlf-clear" data-xlf-clear="${filterKey}">Limpar filtro</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </th>`;
   }
 
   function catalogSortButton(col, label) {
@@ -997,11 +1072,15 @@
         ].join(' ').toLowerCase().includes(q);
       });
     }
-    if (catalogFilter.status) {
-      list = list.filter((t) => t.status === catalogFilter.status);
+    const statusKeys = catalogFilterSelectedKeys(catalogFilter.status);
+    const statusTotal = Object.keys(catalogFilter.status).length;
+    if (statusKeys.length < statusTotal) {
+      list = statusKeys.length ? list.filter((t) => statusKeys.includes(t.status)) : [];
     }
-    if (catalogFilter.type) {
-      list = list.filter((t) => t.territory_type === catalogFilter.type);
+    const typeKeys = catalogFilterSelectedKeys(catalogFilter.type);
+    const typeTotal = Object.keys(catalogFilter.type).length;
+    if (typeKeys.length < typeTotal) {
+      list = typeKeys.length ? list.filter((t) => typeKeys.includes(t.territory_type)) : [];
     }
     return getSortedCatalog(list);
   }
@@ -1015,24 +1094,63 @@
       catalogFilter.q = e.target.value;
       renderCatalogoTable();
     });
-    grid.querySelectorAll('[data-catalog-status]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        catalogFilter.status = btn.dataset.catalogStatus || '';
-        grid.querySelectorAll('[data-catalog-status]').forEach((b) => {
-          b.classList.toggle('terr-catalog-filter--active', (b.dataset.catalogStatus || '') === catalogFilter.status);
-        });
+
+    grid.querySelectorAll('[data-xlf-trigger]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.xlfTrigger;
+        const menu = grid.querySelector(`[data-xlf-menu="${key}"]`);
+        if (!menu) return;
+        const willOpen = menu.classList.contains('hidden');
+        closeCatalogFilterMenus();
+        if (willOpen) {
+          menu.classList.remove('hidden');
+          btn.setAttribute('aria-expanded', 'true');
+          updateCatalogFilterUI();
+        }
+      });
+    });
+
+    grid.querySelectorAll('[data-xlf-select-all]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const key = box.dataset.xlfSelectAll;
+        const map = catalogFilter[key];
+        Object.keys(map).forEach((k) => { map[k] = box.checked; });
+        updateCatalogFilterUI();
         renderCatalogoTable();
       });
     });
-    grid.querySelectorAll('[data-catalog-type]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        catalogFilter.type = btn.dataset.catalogType || '';
-        grid.querySelectorAll('[data-catalog-type]').forEach((b) => {
-          b.classList.toggle('terr-catalog-filter--active', (b.dataset.catalogType || '') === catalogFilter.type);
-        });
+
+    grid.querySelectorAll('[data-xlf-filter]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const key = box.dataset.xlfFilter;
+        catalogFilter[key][box.value] = box.checked;
+        syncCatalogFilterSelectAll(key);
+        updateCatalogFilterUI();
         renderCatalogoTable();
       });
     });
+
+    grid.querySelectorAll('[data-xlf-clear]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.xlfClear;
+        catalogFilter[key] = catalogFilterMapAllTrue(catalogFilter[key]);
+        updateCatalogFilterUI();
+        renderCatalogoTable();
+        closeCatalogFilterMenus();
+      });
+    });
+
+    grid.querySelectorAll('.terr-xlf-menu').forEach((menu) => {
+      menu.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    if (!window.__JETerrCatalogXlfBound) {
+      window.__JETerrCatalogXlfBound = true;
+      document.addEventListener('click', () => closeCatalogFilterMenus());
+    }
+
     grid.querySelectorAll('[data-catalog-sort]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const col = btn.dataset.catalogSort;
@@ -1072,6 +1190,7 @@
     if (!listEl) return;
 
     updateCatalogSortUI();
+    updateCatalogFilterUI();
     const filtered = getFilteredCatalog();
     updateCatalogStats();
 
@@ -1113,8 +1232,12 @@
     if (footEl) {
       const parts = [];
       if (catalogFilter.q.trim()) parts.push('busca');
-      if (catalogFilter.status) parts.push(catalogStatusFilterLabel(catalogFilter.status).toLowerCase());
-      if (catalogFilter.type) parts.push(catalogTypeFilterLabel(catalogFilter.type).toLowerCase());
+      if (!catalogFilterAllSelected(catalogFilter.status)) {
+        parts.push(catalogFilterSelectedKeys(catalogFilter.status).map((s) => STATUS_LABELS[s] || s).join(', ').toLowerCase());
+      }
+      if (!catalogFilterAllSelected(catalogFilter.type)) {
+        parts.push(catalogFilterSelectedKeys(catalogFilter.type).map((t) => TERRITORY_TYPE_LABELS[t] || t).join(', ').toLowerCase());
+      }
       const filterNote = parts.length ? ` · filtro: ${parts.join(', ')}` : '';
       const suffix = filtered.length < territories.length ? ` (${territories.length} no total)` : '';
       footEl.textContent = `Exibindo ${filtered.length} território${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
@@ -1136,8 +1259,6 @@
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
           <input id="catalog-search" type="search" class="terr-catalog-input" placeholder="Buscar nome, número, status…" autocomplete="off"/>
         </div>
-        <div class="terr-catalog-filters" role="group" aria-label="Filtrar por status">${renderCatalogStatusFilters()}</div>
-        <div class="terr-catalog-filters" role="group" aria-label="Filtrar por tipo">${renderCatalogTypeFilters()}</div>
       </div>
       <div class="terr-catalog-stats">
         <div class="terr-catalog-stat terr-catalog-stat--all">
@@ -1174,7 +1295,7 @@
           <table class="terr-catalog-table">
             <thead>
               <tr>
-                ${catalogSortButton('num', 'ID')}${catalogSortButton('name', 'Território')}${catalogSortButton('type', 'Tipo')}${catalogSortButton('status', 'Status')}${catalogSortButton('assignee', 'Designado')}${catalogSortButton('coverage', 'Cobertura')}
+                ${catalogSortButton('num', 'ID')}${catalogSortButton('name', 'Território')}${catalogFilterHeader('type', 'Tipo', 'type', CATALOG_TYPE_OPTIONS)}${catalogFilterHeader('status', 'Status', 'status', CATALOG_STATUS_OPTIONS)}${catalogSortButton('assignee', 'Designado')}${catalogSortButton('coverage', 'Cobertura')}
                 <th scope="col" class="terr-catalog-actions" aria-label="Ações"></th>
               </tr>
             </thead>
