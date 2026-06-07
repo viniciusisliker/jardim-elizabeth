@@ -120,6 +120,21 @@
     return msg.trim();
   }
 
+  function generateVolunteerOutreachMessage() {
+    return [
+      '🌤️ Bom dia, irmãos!',
+      'Esperamos que todos estejam bem e tenham uma ótima semana 😊',
+      '',
+      'Temos horários disponíveis para os Carrinhos e o Display.',
+      '',
+      'Se você puder participar, fale comigo! Podemos combinar um dia e horário que fique melhor para você, de forma agradável.',
+      '',
+      'Agradecemos muito o apoio e o zelo de todos',
+      '',
+      '📞 (11) 96400-1170'
+    ].join('\n');
+  }
+
   function formatPublisherDays(days) {
     if (!days?.length) return '—';
     if (days.length >= EQUIPMENT_DAYS.length) return 'Seg–Dom';
@@ -141,6 +156,7 @@
     compareSlots,
     slotsForWeek,
     generateWhatsAppEquipmentSchedule,
+    generateVolunteerOutreachMessage,
     formatPublisherDays
   };
 })();

@@ -1731,6 +1731,19 @@
     }
   }
 
+  function openVolunteerWhatsApp() {
+    const msg = helpers.generateVolunteerOutreachMessage();
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(msg)
+        .then(() => showToast(toast, 'WhatsApp aberto — mensagem também copiada.'))
+        .catch(() => showToast(toast, 'WhatsApp aberto com a mensagem pronta.'));
+    } else {
+      showToast(toast, 'WhatsApp aberto com a mensagem pronta.');
+    }
+  }
+
   async function init() {
     if (window.__JEAdminCarrinhosDisplaysInit) return;
 
@@ -1760,6 +1773,7 @@
     document.getElementById('eq-btn-add-item')?.addEventListener('click', () => startNewItemInline());
     document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => startNewLocInline());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
+    document.getElementById('eq-btn-whatsapp-volunteers')?.addEventListener('click', openVolunteerWhatsApp);
 
     document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
       const pubToggle = e.target.closest('[data-eq-inline-pub-toggle]');
