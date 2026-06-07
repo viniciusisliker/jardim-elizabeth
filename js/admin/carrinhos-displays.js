@@ -294,10 +294,11 @@
 
   async function init() {
     if (window.__JEAdminCarrinhosDisplaysInit) return;
-    window.__JEAdminCarrinhosDisplaysInit = true;
 
     const profile = await guardPermission('agendamentos');
-    if (!profile) return;
+    if (!profile) return false;
+
+    if (!helpers) throw new Error('Módulo de cronograma não carregou. Recarregue a página.');
 
     toast = toastEl();
     client = await getClient();
@@ -354,7 +355,20 @@
       }
     });
 
-    await Promise.all([loadPublishers(), loadSlots()]);
+    try {
+      await Promise.all([loadPublishers(), loadSlots()]);
+    } catch (err) {
+      console.error('Carrinhos e Displays:', err);
+      const msg = String(err?.message || err);
+      const list = document.getElementById('eq-sched-list');
+      if (list) {
+        list.innerHTML = `<div class="eq-sched-card p-5 text-sm text-error">Não foi possível carregar os dados.${msg ? ` (${escapeHtml(msg)})` : ''}</div>`;
+      }
+      showToast(toast, msg.includes('equipment_') ? 'Tabelas do cronograma ainda não existem no Supabase.' : msg, true);
+      throw err;
+    }
+
+    window.__JEAdminCarrinhosDisplaysInit = true;
   }
 
   window.JEAdminCarrinhosDisplays = { init };

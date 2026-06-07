@@ -12,7 +12,9 @@
   const SCRIPT_GLOBALS = {
     'js/admin-core.js?v=2026060902': 'JEAdmin',
     'js/territory-assignment-helpers.js?v=2026060624': 'JETerritoryAssignment',
-    'js/admin/territory-system.js?v=2026060914': 'JEAdminTerritorios'
+    'js/admin/territory-system.js?v=2026060914': 'JEAdminTerritorios',
+    'js/equipment-schedule-helpers.js?v=2026060934': 'JEEquipmentSchedule',
+    'js/admin/carrinhos-displays.js?v=2026060934': 'JEAdminCarrinhosDisplays'
   };
 
   function scriptGlobalFor(src) {
