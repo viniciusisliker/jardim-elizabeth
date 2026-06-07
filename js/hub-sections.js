@@ -100,7 +100,7 @@
       scripts: [
         'js/admin-core.js?v=2026060902',
         'js/territory-assignment-helpers.js?v=2026060624',
-        'js/admin/territory-system.js?v=2026060903'
+        'js/admin/territory-system.js?v=2026060904'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {

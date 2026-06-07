@@ -62,6 +62,10 @@
     loadedSections.delete(sectionId);
     const flag = INIT_FLAGS[sectionId];
     if (flag) delete window[flag];
+    if (section.initKey) delete window[section.initKey];
+    section.scripts?.forEach((src) => {
+      document.querySelector(`script[src="${src}"]`)?.remove();
+    });
     if (!section.partial) return;
     const el = document.getElementById(section.viewId);
     if (!el) return;
@@ -76,22 +80,41 @@
     });
   }
 
-  function loadScript(src) {
+  function loadScript(src, { requiredGlobal = null } = {}) {
     return new Promise((resolve, reject) => {
+      const finish = () => {
+        if (requiredGlobal && !window[requiredGlobal]) {
+          reject(new Error(`Global ${requiredGlobal} ausente após ${src}`));
+          return;
+        }
+        resolve();
+      };
+
       const existing = document.querySelector(`script[src="${src}"]`);
       if (existing) {
-        if (existing.dataset.loaded === '1') resolve();
-        else existing.addEventListener('load', () => resolve(), { once: true });
-        return;
+        if (existing.dataset.loadError === '1') {
+          existing.remove();
+        } else if (existing.dataset.loaded === '1') {
+          finish();
+          return;
+        } else {
+          existing.addEventListener('load', () => finish(), { once: true });
+          existing.addEventListener('error', () => reject(new Error(`Falha ao carregar ${src}`)), { once: true });
+          return;
+        }
       }
+
       const el = document.createElement('script');
       el.src = src;
       el.dataset.loaded = '0';
       el.onload = () => {
         el.dataset.loaded = '1';
-        resolve();
+        finish();
       };
-      el.onerror = () => reject(new Error(`Falha ao carregar ${src}`));
+      el.onerror = () => {
+        el.dataset.loadError = '1';
+        reject(new Error(`Falha ao carregar ${src}`));
+      };
       document.body.appendChild(el);
     });
   }
@@ -165,10 +188,20 @@
     }
 
     if (section.scripts?.length) {
-      for (const src of section.scripts) await loadScript(src);
+      const scriptGlobals = {
+        'js/admin-core.js?v=2026060902': 'JEAdmin',
+        'js/territory-assignment-helpers.js?v=2026060624': 'JETerritoryAssignment',
+        'js/admin/territory-system.js?v=2026060904': 'JEAdminTerritorios'
+      };
+      for (const src of section.scripts) {
+        await loadScript(src, { requiredGlobal: scriptGlobals[src] || null });
+      }
     }
 
     const mod = section.initKey ? window[section.initKey] : null;
+    if (section.initKey && !mod?.init) {
+      throw new Error(`Module ${section.initKey} not found`);
+    }
     if (mod?.init) {
       const ready = await mod.init();
       if (ready === false) throw new Error(`Init ${section.id}`);

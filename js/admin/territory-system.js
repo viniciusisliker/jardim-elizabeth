@@ -1,7 +1,28 @@
 (function () {
-  const { guardPermission, getClient, showToast, escapeHtml, STATUS_LABELS } = window.JEAdmin;
+  let guardPermission;
+  let getClient;
+  let showToast;
+  let escapeHtml;
+  let STATUS_LABELS;
+
   function H() {
     return window.JETerritoryAssignment;
+  }
+
+  function bindAdmin() {
+    const admin = window.JEAdmin;
+    if (!admin) return false;
+    ({ guardPermission, getClient, showToast, escapeHtml, STATUS_LABELS } = admin);
+    return true;
+  }
+
+  async function ensureAccess(permission) {
+    if (window.JEHubRouter) {
+      const profile = await window.JEAuth.getCurrentProfile();
+      if (!profile || !window.JEAuth.hasPermission(profile, permission)) return null;
+      return profile;
+    }
+    return guardPermission(permission);
   }
 
   const EVENT_LABELS = {
@@ -1937,13 +1958,17 @@
 
   async function init() {
     if (window.__JEAdminTerritoriosInit) return true;
+    if (!bindAdmin()) {
+      console.error('Territórios: JEAdmin não carregado');
+      return false;
+    }
     const helpers = H();
     if (!helpers) {
       console.error('Territórios: JETerritoryAssignment não carregado');
       return false;
     }
 
-    const profile = await guardPermission('territorios');
+    const profile = await ensureAccess('territorios');
     if (!profile) return false;
 
     window.__JEAdminTerritoriosInit = true;
