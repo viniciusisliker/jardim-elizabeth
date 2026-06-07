@@ -109,6 +109,20 @@
       background:rgba(255,255,255,.1);backdrop-filter:blur(12px);
       border:1px solid rgba(255,255,255,.18);border-radius:1rem;
     }
+    .hub-user-chip-btn{
+      display:flex;align-items:center;gap:.75rem;width:100%;padding:0;
+      background:transparent;border:none;color:inherit;text-align:left;cursor:pointer;
+      font-family:inherit;font-size:inherit;
+    }
+    .hub-user-chip-btn:hover .hub-user-avatar{box-shadow:0 0 0 2px rgba(200,169,110,.45)}
+    .hub-user-avatar{
+      width:2.75rem;height:2.75rem;border-radius:9999px;overflow:hidden;flex-shrink:0;
+      background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;
+      border:1px solid rgba(255,255,255,.22);transition:box-shadow .15s;
+    }
+    .hub-user-avatar .je-profile-avatar{width:100%;height:100%;object-fit:cover;display:block}
+    .hub-user-avatar .je-profile-avatar-fallback{color:rgba(255,255,255,.85)}
+    .hub-user-text{min-width:0}
     .hub-main{
       position:relative;z-index:1;margin-top:-1.5rem;
     }
@@ -359,9 +373,14 @@
             </button>
           </div>
           <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
-            <p class="font-bold text-white" id="hub-user-name">—</p>
-            <p class="text-xs text-accent-gold font-semibold mt-0.5" id="hub-user-role">—</p>
-            <p class="text-xs text-white/50 mt-1" id="hub-user-username">—</p>
+            <button type="button" id="hub-user-chip-btn" class="hub-user-chip-btn" data-hub-tab="perfil" title="Meu perfil">
+              <span id="hub-user-avatar" class="hub-user-avatar" aria-hidden="true"></span>
+              <span class="hub-user-text">
+                <p class="font-bold text-white" id="hub-user-name">—</p>
+                <p class="text-xs text-accent-gold font-semibold mt-0.5" id="hub-user-role">—</p>
+                <p class="text-xs text-white/50 mt-1" id="hub-user-username">—</p>
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -629,6 +648,7 @@
       </div>
 
       <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-perfil" class="hub-view hidden hub-view--wide"></div>
 
     </div>
   </main>
@@ -665,12 +685,12 @@
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
-  <script src="js/hub-sections.js?v=2026060912"></script>
+  <script src="js/hub-sections.js?v=2026060921"></script>
   <script src="js/hub-events.js?v=2026060801"></script>
   <script src="js/hub-changelog.js?v=2026060701"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060910"></script>
   <script src="js/hub-territory-assignment.js?v=2026060624"></script>
   <script src="js/admin-core.js?v=2026060902"></script>
-  <script src="js/hub.js?v=2026060912"></script>
+  <script src="js/hub.js?v=2026060921"></script>
 </body>
 </html>

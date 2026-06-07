@@ -1,0 +1,59 @@
+    <div class="perf-toolbar">
+      <div>
+        <h1>Meu Perfil</h1>
+        <p>Sua foto e informações da conta no site da congregação.</p>
+      </div>
+    </div>
+
+    <div class="perf-grid">
+      <section class="perf-card perf-card--photo" aria-labelledby="perf-photo-title">
+        <div class="perf-card__head">
+          <span class="material-symbols-outlined" aria-hidden="true">photo_camera</span>
+          <h2 id="perf-photo-title">Foto de perfil</h2>
+        </div>
+        <div class="perf-photo-body">
+          <div id="perf-avatar" class="perf-avatar" aria-live="polite">
+            <span class="material-symbols-outlined perf-avatar__fallback" aria-hidden="true">person</span>
+          </div>
+          <div class="perf-photo-actions">
+            <label class="perf-btn perf-btn--primary">
+              <span class="material-symbols-outlined" aria-hidden="true">upload</span>
+              Alterar foto
+              <input id="perf-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden/>
+            </label>
+            <button type="button" id="perf-avatar-remove" class="perf-btn perf-btn--ghost hidden">
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+              Remover
+            </button>
+          </div>
+          <p class="perf-hint">JPG, PNG ou WebP · até 2 MB · aparece no menu e no Hub.</p>
+          <p id="perf-upload-status" class="perf-status hidden" role="status"></p>
+        </div>
+      </section>
+
+      <section class="perf-card perf-card--info" aria-labelledby="perf-info-title">
+        <div class="perf-card__head">
+          <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+          <h2 id="perf-info-title">Sua conta</h2>
+        </div>
+        <dl class="perf-info-list">
+          <div class="perf-info-row">
+            <dt>Nome</dt>
+            <dd id="perf-info-name">—</dd>
+          </div>
+          <div class="perf-info-row">
+            <dt>Usuário</dt>
+            <dd id="perf-info-username">—</dd>
+          </div>
+          <div class="perf-info-row">
+            <dt>Cargo</dt>
+            <dd id="perf-info-role">—</dd>
+          </div>
+          <div class="perf-info-row perf-info-row--des hidden" id="perf-info-des-wrap">
+            <dt>Designação</dt>
+            <dd id="perf-info-des">—</dd>
+          </div>
+        </dl>
+        <p class="perf-foot">Para alterar cargo ou permissões de módulos, fale com um responsável pela equipe.</p>
+      </section>
+    </div>

@@ -393,6 +393,16 @@
       display: flex !important;
     }
 
+    .je-profile-menu-avatar{
+      width:3rem;height:3rem;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+      background:#eef3fa;border:1px solid #e2e6ef;
+    }
+    .je-profile-menu-avatar .je-profile-avatar{width:100%;height:100%;object-fit:cover;display:block}
+    .je-profile-menu-avatar .je-profile-avatar-fallback{color:#3b5e97}
+    #profile-icon{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:9999px}
+    #profile-icon .je-profile-btn-avatar{width:1.5rem;height:1.5rem;border-radius:9999px;object-fit:cover;display:block}
+    #profile-icon .je-profile-avatar-fallback{font-size:1.25rem!important}
+
     /* Menu hambúrguer: só mobile/tablet (<1024px). Nav pills no desktop. */
     @media (min-width: 1024px) {
       .je-site-menu-mobile-only,

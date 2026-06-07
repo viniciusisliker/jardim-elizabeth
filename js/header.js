@@ -172,14 +172,29 @@
     const roleLabel = window.JEAuth.getRoleLabel(profile);
     const canHub = window.JEAuth.canAccessHub(profile);
     const icon = qs('profile-icon');
-    if (icon) icon.textContent = 'person';
+    if (icon) {
+      if (profile.avatar_url) {
+        icon.innerHTML = window.JEAuth.renderAvatarHtml(profile, { size: 24, className: 'je-profile-btn-avatar' });
+      } else {
+        icon.textContent = 'person';
+      }
+    }
+
+    const avatarBlock = window.JEAuth.renderAvatarHtml(profile, { size: 48, className: 'je-profile-menu-avatar__img' });
 
     content.innerHTML = `
-      <div class="border-b border-outline-variant pb-3 mb-3">
-        <p class="font-bold text-primary">${profile.full_name}</p>
-        <p class="text-xs text-on-surface-variant mt-0.5">${roleLabel}</p>
-        ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
+      <div class="border-b border-outline-variant pb-3 mb-3 flex items-start gap-3">
+        <span class="je-profile-menu-avatar shrink-0">${avatarBlock}</span>
+        <div class="min-w-0">
+          <p class="font-bold text-primary">${profile.full_name}</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">${roleLabel}</p>
+          ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
+        </div>
       </div>
+      <a href="${siteUrl('hub.html#perfil')}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
+        <span class="material-symbols-outlined" style="font-size:20px">account_circle</span>
+        Meu Perfil
+      </a>
       ${canHub ? `
         <a href="${siteUrl('hub.html')}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
           <span class="material-symbols-outlined" style="font-size:20px">dashboard</span>
@@ -204,6 +219,11 @@
         window.location.href = siteUrl('index.html');
       }
     });
+  }
+
+  function onProfileUpdated(e) {
+    const profile = e.detail?.profile;
+    if (profile) renderUserMenu(profile);
   }
 
   async function refreshProfileUI() {
@@ -341,5 +361,7 @@
     if (window.JEAuth) {
       window.JEAuth.onAuthStateChange(() => refreshProfileUI());
     }
+
+    window.addEventListener('je:profile-updated', onProfileUpdated);
   };
 })();

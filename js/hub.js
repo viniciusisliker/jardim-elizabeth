@@ -23,12 +23,22 @@
   }
 
   function renderHubUser(profile) {
-    document.getElementById('hub-user-name').textContent = profile.full_name;
+    const nameEl = document.getElementById('hub-user-name');
     const roleEl = document.getElementById('hub-user-role');
-    roleEl.textContent = window.JEAuth.getRoleLabel(profile);
-    roleEl.classList.toggle('text-primary', window.JEAuth.isSuperUser(profile.role));
-    roleEl.classList.toggle('font-semibold', window.JEAuth.isSuperUser(profile.role));
-    document.getElementById('hub-user-username').textContent = profile.username ? `@${profile.username}` : '';
+    const userEl = document.getElementById('hub-user-username');
+    const avatarEl = document.getElementById('hub-user-avatar');
+    if (nameEl) nameEl.textContent = profile.full_name;
+    if (roleEl) {
+      roleEl.textContent = window.JEAuth.getRoleLabel(profile);
+      roleEl.classList.toggle('text-primary', window.JEAuth.isSuperUser(profile.role));
+      roleEl.classList.toggle('font-semibold', window.JEAuth.isSuperUser(profile.role));
+    }
+    if (userEl) userEl.textContent = profile.username ? `@${profile.username}` : '';
+    if (avatarEl) avatarEl.innerHTML = window.JEAuth.renderAvatarHtml(profile, { size: 44, className: 'hub-user-avatar__img' });
+  }
+
+  function hubAllowsProfileOnly() {
+    return sectionByHash(location.hash)?.id === 'perfil';
   }
 
   async function getHubClient() {
@@ -54,7 +64,12 @@
     }
 
     const profile = await window.JEAuth.getCurrentProfile();
-    if (!profile || !window.JEAuth.canAccessHub(profile)) {
+    if (!profile) {
+      window.location.href = 'index.html';
+      return null;
+    }
+
+    if (!window.JEAuth.canAccessHub(profile) && !hubAllowsProfileOnly()) {
       window.location.href = 'index.html';
       return null;
     }
@@ -359,7 +374,7 @@
       }
 
       const cached = window.JEAuth.getCachedProfile?.();
-      if (cached && window.JEAuth.canAccessHub(cached)) {
+      if (cached && (window.JEAuth.canAccessHub(cached) || hubAllowsProfileOnly())) {
         currentProfile = cached;
         renderHubUser(cached);
         setupHubRouter();
@@ -392,7 +407,7 @@
     }
   }
 
-  window.JEHubRouter = { navigateTo, SECTIONS, getProfile: () => currentProfile };
+  window.JEHubRouter = { navigateTo, SECTIONS, getProfile: () => currentProfile, renderUser: renderHubUser };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHub);

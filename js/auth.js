@@ -28,7 +28,7 @@
     }
   }
 
-  const PROFILE_SELECT_BASE = 'id, full_name, role, designation, username, can_announcements';
+  const PROFILE_SELECT_BASE = 'id, full_name, role, designation, username, can_announcements, avatar_url';
   const PROFILE_DESIGNATIONS = `profile_access_designations (
       access_designations ( id, slug, label, permissions, is_active )
     )`;
@@ -69,6 +69,7 @@
         designation: profile.designation,
         username: profile.username,
         can_announcements: !!profile.can_announcements,
+        avatar_url: profile.avatar_url || null,
         designations: profile.designations || [],
         permissions: profile.permissions || []
       }));
@@ -235,7 +236,7 @@
     const timeoutMs = options.timeoutMs || SESSION_TIMEOUT_MS;
     let { data, error } = await queryProfile(client, userId, PROFILE_SELECT, timeoutMs);
 
-    if (error && /display_role|column profiles\./i.test(error.message || '')) {
+    if (error && /display_role|avatar_url|column profiles\./i.test(error.message || '')) {
       ({ data, error } = await queryProfile(client, userId, PROFILE_SELECT_FALLBACK, timeoutMs));
     }
 
@@ -330,10 +331,32 @@
     });
   }
 
+  async function refreshCurrentProfile() {
+    const session = await getSession();
+    if (!session?.user) {
+      currentProfile = null;
+      clearProfileCache();
+      return null;
+    }
+    currentProfile = await fetchProfile(session.user.id, { timeoutMs: 12000 });
+    return currentProfile;
+  }
+
+  function renderAvatarHtml(profile, { size = 40, className = '' } = {}) {
+    const url = profile?.avatar_url;
+    const cls = className ? ` ${className}` : '';
+    if (url) {
+      const safe = String(url).replace(/"/g, '&quot;');
+      return `<img src="${safe}" alt="" class="je-profile-avatar${cls}" width="${size}" height="${size}" loading="lazy"/>`;
+    }
+    return `<span class="material-symbols-outlined je-profile-avatar-fallback${cls}" aria-hidden="true" style="font-size:${Math.round(size * 0.72)}px">person</span>`;
+  }
+
   window.JEAuth = {
     getClient,
     getSession,
     getCurrentProfile,
+    refreshCurrentProfile,
     getCachedProfile: readCachedProfile,
     hasLocalSession,
     applyHeaderAuthFast,
@@ -341,6 +364,7 @@
     signOut,
     onAuthStateChange,
     getRoleLabel,
+    renderAvatarHtml,
     isAdminRole,
     isSuperUser,
     hasPermission,
