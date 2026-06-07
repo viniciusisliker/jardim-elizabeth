@@ -37,7 +37,7 @@
   function renderInfo(profile) {
     document.getElementById('perf-info-name').textContent = profile.full_name || '—';
     document.getElementById('perf-info-username').textContent = profile.username ? `@${profile.username}` : '—';
-    document.getElementById('perf-info-role').textContent = window.JEAuth.getRoleLabel(profile);
+    window.JEAuth.applyRoleLabelEl(document.getElementById('perf-info-role'), profile);
 
     const desWrap = document.getElementById('perf-info-des-wrap');
     const desText = profile.designation

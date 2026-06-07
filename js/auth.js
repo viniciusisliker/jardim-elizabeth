@@ -188,6 +188,30 @@
     return extra ? `${base} (${extra})` : base;
   }
 
+  function hasDeveloperDesignation(profile) {
+    if (!profile) return false;
+    if (/desenvolvedor/i.test(profile.designation || '')) return true;
+    return (profile.designations || []).some(
+      (d) => /desenvolvedor/i.test(d.slug || '') || /desenvolvedor/i.test(d.label || '')
+    );
+  }
+
+  function getRoleLabelClasses(profile, { onDark = false } = {}) {
+    if (hasDeveloperDesignation(profile)) {
+      return onDark
+        ? 'je-role-emblem je-role-emblem--on-dark text-xs font-semibold mt-0.5'
+        : 'je-role-emblem text-xs font-semibold mt-0.5';
+    }
+    if (onDark) return 'text-xs text-accent-gold font-semibold mt-0.5';
+    return 'text-xs text-on-surface-variant mt-0.5';
+  }
+
+  function applyRoleLabelEl(el, profile, options = {}) {
+    if (!el || !profile) return;
+    el.textContent = getRoleLabel(profile);
+    el.className = getRoleLabelClasses(profile, options);
+  }
+
   function isSuperUser(role) {
     return role === 'superuser';
   }
@@ -364,6 +388,9 @@
     signOut,
     onAuthStateChange,
     getRoleLabel,
+    getRoleLabelClasses,
+    applyRoleLabelEl,
+    hasDeveloperDesignation,
     renderAvatarHtml,
     isAdminRole,
     isSuperUser,

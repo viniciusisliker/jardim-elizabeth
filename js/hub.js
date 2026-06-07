@@ -28,11 +28,7 @@
     const userEl = document.getElementById('hub-user-username');
     const avatarEl = document.getElementById('hub-user-avatar');
     if (nameEl) nameEl.textContent = profile.full_name;
-    if (roleEl) {
-      roleEl.textContent = window.JEAuth.getRoleLabel(profile);
-      roleEl.classList.toggle('text-primary', window.JEAuth.isSuperUser(profile.role));
-      roleEl.classList.toggle('font-semibold', window.JEAuth.isSuperUser(profile.role));
-    }
+    if (roleEl) window.JEAuth.applyRoleLabelEl(roleEl, profile, { onDark: true });
     if (userEl) userEl.textContent = profile.username ? `@${profile.username}` : '';
     if (avatarEl) avatarEl.innerHTML = window.JEAuth.renderAvatarHtml(profile, { size: 44, className: 'hub-user-avatar__img' });
   }

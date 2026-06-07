@@ -170,6 +170,7 @@
     updateHubAccess(profile);
 
     const roleLabel = window.JEAuth.getRoleLabel(profile);
+    const roleClass = window.JEAuth.getRoleLabelClasses(profile);
     const canHub = window.JEAuth.canAccessHub(profile);
     const icon = qs('profile-icon');
     if (icon) {
@@ -187,7 +188,7 @@
         <span class="je-profile-menu-avatar shrink-0">${avatarBlock}</span>
         <div class="min-w-0">
           <p class="font-bold text-primary">${profile.full_name}</p>
-          <p class="text-xs text-on-surface-variant mt-0.5">${roleLabel}</p>
+          <p class="${roleClass}">${roleLabel}</p>
           ${profile.username ? `<p class="text-xs text-outline mt-1 truncate">@${profile.username}</p>` : ''}
         </div>
       </div>

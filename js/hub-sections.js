@@ -130,8 +130,8 @@
       permission: null,
       viewId: 'hub-view-perfil',
       partial: 'hub/sections/perfil.html',
-      styles: ['css/hub-sections/perfil.css?v=2026060921'],
-      scripts: ['js/admin/meu-perfil.js?v=2026060921'],
+      styles: ['css/hub-sections/perfil.css?v=2026060923'],
+      scripts: ['js/admin/meu-perfil.js?v=2026060923'],
       initKey: 'JEMeuPerfil',
       hero: {
         kicker: 'Minha conta',

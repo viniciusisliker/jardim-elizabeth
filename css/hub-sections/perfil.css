@@ -41,6 +41,7 @@
     .perf-info-row:last-child{border-bottom:none}
     .perf-info-row dt{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin:0}
     .perf-info-row dd{margin:0;font-weight:600;color:#0f3462;word-break:break-word}
+    .perf-info-row dd.je-role-emblem{font-size:.875rem;font-weight:700}
     .perf-foot{font-size:.6875rem;color:#6b7280;line-height:1.45;margin:0;padding:.625rem .75rem .875rem;border-top:1px solid #eef0f4;background:#fafbfc}
     @media(max-width:767px){
       .perf-btn{min-height:2.75rem;flex:1 1 calc(50% - .375rem)}

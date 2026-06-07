@@ -403,6 +403,37 @@
     #profile-icon .je-profile-btn-avatar{width:1.5rem;height:1.5rem;border-radius:9999px;object-fit:cover;display:block}
     #profile-icon .je-profile-avatar-fallback{font-size:1.25rem!important}
 
+    .je-role-emblem{
+      display:inline-block;
+      font-weight:700;
+      letter-spacing:0.03em;
+      background:linear-gradient(
+        118deg,
+        #fff6dc 0%,
+        #f5e6c8 14%,
+        #e8c875 32%,
+        #c8a96e 50%,
+        #f0d48a 68%,
+        #b8934a 86%,
+        #e8c875 100%
+      );
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      animation:je-role-shimmer 7s ease-in-out infinite;
+    }
+    .je-role-emblem--on-dark{
+      filter:drop-shadow(0 0 8px rgba(232,200,117,.5)) drop-shadow(0 1px 2px rgba(0,0,0,.35));
+    }
+    @keyframes je-role-shimmer{
+      0%,100%{background-position:0% center}
+      50%{background-position:100% center}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .je-role-emblem{animation:none;background-size:100% auto}
+    }
+
     /* Menu hambúrguer: só mobile/tablet (<1024px). Nav pills no desktop. */
     @media (min-width: 1024px) {
       .je-site-menu-mobile-only,
