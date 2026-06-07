@@ -86,7 +86,7 @@
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
-    sched: ['84px', '148px', '136px', '156px', '68px', '128px', '32px', '76px'],
+    sched: ['92px', '168px', '200px', '172px', '96px', '160px', '96px', '88px'],
     hist: ['76px', '96px', '168px', '210px', '240px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
@@ -1055,7 +1055,7 @@
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Hora', filterKey: 'time', options: timeOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Horário', filterKey: 'time', options: timeOpts, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'assigned', label: 'Designado', filterKey: 'assigned', options: SCHED_ASSIGNED_OPTIONS, wrap: 'span' })}
       <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;

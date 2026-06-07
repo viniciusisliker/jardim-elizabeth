@@ -10,6 +10,17 @@
     }
   }
 
+  function normalizeWidths(saved, defaults) {
+    if (!Array.isArray(saved) || !Array.isArray(defaults) || saved.length !== defaults.length) {
+      return defaults;
+    }
+    return saved.map((w, i) => {
+      const savedPx = parseFloat(w) || 0;
+      const minPx = parseFloat(defaults[i]) || 48;
+      return toPx(Math.max(savedPx, minPx));
+    });
+  }
+
   function save(key, widths) {
     try {
       localStorage.setItem(`${STORAGE}:${key}`, JSON.stringify(widths));
@@ -77,7 +88,7 @@
         e.preventDefault();
         e.stopPropagation();
 
-        let saved = load(key);
+        let saved = normalizeWidths(load(key), defaults);
         let widthsPx;
         if (saved?.length === cells.length) {
           widthsPx = saved.map((w) => parseFloat(w) || 48);
@@ -136,7 +147,7 @@
   function mountGrid({ key, panel, headSelector, defaults }) {
     const panelEl = typeof panel === 'string' ? document.querySelector(panel) : panel;
     if (!panelEl) return;
-    const widths = load(key) || defaults;
+    const widths = normalizeWidths(load(key), defaults);
     applyGrid(panelEl, widths);
     const headRow = panelEl.querySelector(headSelector);
     attachHandles(headRow, applyGrid, panelEl, key, defaults, false);
@@ -145,7 +156,7 @@
   function mountTable({ key, table, defaults }) {
     const tableEl = typeof table === 'string' ? document.querySelector(table) : table;
     if (!tableEl) return;
-    const widths = load(key) || defaults;
+    const widths = normalizeWidths(load(key), defaults);
     applyTable(tableEl, widths);
     const headRow = tableEl.querySelector('thead tr');
     attachHandles(headRow, applyTable, tableEl, key, defaults, true);
