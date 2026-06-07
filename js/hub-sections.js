@@ -57,9 +57,9 @@
       permission: 'public_speeches',
       viewId: 'hub-view-discursos',
       partial: 'hub/sections/discursos.html',
-      styles: ['css/hub-sections/discursos.css?v=2026060902'],
+      styles: ['css/hub-sections/discursos.css?v=2026060924'],
       scripts: [
-        'js/admin/discursos-publicos.js?v=2026060902'
+        'js/admin/discursos-publicos.js?v=2026060924'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {

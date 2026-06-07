@@ -17,7 +17,15 @@
   let selection = { receive: 0, send: 0 };
   let dirty = false;
 
-  function $(id) { return document.getElementById(id); }
+  let root = null;
+
+  function $(id) {
+    if (root) {
+      const scoped = root.querySelector(`#${id}`);
+      if (scoped) return scoped;
+    }
+    return document.getElementById(id);
+  }
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -38,7 +46,7 @@
   }
 
   function referenceMonthFromInput() {
-    const val = $('board-month').value;
+    const val = $('dp-board-month')?.value;
     return val ? `${val}-01` : null;
   }
 
@@ -119,11 +127,11 @@
 
   function setDirty(value) {
     dirty = value;
-    $('btn-save')?.classList.toggle('is-dirty', dirty);
+    $('dp-btn-save')?.classList.toggle('is-dirty', dirty);
   }
 
   function readActiveForm() {
-    const card = document.querySelector('[data-entry-editor]');
+    const card = (root || document).querySelector('[data-entry-editor]');
     if (!card) return;
     const id = card.dataset.entryEditor;
     const entry = entries.find((e) => e.id === id);
@@ -265,7 +273,7 @@
         ${fieldHtml('Tema', 'theme', entry, 'placeholder="Título do discurso"')}
         <div class="dp-field span-2">
           <label>Características</label>
-          <input data-field="characteristics" value="${escapeHtml(entry.characteristics || '')}" list="characteristics-list" placeholder="Categoria do esboço"/>
+          <input data-field="characteristics" value="${escapeHtml(entry.characteristics || '')}" list="dp-characteristics-list" placeholder="Categoria do esboço"/>
           ${charPillsHtml(entry)}
         </div>
         ${fieldHtml('Observação', 'observation', entry, 'placeholder="Congregação, telefone, etc."')}
@@ -334,7 +342,7 @@
   }
 
   function bindEditorEvents(entry, idx, list) {
-    const card = document.querySelector('[data-entry-editor]');
+    const card = (root || document).querySelector('[data-entry-editor]');
     if (!card) return;
 
     card.querySelectorAll('[data-field]').forEach((input) => {
@@ -410,7 +418,7 @@
   function switchTab(tab) {
     readActiveForm();
     activeTab = tab;
-    document.querySelectorAll('.tab-btn').forEach((btn) => {
+    (root || document).querySelectorAll('.tab-btn').forEach((btn) => {
       btn.classList.toggle('tab-active', btn.dataset.tab === tab);
       btn.classList.toggle('text-on-surface-variant', btn.dataset.tab !== tab);
     });
@@ -451,11 +459,11 @@
     renderWorkspace();
   }
 
-  async function loadBoard() {
+  async function loadBoard({ silent = false } = {}) {
     const ref = referenceMonthFromInput();
     if (!ref) {
       showToast(toastEl, 'Selecione um mês.', true);
-      return;
+      return false;
     }
 
     const d = new Date(ref + 'T12:00:00');
@@ -469,13 +477,13 @@
         reference_label: label,
         status: 'draft'
       }).select('*').single();
-      if (error) { showToast(toastEl, error.message, true); return; }
+      if (error) { showToast(toastEl, error.message, true); return false; }
       existing = created;
     }
 
     board = existing;
-    $('board-label').textContent = `${board.reference_label} (${board.status === 'draft' ? 'Rascunho' : board.status})`;
-    $('editor-shell').classList.remove('hidden');
+    $('dp-board-label').textContent = `${board.reference_label} (${board.status === 'draft' ? 'Rascunho' : board.status})`;
+    $('dp-editor-shell')?.classList.remove('hidden');
 
     const { data: rows, error: loadErr } = await client
       .from('public_speech_entries')
@@ -483,7 +491,7 @@
       .eq('board_id', board.id)
       .order('sort_order');
 
-    if (loadErr) { showToast(toastEl, loadErr.message, true); return; }
+    if (loadErr) { showToast(toastEl, loadErr.message, true); return false; }
 
     entries = rows || [];
     if (!entries.length) {
@@ -501,7 +509,8 @@
     selection = { receive: 0, send: 0 };
     setDirty(false);
     renderAll();
-    showToast(toastEl, 'Arranjo carregado.');
+    if (!silent) showToast(toastEl, 'Arranjo carregado.');
+    return true;
   }
 
   async function saveBoard() {
@@ -538,38 +547,47 @@
   }
 
   async function init() {
-    if (window.__JEAdminDiscursosInit) return;
-    window.__JEAdminDiscursosInit = true;
+    if (window.__JEAdminDiscursosInit) return true;
     const profile = await guardPermission('public_speeches');
-    if (!profile) return;
+    if (!profile) return false;
+
+    root = document.getElementById('hub-view-discursos') || document.body;
+    window.__JEAdminDiscursosInit = true;
 
     client = await getClient();
-    toastEl = document.getElementById('hub-admin-toast') || $('admin-toast');
-    $('board-month').value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
+    toastEl = document.getElementById('hub-admin-toast');
 
-    $('btn-load-board').addEventListener('click', loadBoard);
-    $('btn-save').addEventListener('click', saveBoard);
-    $('btn-regen-saturdays').addEventListener('click', regenerateSaturdays);
-    $('btn-add-speech').addEventListener('click', () => addEntry('speech'));
-    $('btn-add-convention').addEventListener('click', () => addEntry('convention'));
-    $('btn-add-special').addEventListener('click', () => addEntry('special_visit'));
-    $('btn-add-note').addEventListener('click', () => addEntry('note'));
+    const monthInput = $('dp-board-month');
+    if (monthInput) {
+      monthInput.value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
+    }
 
-    document.querySelectorAll('.tab-btn').forEach((btn) => {
+    $('dp-btn-load-board')?.addEventListener('click', () => loadBoard());
+    $('dp-btn-save')?.addEventListener('click', saveBoard);
+    $('dp-btn-regen-saturdays')?.addEventListener('click', regenerateSaturdays);
+    $('dp-btn-add-speech')?.addEventListener('click', () => addEntry('speech'));
+    $('dp-btn-add-convention')?.addEventListener('click', () => addEntry('convention'));
+    $('dp-btn-add-special')?.addEventListener('click', () => addEntry('special_visit'));
+    $('dp-btn-add-note')?.addEventListener('click', () => addEntry('note'));
+
+    root.querySelectorAll('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
     document.addEventListener('keydown', (e) => {
-      if (!board || !document.querySelector('[data-entry-editor]')) return;
+      if (!board || !root.querySelector('[data-entry-editor]')) return;
       if (e.target.matches('input, textarea, select')) return;
       if (e.key === 'ArrowLeft') selectEntry(activeTab, selection[activeTab] - 1);
       if (e.key === 'ArrowRight') selectEntry(activeTab, selection[activeTab] + 1);
     });
+
+    await loadBoard({ silent: true });
+    return true;
   }
 
   window.JEAdminDiscursos = { init };
 
-  if (!window.JEHubRouter && document.getElementById('board-month')) {
+  if (!window.JEHubRouter && document.getElementById('dp-board-month')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
   }
