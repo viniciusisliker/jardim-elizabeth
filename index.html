@@ -107,35 +107,17 @@
     }
     @media (min-width: 1024px) {
       .je-home-hero-grid {
-        grid-template-columns: minmax(0, 0.68fr) minmax(0, 1.32fr);
-        gap: 1.75rem;
-        align-items: stretch;
+        grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+        gap: 2rem;
+        align-items: center;
       }
     }
     .je-home-hero-copy {
       min-width: 0;
+      padding: 0.875rem 0 0.625rem;
     }
-    @media (max-width: 1023px) {
-      .je-home-hero-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: minmax(clamp(15rem, 44vh, 20rem), auto);
-      }
-      .je-home-hero-visual {
-        grid-area: 1 / 1;
-      }
-      .je-home-hero-copy {
-        grid-area: 1 / 1;
-        align-self: end;
-        z-index: 2;
-        padding: 3.5rem 1rem 1rem;
-        background: linear-gradient(
-          to top,
-          rgba(7, 31, 61, 0.98) 0%,
-          rgba(7, 31, 61, 0.82) 38%,
-          rgba(7, 31, 61, 0.2) 72%,
-          transparent 100%
-        );
-      }
+    @media (min-width: 768px) {
+      .je-home-hero-copy { padding: 1rem 0 0.75rem; }
     }
     @media (min-width: 1024px) {
       .je-home-hero-copy {
@@ -148,55 +130,33 @@
     .je-home-hero-eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 0.375rem;
-      margin: 0 0 0.5rem;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      gap: 0.4375rem;
+      margin: 0 0 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: rgba(200, 169, 110, 0.95);
+      color: #c8a96e;
     }
     .je-home-hero-eyebrow .material-symbols-outlined {
-      font-size: 0.9375rem;
+      font-size: 1rem;
     }
     @media (min-width: 1024px) {
-      .je-home-hero-eyebrow { margin-bottom: 0.75rem; }
+      .je-home-hero-eyebrow { margin-bottom: 0.875rem; font-size: 0.8125rem; }
     }
     .je-home-hero h1 {
-      font-size: clamp(1.5rem, 6vw, 2.5rem);
+      font-size: clamp(1.75rem, 8vw, 3rem);
       font-weight: 800;
-      line-height: 1.12;
-      letter-spacing: -0.03em;
-      margin: 0 0 0.375rem;
-      text-wrap: balance;
-    }
-    @media (min-width: 1024px) {
-      .je-home-hero h1 { margin-bottom: 0.625rem; }
-    }
-    .je-home-hero-lead {
-      font-size: 0.9375rem;
-      font-weight: 500;
-      line-height: 1.4;
-      letter-spacing: 0.01em;
-      color: rgba(255, 255, 255, 0.82);
-      max-width: 22rem;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
       margin: 0;
       text-wrap: balance;
-    }
-    @media (min-width: 768px) {
-      .je-home-hero-lead { font-size: 1rem; }
-    }
-    @media (min-width: 1024px) {
-      .je-home-hero-lead {
-        font-size: 1.0625rem;
-        max-width: 28rem;
-      }
     }
     .je-home-hero-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4375rem;
-      margin-top: 0.875rem;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
     @media (min-width: 1024px) {
       .je-home-hero-chips { display: none; }
@@ -230,8 +190,7 @@
     .je-home-hero-visual {
       position: relative;
       overflow: hidden;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
     }
     @media (max-width: 1023px) {
       .je-home-hero-visual {
@@ -240,10 +199,7 @@
         margin-left: -1rem;
         margin-right: -1rem;
         border-radius: 0;
-        border-left: none;
-        border-right: none;
         box-shadow: none;
-        min-height: clamp(15rem, 44vh, 20rem);
       }
     }
     @media (min-width: 768px) and (max-width: 1023px) {
@@ -251,39 +207,24 @@
         width: 100%;
         margin: 0;
         border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
       }
     }
     @media (min-width: 1024px) {
       .je-home-hero-visual {
         order: 1;
         border-radius: 1.125rem;
-        min-height: clamp(380px, 52vh, 520px);
-        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
       }
     }
     .je-home-hero-visual img {
       width: 100%;
-      height: 100%;
+      height: auto;
       display: block;
-      object-fit: cover;
-    }
-    @media (max-width: 1023px) {
-      .je-home-hero-visual img {
-        position: absolute;
-        inset: 0;
-      }
-    }
-    .je-home-hero-visual::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(7, 31, 61, 0.35) 0%, transparent 55%);
-      pointer-events: none;
-    }
-    @media (max-width: 1023px) {
-      .je-home-hero-visual::after {
-        background: linear-gradient(to top, rgba(7, 31, 61, 0.55) 0%, transparent 60%);
-      }
+      object-fit: contain;
+      object-position: center;
     }
 
     .je-home-section {
@@ -641,9 +582,6 @@
             Salão do Reino
           </p>
           <h1>Congregação Jardim Elizabeth</h1>
-          <p class="je-home-hero-lead">
-            O essencial da congregação, reunido aqui.
-          </p>
           <nav class="je-home-hero-chips" aria-label="Atalhos principais">
             <a class="je-home-hero-chip" href="agenda.html">
               <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
