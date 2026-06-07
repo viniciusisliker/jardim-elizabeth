@@ -2,147 +2,168 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-06-07',
+    version: '2026-06-09',
     items: [
+      {
+        date: '9 jun 2026',
+        tag: 'Meu Perfil',
+        icon: 'account_circle',
+        title: 'Sua foto no site',
+        body: 'No menu do seu usuário, abra Meu Perfil para colocar ou trocar sua foto. Ela aparece no menu e no Hub.'
+      },
+      {
+        date: '9 jun 2026',
+        tag: 'Territórios',
+        icon: 'filter_list',
+        title: 'Filtros em todas as colunas',
+        body: 'Nas tabelas de Territórios dá para filtrar e ordenar cada coluna, como numa planilha, para achar informações mais rápido.'
+      },
+      {
+        date: '9 jun 2026',
+        tag: 'Territórios',
+        icon: 'priority_high',
+        title: 'Prioridade no cronograma',
+        body: 'O botão vermelho Disponíveis no cronograma mostra quais territórios precisam de atenção, em uma lista fácil de consultar.'
+      },
       {
         date: '7 jun 2026',
         tag: 'Agenda',
         icon: 'search',
-        title: 'Busca no estilo Territórios',
-        body: 'Campo pill com ícone alinhado, botão limpar, contador de eventos e aviso quando nada é encontrado.'
+        title: 'Busca na Agenda',
+        body: 'Pesquise eventos pelo nome, veja quantos resultados apareceram e limpe a busca com um clique.'
       },
       {
         date: '7 jun 2026',
         tag: 'Site',
         icon: 'smartphone',
-        title: 'Melhor no celular e tablet',
-        body: 'Touch targets maiores, heroes fluidos, scroll suave nas tabelas do Hub e layout mais confortável em telas menores.'
+        title: 'Melhor no celular',
+        body: 'Botões maiores, textos mais legíveis e telas que se adaptam melhor ao celular e ao tablet.'
       },
       {
         date: '7 jun 2026',
         tag: 'Territórios',
         icon: 'label',
-        title: 'Nomes alinhados aos mapas',
-        body: 'Títulos dos 19 territórios corrigidos para bater com o que está escrito em cada cartão de mapa (T01–T19).'
+        title: 'Nomes dos territórios corrigidos',
+        body: 'Os nomes dos 19 territórios (T01 a T19) foram ajustados para ficar iguais aos que aparecem nos mapas.'
       },
       {
         date: '7 jun 2026',
         tag: 'Territórios',
         icon: 'search',
-        title: 'Busca repaginada no site',
-        body: 'Barra de busca com pill, contador visível e limpar com um toque — igual à experiência da Agenda.'
+        title: 'Busca no site de Territórios',
+        body: 'Barra de busca no site público de territórios, com contador de resultados e botão para limpar.'
       },
       {
         date: '6 jun 2026',
-        tag: 'Configurações',
+        tag: 'Equipe',
         icon: 'group',
-        title: 'Equipe e Permissões repaginada',
-        body: 'Toolbar compacta, cards de membros, busca e designações de acesso mais claras no Hub.'
+        title: 'Tela de Equipe e Permissões',
+        body: 'Lista de membros mais clara, com busca por nome e forma simples de ver quem pode acessar cada área.'
       },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
         icon: 'image',
-        title: 'Mapas no histórico',
-        body: 'Imagens dos territórios no admin voltaram a carregar corretamente; clique abre o mapa em tela cheia.'
+        title: 'Mapas voltaram a aparecer',
+        body: 'As imagens dos mapas no histórico carregam de novo. Toque no território para ver o mapa em tela cheia.'
       },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
         icon: 'history',
-        title: 'Histórico mais legível',
-        body: 'Tabela realinhada e, ao clicar no território, abre o mapa cadastrado no catálogo — direto do histórico.'
+        title: 'Histórico mais fácil de ler',
+        body: 'Tabela reorganizada. Ao tocar em um território no histórico, o mapa cadastrado abre na hora.'
       },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
         icon: 'groups',
-        title: 'Aba Dirigentes repaginada',
-        body: 'Lista compacta com preferência, dias disponíveis, status em campo e formulário rápido para adicionar irmãos.'
+        title: 'Aba Dirigentes',
+        body: 'Lista dos irmãos aptos a receber território, com dias disponíveis e formulário rápido para incluir alguém novo.'
       },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
         icon: 'undo',
-        title: 'Devolução no estilo cronograma',
-        body: 'Cada designação ativa vira uma linha: último dia trabalhado, observação e devolução com um clique.'
+        title: 'Devolver território',
+        body: 'Cada designação aparece em uma linha com data do último trabalho. Dá para devolver o território com um clique.'
       },
       {
         date: '6 jun 2026',
         tag: 'Territórios',
         icon: 'assignment_ind',
-        title: 'Designar com resumo ao vivo',
-        body: 'Indicadores de disponíveis, dirigentes livres e painel de resumo antes de confirmar a designação.'
+        title: 'Designar território',
+        body: 'Antes de confirmar, você vê um resumo: quantos estão disponíveis, quem está livre e o que será designado.'
       },
       {
         date: '5 jun 2026',
         tag: 'Site',
         icon: 'home',
-        title: 'Navbar do site com emojis',
-        body: 'Menu público mais visual: ícones em Agenda, Agendamentos, Donativos, Anúncios e Territórios.'
+        title: 'Menu do site mais visual',
+        body: 'Ícones nas opções Agenda, Agendamentos, Donativos, Anúncios e Territórios para facilitar a navegação.'
       },
       {
         date: '5 jun 2026',
-        tag: 'Discursos Públicos',
+        tag: 'Discursos',
         icon: 'sync',
-        title: 'Sync com Quadro de Anúncios',
-        body: 'Ao salvar o arranjo em Recebemos, o bloco Final de Semana do quadro do mesmo mês é atualizado automaticamente.'
+        title: 'Discursos e Quadro de Anúncios',
+        body: 'Ao salvar os discursos recebidos, a parte de Final de Semana do quadro do mesmo mês é atualizada sozinha.'
       },
       {
         date: '5 jun 2026',
         tag: 'Quadro de Anúncios',
         icon: 'person',
-        title: 'Dirigente de sábado no quadro',
-        body: 'Campo no Final de Semana alimenta o cronograma de territórios após publicar o quadro — sábado fica sincronizado.'
+        title: 'Dirigente de sábado',
+        body: 'O nome do dirigente de sábado no quadro passa automaticamente para o cronograma de territórios.'
       },
       {
         date: '4 jun 2026',
         tag: 'Territórios',
         icon: 'dashboard',
-        title: 'Painel e catálogo renovados',
-        body: 'Visão geral com estatísticas, prioridades e catálogo compacto com edição em modal; navbar admin centralizada.'
+        title: 'Painel de territórios',
+        body: 'Visão geral com totais, prioridades e lista completa. Editar um território ficou mais simples.'
       },
       {
         date: '31 mai 2026',
-        tag: 'Acesso',
+        tag: 'Equipe',
         icon: 'badge',
-        title: 'Designações de acesso',
-        body: 'Em Configurações você cria designações (Quadro de Anúncios, Agenda, Territórios…) e atribui aos membros quando quiser — sem depender só do cargo.'
+        title: 'Quem pode acessar o quê',
+        body: 'Em Equipe e Permissões você define funções (Quadro, Agenda, Territórios…) e escolhe quem pode usar cada uma.'
       },
       {
         date: '31 mai 2026',
         tag: 'Quadro de Anúncios',
         icon: 'campaign',
-        title: 'Gerenciar quadros salvos',
-        body: 'Na aba Quadros: filtre rascunhos e publicados, edite qualquer período com um clique ou exclua rascunhos que não for mais usar.'
+        title: 'Gerenciar quadros',
+        body: 'Veja rascunhos e publicados, edite qualquer período ou apague rascunhos que não for mais usar.'
       },
       {
         date: '31 mai 2026',
         tag: 'Quadro de Anúncios',
         icon: 'calendar_month',
-        title: 'Exportação Google Agenda',
-        body: 'Baixe CSV por bloco (Mecânicas, VMC ou Final de semana) e importe direto no Google Calendar da congregação.'
+        title: 'Enviar para o Google Agenda',
+        body: 'Baixe um arquivo por bloco (Mecânicas, VMC ou Final de semana) e importe no calendário da congregação.'
       },
       {
         date: '30 mai 2026',
         tag: 'Hub',
         icon: 'dashboard',
-        title: 'Novo layout do Hub',
-        body: 'Painel inicial em blocos (bento): cada módulo aparece só se você tiver permissão. Agenda integrada na aba dedicada.'
+        title: 'Novo painel do Hub',
+        body: 'Página inicial reorganizada: cada área aparece só se você tiver permissão para usá-la.'
       },
       {
         date: '30 mai 2026',
         tag: 'Agenda',
         icon: 'event',
-        title: 'Formulário de eventos simplificado',
-        body: 'Criar eventos ficou mais direto: prévia ao vivo, categorias visuais e campos técnicos ocultos para quem não precisa deles.'
+        title: 'Criar eventos mais fácil',
+        body: 'Formulário mais direto, com prévia do evento enquanto você preenche e categorias visuais.'
       },
       {
         date: '30 mai 2026',
-        tag: 'Correções',
+        tag: 'Melhorias',
         icon: 'build',
-        title: 'Estabilidade e ícones',
-        body: 'Correção ao trocar mês no quadro, rodapé com ícones nas páginas admin e navegação do editor mais confiável.'
+        title: 'Ajustes gerais',
+        body: 'Correções ao trocar o mês no quadro, ícones no rodapé e navegação mais estável no editor.'
       }
     ]
   };
