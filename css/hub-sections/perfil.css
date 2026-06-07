@@ -3,7 +3,9 @@
     .perf-toolbar h1{color:#fff;margin:0;font-size:.9375rem;line-height:1.2;font-family:'Plus Jakarta Sans',Inter,sans-serif}
     .perf-toolbar p{color:rgba(255,255,255,.75);margin:.125rem 0 0;font-size:.625rem}
     .perf-grid{display:grid;gap:.75rem}
-    @media(min-width:768px){.perf-grid{grid-template-columns:minmax(0,16rem) minmax(0,1fr);align-items:start}}
+    @media(min-width:768px){.perf-grid{grid-template-columns:minmax(0,14rem) minmax(0,1fr);align-items:start}}
+    .perf-account-row{display:grid;gap:.75rem;min-width:0}
+    @media(min-width:900px){.perf-account-row{grid-template-columns:minmax(0,1fr) minmax(0,17.5rem);align-items:stretch}}
     .perf-card{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
     .perf-card__head{display:flex;align-items:center;gap:.375rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4;font-size:.75rem;font-weight:800;color:#0f3462}
     .perf-card__head .material-symbols-outlined{font-size:1rem;color:#3b5e97}
@@ -43,10 +45,10 @@
     .perf-info-row dd{margin:0;font-weight:600;color:#0f3462;word-break:break-word}
     .perf-info-row dd.je-role-emblem{font-size:.875rem;font-weight:700}
     .perf-foot{font-size:.6875rem;color:#6b7280;line-height:1.45;margin:0;padding:.625rem .75rem .875rem;border-top:1px solid #eef0f4;background:#fafbfc}
-    .perf-card--password{grid-column:1/-1}
-    .perf-password-body{padding:.875rem .75rem 1rem;display:grid;gap:.625rem}
-    .perf-password-fields{display:grid;gap:.625rem}
-    @media(min-width:640px){.perf-password-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .perf-card--info,.perf-card--password{display:flex;flex-direction:column;min-height:100%}
+    .perf-card--info .perf-info-list{flex:1}
+    .perf-password-body{padding:.875rem .75rem 1rem;display:flex;flex-direction:column;gap:.625rem;flex:1}
+    .perf-password-fields{display:grid;gap:.625rem;grid-template-columns:1fr}
     .perf-field{display:grid;gap:.3125rem;font-size:.8125rem}
     .perf-field>span{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
     .perf-field input{
@@ -55,7 +57,7 @@
     }
     .perf-field input:focus{outline:none;border-color:#0f3462;background:#fff;box-shadow:0 0 0 3px rgba(15,52,98,.1)}
     .perf-hint--form{max-width:none;text-align:left;margin:0}
-    .perf-password-actions{display:flex;flex-wrap:wrap;gap:.375rem}
+    .perf-password-actions{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:auto}
     .perf-btn--loading{opacity:.7;pointer-events:none}
     @media(max-width:767px){
       .perf-btn{min-height:2.75rem;flex:1 1 calc(50% - .375rem)}

@@ -150,7 +150,7 @@
       permission: null,
       viewId: 'hub-view-perfil',
       partial: 'hub/sections/perfil.html',
-      styles: ['css/hub-sections/perfil.css?v=2026060932'],
+      styles: ['css/hub-sections/perfil.css?v=2026060936'],
       scripts: ['js/admin/meu-perfil.js?v=2026060932'],
       initKey: 'JEMeuPerfil',
       hero: {
