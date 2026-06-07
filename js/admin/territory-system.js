@@ -1073,19 +1073,15 @@
 
   function renderDirigentes() {
     const el = document.getElementById('dirigentes-list');
-    const activeProfileIds = new Set(activeAssignments.map((a) => a.profile_id));
     const activeOverseers = overseers.filter((o) => o.is_active !== false);
-    const inField = activeOverseers.filter((o) => activeProfileIds.has(o.profile_id)).length;
 
     const countEl = document.getElementById('dirigentes-count');
     const statTotal = document.getElementById('dirigentes-stat-total');
     const statActive = document.getElementById('dirigentes-stat-active');
-    const statField = document.getElementById('dirigentes-stat-field');
 
     if (countEl) countEl.textContent = `${overseers.length} cadastrados`;
     if (statTotal) statTotal.textContent = String(overseers.length);
     if (statActive) statActive.textContent = String(activeOverseers.length);
-    if (statField) statField.textContent = String(inField);
 
     if (!overseers.length) {
       el.innerHTML = `
@@ -1106,9 +1102,8 @@
           ${overseers.map((o) => {
             const pref = preferenceMeta(o.preference);
             const isActive = o.is_active !== false;
-            const onField = activeProfileIds.has(o.profile_id);
             const statusHtml = isActive
-              ? `<span class="terr-over-status-wrap"><span class="terr-over-status terr-over-status--active">Ativo</span>${onField ? '<span class="terr-over-status terr-over-status--field">Campo</span>' : ''}</span>`
+              ? '<span class="terr-over-status terr-over-status--active">Ativo</span>'
               : '<span class="terr-over-status terr-over-status--inactive">Inativo</span>';
             return `
           <div class="terr-over-row" title="${escapeHtml(profileName(o.profiles))}">

@@ -332,13 +332,12 @@
     .terr-return-submit .material-symbols-outlined{font-size:1.0625rem}
     .terr-return-submit:hover{filter:brightness(1.05)}
     .terr-over-count{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.3125rem .625rem;border-radius:9999px;background:rgba(200,169,110,.22);color:#f5e6c8;border:1px solid rgba(200,169,110,.35);white-space:nowrap}
-    .terr-over-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+    .terr-over-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
     .terr-over-stat{display:flex;align-items:center;gap:.4375rem;padding:.4375rem .625rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem}
     .terr-over-stat__icon{width:1.625rem;height:1.625rem;border-radius:.375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .terr-over-stat__icon .material-symbols-outlined{font-size:.9375rem}
     .terr-over-stat--all .terr-over-stat__icon{background:#eef3fa;color:#0f3462}
     .terr-over-stat--active .terr-over-stat__icon{background:#d1fae5;color:#047857}
-    .terr-over-stat--field .terr-over-stat__icon{background:#fef3c7;color:#b45309}
     .terr-over-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
     .terr-over-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
     .terr-over-add{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;overflow:hidden}
@@ -375,8 +374,6 @@
     .terr-over-status{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.125rem .375rem;border-radius:.25rem;white-space:nowrap}
     .terr-over-status--active{background:#d1fae5;color:#047857}
     .terr-over-status--inactive{background:#f3f4f6;color:#6b7280}
-    .terr-over-status--field{background:#dbeafe;color:#1d4ed8;margin-left:.1875rem}
-    .terr-over-status-wrap{display:flex;flex-wrap:wrap;gap:.1875rem;align-items:center}
     .terr-over-actions{display:flex;gap:0;justify-content:flex-end}
     .terr-map-lightbox{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(10,40,71,.88);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
     .terr-map-lightbox.is-open{opacity:1;visibility:visible}
@@ -643,10 +640,6 @@
           <span class="terr-over-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">how_to_reg</span></span>
           <div><p class="terr-over-stat__label">Ativos</p><p class="terr-over-stat__val" id="dirigentes-stat-active">—</p></div>
         </div>
-        <div class="terr-over-stat terr-over-stat--field">
-          <span class="terr-over-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span></span>
-          <div><p class="terr-over-stat__label">Em campo</p><p class="terr-over-stat__val" id="dirigentes-stat-field">—</p></div>
-        </div>
       </div>
 
       <div class="terr-over-add">
@@ -699,6 +692,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060805"></script>
+    <script src="../js/admin/territory-system.js?v=2026060806"></script>
 </body>
 </html>
