@@ -122,11 +122,21 @@
     .terr-catalog-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
     .terr-catalog-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;max-height:min(70vh,36rem);overflow-y:auto}
     .terr-catalog-panel{min-width:0}
-    @media(min-width:900px){.terr-catalog-panel{min-width:52rem}}
-    .terr-catalog-row{display:grid;grid-template-columns:3rem minmax(7rem,1.2fr) minmax(6.5rem,.9fr) 5rem minmax(4.75rem,.95fr) minmax(10rem,1.25fr) 2.75rem;gap:.375rem .625rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem;line-height:1.3}
-    .terr-catalog-row:last-child{border-bottom:none}
-    .terr-catalog-row:not(.terr-catalog-row--head):hover{background:#fafbfc}
-    .terr-catalog-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1}
+    .terr-catalog-table{width:max-content;min-width:100%;border-collapse:collapse;font-size:.8125rem;line-height:1.3;table-layout:auto}
+    .terr-catalog-table th,.terr-catalog-table td{padding:.4375rem .75rem;border-bottom:1px solid #eef0f4;vertical-align:middle;white-space:nowrap}
+    .terr-catalog-table tbody tr:last-child td{border-bottom:none}
+    .terr-catalog-table tbody tr:hover{background:#fafbfc}
+    .terr-catalog-table thead th{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1;text-align:left}
+    .terr-catalog-sort{display:inline-flex;align-items:center;gap:.125rem;margin:0;padding:0;border:none;background:transparent;font:inherit;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;cursor:pointer;white-space:nowrap;text-align:left}
+    .terr-catalog-sort-icon{font-size:.875rem!important;opacity:.45;flex-shrink:0}
+    .terr-catalog-sort:hover{color:#0f3462}
+    .terr-catalog-sort--active{color:#0f3462}
+    .terr-catalog-sort--active .terr-catalog-sort-icon{opacity:1;color:#3b5e97}
+    .terr-catalog-filters{display:flex;flex-wrap:wrap;gap:.3125rem;width:100%}
+    @media(min-width:900px){.terr-catalog-filters{width:auto}}
+    .terr-catalog-filter{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:.25rem .5rem;border-radius:9999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);cursor:pointer}
+    .terr-catalog-filter:hover{background:rgba(255,255,255,.18)}
+    .terr-catalog-filter--active{background:#c8a96e;color:#0f3462;border-color:#c8a96e}
     .terr-catalog-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.125rem .375rem;border-radius:.25rem;text-align:center}
     .terr-catalog-name{min-width:0}
     .terr-catalog-type{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.25rem;white-space:nowrap}
@@ -156,27 +166,7 @@
     .terr-catalog-actions{display:flex;justify-content:flex-end}
     .terr-catalog-foot{padding:.375rem .75rem;font-size:.6875rem;color:#6b7280;background:#f7f9fc;border-top:1px solid #eef0f4;text-align:center}
     @media(max-width:767px){
-      .terr-catalog-scroll{overflow-x:visible}
-      .terr-catalog-panel{min-width:0}
-      .terr-catalog-row--head{display:none}
-      .terr-catalog-row:not(.terr-catalog-row--head){
-        grid-template-columns:1fr auto;
-        grid-template-areas:
-          "terr actions"
-          "type type"
-          "status status"
-          "assign assign"
-          "cov cov";
-        gap:.375rem .5rem;
-        padding:.625rem .75rem;
-      }
-      .terr-catalog-num{display:none}
-      .terr-catalog-name{grid-area:terr}
-      .terr-catalog-type{grid-area:type;justify-self:start}
-      .terr-catalog-status{grid-area:status;justify-self:start}
-      .terr-catalog-assign{grid-area:assign}
-      .terr-catalog-cov{grid-area:cov}
-      .terr-catalog-actions{grid-area:actions;align-self:start}
+      .terr-catalog-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .terr-over-scroll{overflow-x:visible;max-height:none}
       .terr-over-panel{min-width:0}
       .terr-over-row--head{display:none}
@@ -200,28 +190,6 @@
       #panel-dirigentes .terr-sched-toolbar{align-items:flex-start}
       #panel-dirigentes .terr-over-count{margin-left:0;align-self:stretch;justify-content:center}
     }
-    .terr-dash-hero{display:flex;flex-wrap:wrap;align-items:center;gap:.625rem;padding:.625rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);border-radius:.75rem;color:#fff;margin-bottom:.25rem}
-    .terr-dash-hero h2{margin:0;font-size:.875rem;line-height:1.2;color:#fff}
-    .terr-dash-hero p{margin:.125rem 0 0;font-size:.6875rem;color:rgba(255,255,255,.78)}
-    .terr-dash-hero-actions{display:flex;flex-wrap:wrap;gap:.375rem;margin-left:auto}
-    .terr-dash-chip{display:inline-flex;align-items:center;gap:.25rem;font-size:.6875rem;font-weight:700;padding:.3125rem .625rem;border-radius:9999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
-    .terr-dash-chip .material-symbols-outlined{font-size:.9375rem}
-    .terr-dash-chip:hover{background:rgba(255,255,255,.2)}
-    .terr-dash-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
-    @media(min-width:900px){.terr-dash-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .terr-dash-stat{display:flex;align-items:center;gap:.5rem;padding:.5rem .625rem;background:#fff;border:1px solid #e2e6ef;border-radius:.625rem}
-    .terr-dash-stat__icon{width:1.875rem;height:1.875rem;border-radius:.4375rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .terr-dash-stat__icon .material-symbols-outlined{font-size:1.0625rem}
-    .terr-dash-stat--avail .terr-dash-stat__icon{background:#e0e7ff;color:#4338ca}
-    .terr-dash-stat--work .terr-dash-stat__icon{background:#d1fae5;color:#047857}
-    .terr-dash-stat--high .terr-dash-stat__icon{background:#fee2e2;color:#b91c1c}
-    .terr-dash-stat--people .terr-dash-stat__icon{background:#fef3c7;color:#b45309}
-    .terr-dash-stat__label{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;line-height:1.2}
-    .terr-dash-stat__val{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.125rem;font-weight:800;color:#0f3462;line-height:1;margin-top:.0625rem}
-    .terr-dash-progress{flex:1;min-width:8rem;max-width:12rem}
-    .terr-dash-progress__bar{height:.375rem;background:rgba(255,255,255,.2);border-radius:9999px;overflow:hidden;margin-top:.25rem}
-    .terr-dash-progress__fill{height:100%;background:#c8a96e;border-radius:9999px;transition:width .3s ease}
-    .terr-dash-progress__label{font-size:.5625rem;color:rgba(255,255,255,.75);margin-top:.1875rem}
     .terr-dash-card{background:#fff;border:1px solid #e2e6ef;border-radius:.625rem;overflow:hidden}
     .terr-dash-card__head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.4375rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4}
     .terr-dash-card__title{display:flex;align-items:center;gap:.375rem;font-size:.75rem;font-weight:800;color:#0f3462}
@@ -231,8 +199,6 @@
     .terr-dash-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.375rem .75rem;border-bottom:1px solid #eef0f4;font-size:.8125rem}
     .terr-dash-row:last-child{border-bottom:none}
     .terr-dash-row:hover{background:#fafbfc}
-    .terr-dash-person{display:flex;align-items:center;gap:.3125rem;font-weight:600;color:#0f3462;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .terr-dash-person .material-symbols-outlined{font-size:.9375rem;color:#3b5e97;flex-shrink:0}
     .terr-dash-terr{font-size:.75rem;color:#43474f;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1}
     .terr-dash-terr-num{font-size:.6875rem;font-weight:800;color:#3b5e97;background:#eef3fa;padding:.0625rem .3125rem;border-radius:.25rem;margin-right:.25rem}
     .terr-dash-empty{padding:.875rem .75rem;font-size:.8125rem;color:#6b7280;text-align:center}
@@ -431,11 +397,11 @@
         min-width:2.75rem;min-height:2.75rem;padding:.375rem;display:inline-flex;align-items:center;justify-content:center
       }
       .terr-return-submit{width:2.75rem;height:2.75rem}
-      .terr-dash-chip,.terr-sched-toolbar-btn{min-height:2.75rem}
+      .terr-sched-toolbar-btn{min-height:2.75rem}
       .terr-map-lightbox{padding:max(.75rem,env(safe-area-inset-top)) .75rem max(.75rem,env(safe-area-inset-bottom))}
     }
     @media(max-width:480px){
-      .terr-hist-stats,.terr-assign-stats,.terr-over-stats,.terr-dash-stats{grid-template-columns:1fr}
+      .terr-hist-stats,.terr-assign-stats,.terr-over-stats{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -463,10 +429,6 @@
             <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
             <span class="terr-tab-label">Painel</span>
           </button>
-          <button type="button" class="terr-tab" data-terr-tab="catalogo" title="Catálogo">
-            <span class="material-symbols-outlined" aria-hidden="true">map</span>
-            <span class="terr-tab-label">Catálogo</span>
-          </button>
           <button type="button" class="terr-tab" data-terr-tab="semana" title="Cronograma">
             <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
             <span class="terr-tab-label">Cronograma</span>
@@ -483,17 +445,9 @@
       </div>
     </div>
 
-    <!-- PAINEL -->
-    <section id="panel-painel" class="terr-panel active space-y-3">
-      <div id="dash-hero" class="terr-dash-hero"></div>
-      <div id="dash-stats" class="terr-dash-stats"></div>
-      <div class="terr-dash-card">
-        <div class="terr-dash-card__head">
-          <span class="terr-dash-card__title"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>Designados agora</span>
-          <button type="button" class="terr-dash-link" data-action="go-semana">Cronograma</button>
-        </div>
-        <div id="dash-active-list"><p class="terr-dash-empty">Carregando…</p></div>
-      </div>
+    <!-- PAINEL (catálogo de territórios) -->
+    <section id="panel-painel" class="terr-panel active">
+      <div id="catalogo-grid"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
 
     <!-- CRONOGRAMA -->
@@ -522,7 +476,7 @@
       <div class="terr-dash-card">
         <div class="terr-dash-card__head">
           <span class="terr-dash-card__title"><span class="material-symbols-outlined" aria-hidden="true">priority_high</span>Prioridade (disponíveis)</span>
-          <button type="button" class="terr-dash-link" data-go-tab="catalogo">Catálogo</button>
+          <button type="button" class="terr-dash-link" data-go-tab="painel">Painel</button>
         </div>
         <div id="semana-priority-list"><p class="terr-dash-empty">Carregando…</p></div>
       </div>
@@ -542,11 +496,6 @@
         </div>
         <div id="spots-list"><p class="text-sm text-on-surface-variant">Carregando…</p></div>
       </div>
-    </section>
-
-    <!-- CATÁLOGO -->
-    <section id="panel-catalogo" class="terr-panel">
-      <div id="catalogo-grid"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
 
     <!-- HISTÓRICO -->
@@ -625,6 +574,6 @@
   <script src="../js/je-dialog.js?v=2026060301"></script>
   <script src="../js/admin-core.js?v=2026060301"></script>
     <script src="../js/territory-assignment-helpers.js?v=2026060624"></script>
-    <script src="../js/admin/territory-system.js?v=2026060814"></script>
+    <script src="../js/admin/territory-system.js?v=2026060816"></script>
 </body>
 </html>

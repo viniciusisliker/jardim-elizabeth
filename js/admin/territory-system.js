@@ -23,7 +23,8 @@
   let currentWeek = H.toISODate(H.getMonday(new Date()));
   let histFilter = { q: '', eventType: '' };
   let histSort = { col: 'date', dir: 'desc' };
-  let catalogFilter = { q: '' };
+  let catalogFilter = { q: '', status: '', type: '' };
+  let catalogSort = { col: 'num', dir: 'asc' };
   let weekendByDate = {};
 
   function priorityBadge(t) {
@@ -230,63 +231,6 @@
         </div>`;
     }).join('') : '<p class="terr-dash-empty">Nenhum disponível.</p>';
     bindDashLinks(priEl.closest('.terr-dash-card'));
-  }
-
-  function renderDashboard() {
-    const { total, designados, disponiveis, alta, designadosPct, avgDays } = territorySummaryMetrics();
-    const dirigentes = overseers.filter((o) => o.is_active !== false).length;
-
-    document.getElementById('dash-hero').innerHTML = `
-      <div class="flex-1 min-w-[10rem]">
-        <h2>Visão geral</h2>
-        <p>${designados} de ${total} territórios em campo${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}</p>
-      </div>
-      <div class="terr-dash-progress" aria-hidden="true">
-        <div class="terr-dash-progress__bar"><div class="terr-dash-progress__fill" style="width:${designadosPct}%"></div></div>
-        <p class="terr-dash-progress__label">${designadosPct}% designados</p>
-      </div>
-      <div class="terr-dash-hero-actions">
-        <button type="button" class="terr-dash-chip" data-action="open-designar"><span class="material-symbols-outlined" aria-hidden="true">add</span>Designar</button>
-        <button type="button" class="terr-dash-chip" data-go-tab="semana"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>Cronograma</button>
-        <button type="button" class="terr-dash-chip" data-go-tab="historico"><span class="material-symbols-outlined" aria-hidden="true">history</span>Histórico</button>
-      </div>`;
-    bindDashLinks(document.getElementById('dash-hero'));
-
-    document.getElementById('dash-stats').innerHTML = `
-      <div class="terr-dash-stat terr-dash-stat--avail">
-        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
-        <div><p class="terr-dash-stat__label">Disponíveis</p><p class="terr-dash-stat__val">${disponiveis}</p></div>
-      </div>
-      <div class="terr-dash-stat terr-dash-stat--work">
-        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_turned_in</span></span>
-        <div><p class="terr-dash-stat__label">Designados</p><p class="terr-dash-stat__val">${designados}</p></div>
-      </div>
-      <div class="terr-dash-stat terr-dash-stat--high">
-        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">warning</span></span>
-        <div><p class="terr-dash-stat__label">Prioridade alta</p><p class="terr-dash-stat__val">${alta}</p></div>
-      </div>
-      <div class="terr-dash-stat terr-dash-stat--people">
-        <span class="terr-dash-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
-        <div><p class="terr-dash-stat__label">Dirigentes</p><p class="terr-dash-stat__val">${dirigentes}</p></div>
-      </div>`;
-
-    const activeEl = document.getElementById('dash-active-list');
-    if (!activeAssignments.length) {
-      activeEl.innerHTML = '<p class="terr-dash-empty">Nenhum território designado no momento.</p>';
-    } else {
-      activeEl.innerHTML = activeAssignments.map((a) => `
-        <div class="terr-dash-row">
-          <span class="terr-dash-person" title="${escapeHtml(profileName(a.profiles))}">
-            <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            ${escapeHtml(profileName(a.profiles))}
-          </span>
-          <span class="terr-dash-terr" title="${escapeHtml(H.territoryLabel(a.territories))}">
-            <span class="terr-dash-terr-num">T${escapeHtml(a.territories?.num || '?')}</span>${escapeHtml(a.territories?.display_name || '—')}
-          </span>
-        </div>`).join('');
-    }
-
-    bindDashLinks(document.getElementById('panel-painel'));
   }
 
   function updateDesignarPreview() {
@@ -898,27 +842,130 @@
       </span>`;
   }
 
-  function getFilteredCatalog() {
-    const q = catalogFilter.q.trim().toLowerCase();
-    if (!q) return territories;
-    return territories.filter((t) => {
-      const active = activeAssignments.find((a) => a.territory_id === t.id);
-      const assignee = active ? profileName(active.profiles) : '';
-      const p = H.computePriority(t);
-      const days = H.daysSince(t.last_worked_at);
-      return [
-        t.num,
-        t.display_name,
-        t.status,
-        t.territory_type,
-        TERRITORY_TYPE_LABELS[t.territory_type],
-        STATUS_LABELS[t.status],
-        assignee,
-        p.label,
-        days,
-        t.last_worked_at
-      ].join(' ').toLowerCase().includes(q);
+  function catalogAssignee(t) {
+    const active = activeAssignments.find((a) => a.territory_id === t.id);
+    return active ? profileName(active.profiles) : '—';
+  }
+
+  function catalogCoverageDays(t) {
+    if (t.status === 'designado') return -1;
+    const days = H.daysSince(t.last_worked_at);
+    return days === null ? 99999 : days;
+  }
+
+  const CATALOG_STATUS_FILTERS = ['', 'designado', 'disponivel'];
+  const CATALOG_TYPE_FILTERS = ['', 'meio_de_semana', 'final_de_semana'];
+
+  function catalogStatusFilterLabel(status) {
+    if (!status) return 'Todos';
+    return STATUS_LABELS[status] || status;
+  }
+
+  function catalogTypeFilterLabel(type) {
+    if (!type) return 'Todos';
+    return TERRITORY_TYPE_LABELS[type] || type;
+  }
+
+  function renderCatalogStatusFilters() {
+    return CATALOG_STATUS_FILTERS.map((status) => {
+      const active = catalogFilter.status === status;
+      return `<button type="button" class="terr-catalog-filter${active ? ' terr-catalog-filter--active' : ''}" data-catalog-status="${status}">${escapeHtml(catalogStatusFilterLabel(status))}</button>`;
+    }).join('');
+  }
+
+  function renderCatalogTypeFilters() {
+    return CATALOG_TYPE_FILTERS.map((type) => {
+      const active = catalogFilter.type === type;
+      return `<button type="button" class="terr-catalog-filter${active ? ' terr-catalog-filter--active' : ''}" data-catalog-type="${type}">${escapeHtml(catalogTypeFilterLabel(type))}</button>`;
+    }).join('');
+  }
+
+  function catalogSortButton(col, label) {
+    return `<th scope="col"><button type="button" class="terr-catalog-sort" data-catalog-sort="${col}"><span>${label}</span><span class="material-symbols-outlined terr-catalog-sort-icon" aria-hidden="true">unfold_more</span></button></th>`;
+  }
+
+  function updateCatalogSortUI() {
+    const grid = document.getElementById('catalogo-grid');
+    if (!grid) return;
+    grid.querySelectorAll('[data-catalog-sort]').forEach((btn) => {
+      const active = catalogSort.col === btn.dataset.catalogSort;
+      btn.classList.toggle('terr-catalog-sort--active', active);
+      const icon = btn.querySelector('.terr-catalog-sort-icon');
+      if (icon) icon.textContent = active ? (catalogSort.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
     });
+  }
+
+  function getSortedCatalog(list) {
+    const { col, dir } = catalogSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'num': {
+          const na = Number(a.num) || 9999;
+          const nb = Number(b.num) || 9999;
+          cmp = na - nb || String(a.num).localeCompare(String(b.num), 'pt-BR', { numeric: true });
+          break;
+        }
+        case 'name':
+          cmp = String(a.display_name).localeCompare(String(b.display_name), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'type':
+          cmp = catalogTypeMeta(a.territory_type).label.localeCompare(catalogTypeMeta(b.territory_type).label, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'status':
+          cmp = String(a.status).localeCompare(String(b.status), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'assignee':
+          cmp = catalogAssignee(a).localeCompare(catalogAssignee(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'coverage':
+          cmp = catalogCoverageDays(a) - catalogCoverageDays(b);
+          break;
+        default:
+          cmp = 0;
+      }
+      if (cmp === 0 && col !== 'num') {
+        const na = Number(a.num) || 9999;
+        const nb = Number(b.num) || 9999;
+        cmp = na - nb;
+      }
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredCatalog() {
+    let list = territories;
+    const q = catalogFilter.q.trim().toLowerCase();
+    if (q) {
+      list = list.filter((t) => {
+        const assignee = catalogAssignee(t);
+        const p = H.computePriority(t);
+        const days = H.daysSince(t.last_worked_at);
+        const cov = catalogCoverageMeta(t);
+        return [
+          t.num,
+          t.display_name,
+          t.status,
+          t.territory_type,
+          TERRITORY_TYPE_LABELS[t.territory_type],
+          STATUS_LABELS[t.status],
+          assignee === '—' ? '' : assignee,
+          p.label,
+          days,
+          t.last_worked_at,
+          cov.headline,
+          cov.sub
+        ].join(' ').toLowerCase().includes(q);
+      });
+    }
+    if (catalogFilter.status) {
+      list = list.filter((t) => t.status === catalogFilter.status);
+    }
+    if (catalogFilter.type) {
+      list = list.filter((t) => t.territory_type === catalogFilter.type);
+    }
+    return getSortedCatalog(list);
   }
 
   function bindCatalogFilters() {
@@ -929,6 +976,36 @@
     search?.addEventListener('input', (e) => {
       catalogFilter.q = e.target.value;
       renderCatalogoTable();
+    });
+    grid.querySelectorAll('[data-catalog-status]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        catalogFilter.status = btn.dataset.catalogStatus || '';
+        grid.querySelectorAll('[data-catalog-status]').forEach((b) => {
+          b.classList.toggle('terr-catalog-filter--active', (b.dataset.catalogStatus || '') === catalogFilter.status);
+        });
+        renderCatalogoTable();
+      });
+    });
+    grid.querySelectorAll('[data-catalog-type]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        catalogFilter.type = btn.dataset.catalogType || '';
+        grid.querySelectorAll('[data-catalog-type]').forEach((b) => {
+          b.classList.toggle('terr-catalog-filter--active', (b.dataset.catalogType || '') === catalogFilter.type);
+        });
+        renderCatalogoTable();
+      });
+    });
+    grid.querySelectorAll('[data-catalog-sort]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const col = btn.dataset.catalogSort;
+        if (catalogSort.col === col) catalogSort.dir = catalogSort.dir === 'asc' ? 'desc' : 'asc';
+        else {
+          catalogSort.col = col;
+          catalogSort.dir = col === 'coverage' ? 'desc' : 'asc';
+        }
+        updateCatalogSortUI();
+        renderCatalogoTable();
+      });
     });
   }
 
@@ -956,37 +1033,39 @@
     const footEl = document.getElementById('catalogo-foot');
     if (!listEl) return;
 
-    const filtered = H.sortByPriority(getFilteredCatalog());
+    updateCatalogSortUI();
+    const filtered = getFilteredCatalog();
     updateCatalogStats();
 
     if (!filtered.length) {
       listEl.innerHTML = `
-        <div class="terr-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${territories.length ? 'Nenhum território corresponde à busca.' : 'Nenhum território cadastrado.'}</p>
-        </div>`;
+        <tr><td colspan="7">
+          <div class="terr-empty !border-0 !rounded-none">
+            <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+            <p class="text-sm">${territories.length ? 'Nenhum território corresponde ao filtro.' : 'Nenhum território cadastrado.'}</p>
+          </div>
+        </td></tr>`;
       if (footEl) footEl.textContent = '';
       return;
     }
 
     listEl.innerHTML = filtered.map((t) => {
-      const active = activeAssignments.find((a) => a.territory_id === t.id);
-      const assignee = active ? profileName(active.profiles) : '—';
+      const assignee = catalogAssignee(t);
       const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
       return `
-      <div class="terr-catalog-row">
-        <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
-        <span class="terr-catalog-name">${catalogTerritoryCell(t)}</span>
-        ${catalogTypeCell(t)}
-        <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
-        <span class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</span>
-        ${catalogCoverageCell(t)}
-        <span class="terr-catalog-actions">
+      <tr>
+        <td><span class="terr-catalog-num">${escapeHtml(t.num)}</span></td>
+        <td class="terr-catalog-name">${catalogTerritoryCell(t)}</td>
+        <td>${catalogTypeCell(t)}</td>
+        <td><span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span></td>
+        <td class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</td>
+        <td>${catalogCoverageCell(t)}</td>
+        <td class="terr-catalog-actions">
           <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
-        </span>
-      </div>`;
+        </td>
+      </tr>`;
     }).join('');
 
     listEl.querySelectorAll('[data-edit-terr]').forEach((btn) =>
@@ -994,8 +1073,13 @@
     );
 
     if (footEl) {
+      const parts = [];
+      if (catalogFilter.q.trim()) parts.push('busca');
+      if (catalogFilter.status) parts.push(catalogStatusFilterLabel(catalogFilter.status).toLowerCase());
+      if (catalogFilter.type) parts.push(catalogTypeFilterLabel(catalogFilter.type).toLowerCase());
+      const filterNote = parts.length ? ` · filtro: ${parts.join(', ')}` : '';
       const suffix = filtered.length < territories.length ? ` (${territories.length} no total)` : '';
-      footEl.textContent = `Exibindo ${filtered.length} território${filtered.length === 1 ? '' : 's'}${suffix}`;
+      footEl.textContent = `Exibindo ${filtered.length} território${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
     }
   }
 
@@ -1007,13 +1091,15 @@
     grid.innerHTML = `
       <div class="terr-catalog-toolbar">
         <div>
-          <h2>Catálogo de territórios</h2>
+          <h2>Painel</h2>
           <p>Mapas, status e cobertura · ${territories.length} territórios${avgDays !== null ? ` · média ${avgDays}d sem cobertura` : ''}</p>
         </div>
         <div class="terr-catalog-toolbar-search">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
           <input id="catalog-search" type="search" class="terr-catalog-input" placeholder="Buscar nome, número, status…" autocomplete="off"/>
         </div>
+        <div class="terr-catalog-filters" role="group" aria-label="Filtrar por status">${renderCatalogStatusFilters()}</div>
+        <div class="terr-catalog-filters" role="group" aria-label="Filtrar por tipo">${renderCatalogTypeFilters()}</div>
       </div>
       <div class="terr-catalog-stats">
         <div class="terr-catalog-stat terr-catalog-stat--all">
@@ -1047,10 +1133,15 @@
       </div>
       <div class="terr-catalog-scroll">
         <div class="terr-catalog-panel">
-          <div class="terr-catalog-row terr-catalog-row--head">
-            <span>ID</span><span>Território</span><span>Tipo</span><span>Status</span><span>Designado</span><span>Cobertura</span><span></span>
-          </div>
-          <div id="catalogo-table-body"></div>
+          <table class="terr-catalog-table">
+            <thead>
+              <tr>
+                ${catalogSortButton('num', 'ID')}${catalogSortButton('name', 'Território')}${catalogSortButton('type', 'Tipo')}${catalogSortButton('status', 'Status')}${catalogSortButton('assignee', 'Designado')}${catalogSortButton('coverage', 'Cobertura')}
+                <th scope="col" class="terr-catalog-actions" aria-label="Ações"></th>
+              </tr>
+            </thead>
+            <tbody id="catalogo-table-body"></tbody>
+          </table>
           <p id="catalogo-foot" class="terr-catalog-foot"></p>
         </div>
       </div>`;
@@ -1534,7 +1625,6 @@
     try {
       await reloadAll();
       weekendByDate = await H.fetchWeekendAnnouncements(client, currentWeek);
-      renderDashboard();
       fillOverseerProfileSelect();
       renderSemana();
       renderCatalogo();
@@ -1543,10 +1633,14 @@
     } catch (err) {
       console.error('Territory refresh:', err);
       if (toast) showToast(toast, err.message || 'Erro ao carregar territórios.', true);
-      document.getElementById('dash-active-list').innerHTML =
-        `<p class="text-sm text-error">${escapeHtml(err.message || 'Erro ao carregar.')}</p>`;
-      document.getElementById('dash-priority-list').innerHTML =
-        `<p class="text-sm text-error">Verifique a conexão ou permissões no Supabase.</p>`;
+      const grid = document.getElementById('catalogo-grid');
+      if (grid) {
+        grid.innerHTML = `<p class="text-sm text-error p-5">${escapeHtml(err.message || 'Erro ao carregar.')}</p>`;
+      }
+      const priEl = document.getElementById('semana-priority-list');
+      if (priEl) {
+        priEl.innerHTML = '<p class="text-sm text-error">Verifique a conexão ou permissões no Supabase.</p>';
+      }
     }
   }
 
@@ -1832,7 +1926,7 @@
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
     });
-    document.getElementById('panel-catalogo')?.addEventListener('click', (e) => {
+    document.getElementById('panel-painel')?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-terr-map]');
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
