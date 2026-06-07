@@ -106,6 +106,81 @@
     return { dayOpts, periodOpts };
   }
 
+  function activeEquipmentForType(type) {
+    return equipmentItems
+      .filter((item) => item.is_active !== false && item.equipment_type === type)
+      .sort((a, b) => {
+        const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
+        if (sortDiff) return sortDiff;
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      });
+  }
+
+  function activeLocationsList() {
+    return locations
+      .filter((loc) => loc.is_active !== false)
+      .sort((a, b) => {
+        const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
+        if (sortDiff) return sortDiff;
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      });
+  }
+
+  function inlineEquipmentSelectOptions(type, selectedName) {
+    const items = activeEquipmentForType(type);
+    const known = new Set(items.map((item) => item.name));
+    let html = '<option value="">Selecione…</option>';
+    if (selectedName && !known.has(selectedName)) {
+      html += `<option value="${escapeHtml(selectedName)}" selected>${escapeHtml(selectedName)}</option>`;
+    }
+    html += items.map((item) =>
+      `<option value="${escapeHtml(item.name)}" ${item.name === selectedName ? 'selected' : ''}>${escapeHtml(item.name)}</option>`
+    ).join('');
+    return html;
+  }
+
+  function inlineLocationSelectOptions(selectedName) {
+    const items = activeLocationsList();
+    const known = new Set(items.map((loc) => loc.name));
+    let html = '<option value="">Selecione…</option>';
+    if (selectedName && !known.has(selectedName)) {
+      html += `<option value="${escapeHtml(selectedName)}" selected>${escapeHtml(selectedName)}</option>`;
+    }
+    html += items.map((loc) =>
+      `<option value="${escapeHtml(loc.name)}" ${loc.name === selectedName ? 'selected' : ''}>${escapeHtml(loc.name)}</option>`
+    ).join('');
+    return html;
+  }
+
+  function refreshInlineCatalogSelects() {
+    const type = document.getElementById('eq-inline-type')?.value || 'carrinho';
+    const equipSel = document.getElementById('eq-inline-equipment');
+    const locSel = document.getElementById('eq-inline-location');
+    if (equipSel) {
+      const current = equipSel.value;
+      const items = activeEquipmentForType(type);
+      const nextName = items.some((item) => item.name === current) ? current : '';
+      equipSel.innerHTML = inlineEquipmentSelectOptions(type, nextName);
+    }
+    if (locSel) {
+      const currentLoc = locSel.value;
+      locSel.innerHTML = inlineLocationSelectOptions(currentLoc);
+    }
+  }
+
+  function applyInlineEquipmentDefaultLocation() {
+    const type = document.getElementById('eq-inline-type')?.value;
+    const name = document.getElementById('eq-inline-equipment')?.value;
+    const locSel = document.getElementById('eq-inline-location');
+    if (!type || !name || !locSel) return;
+    const item = equipmentItems.find((row) => row.equipment_type === type && row.name === name);
+    const defaultLoc = item?.default_location?.trim();
+    if (!defaultLoc) return;
+    if ([...locSel.options].some((opt) => opt.value === defaultLoc)) {
+      locSel.value = defaultLoc;
+    }
+  }
+
   async function loadProfiles() {
     const { data, error } = await client
       .from('profiles')
@@ -797,7 +872,7 @@
     const hidden = document.getElementById(`${prefix}-publishers`);
     if (!container) return;
 
-    const day = document.getElementById(`${prefix}-day`)?.value || helpers.EQUIPMENT_DAYS[0];
+    const day = document.getElementById(`${prefix}-day`)?.value || helpers.DEFAULT_SLOT_DAY || helpers.EQUIPMENT_DAYS[0];
     const equipmentType = document.getElementById(`${prefix}-type`)?.value || 'carrinho';
     const search = document.getElementById(`${prefix}-pub-search`)?.value.trim().toLowerCase() || '';
     const previouslySelected = new Set(parsePublisherNames(hidden?.value).map(normalizePubName));
@@ -1159,7 +1234,7 @@
   function defaultSlotDraft(item) {
     return {
       id: item?.id || '',
-      weekday_label: item?.weekday_label || helpers.EQUIPMENT_DAYS[0],
+      weekday_label: item?.weekday_label || helpers.DEFAULT_SLOT_DAY || helpers.EQUIPMENT_DAYS[1] || helpers.EQUIPMENT_DAYS[0],
       period_label: item?.period_label || 'Manhã',
       slot_kind: item?.slot_kind || 'temporary',
       equipment_type: item?.equipment_type || 'carrinho',
@@ -1188,13 +1263,53 @@
   }
 
   function closeInlinePubPop() {
-    document.getElementById('eq-inline-pub-pop')?.classList.add('hidden');
+    const pop = document.getElementById('eq-inline-pub-pop');
+    if (!pop) return;
+    pop.classList.add('hidden');
+    pop.classList.remove('eq-sched-pub-pop--floating');
+    pop.style.top = '';
+    pop.style.left = '';
+    pop.style.minWidth = '';
+    pop.style.visibility = '';
+  }
+
+  function positionInlinePubPop(btn) {
+    const pop = document.getElementById('eq-inline-pub-pop');
+    if (!pop || !btn) return;
+    pop.classList.remove('hidden');
+    pop.classList.add('eq-sched-pub-pop--floating');
+    pop.style.visibility = 'hidden';
+    requestAnimationFrame(() => {
+      const rect = btn.getBoundingClientRect();
+      const popRect = pop.getBoundingClientRect();
+      const margin = 8;
+      let top = rect.bottom + 4;
+      let left = rect.left;
+      if (left + popRect.width > window.innerWidth - margin) {
+        left = Math.max(margin, window.innerWidth - popRect.width - margin);
+      }
+      if (top + popRect.height > window.innerHeight - margin) {
+        top = Math.max(margin, rect.top - popRect.height - 4);
+      }
+      pop.style.top = `${Math.round(top)}px`;
+      pop.style.left = `${Math.round(left)}px`;
+      pop.style.minWidth = `${Math.round(Math.max(rect.width, 17.5 * 16))}px`;
+      pop.style.visibility = '';
+    });
+  }
+
+  function openInlinePubPop(btn) {
+    renderSlotPublisherPicker('eq-inline');
+    positionInlinePubPop(btn);
+    document.getElementById('eq-inline-pub-search')?.focus();
   }
 
   function renderInlineSlotEditor(draft) {
     const { dayOpts, periodOpts } = slotSelectOptions(draft.weekday_label, draft.period_label);
     const pubNames = parsePublisherNames(draft.publisher_names);
     const pubSummary = !pubNames.length ? 'Selecionar…' : (pubNames.length === 1 ? pubNames[0] : `${pubNames.length} pub.`);
+    const equipOpts = inlineEquipmentSelectOptions(draft.equipment_type, draft.equipment_name);
+    const locOpts = inlineLocationSelectOptions(draft.location_name);
     return `
       <div class="eq-sched-row eq-sched-row--edit" id="eq-inline-slot-form">
         <span class="eq-sched-inline-cell eq-sched-inline-cell--day">
@@ -1230,10 +1345,10 @@
           </div>
         </span>
         <span>
-          <input id="eq-inline-equipment" class="eq-sched-inline-input" value="${escapeHtml(draft.equipment_name)}" placeholder="Nome equip." title="Nome do equipamento"/>
+          <select id="eq-inline-equipment" class="eq-sched-inline-input" title="Equipamento (aba Equipamentos)">${equipOpts}</select>
         </span>
         <span>
-          <input id="eq-inline-location" class="eq-sched-inline-input" value="${escapeHtml(draft.location_name)}" placeholder="Local" title="Local"/>
+          <select id="eq-inline-location" class="eq-sched-inline-input" title="Local (aba Locais)">${locOpts}</select>
         </span>
         <span class="eq-row-actions eq-row-actions--icons">
           ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-delete title="Excluir linha"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
@@ -1272,7 +1387,7 @@
       return;
     }
     if (!payload.equipment_name || !payload.location_name) {
-      showToast(toast, 'Preencha nome do equipamento e local.', true);
+      showToast(toast, 'Selecione equipamento e local.', true);
       return;
     }
 
@@ -1343,7 +1458,6 @@
       </div>`;
 
     if (inlineSlotDraft) {
-      renderSlotPublisherPicker('eq-inline');
       document.getElementById('eq-inline-day')?.focus();
     }
   }
@@ -1438,17 +1552,13 @@
         e.stopPropagation();
         const pop = document.getElementById('eq-inline-pub-pop');
         if (!pop) return;
-        const willOpen = pop.classList.contains('hidden');
-        pop.classList.toggle('hidden');
-        if (willOpen) {
-          renderSlotPublisherPicker('eq-inline');
-          document.getElementById('eq-inline-pub-search')?.focus();
-        }
+        if (pop.classList.contains('hidden')) openInlinePubPop(pubToggle);
+        else closeInlinePubPop();
         return;
       }
 
       const pop = document.getElementById('eq-inline-pub-pop');
-      if (pop && !pop.classList.contains('hidden') && !pop.contains(e.target)) {
+      if (pop && !pop.classList.contains('hidden') && !pop.contains(e.target) && !e.target.closest('[data-eq-inline-pub-toggle]')) {
         closeInlinePubPop();
       }
 
@@ -1472,15 +1582,24 @@
 
     document.getElementById('eq-sched-list')?.addEventListener('change', (e) => {
       if (!inlineSlotDraft) return;
-      const form = document.getElementById('eq-inline-slot-form');
-      if (!form?.contains(e.target)) return;
       if (e.target.name === 'eq-inline-pub') {
         syncSlotPublishersField('eq-inline');
         return;
       }
+      if (e.target.id === 'eq-inline-equipment') {
+        applyInlineEquipmentDefaultLocation();
+        return;
+      }
+      const form = document.getElementById('eq-inline-slot-form');
+      if (!form?.contains(e.target)) return;
       if (e.target.id === 'eq-inline-day' || e.target.id === 'eq-inline-type') {
         syncSlotPublishersField('eq-inline');
-        renderSlotPublisherPicker('eq-inline');
+        if (e.target.id === 'eq-inline-type') refreshInlineCatalogSelects();
+        const pop = document.getElementById('eq-inline-pub-pop');
+        if (pop && !pop.classList.contains('hidden')) {
+          renderSlotPublisherPicker('eq-inline');
+          positionInlinePubPop(document.querySelector('[data-eq-inline-pub-toggle]'));
+        }
       }
     });
 
@@ -1489,6 +1608,17 @@
       syncSlotPublishersField('eq-inline');
       renderSlotPublisherPicker('eq-inline');
     });
+
+    if (!window.__JEInlinePubPopBound) {
+      window.__JEInlinePubPopBound = true;
+      document.addEventListener('scroll', (e) => {
+        const pop = document.getElementById('eq-inline-pub-pop');
+        if (!pop || pop.classList.contains('hidden')) return;
+        if (e.target instanceof Node && pop.contains(e.target)) return;
+        closeInlinePubPop();
+      }, true);
+      window.addEventListener('resize', () => closeInlinePubPop());
+    }
 
     document.getElementById('eq-pub-modal-close')?.addEventListener('click', closePublisherModal);
     document.getElementById('eq-pub-cancel')?.addEventListener('click', closePublisherModal);
@@ -1616,7 +1746,8 @@
     });
 
     try {
-      await Promise.all([loadPublishers(), loadSlots(), loadEquipment(), loadLocations()]);
+      await loadPublishers();
+      await Promise.all([loadSlots(), loadEquipment(), loadLocations()]);
     } catch (err) {
       console.error('Carrinhos e Displays:', err);
       const msg = String(err?.message || err);

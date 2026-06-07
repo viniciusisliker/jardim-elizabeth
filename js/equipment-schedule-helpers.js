@@ -1,5 +1,6 @@
 (function () {
   const EQUIPMENT_DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  const DEFAULT_SLOT_DAY = 'Terça';
   const PERIOD_LABELS = ['Manhã', 'Tarde'];
   const EQUIPMENT_TYPES = {
     carrinho: 'Carrinho',
@@ -49,7 +50,7 @@
     if (!value) return false;
     const norm = String(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const target = String(dayLabel).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return norm.startsWith(target);
+    return norm.startsWith(target) || target.startsWith(norm);
   }
 
   function dayIndex(dayLabel) {
@@ -127,6 +128,7 @@
 
   window.JEEquipmentSchedule = {
     EQUIPMENT_DAYS,
+    DEFAULT_SLOT_DAY,
     PERIOD_LABELS,
     EQUIPMENT_TYPES,
     toISODate,
