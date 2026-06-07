@@ -1,6 +1,17 @@
 (function () {
   const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
   const helpers = window.JEEquipmentSchedule;
+  const xlf = window.JETableXlf;
+
+  const PUB_SVC_OPTIONS = [
+    { value: 'carrinho', label: 'Carrinho' },
+    { value: 'display', label: 'Display' },
+    { value: 'ambos', label: 'Carrinho + Display' }
+  ];
+  const PUB_STATUS_OPTIONS = [
+    { value: 'active', label: 'Ativo' },
+    { value: 'inactive', label: 'Inativo' }
+  ];
 
   let toast;
   let client;
@@ -9,6 +20,16 @@
   let publishers = [];
   let profiles = [];
   let pubSearch = '';
+  let pubFilter = {
+    name: {},
+    services: { carrinho: true, display: true, ambos: true },
+    days: {},
+    grupo: {},
+    casa: {},
+    status: { active: true, inactive: true }
+  };
+  let pubSort = { col: 'name', dir: 'asc' };
+  let pubFilterSig = '';
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
@@ -90,7 +111,8 @@
       .order('publisher_name');
     if (error) throw error;
     publishers = data || [];
-    renderPublishers();
+    if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
+    else renderPublishers();
     await loadProfiles();
   }
 
@@ -141,14 +163,154 @@
     ).join('');
   }
 
-  function getFilteredPublishers() {
-    const q = pubSearch.trim().toLowerCase();
-    if (!q) return publishers;
-    return publishers.filter((row) => {
-      const name = publisherName(row).toLowerCase();
-      const { grupo, casa } = parsePublisherNotes(row.notes);
-      return name.includes(q) || grupo.toLowerCase().includes(q) || casa.toLowerCase().includes(q);
+  function publisherServiceKey(row) {
+    if (row.can_carrinho && row.can_display) return 'ambos';
+    if (row.can_display) return 'display';
+    if (row.can_carrinho) return 'carrinho';
+    return 'nenhum';
+  }
+
+  function pubDaySortKey(row) {
+    return (row.available_days || []).join(',') || '—';
+  }
+
+  function pubMatchesDayFilter(row) {
+    if (!xlf || xlf.xlfAllSelected(pubFilter.days)) return true;
+    const selected = xlf.xlfSelectedKeys(pubFilter.days);
+    return (row.available_days || []).some((day) => selected.includes(day));
+  }
+
+  function syncPubFilterOptions() {
+    if (!xlf) return false;
+    xlf.xlfEnsureKeys(
+      pubFilter.name,
+      [...new Set(publishers.map((p) => publisherName(p)))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    xlf.xlfEnsureKeys(
+      pubFilter.grupo,
+      [...new Set(publishers.map((p) => parsePublisherNotes(p.notes).grupo || '—'))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    xlf.xlfEnsureKeys(
+      pubFilter.casa,
+      [...new Set(publishers.map((p) => parsePublisherNotes(p.notes).casa || '—'))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    xlf.xlfEnsureKeys(
+      pubFilter.days,
+      [...new Set(publishers.flatMap((p) => p.available_days || []))].sort((a, b) =>
+        a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+      )
+    );
+    const sig = [pubFilter.name, pubFilter.grupo, pubFilter.casa, pubFilter.days]
+      .map((m) => Object.keys(m).join('\0'))
+      .join('::');
+    const changed = sig !== pubFilterSig;
+    pubFilterSig = sig;
+    return changed;
+  }
+
+  function getSortedPublishers(list) {
+    const { col, dir } = pubSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'name':
+          cmp = publisherName(a).localeCompare(publisherName(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'services':
+          cmp = publisherServiceKey(a).localeCompare(publisherServiceKey(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'days':
+          cmp = pubDaySortKey(a).localeCompare(pubDaySortKey(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'grupo':
+          cmp = parsePublisherNotes(a.notes).grupo.localeCompare(parsePublisherNotes(b.notes).grupo, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'casa':
+          cmp = parsePublisherNotes(a.notes).casa.localeCompare(parsePublisherNotes(b.notes).casa, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'status':
+          cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
+          break;
+        default:
+          cmp = publisherName(a).localeCompare(publisherName(b), 'pt-BR', { sensitivity: 'base' });
+      }
+      return cmp * mul;
     });
+  }
+
+  function getFilteredPublishers() {
+    let list = publishers;
+    const q = pubSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter((row) => {
+        const name = publisherName(row).toLowerCase();
+        const { grupo, casa } = parsePublisherNotes(row.notes);
+        return name.includes(q) || grupo.toLowerCase().includes(q) || casa.toLowerCase().includes(q);
+      });
+    }
+    if (!xlf) return list;
+    list = xlf.xlfApplyMapFilter(list, pubFilter.name, (p) => publisherName(p));
+    list = xlf.xlfApplyMapFilter(list, pubFilter.services, (p) => publisherServiceKey(p));
+    list = xlf.xlfApplyMapFilter(list, pubFilter.grupo, (p) => parsePublisherNotes(p.notes).grupo || '—');
+    list = xlf.xlfApplyMapFilter(list, pubFilter.casa, (p) => parsePublisherNotes(p.notes).casa || '—');
+    list = xlf.xlfApplyMapFilter(list, pubFilter.status, (p) => (p.is_active !== false ? 'active' : 'inactive'));
+    if (xlf.xlfIsActive(pubFilter.days)) list = list.filter((row) => pubMatchesDayFilter(row));
+    return getSortedPublishers(list);
+  }
+
+  function pubHeaderRow() {
+    syncPubFilterOptions();
+    const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.name));
+    const grupoOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.grupo));
+    const casaOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.casa));
+    const dayOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.days));
+    return `
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'name', label: 'Irmão(ã)', filterKey: 'name', options: nameOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'services', label: 'Serviços', filterKey: 'services', options: PUB_SVC_OPTIONS, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'days', label: 'Dias', filterKey: 'days', options: dayOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'grupo', label: 'Grupo', filterKey: 'grupo', options: grupoOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'casa', label: 'Casa', filterKey: 'casa', options: casaOpts, wrap: 'span' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+  }
+
+  function bindPubFilters() {
+    const scroll = document.querySelector('#eq-pub-list .eq-pub-scroll');
+    if (!scroll || !xlf) return;
+    scroll.dataset.xlfScope = 'pub';
+    delete scroll.dataset.xlfBound;
+    xlf.bindXlfPanel(scroll, 'pub-sort', pubFilter, pubSort, () => renderPublishersTable({ updateUi: true }));
+  }
+
+  function refreshPublishersView() {
+    const list = document.getElementById('eq-pub-list');
+    if (!list) return;
+    if (!publishers.length) {
+      renderPublishers();
+      return;
+    }
+    if (!document.getElementById('eq-pub-table-body')) {
+      renderPublishers();
+      return;
+    }
+    const filtersChanged = syncPubFilterOptions();
+    if (filtersChanged) {
+      const head = list.querySelector('.eq-pub-row--head');
+      if (head) head.innerHTML = pubHeaderRow();
+      const scroll = list.querySelector('.eq-pub-scroll');
+      if (scroll) {
+        delete scroll.dataset.xlfBound;
+        bindPubFilters();
+      }
+    }
+    renderPublishersTable({ updateUi: filtersChanged });
   }
 
   function updatePublisherStats() {
@@ -166,19 +328,25 @@
     if (statDisplay) statDisplay.textContent = String(publishers.filter((p) => p.can_display).length);
   }
 
-  function renderPublishersTable() {
+  function renderPublishersTable(opts = {}) {
+    const { updateUi = false } = opts;
     const body = document.getElementById('eq-pub-table-body');
     const foot = document.getElementById('eq-pub-table-foot');
+    const list = document.getElementById('eq-pub-list');
     if (!body) return;
 
     updatePublisherStats();
+    if (updateUi && xlf) {
+      xlf.xlfUpdateSortUI(list?.querySelector('.eq-pub-scroll'), 'pub-sort', pubSort);
+      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-pub-scroll'), pubFilter);
+    }
     const filtered = getFilteredPublishers();
 
     if (!filtered.length) {
       body.innerHTML = `
         <div class="eq-pub-empty !border-0 !rounded-none">
           <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${publishers.length ? 'Nenhum publicador corresponde à busca.' : 'Nenhum publicador cadastrado.'}</p>
+          <p class="text-sm">${publishers.length ? 'Nenhum publicador corresponde ao filtro.' : 'Nenhum publicador cadastrado.'}</p>
         </div>`;
       if (foot) foot.textContent = '';
       return;
@@ -216,8 +384,14 @@
     }).join('');
 
     if (foot) {
+      const activeFilters = xlf
+        ? Object.entries(pubFilter).filter(([, map]) => xlf.xlfIsActive(map)).length
+        : 0;
+      const filterNote = activeFilters
+        ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}`
+        : '';
       const suffix = filtered.length < publishers.length ? ` (${publishers.length} no total)` : '';
-      foot.textContent = `Exibindo ${filtered.length} publicador${filtered.length === 1 ? '' : 'es'}${suffix}`;
+      foot.textContent = `Exibindo ${filtered.length} publicador${filtered.length === 1 ? '' : 'es'}${suffix}${filterNote}`;
     }
   }
 
@@ -231,7 +405,7 @@
         <div class="eq-pub-empty">
           <span class="material-symbols-outlined" aria-hidden="true">groups</span>
           <p class="text-sm font-semibold text-primary">Nenhum publicador cadastrado</p>
-          <p class="text-xs mt-1">Use o formulário acima para adicionar irmãos aptos a carrinho ou display.</p>
+          <p class="text-xs mt-1">Use o botão <strong>Adicionar publicador</strong> para incluir irmãos aptos a carrinho ou display.</p>
         </div>`;
       return;
     }
@@ -240,22 +414,23 @@
       list.innerHTML = `
         <div class="eq-pub-scroll">
           <div class="eq-pub-panel">
-            <div class="eq-pub-row eq-pub-row--head">
+            <div class="eq-pub-row eq-pub-row--head">${xlf ? pubHeaderRow() : `
               <span>Irmão(ã)</span>
               <span>Serviços</span>
               <span>Dias</span>
               <span>Grupo</span>
               <span>Casa</span>
               <span>Status</span>
-              <span></span>
+              <span></span>`}
             </div>
             <div id="eq-pub-table-body"></div>
             <p id="eq-pub-table-foot" class="eq-pub-foot"></p>
           </div>
         </div>`;
+      bindPubFilters();
     }
 
-    renderPublishersTable();
+    renderPublishersTable({ updateUi: true });
   }
 
   function renderSchedule() {
@@ -302,6 +477,42 @@
     if (modal && modal.parentElement !== document.body) {
       document.body.appendChild(modal);
     }
+  }
+
+  function ensurePublisherModalPortal() {
+    const modal = document.getElementById('eq-pub-modal');
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function resetPublisherForm() {
+    const form = document.getElementById('eq-form-publisher');
+    form?.reset();
+    const carrinho = document.getElementById('eq-pub-carrinho');
+    const display = document.getElementById('eq-pub-display');
+    if (carrinho) carrinho.checked = true;
+    if (display) display.checked = true;
+    buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
+  }
+
+  async function openPublisherModal() {
+    ensurePublisherModalPortal();
+    const modal = document.getElementById('eq-pub-modal');
+    if (!modal) return;
+    resetPublisherForm();
+    await loadProfiles();
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('eq-publisher-profile')?.focus();
+  }
+
+  function closePublisherModal() {
+    const modal = document.getElementById('eq-pub-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    resetPublisherForm();
   }
 
   function openSlotModal(item) {
@@ -402,6 +613,7 @@
     if (!profile) return false;
 
     if (!helpers) throw new Error('Módulo de cronograma não carregou. Recarregue a página.');
+    if (!xlf) throw new Error('Módulo de filtros da tabela não carregou. Recarregue a página.');
 
     toast = toastEl();
     client = await getClient();
@@ -410,6 +622,7 @@
     setupTabs();
     fillSelectOptions();
     ensureSlotModalPortal();
+    ensurePublisherModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = helpers.snapToWeekStart(e.target.value);
@@ -418,6 +631,7 @@
     });
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => openSlotModal(null));
+    document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-slot-form')?.addEventListener('submit', saveSlot);
     document.getElementById('eq-slot-cancel')?.addEventListener('click', closeSlotModal);
@@ -425,6 +639,12 @@
     document.getElementById('eq-slot-delete')?.addEventListener('click', deleteSlot);
     document.getElementById('eq-slot-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'eq-slot-modal') closeSlotModal();
+    });
+
+    document.getElementById('eq-pub-modal-close')?.addEventListener('click', closePublisherModal);
+    document.getElementById('eq-pub-cancel')?.addEventListener('click', closePublisherModal);
+    document.getElementById('eq-pub-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'eq-pub-modal') closePublisherModal();
     });
 
     document.getElementById('eq-pub-search')?.addEventListener('input', (e) => {
@@ -475,10 +695,7 @@
       if (error) showToast(toast, error.message, true);
       else {
         showToast(toast, 'Publicador adicionado.');
-        e.target.reset();
-        document.getElementById('eq-pub-carrinho').checked = true;
-        document.getElementById('eq-pub-display').checked = true;
-        buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
+        closePublisherModal();
         await loadPublishers();
       }
     });

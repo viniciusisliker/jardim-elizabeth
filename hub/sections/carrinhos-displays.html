@@ -52,6 +52,10 @@
           <p>Referência da aba Carrinho e Display · serviços, dias e grupo de campo</p>
         </div>
         <span class="eq-pub-count shrink-0" id="eq-pub-count">— cadastrados</span>
+        <button type="button" id="eq-btn-add-publisher" class="eq-sched-toolbar-btn eq-sched-toolbar-btn--accent">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">person_add</span>
+          Adicionar publicador
+        </button>
       </div>
 
       <div class="eq-pub-stats">
@@ -71,34 +75,6 @@
           <span class="eq-pub-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span></span>
           <div><p class="eq-pub-stat__label">Display</p><p class="eq-pub-stat__val" id="eq-pub-stat-display">—</p></div>
         </div>
-      </div>
-
-      <div class="eq-pub-add">
-        <div class="eq-pub-add__head">
-          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-          Adicionar publicador
-        </div>
-        <form id="eq-form-publisher" class="eq-pub-add__form">
-          <div class="eq-pub-field">
-            <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
-            <select id="eq-publisher-profile" required class="eq-pub-input"></select>
-          </div>
-          <div class="eq-pub-field">
-            <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">category</span>Serviços</span>
-            <div class="eq-pub-svc-toggles">
-              <label class="eq-pub-svc eq-pub-svc--cart"><input type="checkbox" id="eq-pub-carrinho" checked/><span>Carrinho</span></label>
-              <label class="eq-pub-svc eq-pub-svc--display"><input type="checkbox" id="eq-pub-display" checked/><span>Display</span></label>
-            </div>
-          </div>
-          <button type="submit" class="eq-pub-submit">
-            <span class="material-symbols-outlined" aria-hidden="true">add</span>
-            Adicionar
-          </button>
-          <div class="eq-pub-field eq-pub-field--days">
-            <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Dias disponíveis</span>
-            <div id="eq-pub-days" class="eq-pub-day-picks"></div>
-          </div>
-        </form>
       </div>
 
       <div class="eq-pub-search-wrap">
@@ -189,6 +165,42 @@
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-slot-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
               <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Salvar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="eq-pub-modal" class="eq-modal" aria-hidden="true">
+      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-pub-modal-title">
+        <div class="eq-modal__head">
+          <h2 id="eq-pub-modal-title">Adicionar publicador</h2>
+          <button type="button" id="eq-pub-modal-close" class="eq-modal__close" aria-label="Fechar">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form id="eq-form-publisher" class="eq-modal__body">
+          <div class="eq-pub-modal-form">
+            <div class="eq-pub-field">
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
+              <select id="eq-publisher-profile" required class="eq-modal-input"></select>
+            </div>
+            <div class="eq-pub-field">
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">category</span>Serviços</span>
+              <div class="eq-pub-svc-toggles">
+                <label class="eq-pub-svc eq-pub-svc--cart"><input type="checkbox" id="eq-pub-carrinho" checked/><span>Carrinho</span></label>
+                <label class="eq-pub-svc eq-pub-svc--display"><input type="checkbox" id="eq-pub-display" checked/><span>Display</span></label>
+              </div>
+            </div>
+            <div class="eq-pub-field">
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Dias disponíveis</span>
+              <div id="eq-pub-days" class="eq-pub-day-picks"></div>
+            </div>
+          </div>
+          <div class="eq-modal__foot">
+            <div class="eq-modal__foot-actions">
+              <button type="button" id="eq-pub-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Adicionar</button>
             </div>
           </div>
         </form>
