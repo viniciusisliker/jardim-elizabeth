@@ -5,6 +5,10 @@
     concluido: 'Concluído'
   };
 
+  function authRedirectUrl() {
+    return window.location.pathname.includes('/admin/') ? '../index.html' : 'index.html';
+  }
+
   async function guardPermission(permission) {
     await window.JEAuth.getClient();
     let session = await window.JEAuth.getSession();
@@ -13,12 +17,12 @@
       session = await window.JEAuth.getSession();
     }
     if (!session) {
-      window.location.href = '../index.html';
+      window.location.href = authRedirectUrl();
       return null;
     }
     const profile = await window.JEAuth.getCurrentProfile();
     if (!profile || !window.JEAuth.hasPermission(profile, permission)) {
-      window.location.href = '../index.html';
+      window.location.href = authRedirectUrl();
       return null;
     }
     return profile;
@@ -36,12 +40,12 @@
       session = await window.JEAuth.getSession();
     }
     if (!session) {
-      window.location.href = '../index.html';
+      window.location.href = authRedirectUrl();
       return null;
     }
     const profile = await window.JEAuth.getCurrentProfile();
     if (!profile || !window.JEAuth.isAdminRole(profile.role)) {
-      window.location.href = '../index.html';
+      window.location.href = authRedirectUrl();
       return null;
     }
     return profile;

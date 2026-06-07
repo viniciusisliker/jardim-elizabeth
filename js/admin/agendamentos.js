@@ -1,10 +1,14 @@
 (function () {
   const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
 
+  function toastEl() {
+    return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+  }
+
   async function init() {
     const profile = await guardPermission('agendamentos');
     if (!profile) return;
-    const toast = document.getElementById('admin-toast');
+    const toast = toastEl();
     const client = await getClient();
     let items = [];
 
@@ -23,7 +27,7 @@
           </div>
           <button type="button" data-edit="${item.id}" class="text-xs font-semibold text-secondary shrink-0">Editar</button>
         </div>`).join('');
-      document.querySelectorAll('[data-edit]').forEach((btn) =>
+      document.querySelectorAll('#hub-view-agendamentos [data-edit], #schedule-list [data-edit]').forEach((btn) =>
         btn.addEventListener('click', () => openForm(items.find((i) => i.id === btn.dataset.edit)))
       );
     }
@@ -36,6 +40,13 @@
       document.getElementById('sched-url').value = item?.calendar_embed_url || '';
       document.getElementById('sched-sort').value = item?.sort_order ?? 0;
     }
+
+    const root = document.getElementById('hub-view-agendamentos') || document.body;
+    if (root.dataset.bound === '1') {
+      await reload();
+      return;
+    }
+    root.dataset.bound = '1';
 
     document.getElementById('btn-new').addEventListener('click', () => openForm(null));
     document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('sched-form').classList.add('hidden'));
@@ -60,6 +71,10 @@
     await reload();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminAgendamentos = { init };
+
+  if (!window.JEHubRouter && document.getElementById('schedule-list')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();

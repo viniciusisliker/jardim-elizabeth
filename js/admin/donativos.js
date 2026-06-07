@@ -1,10 +1,14 @@
 (function () {
   const { guardPermission, getClient, showToast } = window.JEAdmin;
 
+  function toastEl() {
+    return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+  }
+
   async function init() {
     const profile = await guardPermission('donativos');
     if (!profile) return;
-    const toast = document.getElementById('admin-toast');
+    const toast = toastEl();
     const client = await getClient();
 
     const { data } = await client.from('site_settings').select('value').eq('key', 'donations').maybeSingle();
@@ -17,7 +21,11 @@
     document.getElementById('qr-url').value = d.qr_image_url || 'img/qrcode.jpg';
     document.getElementById('disclaimer').value = d.disclaimer || '';
 
-    document.getElementById('donations-form').addEventListener('submit', async (e) => {
+    const form = document.getElementById('donations-form');
+    if (form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const value = {
         pix_key: document.getElementById('pix-key').value.trim(),
@@ -33,6 +41,10 @@
     });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  window.JEAdminDonativos = { init };
+
+  if (!window.JEHubRouter && document.getElementById('donations-form')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
 })();

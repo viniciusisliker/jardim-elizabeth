@@ -1,38 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin — Agendamentos | Jardim Elizabeth</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-  <script>tailwind.config={theme:{extend:{colors:{primary:'#0f3462',secondary:'#3b5e97','outline-variant':'#c3c6d0','on-surface-variant':'#43474f',background:'#fbf9f8',error:'#ba1a1a'}}}}</script>
-  <style>
-    @media (max-width: 767px) {
-      #schedule-list .flex { flex-direction: column; align-items: stretch; gap: 0.75rem; }
-      #schedule-list button { min-height: 2.75rem; }
-      #btn-new, #sched-form button[type="submit"] { min-height: 2.75rem; }
-    }
-  </style>
+  <meta charset="utf-8"/>
+  <meta http-equiv="refresh" content="0;url=../hub.html#agendamentos"/>
+  <script>location.replace('../hub.html#agendamentos');</script>
+  <title>Redirecionando…</title>
 </head>
-<body class="bg-background min-h-screen flex flex-col" style="font-family:Inter,sans-serif">
-  <div id="header"></div>
-  <main class="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
-    <div class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4"><a href="../hub.html" class="text-secondary">Hub</a> / <span class="text-primary">Agendamentos</span></div>
-    <h1 class="text-2xl font-extrabold text-primary mb-1">Calendários Google</h1>
-    <p class="text-sm text-on-surface-variant mb-6">URLs dos iframes em Carrinhos e Displays. Slugs <code>carrinho-*</code> e <code>display-*</code>.</p>
-    <p id="admin-toast" class="hidden text-sm mb-4"></p>
-    <div class="flex justify-end mb-3"><button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">+ Calendário</button></div>
-    <div class="bg-white border border-outline-variant rounded-xl mb-6"><div id="schedule-list"></div></div>
-    <form id="sched-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-      <input type="hidden" id="sched-id"/>
-      <label class="block text-sm font-semibold text-primary">Slug<input id="sched-slug" required class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="carrinho-1"/></label>
-      <label class="block text-sm font-semibold text-primary">Título<input id="sched-title" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-      <label class="block text-sm font-semibold text-primary">URL embed<input id="sched-url" required class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-      <label class="block text-sm font-semibold text-primary">Ordem<input id="sched-sort" type="number" value="0" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/></label>
-      <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
-    </form>
-  </main>
-  <div id="footer"></div>
-  <script src="../js/config.js"></script><script src="../js/auth.js"></script><script src="../js/header.js"></script><script src="../js/site-loader.js"></script><script src="../js/je-toast.js?v=2026060301"></script><script src="../js/je-dialog.js?v=2026060301"></script><script src="../js/admin-core.js?v=2026060301"></script><script src="../js/admin/agendamentos.js"></script>
-</body>
+<body><p><a href="../hub.html#agendamentos">Abrir Agendamentos no Hub</a></p></body>
 </html>

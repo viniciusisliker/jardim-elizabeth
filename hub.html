@@ -70,6 +70,23 @@
     .hub-ev-tag--highlight{color:#0f3462;background:#eff6ff;border:1px solid rgba(59,94,151,.2)}
     .hub-ev-row-actions{display:flex;flex-wrap:wrap;gap:0.375rem;flex-shrink:0}
     .hub-ev-cat-badge{display:inline-block;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.125rem 0.5rem;border-radius:0.25rem}
+    .hub-hero-back{
+      display:inline-flex;align-items:center;gap:0.375rem;margin-top:1rem;
+      padding:0.4375rem 0.875rem;border-radius:9999px;font-size:0.75rem;font-weight:700;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;
+      cursor:pointer;transition:background .15s,border-color .15s;
+    }
+    .hub-hero-back:hover{background:rgba(255,255,255,.2);border-color:rgba(200,169,110,.45)}
+    .hub-hero-back .material-symbols-outlined{font-size:1rem}
+    .hub-section-panel{max-width:42rem}
+    .hub-section-panel--wide{max-width:56rem}
+    @media(max-width:767px){
+      #hub-view-donativos #donations-form button[type="submit"],
+      #hub-view-agendamentos #btn-new,
+      #hub-view-agendamentos #sched-form button[type="submit"]{min-height:2.75rem}
+      #hub-view-agendamentos #schedule-list .flex{flex-direction:column;align-items:stretch;gap:0.75rem}
+      #hub-view-agendamentos #schedule-list button{min-height:2.75rem}
+    }
 
     .hub-hero{
       position:relative;overflow:hidden;
@@ -309,25 +326,28 @@
   </style>
 </head>
 
-<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
+<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending hub-shell" style="font-family:'Inter',sans-serif;">
 
-  <div id="header"></div>
-
-  <main class="flex-1">
-    <section class="hub-hero py-12 md:py-14 pb-16 md:pb-20">
+  <main class="flex-1 flex flex-col">
+    <section class="hub-hero py-10 md:py-12 pb-14 md:pb-16 shrink-0">
       <div class="hub-hero-grid" aria-hidden="true"></div>
-      <div class="max-w-7xl mx-auto px-6 relative">
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60 mb-5">
-          <a href="index.html" class="hover:text-white transition-colors"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
-          <a href="index.html" class="hover:text-white transition-colors">Jardim Elizabeth</a>
-          <span>/</span>
-          <span class="text-accent-gold">Hub</span>
+      <div class="max-w-7xl mx-auto px-6 relative w-full">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest mb-5">
+          <a href="index.html" class="text-white/60 hover:text-white transition-colors" title="Site público"><span class="material-symbols-outlined" style="font-size:15px">home</span></a>
+          <a href="index.html" class="text-white/60 hover:text-white transition-colors">Jardim Elizabeth</a>
+          <span class="text-white/40">/</span>
+          <button type="button" id="hub-hero-crumb-hub" data-hub-tab="home" class="text-accent-gold hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0 font-inherit text-inherit uppercase tracking-widest">Hub</button>
+          <span id="hub-hero-crumb-sep" class="text-white/40 hidden">/</span>
+          <span id="hub-hero-crumb-section" class="text-accent-gold hidden"></span>
         </div>
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
           <div class="max-w-xl">
-            <p class="text-accent-gold text-xs font-bold uppercase tracking-[0.2em] mb-2">Central administrativa</p>
-            <h1 class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
-            <p class="text-white/70 mt-3 text-sm md:text-base leading-relaxed">Gestão do site da congregação — publicações, campo, agenda e configurações em um só lugar.</p>
+            <p id="hub-hero-kicker" class="text-accent-gold text-xs font-bold uppercase tracking-[0.2em] mb-2">Central administrativa</p>
+            <h1 id="hub-hero-title" class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-tight" style="font-family:'Plus Jakarta Sans',Inter,sans-serif">Hub Administrativo</h1>
+            <p id="hub-hero-subtitle" class="text-white/70 mt-3 text-sm md:text-base leading-relaxed">Gestão do site da congregação — publicações, campo, agenda e configurações em um só lugar.</p>
+            <button type="button" id="hub-hero-back" class="hub-hero-back hidden">
+              <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Voltar ao Hub
+            </button>
             <button type="button" id="hub-changelog-btn" class="hub-changelog-btn" aria-haspopup="dialog" aria-controls="hub-changelog-modal">
               <span class="material-symbols-outlined" style="font-size:18px">new_releases</span>
               Novidades do sistema
@@ -343,7 +363,8 @@
       </div>
     </section>
 
-    <div class="max-w-7xl mx-auto px-6 je-page-shell pb-12 hub-main">
+    <div class="max-w-7xl mx-auto px-6 je-page-shell pb-12 hub-main flex-1 w-full">
+      <p id="hub-admin-toast" class="hidden text-sm mb-4"></p>
 
       <div id="hub-view-home" class="hub-view">
         <section id="hub-territory-assignment" class="hidden hub-terr-assign" aria-label="Sua designação de território">
@@ -387,14 +408,14 @@
           <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Organização e campo</h3>
             <div class="hub-module-grid">
-              <a href="admin/agendamentos.html" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
+              <button type="button" data-hub-tab="agendamentos" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></span>
                 <div class="hub-module-body">
                   <h4>Agendamentos</h4>
                   <p>Calendários de carrinhos e displays.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
+              </button>
               <a href="admin/territorios.html" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
                 <div class="hub-module-body">
@@ -409,14 +430,14 @@
           <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
             <div class="hub-module-grid">
-              <a href="admin/donativos.html" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
+              <button type="button" data-hub-tab="donativos" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span></span>
                 <div class="hub-module-body">
                   <h4>Donativos</h4>
                   <p>Chave PIX, QR code e textos da página de donativos.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </a>
+              </button>
               <a href="admin/configuracoes.html" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
                 <div class="hub-module-body">
@@ -431,19 +452,12 @@
       </div>
 
       <div id="hub-view-agenda" class="hub-view hidden space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-1">Hub / Agenda</p>
-          <h2 class="text-2xl font-extrabold text-primary">Gerenciar Agenda</h2>
-          <p class="text-sm text-on-surface-variant mt-1">Eventos publicados na home e na página Agenda.</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <a href="agenda.html" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low">
+      <div class="flex flex-wrap justify-end gap-2 mb-2">
+          <a href="agenda.html" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low bg-white">
             Ver página pública
             <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>
           </a>
           <button type="button" id="hub-btn-new-event" class="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg hover:opacity-90">Novo evento</button>
-        </div>
       </div>
 
       <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
@@ -574,10 +588,39 @@
       </div>
       </div>
 
+      <div id="hub-view-donativos" class="hub-view hidden">
+        <div class="hub-section-panel mx-auto w-full">
+          <form id="donations-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+            <label class="block text-sm font-semibold text-primary">Chave PIX<input id="pix-key" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Tipo da chave<input id="pix-type" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Titular<input id="holder" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Banco<input id="bank" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">URL do QR Code<input id="qr-url" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Aviso legal<textarea id="disclaimer" rows="3" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"></textarea></label>
+            <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg w-full sm:w-auto">Salvar alterações</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="hub-view-agendamentos" class="hub-view hidden">
+        <div class="hub-section-panel hub-section-panel--wide mx-auto w-full">
+          <div class="flex justify-end mb-3">
+            <button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">+ Calendário</button>
+          </div>
+          <div class="bg-white border border-outline-variant rounded-xl mb-6"><div id="schedule-list"></div></div>
+          <form id="sched-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+            <input type="hidden" id="sched-id"/>
+            <label class="block text-sm font-semibold text-primary">Slug<input id="sched-slug" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm" placeholder="carrinho-1"/></label>
+            <label class="block text-sm font-semibold text-primary">Título<input id="sched-title" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">URL embed<input id="sched-url" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <label class="block text-sm font-semibold text-primary">Ordem<input id="sched-sort" type="number" value="0" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
+            <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
+          </form>
+        </div>
+      </div>
+
     </div>
   </main>
-
-  <div id="footer"></div>
 
   <div id="hub-changelog-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="hub-changelog-title" aria-modal="true">
     <button type="button" id="hub-changelog-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
@@ -604,15 +647,14 @@
   <script src="js/config.js"></script>
   <script src="js/access-permissions.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/header.js"></script>
-  <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=2026060301"></script>
+  <script src="js/hub-sections.js?v=2026060901"></script>
   <script src="js/hub-events.js?v=2026060801"></script>
   <script src="js/hub-changelog.js?v=2026060701"></script>
   <script src="js/territory-assignment-helpers.js?v=2026060624"></script>
   <script src="js/hub-territory-assignment.js?v=2026060624"></script>
-  <script src="js/hub.js"></script>
+  <script src="js/hub.js?v=2026060901"></script>
 </body>
 </html>
