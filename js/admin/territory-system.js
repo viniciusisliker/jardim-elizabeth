@@ -647,7 +647,8 @@
   }
 
   function scheduleRowsForWeek() {
-    return weekTemplate.map((row) => H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
+    const rows = weekTemplate.map((row) => H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
+    return H().applyDomingoFixedDirigentes(rows);
   }
 
   function scheduleDirigente(row) {

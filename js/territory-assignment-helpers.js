@@ -16,6 +16,11 @@
   };
   const MIDWEEK_DAYS = ['Terça', 'Quarta', 'Quinta', 'Sexta'];
   const WEEKEND_DAYS = ['Sábado', 'Domingo'];
+  const DOMINGO_FIXED_DIRIGENTES = [
+    { territory_num: '12', dirigente_name: 'Marcelo Freire e Edvan' },
+    { territory_num: '18', dirigente_name: 'Marcelo Almeida e João' },
+    { territory_num: '07', dirigente_name: 'Denison e Arnaldo' }
+  ];
   const SITE_TERRITORIES_URL = 'https://jardimelizabeth.vercel.app/territorios.html';
 
   function daysFromPreference(preference) {
@@ -240,6 +245,64 @@
     return byDate;
   }
 
+  function isSundayCronogramaDay(label) {
+    return weekdayMatchesCronograma('Domingo', label);
+  }
+
+  function territoryNumFromScheduleRow(row) {
+    const fromTerr = row?.territories?.num;
+    if (fromTerr != null && fromTerr !== '') {
+      return String(fromTerr).replace(/^0+/, '') || '0';
+    }
+    const code = String(row?.territory_code || '').match(/T(\d+)/i);
+    if (code) return String(parseInt(code[1], 10));
+    return '';
+  }
+
+  function domingoFixedIndex(row) {
+    const num = territoryNumFromScheduleRow(row);
+    if (!num) return -1;
+    return DOMINGO_FIXED_DIRIGENTES.findIndex(
+      (f) => f.territory_num.replace(/^0+/, '') === num
+    );
+  }
+
+  function applyDomingoFixedDirigentes(rows) {
+    if (!rows?.length) return rows;
+
+    const patched = rows.map((row) => {
+      if (!isSundayCronogramaDay(row.weekday_label)) return row;
+      const idx = domingoFixedIndex(row);
+      if (idx < 0) return row;
+      return {
+        ...row,
+        dirigente_name: DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name,
+        profile_id: null,
+        profiles: null
+      };
+    });
+
+    const domingoSlots = [];
+    patched.forEach((row, i) => {
+      if (isSundayCronogramaDay(row.weekday_label)) domingoSlots.push(i);
+    });
+    if (domingoSlots.length < 2) return patched;
+
+    const ordered = domingoSlots
+      .map((i) => patched[i])
+      .sort((a, b) => {
+        const ia = domingoFixedIndex(a);
+        const ib = domingoFixedIndex(b);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+      });
+
+    const result = [...patched];
+    domingoSlots.forEach((slot, j) => {
+      result[slot] = ordered[j];
+    });
+    return result;
+  }
+
   function applyWeekendDirigente(row, weekStartIso, weekendByDate, profiles) {
     if (!isSaturdayCronogramaDay(row?.weekday_label)) return row;
     const sat = dateForWeekdayInWeek(weekStartIso, row.weekday_label);
@@ -331,6 +394,8 @@
     normalizeName,
     resolveProfileByName,
     isSaturdayCronogramaDay,
+    isSundayCronogramaDay,
+    applyDomingoFixedDirigentes,
     fetchWeekendAnnouncements,
     applyWeekendDirigente,
     daysSince,

@@ -95,7 +95,7 @@
       partial: 'hub/sections/territorios.html',
       styles: ['css/hub-sections/territorios.css?v=2026060908'],
       scripts: [
-        'js/admin/territory-system.js?v=2026060908'
+        'js/admin/territory-system.js?v=2026060910'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {
