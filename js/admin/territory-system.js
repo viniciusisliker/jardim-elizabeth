@@ -837,7 +837,7 @@
     Domingo: 7
   };
 
-  const HIST_EVENT_FILTERS = ['', 'designacao', 'devolucao', 'trabalho', 'edicao', 'cronograma', 'status'];
+  const HIST_EVENT_FILTERS = ['', 'designacao', 'devolucao', 'edicao', 'cronograma', 'status'];
 
   function histEventFilterLabel(type) {
     if (!type) return 'Todos';
