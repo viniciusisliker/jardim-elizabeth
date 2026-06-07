@@ -159,7 +159,8 @@
       text-decoration: none;
       transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
-    .je-footer-map-btn svg { flex-shrink: 0; width: 1.125rem; height: 1.125rem; }
+    .je-footer-map-btn svg,
+    .je-footer-map-btn-icon { flex-shrink: 0; width: 1.125rem; height: 1.125rem; object-fit: contain; }
     .je-footer-map-btn:hover {
       border-color: #3b5e97;
       background: #fff;
