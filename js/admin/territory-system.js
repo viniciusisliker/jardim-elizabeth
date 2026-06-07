@@ -178,8 +178,25 @@
     if (!nav || !indicator || !activeBtn) return;
     const navRect = nav.getBoundingClientRect();
     const btnRect = activeBtn.getBoundingClientRect();
+    if (!navRect.width || !btnRect.width) {
+      indicator.style.opacity = '0';
+      return;
+    }
+    indicator.style.opacity = '1';
     indicator.style.width = `${btnRect.width}px`;
     indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
+  }
+
+  function queueNavIndicatorRefresh() {
+    const active = document.querySelector('[data-terr-tab].active');
+    if (!active) return;
+    const run = () => updateNavIndicator(active);
+    run();
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
+    setTimeout(run, 120);
   }
 
   function setupTabs() {
@@ -193,10 +210,8 @@
         if (tab === 'semana') renderSemana();
       });
     });
-    const active = document.querySelector('[data-terr-tab].active');
-    updateNavIndicator(active);
-    requestAnimationFrame(() => updateNavIndicator(active));
-    window.addEventListener('resize', () => updateNavIndicator(document.querySelector('[data-terr-tab].active')));
+    queueNavIndicatorRefresh();
+    window.addEventListener('resize', queueNavIndicatorRefresh);
   }
 
   function goToTab(tab) {
@@ -1957,7 +1972,10 @@
   }
 
   async function init() {
-    if (window.__JEAdminTerritoriosInit) return true;
+    if (window.__JEAdminTerritoriosInit) {
+      queueNavIndicatorRefresh();
+      return true;
+    }
     if (!bindAdmin()) {
       console.error('Territórios: JEAdmin não carregado');
       return false;
@@ -2016,6 +2034,10 @@
   }
 
   window.JEAdminTerritorios = { init };
+
+  window.addEventListener('hub:section', (e) => {
+    if (e.detail?.section === 'territorios') queueNavIndicatorRefresh();
+  });
 
   if (!window.JEHubRouter && document.getElementById('terr-nav')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
