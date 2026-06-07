@@ -146,6 +146,19 @@
     return p.full_name || p.profiles?.full_name || '—';
   }
 
+  function overseerProfileRecord(o) {
+    const linked = profiles.find((p) => p.id === o.profile_id);
+    return linked ? { ...o.profiles, ...linked } : (o.profiles || {});
+  }
+
+  function overseerAvatarHtml(o, size = 28) {
+    const profile = overseerProfileRecord(o);
+    const inner = window.JEAuth?.renderAvatarHtml
+      ? window.JEAuth.renderAvatarHtml(profile, { size, className: 'terr-over-avatar__img' })
+      : '<span class="material-symbols-outlined terr-over-avatar__fallback" aria-hidden="true">person</span>';
+    return `<span class="terr-over-avatar" aria-hidden="true">${inner}</span>`;
+  }
+
   function overseerOptions(selectedId) {
     const ids = new Set(overseers.filter((o) => o.is_active !== false).map((o) => o.profile_id));
     const list = profiles.filter((p) => ids.has(p.id));
@@ -165,11 +178,11 @@
   }
 
   async function loadProfiles() {
-    const { data, error } = await client.from('profiles').select('id, full_name, username, role').order('full_name');
+    const { data, error } = await client.from('profiles').select('id, full_name, username, role, avatar_url').order('full_name');
     if (error) {
       const { data: overseerProfiles } = await client
         .from('territory_overseers')
-        .select('profile_id, profiles(id, full_name, username, role)');
+        .select('profile_id, profiles(id, full_name, username, role, avatar_url)');
       profiles = (overseerProfiles || []).map((o) => o.profiles).filter(Boolean);
       if (!profiles.length) throw error;
       return;
@@ -180,7 +193,7 @@
   async function loadOverseers() {
     const { data, error } = await client
       .from('territory_overseers')
-      .select('profile_id, preference, available_days, is_active, notes, profiles(full_name, username)');
+      .select('profile_id, preference, available_days, is_active, notes, profiles(full_name, username, avatar_url)');
     if (error) throw error;
     overseers = (data || []).sort((a, b) => profileName(a.profiles).localeCompare(profileName(b.profiles)));
   }
@@ -2459,7 +2472,7 @@
       return `
       <div class="terr-over-row" title="${escapeHtml(profileName(o.profiles))}">
         <span class="terr-over-name">
-          <span class="material-symbols-outlined" aria-hidden="true">person</span>
+          ${overseerAvatarHtml(o)}
           <span>${escapeHtml(profileName(o.profiles))}</span>
         </span>
         <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
