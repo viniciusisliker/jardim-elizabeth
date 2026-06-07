@@ -100,15 +100,30 @@
     }
   }
 
-  /** Mostra hub/ícone de perfil antes do Supabase CDN carregar (sync). */
+  /** Mostra hub só com sessão local válida e perfil autorizado (sync). */
   function applyHeaderAuthFast() {
     const profile = readCachedProfile();
-    if (!profile || !hasLocalSession()) return false;
-
     const hubBtn = document.getElementById('hub-nav-btn');
+    if (!profile || !hasLocalSession()) {
+      if (hubBtn) {
+        hubBtn.classList.remove('is-auth-visible');
+        hubBtn.setAttribute('hidden', '');
+        hubBtn.setAttribute('aria-hidden', 'true');
+        hubBtn.setAttribute('tabindex', '-1');
+      }
+      return false;
+    }
+
     if (hubBtn && canAccessHub(profile)) {
-      hubBtn.classList.remove('hidden');
-      hubBtn.classList.add('flex');
+      hubBtn.classList.add('is-auth-visible');
+      hubBtn.removeAttribute('hidden');
+      hubBtn.setAttribute('aria-hidden', 'false');
+      hubBtn.removeAttribute('tabindex');
+    } else if (hubBtn) {
+      hubBtn.classList.remove('is-auth-visible');
+      hubBtn.setAttribute('hidden', '');
+      hubBtn.setAttribute('aria-hidden', 'true');
+      hubBtn.setAttribute('tabindex', '-1');
     }
 
     const icon = document.getElementById('profile-icon');

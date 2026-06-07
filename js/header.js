@@ -98,15 +98,24 @@
     else openMobileMenu();
   }
 
-  function updateHubAccess(profile) {
+  function setHubNavVisible(visible) {
     const hubBtn = qs('hub-nav-btn');
-    const canHub = profile && window.JEAuth?.canAccessHub(profile);
+    if (!hubBtn) return;
+    hubBtn.classList.toggle('is-auth-visible', visible);
+    hubBtn.toggleAttribute('hidden', !visible);
+    hubBtn.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    if (visible) hubBtn.removeAttribute('tabindex');
+    else hubBtn.setAttribute('tabindex', '-1');
+  }
 
-    if (hubBtn) {
-      hubBtn.classList.toggle('hidden', !canHub);
-      if (canHub) hubBtn.classList.add('flex');
-      else hubBtn.classList.remove('flex');
-    }
+  function updateHubAccess(profile) {
+    const canHub = !!(
+      profile
+      && window.JEAuth?.canAccessHub(profile)
+      && window.JEAuth?.hasLocalSession?.()
+    );
+
+    setHubNavVisible(canHub);
 
     const hubSlot = qs('mobile-menu-hub-slot');
     let mobileHub = qs('mobile-hub-link');
@@ -141,7 +150,7 @@
     content.innerHTML = `
       <div class="text-center py-2">
         <span class="material-symbols-outlined text-secondary mb-2" style="font-size:40px">account_circle</span>
-        <p class="text-sm text-on-surface-variant mb-4">Faça login para acessar o hub administrativo.</p>
+        <p class="text-sm text-on-surface-variant mb-4">Entre com seu usuário e senha de responsável.</p>
         <button id="open-login-btn" type="button" class="w-full bg-primary text-white font-semibold rounded-lg py-2 text-sm hover:bg-primary-container transition-colors">
           Entrar
         </button>
@@ -219,6 +228,23 @@
   }
 
   function bindEvents() {
+    qs('hub-nav-btn')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const btn = qs('hub-nav-btn');
+      if (!btn?.classList.contains('is-auth-visible')) {
+        showLoginModal();
+        return;
+      }
+      const profile = await window.JEAuth?.getCurrentProfile?.();
+      if (!profile || !window.JEAuth.canAccessHub(profile)) {
+        setHubNavVisible(false);
+        renderGuestMenu();
+        showLoginModal();
+        return;
+      }
+      window.location.href = siteUrl('hub.html');
+    });
+
     qs('profile-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleDropdown();
@@ -299,6 +325,7 @@
   }
 
   window.initSiteHeader = function initSiteHeader() {
+    setHubNavVisible(false);
     bindEvents();
 
     const hasFastAuth = window.JEAuth?.applyHeaderAuthFast?.();

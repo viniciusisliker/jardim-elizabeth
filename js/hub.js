@@ -1,5 +1,10 @@
 (function () {
   async function guardHubAccess() {
+    if (!window.JEAuth?.hasLocalSession?.()) {
+      window.location.replace('index.html');
+      return null;
+    }
+
     await window.JEAuth.getClient();
     let session = await window.JEAuth.getSession();
     if (!session) {
@@ -50,6 +55,7 @@
       setupHubTabs();
       applyHubModuleVisibility(profile);
       window.JEHubChangelog?.init();
+      document.body.classList.remove('hub-auth-pending');
 
       const client = await window.JEAuth.getClient();
       await window.JEHubTerritoryAssignment?.init(client, profile);

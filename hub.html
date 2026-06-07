@@ -284,10 +284,13 @@
     }
     .hub-terr-map img{width:100%;height:100%;object-fit:cover;display:block}
     .hub-terr-card + .hub-terr-card{margin-top:0.75rem}
+    body.hub-auth-pending main,
+    body.hub-auth-pending #footer { visibility: hidden; }
+    body.hub-auth-pending { background: #0f3462; }
   </style>
 </head>
 
-<body class="bg-background text-on-background min-h-screen flex flex-col" style="font-family:'Inter',sans-serif;">
+<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
 
   <div id="header"></div>
 

@@ -376,14 +376,20 @@
       background: #f5f8fc;
       box-shadow: 0 2px 8px rgba(15, 52, 98, 0.1);
     }
-    .je-site-icon-btn--hub:not(.hidden) {
+    .je-site-icon-btn--hub.is-auth-visible {
       border-color: rgba(200, 169, 110, 0.45);
       background: linear-gradient(135deg, #fff 0%, #faf6ef 100%);
       color: #984806;
     }
-    .je-site-icon-btn--hub:not(.hidden):hover {
+    .je-site-icon-btn--hub.is-auth-visible:hover {
       border-color: #c8a96e;
       box-shadow: 0 4px 12px rgba(152, 72, 6, 0.15);
+    }
+    #hub-nav-btn {
+      display: none !important;
+    }
+    #hub-nav-btn.is-auth-visible {
+      display: flex !important;
     }
 
     /* Menu hambúrguer: só mobile/tablet (<1024px). Nav pills no desktop. */
@@ -619,8 +625,7 @@
       #mobile-menu-btn,
       #profile-btn,
       .je-site-icon-btn { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
-      #hub-nav-btn.flex,
-      #hub-nav-btn:not(.hidden) { display: flex !important; }
+      #hub-nav-btn.is-auth-visible { display: flex !important; }
       #profile-dropdown { max-width: min(18rem, calc(100vw - 2rem)); }
       .je-footer-info { padding-top: 2.5rem; padding-bottom: 2rem; }
       .je-footer-info > .je-footer-shell,
