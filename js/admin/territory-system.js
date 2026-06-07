@@ -44,14 +44,35 @@
   let history = [];
   let meetingSpots = [];
   let currentWeek = '';
-  let histFilter = { q: '', eventType: '' };
+  let histFilter = { q: '', date: {}, day: {}, dirigente: {}, territorio: {}, eventType: {} };
   let histSort = { col: 'date', dir: 'desc' };
   let catalogFilter = {
     q: '',
+    num: {},
+    name: {},
     status: { designado: true, disponivel: true },
-    type: { meio_de_semana: true, final_de_semana: true }
+    type: { meio_de_semana: true, final_de_semana: true },
+    assignee: {},
+    coverage: { working: true, fresh: true, warn: true, critical: true, unknown: true }
   };
   let catalogSort = { col: 'num', dir: 'asc' };
+  let schedFilter = {
+    day: {},
+    dirigente: {},
+    territorio: {},
+    location: {},
+    time: {},
+    suggestion: { sim: true, nao: true },
+    assigned: { sim: true, nao: true }
+  };
+  let schedSort = { col: 'day', dir: 'asc' };
+  let overFilter = {
+    name: {},
+    preference: { meio_de_semana: true, final_de_semana: true, ambos: true },
+    days: {},
+    status: { active: true, inactive: true }
+  };
+  let overSort = { col: 'name', dir: 'asc' };
   let weekendByDate = {};
   let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
   let secondaryLoadPromise = null;
@@ -825,6 +846,208 @@
     return scheduleDayTone(label) === 'weekend' ? 'weekend' : 'today';
   }
 
+  function scheduleDaySortIndex(label) {
+    const idx = H().CRONOGRAMA_DAYS.indexOf(label);
+    return idx >= 0 ? idx : 99;
+  }
+
+  function scheduleHasSuggestion(row) {
+    return !!(row.suggestion || row.suggestion_note);
+  }
+
+  function scheduleIsAssigned(row) {
+    return !!findAssignmentForScheduleRow(row);
+  }
+
+  function syncSchedFilterOptions() {
+    const rows = scheduleRowsForWeek();
+    const days = [...new Set(rows.map((r) => r.weekday_label))].sort(
+      (a, b) => scheduleDaySortIndex(a) - scheduleDaySortIndex(b)
+    );
+    xlfEnsureKeys(schedFilter.day, days);
+    xlfEnsureKeys(
+      schedFilter.dirigente,
+      [...new Set(rows.map((r) => scheduleDirigente(r)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    xlfEnsureKeys(
+      schedFilter.territorio,
+      [...new Set(rows.map((r) => scheduleTerritory(r)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    xlfEnsureKeys(
+      schedFilter.location,
+      [...new Set(rows.map((r) => r.location_name || '—'))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    xlfEnsureKeys(
+      schedFilter.time,
+      [...new Set(rows.map((r) => r.schedule_times || '—'))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+  }
+
+  function getSortedScheduleRows(list) {
+    const { col, dir } = schedSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'day':
+          cmp = scheduleDaySortIndex(a.weekday_label) - scheduleDaySortIndex(b.weekday_label);
+          break;
+        case 'dirigente':
+          cmp = scheduleDirigente(a).localeCompare(scheduleDirigente(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'territorio':
+          cmp = scheduleTerritory(a).localeCompare(scheduleTerritory(b), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'location':
+          cmp = String(a.location_name || '—').localeCompare(String(b.location_name || '—'), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'time':
+          cmp = String(a.schedule_times || '—').localeCompare(String(b.schedule_times || '—'), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'suggestion':
+          cmp = Number(scheduleHasSuggestion(a)) - Number(scheduleHasSuggestion(b));
+          break;
+        case 'assigned':
+          cmp = Number(scheduleIsAssigned(a)) - Number(scheduleIsAssigned(b));
+          break;
+        default:
+          cmp = scheduleDaySortIndex(a.weekday_label) - scheduleDaySortIndex(b.weekday_label);
+      }
+      if (cmp === 0) cmp = (a.sort_order || 0) - (b.sort_order || 0);
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredScheduleRows() {
+    syncSchedFilterOptions();
+    let list = scheduleRowsForWeek();
+    list = xlfApplyMapFilter(list, schedFilter.day, (r) => r.weekday_label);
+    list = xlfApplyMapFilter(list, schedFilter.dirigente, (r) => scheduleDirigente(r));
+    list = xlfApplyMapFilter(list, schedFilter.territorio, (r) => scheduleTerritory(r));
+    list = xlfApplyMapFilter(list, schedFilter.location, (r) => r.location_name || '—');
+    list = xlfApplyMapFilter(list, schedFilter.time, (r) => r.schedule_times || '—');
+    list = xlfApplyMapFilter(list, schedFilter.suggestion, (r) => (scheduleHasSuggestion(r) ? 'sim' : 'nao'));
+    list = xlfApplyMapFilter(list, schedFilter.assigned, (r) => (scheduleIsAssigned(r) ? 'sim' : 'nao'));
+    return getSortedScheduleRows(list);
+  }
+
+  function schedHeaderRow() {
+    syncSchedFilterOptions();
+    const dayOpts = xlfOptionsFromKeys(Object.keys(schedFilter.day));
+    const dirOpts = xlfOptionsFromKeys(Object.keys(schedFilter.dirigente));
+    const terrOpts = xlfOptionsFromKeys(Object.keys(schedFilter.territorio));
+    const locOpts = xlfOptionsFromKeys(Object.keys(schedFilter.location));
+    const timeOpts = xlfOptionsFromKeys(Object.keys(schedFilter.time));
+    return `
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'day', label: 'Dia', filterKey: 'day', options: dayOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Hora', filterKey: 'time', options: timeOpts, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'span' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'assigned', label: 'Designado', filterKey: 'assigned', options: SCHED_ASSIGNED_OPTIONS, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+  }
+
+  function bindSchedRowActions(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-edit-schedule]').forEach((btn) =>
+      btn.addEventListener('click', () =>
+        openScheduleFormModal(weekTemplate.find((r) => r.id === btn.dataset.editSchedule))
+      )
+    );
+    root.querySelectorAll('[data-del-schedule]').forEach((btn) =>
+      btn.addEventListener('click', () => deleteScheduleRow(btn.dataset.delSchedule))
+    );
+    root.querySelectorAll('[data-return-assignment]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const assignment = activeAssignments.find((a) => a.id === btn.dataset.returnAssignment);
+        openDevolverModal(assignment);
+      });
+    });
+  }
+
+  function bindSchedFilters() {
+    const scroll = document.getElementById('semana-sched-scroll');
+    if (!scroll) return;
+    scroll.dataset.xlfScope = 'sched';
+    delete scroll.dataset.xlfBound;
+    bindXlfPanel(scroll, 'sched-sort', schedFilter, schedSort, renderSemanaTable);
+  }
+
+  function renderSemanaTable() {
+    const body = document.getElementById('semana-table-body');
+    const foot = document.getElementById('semana-table-foot');
+    if (!body) return;
+    xlfUpdateSortUI(document.getElementById('semana-sched-scroll'), 'sched-sort', schedSort);
+    xlfUpdateFilterUI(document.getElementById('semana-sched-scroll'), schedFilter);
+    const filtered = getFilteredScheduleRows();
+    const total = scheduleRowsForWeek().length;
+
+    if (!filtered.length) {
+      body.innerHTML = `
+        <div class="terr-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${total ? 'Nenhuma linha corresponde ao filtro.' : 'Nenhuma linha no cronograma.'}</p>
+        </div>`;
+      if (foot) foot.textContent = '';
+      return;
+    }
+
+    body.innerHTML = filtered.map((r) => {
+      const tone = scheduleDayTone(r.weekday_label);
+      const dirigenteHtml = scheduleDirigenteHtml(r);
+      const territorio = scheduleTerritory(r);
+      const assignment = findAssignmentForScheduleRow(r);
+      const territorioHtml = assignment
+        ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
+            <span class="terr-sched-assigned-text">${escapeHtml(territorio)}</span>
+            <span class="terr-sched-assigned-badge">Designado</span>
+          </span>`
+        : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
+      const sugg = scheduleSuggestion(r);
+      const hasSugg = r.suggestion || r.suggestion_note;
+      const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
+        ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
+        : '';
+      const returnBtn = assignment?.id
+        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+            <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+          </button>`
+        : '';
+      return `
+      <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
+        <span class="terr-sched-day-pill">
+          <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
+          ${escapeHtml(r.weekday_label)}
+        </span>
+        <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
+        ${territorioHtml}
+        <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
+        <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
+        <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
+        <span class="terr-sched-cell terr-sched-cell--assigned-flag${assignment ? ' terr-sched-cell--assigned-flag--yes' : ''}" aria-hidden="true">${assignment ? '●' : ''}</span>
+        <div class="terr-sched-row-actions">
+          ${returnBtn}
+          <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
+          <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    bindSchedRowActions(body);
+    if (foot) {
+      const activeFilters = Object.entries(schedFilter).filter(([, map]) => xlfIsActive(map)).length;
+      const filterNote = activeFilters ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}` : '';
+      const suffix = filtered.length < total ? ` (${total} no total)` : '';
+      foot.textContent = `Exibindo ${filtered.length} linha${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
+    }
+  }
+
   function renderSemana() {
     document.getElementById('semana-week').value = currentWeek;
     const el = document.getElementById('semana-list');
@@ -836,70 +1059,15 @@
         </div>`;
     } else {
       el.innerHTML = `
-        <div class="terr-sched-scroll">
+        <div class="terr-sched-scroll" id="semana-sched-scroll">
           <div class="terr-sched-panel">
-            <div class="terr-sched-row terr-sched-row--head">
-              <span>Dia</span><span>Dirigente</span><span>Território</span><span>Local</span><span>Hora</span><span>Sugestão</span><span></span>
-            </div>
-            ${scheduleRowsForWeek().map((r) => {
-              const tone = scheduleDayTone(r.weekday_label);
-              const dirigenteHtml = scheduleDirigenteHtml(r);
-              const territorio = scheduleTerritory(r);
-              const assignment = findAssignmentForScheduleRow(r);
-              const territorioHtml = assignment
-                ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
-                    <span class="terr-sched-assigned-text">${escapeHtml(territorio)}</span>
-                    <span class="terr-sched-assigned-badge">Designado</span>
-                  </span>`
-                : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
-              const sugg = scheduleSuggestion(r);
-              const hasSugg = r.suggestion || r.suggestion_note;
-              const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
-                ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
-                : '';
-              const returnBtn = assignment?.id
-                ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
-                    <span class="material-symbols-outlined" aria-hidden="true">undo</span>
-                  </button>`
-                : '';
-              return `
-            <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
-              <span class="terr-sched-day-pill">
-                <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
-                ${escapeHtml(r.weekday_label)}
-              </span>
-              <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
-              ${territorioHtml}
-              <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
-              <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
-              <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
-              <div class="terr-sched-row-actions">
-                ${returnBtn}
-                <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
-                  <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                </button>
-                <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
-                  <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-                </button>
-              </div>
-            </div>`;
-            }).join('')}
+            <div class="terr-sched-row terr-sched-row--head">${schedHeaderRow()}</div>
+            <div id="semana-table-body"></div>
+            <p id="semana-table-foot" class="terr-catalog-foot"></p>
           </div>
         </div>`;
-      el.querySelectorAll('[data-edit-schedule]').forEach((btn) =>
-        btn.addEventListener('click', () =>
-          openScheduleFormModal(weekTemplate.find((r) => r.id === btn.dataset.editSchedule))
-        )
-      );
-      el.querySelectorAll('[data-del-schedule]').forEach((btn) =>
-        btn.addEventListener('click', () => deleteScheduleRow(btn.dataset.delSchedule))
-      );
-      el.querySelectorAll('[data-return-assignment]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const assignment = activeAssignments.find((a) => a.id === btn.dataset.returnAssignment);
-          openDevolverModal(assignment);
-        });
-      });
+      bindSchedFilters();
+      renderSemanaTable();
     }
 
     renderExtraDesignados();
@@ -1044,75 +1212,135 @@
     { value: 'meio_de_semana', label: 'Meio de semana' },
     { value: 'final_de_semana', label: 'Final de semana' }
   ];
+  const CATALOG_COVERAGE_OPTIONS = [
+    { value: 'working', label: 'Em campo' },
+    { value: 'fresh', label: 'Cobertura recente' },
+    { value: 'warn', label: 'Atenção (14–27d)' },
+    { value: 'critical', label: 'Crítico (28d+)' },
+    { value: 'unknown', label: 'Sem registro' }
+  ];
+  const SCHED_SUGGESTION_OPTIONS = [
+    { value: 'sim', label: 'Com sugestão' },
+    { value: 'nao', label: 'Sem sugestão' }
+  ];
+  const SCHED_ASSIGNED_OPTIONS = [
+    { value: 'sim', label: 'Designado' },
+    { value: 'nao', label: 'Não designado' }
+  ];
+  const OVER_PREF_OPTIONS = [
+    { value: 'meio_de_semana', label: 'Meio de semana' },
+    { value: 'final_de_semana', label: 'Final de semana' },
+    { value: 'ambos', label: 'Ambos' }
+  ];
+  const OVER_STATUS_OPTIONS = [
+    { value: 'active', label: 'Ativo' },
+    { value: 'inactive', label: 'Inativo' }
+  ];
 
-  function catalogFilterMapAllTrue(map) {
+  function xlfMapAllTrue(map) {
     return Object.fromEntries(Object.keys(map).map((k) => [k, true]));
   }
 
-  function catalogFilterAllSelected(map) {
+  function xlfAllSelected(map) {
     return Object.values(map).every(Boolean);
   }
 
-  function catalogFilterSelectedKeys(map) {
+  function xlfSelectedKeys(map) {
     return Object.entries(map).filter(([, on]) => on).map(([k]) => k);
   }
 
-  function isCatalogColumnFilterActive(filterKey) {
-    if (filterKey === 'status') return !catalogFilterAllSelected(catalogFilter.status);
-    if (filterKey === 'type') return !catalogFilterAllSelected(catalogFilter.type);
-    return false;
+  function xlfIsActive(map) {
+    return map && Object.keys(map).length > 0 && !xlfAllSelected(map);
   }
 
-  function syncCatalogFilterSelectAll(filterKey) {
-    const grid = document.getElementById('catalogo-grid');
-    if (!grid) return;
-    const map = filterKey === 'status' ? catalogFilter.status : catalogFilter.type;
-    const selectAll = grid.querySelector(`[data-xlf-select-all="${filterKey}"]`);
-    const boxes = grid.querySelectorAll(`[data-xlf-filter="${filterKey}"]`);
+  function xlfEnsureKeys(map, keys) {
+    keys.forEach((k) => {
+      if (!(k in map)) map[k] = true;
+    });
+    Object.keys(map).forEach((k) => {
+      if (!keys.includes(k)) delete map[k];
+    });
+    return map;
+  }
+
+  function xlfOptionsFromKeys(keys, labelFn) {
+    return keys.map((k) => ({ value: k, label: labelFn ? labelFn(k) : k }));
+  }
+
+  function xlfApplyMapFilter(list, map, valueFn) {
+    const total = Object.keys(map).length;
+    const keys = xlfSelectedKeys(map);
+    if (keys.length >= total) return list;
+    if (!keys.length) return [];
+    return list.filter((item) => keys.includes(String(valueFn(item))));
+  }
+
+  function xlfCloseMenus(scope = null) {
+    document.querySelectorAll('[data-xlf-menu]').forEach((menu) => {
+      const menuScope = menu.closest('[data-xlf-scope]')?.dataset.xlfScope;
+      if (scope && menuScope === scope) return;
+      menu.classList.add('hidden');
+      const trigger = menu.closest('[data-xlf-scope]')?.querySelector(`[data-xlf-trigger="${menu.dataset.xlfMenu}"]`);
+      trigger?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function xlfUpdateFilterUI(root, filterState) {
+    if (!root) return;
+    Object.keys(filterState).forEach((filterKey) => {
+      const map = filterState[filterKey];
+      if (!map || typeof map !== 'object') return;
+      const active = xlfIsActive(map);
+      root.querySelectorAll(`[data-xlf-trigger="${filterKey}"]`).forEach((btn) => {
+        btn.classList.toggle('terr-xlf-filter-btn--active', active);
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (icon) icon.textContent = active ? 'filter_alt' : 'filter_list';
+      });
+      root.querySelectorAll(`[data-xlf-filter="${filterKey}"]`).forEach((box) => {
+        box.checked = !!map[box.value];
+      });
+      xlfSyncSelectAll(root, filterKey, map);
+    });
+  }
+
+  function xlfSyncSelectAll(root, filterKey, map) {
+    const selectAll = root.querySelector(`[data-xlf-select-all="${filterKey}"]`);
+    const boxes = root.querySelectorAll(`[data-xlf-filter="${filterKey}"]`);
     if (!selectAll || !boxes.length) return;
     const checked = [...boxes].filter((b) => b.checked).length;
     selectAll.checked = checked === boxes.length;
     selectAll.indeterminate = checked > 0 && checked < boxes.length;
   }
 
-  function updateCatalogFilterUI() {
-    const grid = document.getElementById('catalogo-grid');
-    if (!grid) return;
-    ['status', 'type'].forEach((filterKey) => {
-      const active = isCatalogColumnFilterActive(filterKey);
-      grid.querySelectorAll(`[data-xlf-trigger="${filterKey}"]`).forEach((btn) => {
-        btn.classList.toggle('terr-xlf-filter-btn--active', active);
-        const icon = btn.querySelector('.material-symbols-outlined');
-        if (icon) icon.textContent = active ? 'filter_alt' : 'filter_list';
-      });
-      grid.querySelectorAll(`[data-xlf-filter="${filterKey}"]`).forEach((box) => {
-        box.checked = !!catalogFilter[filterKey][box.value];
-      });
-      syncCatalogFilterSelectAll(filterKey);
+  function xlfUpdateSortUI(root, sortAttr, sortState) {
+    if (!root) return;
+    root.querySelectorAll(`[data-${sortAttr}]`).forEach((btn) => {
+      const col = btn.getAttribute(`data-${sortAttr}`);
+      const isActive = sortState.col === col;
+      btn.classList.toggle('terr-xlf-sort--active', isActive);
+      btn.classList.toggle('terr-catalog-sort--active', isActive);
+      btn.classList.toggle('terr-hist-sort--active', isActive);
+      const icon = btn.querySelector('.terr-xlf-sort-icon, .terr-catalog-sort-icon, .terr-hist-sort-icon');
+      if (icon) icon.textContent = isActive ? (sortState.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
     });
   }
 
-  function closeCatalogFilterMenus(exceptKey = null) {
-    document.querySelectorAll('[data-xlf-menu]').forEach((menu) => {
-      if (exceptKey && menu.dataset.xlfMenu === exceptKey) return;
-      menu.classList.add('hidden');
-      const trigger = document.querySelector(`[data-xlf-trigger="${menu.dataset.xlfMenu}"]`);
-      trigger?.setAttribute('aria-expanded', 'false');
-    });
-  }
-
-  function catalogFilterHeader(col, label, filterKey, options) {
-    const active = isCatalogColumnFilterActive(filterKey);
-    const checks = options.map((o) => `
+  function xlfColumnHeader(sortAttr, sortState, filterState, config) {
+    const { col, label, filterKey, options, wrap = 'th', extraClass = '' } = config;
+    const filterMap = filterState[filterKey];
+    const active = xlfIsActive(filterMap);
+    const sortActive = sortState.col === col;
+    const sortIcon = sortActive ? (sortState.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
+    const checks = (options || []).map((o) => `
       <label class="terr-xlf-check">
-        <input type="checkbox" data-xlf-filter="${filterKey}" value="${o.value}" ${catalogFilter[filterKey][o.value] ? 'checked' : ''}>
+        <input type="checkbox" data-xlf-filter="${filterKey}" value="${escapeHtml(String(o.value))}" ${filterMap[o.value] ? 'checked' : ''}>
         <span>${escapeHtml(o.label)}</span>
       </label>`).join('');
-    return `<th scope="col">
+    const inner = `
       <div class="terr-xlf-head">
-        <button type="button" class="terr-catalog-sort" data-catalog-sort="${col}">
+        <button type="button" class="terr-xlf-sort terr-catalog-sort terr-hist-sort${sortActive ? ' terr-xlf-sort--active terr-catalog-sort--active terr-hist-sort--active' : ''}" data-${sortAttr}="${col}">
           <span>${label}</span>
-          <span class="material-symbols-outlined terr-catalog-sort-icon" aria-hidden="true">unfold_more</span>
+          <span class="material-symbols-outlined terr-xlf-sort-icon terr-catalog-sort-icon terr-hist-sort-icon" aria-hidden="true">${sortIcon}</span>
         </button>
         <div class="terr-xlf-filter">
           <button type="button" class="terr-xlf-filter-btn${active ? ' terr-xlf-filter-btn--active' : ''}" data-xlf-trigger="${filterKey}" aria-expanded="false" aria-haspopup="true" aria-label="Filtrar ${label}" title="Filtrar">
@@ -1121,7 +1349,7 @@
           <div class="terr-xlf-menu hidden" data-xlf-menu="${filterKey}" role="dialog" aria-label="Filtrar ${label}">
             <p class="terr-xlf-menu-title">${escapeHtml(label)}</p>
             <label class="terr-xlf-check terr-xlf-check--all">
-              <input type="checkbox" data-xlf-select-all="${filterKey}" ${catalogFilterAllSelected(catalogFilter[filterKey]) ? 'checked' : ''}>
+              <input type="checkbox" data-xlf-select-all="${filterKey}" ${xlfAllSelected(filterMap) ? 'checked' : ''}>
               <span>(Selecionar tudo)</span>
             </label>
             <div class="terr-xlf-checks">${checks}</div>
@@ -1130,23 +1358,108 @@
             </div>
           </div>
         </div>
-      </div>
-    </th>`;
+      </div>`;
+    if (wrap === 'th') return `<th scope="col" class="${extraClass}">${inner}</th>`;
+    return `<span class="terr-xlf-head-cell ${extraClass}">${inner}</span>`;
   }
 
-  function catalogSortButton(col, label) {
-    return `<th scope="col"><button type="button" class="terr-catalog-sort" data-catalog-sort="${col}"><span>${label}</span><span class="material-symbols-outlined terr-catalog-sort-icon" aria-hidden="true">unfold_more</span></button></th>`;
+  function bindXlfPanel(root, sortAttr, filterState, sortState, onRefresh) {
+    if (!root || root.dataset.xlfBound === '1') return;
+    root.dataset.xlfBound = '1';
+
+    root.querySelectorAll('[data-xlf-trigger]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.xlfTrigger;
+        const menu = root.querySelector(`[data-xlf-menu="${key}"]`);
+        if (!menu) return;
+        const willOpen = menu.classList.contains('hidden');
+        xlfCloseMenus();
+        if (willOpen) {
+          menu.classList.remove('hidden');
+          btn.setAttribute('aria-expanded', 'true');
+          xlfUpdateFilterUI(root, filterState);
+        }
+      });
+    });
+
+    root.querySelectorAll('[data-xlf-select-all]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const key = box.dataset.xlfSelectAll;
+        const map = filterState[key];
+        if (!map) return;
+        Object.keys(map).forEach((k) => { map[k] = box.checked; });
+        xlfUpdateFilterUI(root, filterState);
+        onRefresh();
+      });
+    });
+
+    root.querySelectorAll('[data-xlf-filter]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const key = box.dataset.xlfFilter;
+        if (!filterState[key]) return;
+        filterState[key][box.value] = box.checked;
+        xlfSyncSelectAll(root, key, filterState[key]);
+        xlfUpdateFilterUI(root, filterState);
+        onRefresh();
+      });
+    });
+
+    root.querySelectorAll('[data-xlf-clear]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.xlfClear;
+        if (!filterState[key]) return;
+        filterState[key] = xlfMapAllTrue(filterState[key]);
+        xlfUpdateFilterUI(root, filterState);
+        onRefresh();
+        xlfCloseMenus();
+      });
+    });
+
+    root.querySelectorAll('.terr-xlf-menu').forEach((menu) => {
+      menu.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    root.querySelectorAll(`[data-${sortAttr}]`).forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const col = btn.getAttribute(`data-${sortAttr}`);
+        if (sortState.col === col) sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+        else {
+          sortState.col = col;
+          sortState.dir = (col === 'coverage' || col === 'date') ? 'desc' : 'asc';
+        }
+        xlfUpdateSortUI(root, sortAttr, sortState);
+        onRefresh();
+      });
+    });
+
+    if (!window.__JETerrXlfBound) {
+      window.__JETerrXlfBound = true;
+      document.addEventListener('click', () => xlfCloseMenus());
+    }
+  }
+
+  function syncCatalogFilterOptions() {
+    xlfEnsureKeys(catalogFilter.num, territories.map((t) => String(t.num)).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b, 'pt-BR', { numeric: true })));
+    xlfEnsureKeys(catalogFilter.name, [...new Set(territories.map((t) => t.display_name || '—'))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })));
+    xlfEnsureKeys(catalogFilter.assignee, [...new Set(territories.map((t) => catalogAssignee(t)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })));
+  }
+
+  function catalogCoverageTone(t) {
+    return catalogCoverageMeta(t).tone;
   }
 
   function updateCatalogSortUI() {
-    const grid = document.getElementById('catalogo-grid');
-    if (!grid) return;
-    grid.querySelectorAll('[data-catalog-sort]').forEach((btn) => {
-      const active = catalogSort.col === btn.dataset.catalogSort;
-      btn.classList.toggle('terr-catalog-sort--active', active);
-      const icon = btn.querySelector('.terr-catalog-sort-icon');
-      if (icon) icon.textContent = active ? (catalogSort.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
-    });
+    xlfUpdateSortUI(document.getElementById('catalogo-grid'), 'catalog-sort', catalogSort);
+  }
+
+  function updateCatalogFilterUI() {
+    xlfUpdateFilterUI(document.getElementById('catalogo-grid'), catalogFilter);
+  }
+
+  function closeCatalogFilterMenus() {
+    xlfCloseMenus();
   }
 
   function getSortedCatalog(list) {
@@ -1189,6 +1502,7 @@
   }
 
   function getFilteredCatalog() {
+    syncCatalogFilterOptions();
     let list = territories;
     const q = catalogFilter.q.trim().toLowerCase();
     if (q) {
@@ -1213,97 +1527,27 @@
         ].join(' ').toLowerCase().includes(q);
       });
     }
-    const statusKeys = catalogFilterSelectedKeys(catalogFilter.status);
-    const statusTotal = Object.keys(catalogFilter.status).length;
-    if (statusKeys.length < statusTotal) {
-      list = statusKeys.length ? list.filter((t) => statusKeys.includes(t.status)) : [];
-    }
-    const typeKeys = catalogFilterSelectedKeys(catalogFilter.type);
-    const typeTotal = Object.keys(catalogFilter.type).length;
-    if (typeKeys.length < typeTotal) {
-      list = typeKeys.length ? list.filter((t) => typeKeys.includes(t.territory_type)) : [];
-    }
+    list = xlfApplyMapFilter(list, catalogFilter.num, (t) => String(t.num));
+    list = xlfApplyMapFilter(list, catalogFilter.name, (t) => t.display_name || '—');
+    list = xlfApplyMapFilter(list, catalogFilter.status, (t) => t.status);
+    list = xlfApplyMapFilter(list, catalogFilter.type, (t) => t.territory_type);
+    list = xlfApplyMapFilter(list, catalogFilter.assignee, (t) => catalogAssignee(t));
+    list = xlfApplyMapFilter(list, catalogFilter.coverage, (t) => catalogCoverageTone(t));
     return getSortedCatalog(list);
   }
 
   function bindCatalogFilters() {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
+    grid.dataset.xlfScope = 'catalog';
+    delete grid.dataset.xlfBound;
     const search = grid.querySelector('#catalog-search');
     if (search && search.value !== catalogFilter.q) search.value = catalogFilter.q;
     search?.addEventListener('input', (e) => {
       catalogFilter.q = e.target.value;
       renderCatalogoTable();
     });
-
-    grid.querySelectorAll('[data-xlf-trigger]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const key = btn.dataset.xlfTrigger;
-        const menu = grid.querySelector(`[data-xlf-menu="${key}"]`);
-        if (!menu) return;
-        const willOpen = menu.classList.contains('hidden');
-        closeCatalogFilterMenus();
-        if (willOpen) {
-          menu.classList.remove('hidden');
-          btn.setAttribute('aria-expanded', 'true');
-          updateCatalogFilterUI();
-        }
-      });
-    });
-
-    grid.querySelectorAll('[data-xlf-select-all]').forEach((box) => {
-      box.addEventListener('change', () => {
-        const key = box.dataset.xlfSelectAll;
-        const map = catalogFilter[key];
-        Object.keys(map).forEach((k) => { map[k] = box.checked; });
-        updateCatalogFilterUI();
-        renderCatalogoTable();
-      });
-    });
-
-    grid.querySelectorAll('[data-xlf-filter]').forEach((box) => {
-      box.addEventListener('change', () => {
-        const key = box.dataset.xlfFilter;
-        catalogFilter[key][box.value] = box.checked;
-        syncCatalogFilterSelectAll(key);
-        updateCatalogFilterUI();
-        renderCatalogoTable();
-      });
-    });
-
-    grid.querySelectorAll('[data-xlf-clear]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const key = btn.dataset.xlfClear;
-        catalogFilter[key] = catalogFilterMapAllTrue(catalogFilter[key]);
-        updateCatalogFilterUI();
-        renderCatalogoTable();
-        closeCatalogFilterMenus();
-      });
-    });
-
-    grid.querySelectorAll('.terr-xlf-menu').forEach((menu) => {
-      menu.addEventListener('click', (e) => e.stopPropagation());
-    });
-
-    if (!window.__JETerrCatalogXlfBound) {
-      window.__JETerrCatalogXlfBound = true;
-      document.addEventListener('click', () => closeCatalogFilterMenus());
-    }
-
-    grid.querySelectorAll('[data-catalog-sort]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const col = btn.dataset.catalogSort;
-        if (catalogSort.col === col) catalogSort.dir = catalogSort.dir === 'asc' ? 'desc' : 'asc';
-        else {
-          catalogSort.col = col;
-          catalogSort.dir = col === 'coverage' ? 'desc' : 'asc';
-        }
-        updateCatalogSortUI();
-        renderCatalogoTable();
-      });
-    });
+    bindXlfPanel(grid, 'catalog-sort', catalogFilter, catalogSort, renderCatalogoTable);
   }
 
   function updateCatalogStats() {
@@ -1373,16 +1617,29 @@
     if (footEl) {
       const parts = [];
       if (catalogFilter.q.trim()) parts.push('busca');
-      if (!catalogFilterAllSelected(catalogFilter.status)) {
-        parts.push(catalogFilterSelectedKeys(catalogFilter.status).map((s) => STATUS_LABELS[s] || s).join(', ').toLowerCase());
-      }
-      if (!catalogFilterAllSelected(catalogFilter.type)) {
-        parts.push(catalogFilterSelectedKeys(catalogFilter.type).map((t) => TERRITORY_TYPE_LABELS[t] || t).join(', ').toLowerCase());
-      }
+      Object.entries(catalogFilter).forEach(([key, map]) => {
+        if (key === 'q' || typeof map !== 'object') return;
+        if (xlfIsActive(map)) parts.push(key);
+      });
       const filterNote = parts.length ? ` · filtro: ${parts.join(', ')}` : '';
       const suffix = filtered.length < territories.length ? ` (${territories.length} no total)` : '';
       footEl.textContent = `Exibindo ${filtered.length} território${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
     }
+  }
+
+  function catalogHeaderRow() {
+    syncCatalogFilterOptions();
+    const numOpts = xlfOptionsFromKeys(Object.keys(catalogFilter.num), (k) => `T${k}`);
+    const nameOpts = xlfOptionsFromKeys(Object.keys(catalogFilter.name));
+    const assigneeOpts = xlfOptionsFromKeys(Object.keys(catalogFilter.assignee));
+    return `
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'num', label: 'ID', filterKey: 'num', options: numOpts })}
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'name', label: 'Território', filterKey: 'name', options: nameOpts })}
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'type', label: 'Tipo', filterKey: 'type', options: CATALOG_TYPE_OPTIONS })}
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'status', label: 'Status', filterKey: 'status', options: CATALOG_STATUS_OPTIONS })}
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'assignee', label: 'Designado', filterKey: 'assignee', options: assigneeOpts })}
+      ${xlfColumnHeader('catalog-sort', catalogSort, catalogFilter, { col: 'coverage', label: 'Cobertura', filterKey: 'coverage', options: CATALOG_COVERAGE_OPTIONS })}
+      <th scope="col" class="terr-catalog-actions" aria-label="Ações"></th>`;
   }
 
   function renderCatalogo() {
@@ -1435,10 +1692,7 @@
         <div class="terr-catalog-panel">
           <table class="terr-catalog-table">
             <thead>
-              <tr>
-                ${catalogSortButton('num', 'ID')}${catalogSortButton('name', 'Território')}${catalogFilterHeader('type', 'Tipo', 'type', CATALOG_TYPE_OPTIONS)}${catalogFilterHeader('status', 'Status', 'status', CATALOG_STATUS_OPTIONS)}${catalogSortButton('assignee', 'Designado')}${catalogSortButton('coverage', 'Cobertura')}
-                <th scope="col" class="terr-catalog-actions" aria-label="Ações"></th>
-              </tr>
+              <tr>${catalogHeaderRow()}</tr>
             </thead>
             <tbody id="catalogo-table-body"></tbody>
           </table>
@@ -1558,35 +1812,55 @@
     Domingo: 7
   };
 
-  const HIST_EVENT_FILTERS = ['', 'designacao', 'devolucao', 'edicao', 'cronograma', 'status'];
+  const HIST_EVENT_FILTERS = ['', 'designacao', 'devolucao', 'edicao', 'cronograma', 'status', 'trabalho'];
 
   function histEventFilterLabel(type) {
     if (!type) return 'Todos';
     return EVENT_LABELS[type] || type;
   }
 
-  function renderHistEventFilters() {
-    return HIST_EVENT_FILTERS.map((type) => {
-      const active = histFilter.eventType === type;
-      return `<button type="button" class="terr-hist-filter${active ? ' terr-hist-filter--active' : ''}" data-hist-event="${type}">${escapeHtml(histEventFilterLabel(type))}</button>`;
-    }).join('');
+  function syncHistFilterOptions() {
+    const dates = [...new Set(history.map((h) => String(h.event_date).slice(0, 10)))].sort().reverse();
+    xlfEnsureKeys(histFilter.date, dates);
+    xlfEnsureKeys(
+      histFilter.day,
+      [...new Set(history.map((h) => historyWeekday(h)))].sort((a, b) => (WEEKDAY_ORDER[a] || 99) - (WEEKDAY_ORDER[b] || 99))
+    );
+    xlfEnsureKeys(
+      histFilter.dirigente,
+      [...new Set(history.map((h) => historyDirigente(h)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    xlfEnsureKeys(
+      histFilter.territorio,
+      [...new Set(history.map((h) => historyTerritory(h)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    xlfEnsureKeys(
+      histFilter.eventType,
+      [...new Set(history.map((h) => h.event_type || 'default'))].sort((a, b) => histEventFilterLabel(a).localeCompare(histEventFilterLabel(b), 'pt-BR', { sensitivity: 'base' }))
+    );
   }
 
-  function histSortButton(col, label) {
-    return `<button type="button" class="terr-hist-sort" data-hist-sort="${col}"><span>${label}</span><span class="material-symbols-outlined terr-hist-sort-icon" aria-hidden="true">unfold_more</span></button>`;
+  function histHeaderRow() {
+    syncHistFilterOptions();
+    const dateOpts = xlfOptionsFromKeys(Object.keys(histFilter.date), (k) => H().formatShortDate(k));
+    const dayOpts = xlfOptionsFromKeys(Object.keys(histFilter.day));
+    const dirOpts = xlfOptionsFromKeys(Object.keys(histFilter.dirigente));
+    const terrOpts = xlfOptionsFromKeys(Object.keys(histFilter.territorio));
+    const eventOpts = xlfOptionsFromKeys(Object.keys(histFilter.eventType), (k) => histEventFilterLabel(k));
+    return `
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'date', label: 'Data', filterKey: 'date', options: dateOpts, wrap: 'span' })}
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'day', label: 'Dia', filterKey: 'day', options: dayOpts, wrap: 'span' })}
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'span' })}
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'span' })}
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'obs', label: 'Observações', filterKey: 'eventType', options: eventOpts, wrap: 'span' })}`;
   }
 
   function updateHistSortUI() {
-    const grid = document.getElementById('historico-grid');
-    if (!grid) return;
-    grid.querySelectorAll('[data-hist-sort]').forEach((btn) => {
-      const active = histSort.col === btn.dataset.histSort;
-      btn.classList.toggle('terr-hist-sort--active', active);
-      btn.classList.toggle('terr-hist-sort--asc', active && histSort.dir === 'asc');
-      btn.classList.toggle('terr-hist-sort--desc', active && histSort.dir === 'desc');
-      const icon = btn.querySelector('.terr-hist-sort-icon');
-      if (icon) icon.textContent = active ? (histSort.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
-    });
+    xlfUpdateSortUI(document.getElementById('historico-grid'), 'hist-sort', histSort);
+  }
+
+  function updateHistFilterUI() {
+    xlfUpdateFilterUI(document.getElementById('historico-grid'), histFilter);
   }
 
   function getSortedHistory(list) {
@@ -1626,6 +1900,7 @@
   }
 
   function getFilteredHistory() {
+    syncHistFilterOptions();
     let list = history;
     const q = histFilter.q.trim().toLowerCase();
     if (q) {
@@ -1641,42 +1916,26 @@
         return hay.includes(q);
       });
     }
-    if (histFilter.eventType) {
-      list = list.filter((h) => h.event_type === histFilter.eventType);
-    }
+    list = xlfApplyMapFilter(list, histFilter.date, (h) => String(h.event_date).slice(0, 10));
+    list = xlfApplyMapFilter(list, histFilter.day, (h) => historyWeekday(h));
+    list = xlfApplyMapFilter(list, histFilter.dirigente, (h) => historyDirigente(h));
+    list = xlfApplyMapFilter(list, histFilter.territorio, (h) => historyTerritory(h));
+    list = xlfApplyMapFilter(list, histFilter.eventType, (h) => h.event_type || 'default');
     return getSortedHistory(list);
   }
 
   function bindHistoricoFilters() {
     const grid = document.getElementById('historico-grid');
     if (!grid) return;
+    grid.dataset.xlfScope = 'hist';
+    delete grid.dataset.xlfBound;
     const search = grid.querySelector('#hist-search');
     if (search && search.value !== histFilter.q) search.value = histFilter.q;
     search?.addEventListener('input', (e) => {
       histFilter.q = e.target.value;
       renderHistoricoTable();
     });
-    grid.querySelectorAll('[data-hist-event]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        histFilter.eventType = btn.dataset.histEvent || '';
-        grid.querySelectorAll('[data-hist-event]').forEach((b) => {
-          b.classList.toggle('terr-hist-filter--active', (b.dataset.histEvent || '') === histFilter.eventType);
-        });
-        renderHistoricoTable();
-      });
-    });
-    grid.querySelectorAll('[data-hist-sort]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const col = btn.dataset.histSort;
-        if (histSort.col === col) histSort.dir = histSort.dir === 'asc' ? 'desc' : 'asc';
-        else {
-          histSort.col = col;
-          histSort.dir = col === 'date' ? 'desc' : 'asc';
-        }
-        updateHistSortUI();
-        renderHistoricoTable();
-      });
-    });
+    bindXlfPanel(grid, 'hist-sort', histFilter, histSort, renderHistoricoTable);
   }
 
   function renderHistoricoTable() {
@@ -1685,6 +1944,7 @@
     if (!listEl) return;
 
     updateHistSortUI();
+    updateHistFilterUI();
     const filtered = getFilteredHistory();
 
     if (!filtered.length) {
@@ -1713,7 +1973,10 @@
     if (footEl) {
       const parts = [];
       if (histFilter.q.trim()) parts.push('busca');
-      if (histFilter.eventType) parts.push(histEventFilterLabel(histFilter.eventType).toLowerCase());
+      Object.entries(histFilter).forEach(([key, map]) => {
+        if (key === 'q' || typeof map !== 'object') return;
+        if (xlfIsActive(map)) parts.push(key);
+      });
       const filterNote = parts.length ? ` · filtro: ${parts.join(', ')}` : '';
       const suffix = filtered.length < history.length ? ` (${history.length} no total)` : '';
       footEl.textContent = `Exibindo ${filtered.length} registro${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
@@ -1753,13 +2016,10 @@
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
           <input id="hist-search" type="search" class="terr-hist-input" placeholder="Buscar dirigente, território…" autocomplete="off"/>
         </div>
-        <div class="terr-hist-filters" role="group" aria-label="Filtrar por tipo">${renderHistEventFilters()}</div>
       </div>
       <div class="terr-hist-scroll">
         <div class="terr-hist-panel">
-          <div class="terr-hist-row terr-hist-row--head">
-            ${histSortButton('date', 'Data')}${histSortButton('day', 'Dia')}${histSortButton('dirigente', 'Dirigente')}${histSortButton('territorio', 'Território')}${histSortButton('obs', 'Observações')}
-          </div>
+          <div class="terr-hist-row terr-hist-row--head">${histHeaderRow()}</div>
           <div id="historico-table-body"></div>
           <p id="historico-foot" class="terr-hist-foot"></p>
         </div>
@@ -1792,10 +2052,104 @@
     }).join('');
   }
 
-  function renderDirigentes() {
-    const el = document.getElementById('dirigentes-list');
-    const activeOverseers = overseers.filter((o) => o.is_active !== false);
+  function overDaySortKey(overseer) {
+    const days = H().overseerDays(overseer);
+    if (days.length >= H().CRONOGRAMA_DAYS.length) return '0';
+    return days.map((d) => String(WEEKDAY_ORDER[d] || 99).padStart(2, '0')).join(',');
+  }
 
+  function overMatchesDayFilter(overseer) {
+    if (xlfAllSelected(overFilter.days)) return true;
+    const selected = xlfSelectedKeys(overFilter.days);
+    if (!selected.length) return false;
+    const days = H().overseerDays(overseer);
+    if (days.length >= H().CRONOGRAMA_DAYS.length) return selected.includes('__all__');
+    return days.some((d) => selected.includes(d));
+  }
+
+  function syncOverFilterOptions() {
+    xlfEnsureKeys(
+      overFilter.name,
+      [...new Set(overseers.map((o) => profileName(o.profiles)))].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }))
+    );
+    const dayKeys = new Set();
+    overseers.forEach((o) => {
+      const days = H().overseerDays(o);
+      if (days.length >= H().CRONOGRAMA_DAYS.length) dayKeys.add('__all__');
+      else days.forEach((d) => dayKeys.add(d));
+    });
+    const sortedDays = [...dayKeys].sort((a, b) => {
+      if (a === '__all__') return -1;
+      if (b === '__all__') return 1;
+      return (WEEKDAY_ORDER[a] || 99) - (WEEKDAY_ORDER[b] || 99);
+    });
+    xlfEnsureKeys(overFilter.days, sortedDays);
+  }
+
+  function getSortedOverseers(list) {
+    const { col, dir } = overSort;
+    const mul = dir === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (col) {
+        case 'name':
+          cmp = profileName(a.profiles).localeCompare(profileName(b.profiles), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'preference':
+          cmp = preferenceMeta(a.preference).label.localeCompare(preferenceMeta(b.preference).label, 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'days':
+          cmp = overDaySortKey(a).localeCompare(overDaySortKey(b));
+          break;
+        case 'status':
+          cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
+          break;
+        default:
+          cmp = profileName(a.profiles).localeCompare(profileName(b.profiles), 'pt-BR', { sensitivity: 'base' });
+      }
+      return cmp * mul;
+    });
+  }
+
+  function getFilteredOverseers() {
+    syncOverFilterOptions();
+    let list = overseers;
+    list = xlfApplyMapFilter(list, overFilter.name, (o) => profileName(o.profiles));
+    list = xlfApplyMapFilter(list, overFilter.preference, (o) => o.preference || 'meio_de_semana');
+    list = xlfApplyMapFilter(list, overFilter.status, (o) => (o.is_active !== false ? 'active' : 'inactive'));
+    if (xlfIsActive(overFilter.days)) list = list.filter((o) => overMatchesDayFilter(o));
+    return getSortedOverseers(list);
+  }
+
+  function overHeaderRow() {
+    syncOverFilterOptions();
+    const nameOpts = xlfOptionsFromKeys(Object.keys(overFilter.name));
+    const dayOpts = xlfOptionsFromKeys(Object.keys(overFilter.days), (k) => (k === '__all__' ? 'Todos os dias' : k));
+    return `
+      ${xlfColumnHeader('over-sort', overSort, overFilter, { col: 'name', label: 'Dirigente', filterKey: 'name', options: nameOpts, wrap: 'span' })}
+      ${xlfColumnHeader('over-sort', overSort, overFilter, { col: 'preference', label: 'Preferência', filterKey: 'preference', options: OVER_PREF_OPTIONS, wrap: 'span' })}
+      ${xlfColumnHeader('over-sort', overSort, overFilter, { col: 'days', label: 'Dias', filterKey: 'days', options: dayOpts, wrap: 'span' })}
+      ${xlfColumnHeader('over-sort', overSort, overFilter, { col: 'status', label: 'Status', filterKey: 'status', options: OVER_STATUS_OPTIONS, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+  }
+
+  function bindOverFilters() {
+    const list = document.getElementById('dirigentes-list');
+    if (!list) return;
+    const scroll = list.querySelector('.terr-over-scroll');
+    if (!scroll) return;
+    scroll.dataset.xlfScope = 'over';
+    delete scroll.dataset.xlfBound;
+    bindXlfPanel(scroll, 'over-sort', overFilter, overSort, renderDirigentesTable);
+  }
+
+  function renderDirigentesTable() {
+    const el = document.getElementById('dirigentes-list');
+    const body = document.getElementById('dirigentes-table-body');
+    const foot = document.getElementById('dirigentes-table-foot');
+    if (!el || !body) return;
+
+    const activeOverseers = overseers.filter((o) => o.is_active !== false);
     const countEl = document.getElementById('dirigentes-count');
     const statTotal = document.getElementById('dirigentes-stat-total');
     const statActive = document.getElementById('dirigentes-stat-active');
@@ -1804,6 +2158,65 @@
     if (statTotal) statTotal.textContent = String(overseers.length);
     if (statActive) statActive.textContent = String(activeOverseers.length);
 
+    xlfUpdateSortUI(el.querySelector('.terr-over-scroll'), 'over-sort', overSort);
+    xlfUpdateFilterUI(el.querySelector('.terr-over-scroll'), overFilter);
+    const filtered = getFilteredOverseers();
+
+    if (!filtered.length) {
+      body.innerHTML = `
+        <div class="terr-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${overseers.length ? 'Nenhum dirigente corresponde ao filtro.' : 'Nenhum dirigente cadastrado.'}</p>
+        </div>`;
+      if (foot) foot.textContent = '';
+      return;
+    }
+
+    body.innerHTML = filtered.map((o) => {
+      const pref = preferenceMeta(o.preference);
+      const isActive = o.is_active !== false;
+      const statusHtml = isActive
+        ? '<span class="terr-over-status terr-over-status--active">Ativo</span>'
+        : '<span class="terr-over-status terr-over-status--inactive">Inativo</span>';
+      return `
+      <div class="terr-over-row" title="${escapeHtml(profileName(o.profiles))}">
+        <span class="terr-over-name">
+          <span class="material-symbols-outlined" aria-hidden="true">person</span>
+          <span>${escapeHtml(profileName(o.profiles))}</span>
+        </span>
+        <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
+        <span class="terr-over-days" title="${escapeHtml(H().overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
+        <span class="terr-over-status-cell">${statusHtml}</span>
+        <div class="terr-over-actions">
+          <button type="button" data-edit-overseer="${o.profile_id}" class="terr-sched-icon-btn" title="Editar dias">
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
+          <button type="button" data-del-overseer="${o.profile_id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Remover">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    body.querySelectorAll('[data-edit-overseer]').forEach((btn) =>
+      btn.addEventListener('click', () =>
+        openOverseerEditModal(overseers.find((o) => o.profile_id === btn.dataset.editOverseer))
+      )
+    );
+    body.querySelectorAll('[data-del-overseer]').forEach((btn) =>
+      btn.addEventListener('click', () => removeOverseer(btn.dataset.delOverseer))
+    );
+
+    if (foot) {
+      const activeFilters = Object.entries(overFilter).filter(([, map]) => xlfIsActive(map)).length;
+      const filterNote = activeFilters ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}` : '';
+      const suffix = filtered.length < overseers.length ? ` (${overseers.length} no total)` : '';
+      foot.textContent = `Exibindo ${filtered.length} dirigente${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
+    }
+  }
+
+  function renderDirigentes() {
+    const el = document.getElementById('dirigentes-list');
     if (!overseers.length) {
       el.innerHTML = `
         <div class="terr-empty">
@@ -1817,45 +2230,14 @@
     el.innerHTML = `
       <div class="terr-over-scroll">
         <div class="terr-over-panel">
-          <div class="terr-over-row terr-over-row--head">
-            <span>Dirigente</span><span>Preferência</span><span>Dias</span><span>Status</span><span></span>
-          </div>
-          ${overseers.map((o) => {
-            const pref = preferenceMeta(o.preference);
-            const isActive = o.is_active !== false;
-            const statusHtml = isActive
-              ? '<span class="terr-over-status terr-over-status--active">Ativo</span>'
-              : '<span class="terr-over-status terr-over-status--inactive">Inativo</span>';
-            return `
-          <div class="terr-over-row" title="${escapeHtml(profileName(o.profiles))}">
-            <span class="terr-over-name">
-              <span class="material-symbols-outlined" aria-hidden="true">person</span>
-              <span>${escapeHtml(profileName(o.profiles))}</span>
-            </span>
-            <span class="terr-over-pref ${pref.className}">${escapeHtml(pref.label)}</span>
-            <span class="terr-over-days" title="${escapeHtml(H().overseerDays(o).join(', '))}">${renderOverseerDayPills(o)}</span>
-            <span class="terr-over-status-cell">${statusHtml}</span>
-            <div class="terr-over-actions">
-              <button type="button" data-edit-overseer="${o.profile_id}" class="terr-sched-icon-btn" title="Editar dias">
-                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-              </button>
-              <button type="button" data-del-overseer="${o.profile_id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Remover">
-                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-              </button>
-            </div>
-          </div>`;
-          }).join('')}
+          <div class="terr-over-row terr-over-row--head">${overHeaderRow()}</div>
+          <div id="dirigentes-table-body"></div>
+          <p id="dirigentes-table-foot" class="terr-hist-foot"></p>
         </div>
       </div>`;
 
-    el.querySelectorAll('[data-edit-overseer]').forEach((btn) =>
-      btn.addEventListener('click', () =>
-        openOverseerEditModal(overseers.find((o) => o.profile_id === btn.dataset.editOverseer))
-      )
-    );
-    el.querySelectorAll('[data-del-overseer]').forEach((btn) =>
-      btn.addEventListener('click', () => removeOverseer(btn.dataset.delOverseer))
-    );
+    bindOverFilters();
+    renderDirigentesTable();
   }
 
   function openTerrFormModal(t) {
