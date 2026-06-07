@@ -35,6 +35,8 @@
   let pubSort = { col: 'name', dir: 'asc' };
   let pubFilterSig = '';
   let inlineSlotDraft = null;
+  let inlineItemDraft = null;
+  let inlineLocDraft = null;
   let equipmentItems = [];
   let itemSearch = '';
   let itemFilter = {
@@ -322,7 +324,7 @@
   function refreshEquipmentView() {
     const list = document.getElementById('eq-item-list');
     if (!list) return;
-    if (!equipmentItems.length) {
+    if (!equipmentItems.length && !inlineItemDraft) {
       renderEquipment();
       return;
     }
@@ -371,18 +373,14 @@
       xlf.xlfUpdateFilterUI(list?.querySelector('.eq-item-scroll'), itemFilter);
     }
     const filtered = getFilteredItems();
+    const editingId = inlineItemDraft?.mode === 'edit' ? inlineItemDraft.id : '';
+    const displayRows = editingId ? filtered.filter((row) => row.id !== editingId) : filtered;
 
-    if (!filtered.length) {
-      body.innerHTML = `
-        <div class="eq-pub-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${equipmentItems.length ? 'Nenhum equipamento corresponde ao filtro.' : 'Nenhum equipamento cadastrado.'}</p>
-        </div>`;
-      if (foot) foot.textContent = '';
-      return;
-    }
+    let bodyHtml = '';
+    if (inlineItemDraft) bodyHtml += renderInlineItemEditor(inlineItemDraft);
 
-    body.innerHTML = filtered.map((row) => {
+    if (displayRows.length) {
+      bodyHtml += displayRows.map((row) => {
       const isActive = row.is_active !== false;
       const inactiveClass = isActive ? '' : ' eq-item-row--inactive';
       const statusHtml = isActive
@@ -408,9 +406,19 @@
             </button>
           </span>
         </div>`;
-    }).join('');
+      }).join('');
+    } else if (!inlineItemDraft) {
+      bodyHtml = `
+        <div class="eq-pub-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${equipmentItems.length ? 'Nenhum equipamento corresponde ao filtro.' : 'Nenhum equipamento cadastrado.'}</p>
+        </div>`;
+    }
+
+    body.innerHTML = bodyHtml;
 
     if (foot) {
+      const shown = displayRows.length + (inlineItemDraft ? 1 : 0);
       const activeFilters = xlf
         ? Object.entries(itemFilter).filter(([, map]) => xlf.xlfIsActive(map)).length
         : 0;
@@ -418,7 +426,13 @@
         ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}`
         : '';
       const suffix = filtered.length < equipmentItems.length ? ` (${equipmentItems.length} no total)` : '';
-      foot.textContent = `Exibindo ${filtered.length} equipamento${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
+      foot.textContent = shown
+        ? `Exibindo ${shown} equipamento${shown === 1 ? '' : 's'}${suffix}${filterNote}`
+        : '';
+    }
+
+    if (inlineItemDraft) {
+      document.getElementById('eq-inline-item-name')?.focus();
     }
   }
 
@@ -426,7 +440,7 @@
     const list = document.getElementById('eq-item-list');
     if (!list) return;
 
-    if (!equipmentItems.length) {
+    if (!equipmentItems.length && !inlineItemDraft) {
       updateItemStats();
       list.innerHTML = `
         <div class="eq-pub-empty">
@@ -532,6 +546,106 @@
     await loadEquipment();
   }
 
+  function defaultItemDraft(item) {
+    return {
+      id: item?.id || '',
+      name: item?.name || '',
+      equipment_type: item?.equipment_type || 'carrinho',
+      default_location: item?.default_location || '',
+      sort_order: item?.sort_order ?? 0,
+      notes: item?.notes || ''
+    };
+  }
+
+  function startNewItemInline() {
+    inlineItemDraft = { mode: 'new', ...defaultItemDraft(null) };
+    renderEquipment();
+  }
+
+  function startEditItemInline(item) {
+    if (!item) return;
+    inlineItemDraft = { mode: 'edit', ...defaultItemDraft(item) };
+    if (document.getElementById('eq-item-table-body')) renderEquipmentTable();
+    else renderEquipment();
+  }
+
+  function cancelInlineItem() {
+    inlineItemDraft = null;
+    if (equipmentItems.length || document.getElementById('eq-item-table-body')) renderEquipmentTable();
+    else renderEquipment();
+  }
+
+  function renderInlineItemEditor(draft) {
+    const locOpts = inlineLocationSelectOptions(draft.default_location);
+    return `
+      <div class="eq-item-row eq-item-row--edit" id="eq-inline-item-form">
+        <span><input id="eq-inline-item-name" type="text" class="eq-sched-inline-input" value="${escapeHtml(draft.name)}" placeholder="Nome…" autocomplete="off"/></span>
+        <span>
+          <select id="eq-inline-item-type" class="eq-sched-inline-input" title="Tipo">
+            <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
+            <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
+          </select>
+        </span>
+        <span><select id="eq-inline-item-location" class="eq-sched-inline-input" title="Local padrão">${locOpts}</select></span>
+        <span><input id="eq-inline-item-sort" type="number" class="eq-sched-inline-input eq-sched-inline-input--sort" value="${escapeHtml(String(draft.sort_order ?? 0))}" title="Ordem"/></span>
+        <span class="eq-inline-status-hint">${draft.mode === 'new' ? 'Novo' : '—'}</span>
+        <span class="eq-row-actions eq-row-actions--icons">
+          ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-item-delete title="Excluir"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
+          <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-item-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+          <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-item-save title="Salvar"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+        </span>
+        <input type="hidden" id="eq-inline-item-notes" value="${escapeHtml(draft.notes || '')}"/>
+      </div>`;
+  }
+
+  function readInlineItemPayload() {
+    return {
+      id: inlineItemDraft?.id || '',
+      name: document.getElementById('eq-inline-item-name')?.value.trim() || '',
+      equipment_type: document.getElementById('eq-inline-item-type')?.value || 'carrinho',
+      default_location: document.getElementById('eq-inline-item-location')?.value.trim() || '',
+      sort_order: parseInt(document.getElementById('eq-inline-item-sort')?.value, 10) || 0,
+      notes: document.getElementById('eq-inline-item-notes')?.value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  async function saveInlineItem() {
+    if (!inlineItemDraft) return;
+    const payload = readInlineItemPayload();
+    if (!payload.name) {
+      showToast(toast, 'Informe o nome do equipamento.', true);
+      return;
+    }
+    const { id, ...data } = payload;
+    const { error } = id
+      ? await client.from('equipment_items').update(data).eq('id', id)
+      : await client.from('equipment_items').insert({ ...data, is_active: true });
+
+    if (error) {
+      showToast(toast, error.message.includes('equipment_items_name_type_unique')
+        ? 'Já existe um equipamento com este nome e tipo.'
+        : error.message, true);
+      return;
+    }
+
+    showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
+    inlineItemDraft = null;
+    await loadEquipment();
+  }
+
+  async function deleteInlineItem() {
+    const id = inlineItemDraft?.id;
+    if (!id || !confirm('Excluir este equipamento?')) return;
+    const { error } = await client.from('equipment_items').delete().eq('id', id);
+    if (error) showToast(toast, error.message, true);
+    else {
+      showToast(toast, 'Equipamento excluído.');
+      inlineItemDraft = null;
+      await loadEquipment();
+    }
+  }
+
   async function loadLocations() {
     const { data, error } = await client
       .from('equipment_locations')
@@ -617,7 +731,7 @@
   function refreshLocationsView() {
     const list = document.getElementById('eq-loc-list');
     if (!list) return;
-    if (!locations.length) {
+    if (!locations.length && !inlineLocDraft) {
       renderLocations();
       return;
     }
@@ -662,18 +776,14 @@
       xlf.xlfUpdateFilterUI(list?.querySelector('.eq-loc-scroll'), locFilter);
     }
     const filtered = getFilteredLocations();
+    const editingId = inlineLocDraft?.mode === 'edit' ? inlineLocDraft.id : '';
+    const displayRows = editingId ? filtered.filter((row) => row.id !== editingId) : filtered;
 
-    if (!filtered.length) {
-      body.innerHTML = `
-        <div class="eq-pub-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
-        </div>`;
-      if (foot) foot.textContent = '';
-      return;
-    }
+    let bodyHtml = '';
+    if (inlineLocDraft) bodyHtml += renderInlineLocEditor(inlineLocDraft);
 
-    body.innerHTML = filtered.map((row) => {
+    if (displayRows.length) {
+      bodyHtml += displayRows.map((row) => {
       const isActive = row.is_active !== false;
       const inactiveClass = isActive ? '' : ' eq-loc-row--inactive';
       const statusHtml = isActive
@@ -701,9 +811,19 @@
             </button>
           </span>
         </div>`;
-    }).join('');
+      }).join('');
+    } else if (!inlineLocDraft) {
+      bodyHtml = `
+        <div class="eq-pub-empty !border-0 !rounded-none">
+          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+          <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
+        </div>`;
+    }
+
+    body.innerHTML = bodyHtml;
 
     if (foot) {
+      const shown = displayRows.length + (inlineLocDraft ? 1 : 0);
       const activeFilters = xlf
         ? Object.entries(locFilter).filter(([, map]) => xlf.xlfIsActive(map)).length
         : 0;
@@ -711,7 +831,13 @@
         ? ` · ${activeFilters} filtro${activeFilters === 1 ? '' : 's'} ativo${activeFilters === 1 ? '' : 's'}`
         : '';
       const suffix = filtered.length < locations.length ? ` (${locations.length} no total)` : '';
-      foot.textContent = `Exibindo ${filtered.length} local${filtered.length === 1 ? '' : 'is'}${suffix}${filterNote}`;
+      foot.textContent = shown
+        ? `Exibindo ${shown} local${shown === 1 ? '' : 'is'}${suffix}${filterNote}`
+        : '';
+    }
+
+    if (inlineLocDraft) {
+      document.getElementById('eq-inline-loc-name')?.focus();
     }
   }
 
@@ -719,7 +845,7 @@
     const list = document.getElementById('eq-loc-list');
     if (!list) return;
 
-    if (!locations.length) {
+    if (!locations.length && !inlineLocDraft) {
       updateLocStats();
       list.innerHTML = `
         <div class="eq-pub-empty">
@@ -816,6 +942,97 @@
     showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
     closeLocModal();
     await loadLocations();
+  }
+
+  function defaultLocDraft(row) {
+    return {
+      id: row?.id || '',
+      name: row?.name || '',
+      sort_order: row?.sort_order ?? 0,
+      notes: row?.notes || ''
+    };
+  }
+
+  function startNewLocInline() {
+    inlineLocDraft = { mode: 'new', ...defaultLocDraft(null) };
+    renderLocations();
+  }
+
+  function startEditLocInline(row) {
+    if (!row) return;
+    inlineLocDraft = { mode: 'edit', ...defaultLocDraft(row) };
+    if (document.getElementById('eq-loc-table-body')) renderLocationsTable();
+    else renderLocations();
+  }
+
+  function cancelInlineLoc() {
+    inlineLocDraft = null;
+    if (locations.length || document.getElementById('eq-loc-table-body')) renderLocationsTable();
+    else renderLocations();
+  }
+
+  function renderInlineLocEditor(draft) {
+    return `
+      <div class="eq-loc-row eq-loc-row--edit" id="eq-inline-loc-form">
+        <span class="eq-loc-name">
+          <span class="material-symbols-outlined eq-loc-pin" aria-hidden="true">location_on</span>
+          <input id="eq-inline-loc-name" type="text" class="eq-sched-inline-input" value="${escapeHtml(draft.name)}" placeholder="Nome do local…" autocomplete="off"/>
+        </span>
+        <span><input id="eq-inline-loc-sort" type="number" class="eq-sched-inline-input eq-sched-inline-input--sort" value="${escapeHtml(String(draft.sort_order ?? 0))}" title="Ordem"/></span>
+        <span class="eq-inline-status-hint">${draft.mode === 'new' ? 'Novo' : '—'}</span>
+        <span class="eq-row-actions eq-row-actions--icons">
+          ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-loc-delete title="Excluir"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
+          <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-loc-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+          <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-loc-save title="Salvar"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+        </span>
+        <input type="hidden" id="eq-inline-loc-notes" value="${escapeHtml(draft.notes || '')}"/>
+      </div>`;
+  }
+
+  function readInlineLocPayload() {
+    return {
+      id: inlineLocDraft?.id || '',
+      name: document.getElementById('eq-inline-loc-name')?.value.trim() || '',
+      sort_order: parseInt(document.getElementById('eq-inline-loc-sort')?.value, 10) || 0,
+      notes: document.getElementById('eq-inline-loc-notes')?.value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  async function saveInlineLoc() {
+    if (!inlineLocDraft) return;
+    const payload = readInlineLocPayload();
+    if (!payload.name) {
+      showToast(toast, 'Informe o nome do local.', true);
+      return;
+    }
+    const { id, ...data } = payload;
+    const { error } = id
+      ? await client.from('equipment_locations').update(data).eq('id', id)
+      : await client.from('equipment_locations').insert({ ...data, is_active: true });
+
+    if (error) {
+      showToast(toast, error.message.includes('equipment_locations_name_unique')
+        ? 'Já existe um local com este nome.'
+        : error.message, true);
+      return;
+    }
+
+    showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
+    inlineLocDraft = null;
+    await loadLocations();
+  }
+
+  async function deleteInlineLoc() {
+    const id = inlineLocDraft?.id;
+    if (!id || !confirm('Excluir este local?')) return;
+    const { error } = await client.from('equipment_locations').delete().eq('id', id);
+    if (error) showToast(toast, error.message, true);
+    else {
+      showToast(toast, 'Local excluído.');
+      inlineLocDraft = null;
+      await loadLocations();
+    }
   }
 
   function publisherName(row) {
@@ -1530,8 +1747,6 @@
     setupTabs();
     fillSelectOptions();
     ensurePublisherModalPortal();
-    ensureItemModalPortal();
-    ensureLocModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = helpers.snapToWeekStart(e.target.value);
@@ -1542,8 +1757,8 @@
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal());
-    document.getElementById('eq-btn-add-item')?.addEventListener('click', () => openItemModal(null));
-    document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => openLocModal(null));
+    document.getElementById('eq-btn-add-item')?.addEventListener('click', () => startNewItemInline());
+    document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => startNewLocInline());
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
 
     document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
@@ -1636,29 +1851,43 @@
       renderEquipmentTable();
     });
 
-    document.getElementById('eq-item-modal-close')?.addEventListener('click', closeItemModal);
-    document.getElementById('eq-item-cancel')?.addEventListener('click', closeItemModal);
-    document.getElementById('eq-item-modal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'eq-item-modal') closeItemModal();
+    document.getElementById('eq-item-list')?.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-eq-inline-item-save]')) {
+        await saveInlineItem();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-item-cancel]')) {
+        cancelInlineItem();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-item-delete]')) {
+        await deleteInlineItem();
+      }
     });
-    document.getElementById('eq-form-item')?.addEventListener('submit', saveItem);
 
     document.getElementById('eq-loc-search')?.addEventListener('input', (e) => {
       locSearch = e.target.value;
       renderLocationsTable();
     });
 
-    document.getElementById('eq-loc-modal-close')?.addEventListener('click', closeLocModal);
-    document.getElementById('eq-loc-cancel')?.addEventListener('click', closeLocModal);
-    document.getElementById('eq-loc-modal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'eq-loc-modal') closeLocModal();
+    document.getElementById('eq-loc-list')?.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-eq-inline-loc-save]')) {
+        await saveInlineLoc();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-loc-cancel]')) {
+        cancelInlineLoc();
+        return;
+      }
+      if (e.target.closest('[data-eq-inline-loc-delete]')) {
+        await deleteInlineLoc();
+      }
     });
-    document.getElementById('eq-form-loc')?.addEventListener('submit', saveLoc);
 
     document.getElementById('eq-panel-locais')?.addEventListener('click', async (e) => {
       const editBtn = e.target.closest('[data-eq-edit-loc]');
       if (editBtn) {
-        openLocModal(locations.find((l) => l.id === editBtn.dataset.eqEditLoc));
+        startEditLocInline(locations.find((l) => l.id === editBtn.dataset.eqEditLoc));
         return;
       }
       const toggleBtn = e.target.closest('[data-eq-toggle-loc]');
@@ -1679,7 +1908,7 @@
     document.getElementById('eq-panel-equipamentos')?.addEventListener('click', async (e) => {
       const editBtn = e.target.closest('[data-eq-edit-item]');
       if (editBtn) {
-        openItemModal(equipmentItems.find((i) => i.id === editBtn.dataset.eqEditItem));
+        startEditItemInline(equipmentItems.find((i) => i.id === editBtn.dataset.eqEditItem));
         return;
       }
       const toggleBtn = e.target.closest('[data-eq-toggle-item]');
