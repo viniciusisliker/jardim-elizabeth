@@ -95,74 +95,162 @@
     .je-home-hero-inner {
       position: relative;
       z-index: 1;
-      padding: 0 0 0.875rem;
-    }
-    .je-home-hero-grid {
-      display: grid;
-      gap: 0.75rem;
-      align-items: center;
-    }
-    @media (min-width: 768px) {
-      .je-home-hero-inner { padding: 0 0 1.5rem; }
-      .je-home-hero-grid { gap: 1.25rem; }
+      padding: 0;
     }
     @media (min-width: 1024px) {
       .je-home-hero-inner { padding: 1.75rem 0 2rem; }
+    }
+    .je-home-hero-grid {
+      display: grid;
+      gap: 0;
+      align-items: stretch;
+    }
+    @media (min-width: 1024px) {
       .je-home-hero-grid {
         grid-template-columns: minmax(0, 0.68fr) minmax(0, 1.32fr);
         gap: 1.75rem;
         align-items: stretch;
       }
     }
-    .je-home-hero h1 {
-      font-size: clamp(1.375rem, 5vw, 2.5rem);
-      font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -0.03em;
+    .je-home-hero-copy {
+      min-width: 0;
+    }
+    @media (max-width: 1023px) {
+      .je-home-hero-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(clamp(15rem, 44vh, 20rem), auto);
+      }
+      .je-home-hero-visual {
+        grid-area: 1 / 1;
+      }
+      .je-home-hero-copy {
+        grid-area: 1 / 1;
+        align-self: end;
+        z-index: 2;
+        padding: 3.5rem 1rem 1rem;
+        background: linear-gradient(
+          to top,
+          rgba(7, 31, 61, 0.98) 0%,
+          rgba(7, 31, 61, 0.82) 38%,
+          rgba(7, 31, 61, 0.2) 72%,
+          transparent 100%
+        );
+      }
+    }
+    @media (min-width: 1024px) {
+      .je-home-hero-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.5rem 0;
+      }
+    }
+    .je-home-hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
       margin: 0 0 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(200, 169, 110, 0.95);
+    }
+    .je-home-hero-eyebrow .material-symbols-outlined {
+      font-size: 0.9375rem;
+    }
+    @media (min-width: 1024px) {
+      .je-home-hero-eyebrow { margin-bottom: 0.75rem; }
+    }
+    .je-home-hero h1 {
+      font-size: clamp(1.5rem, 6vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.375rem;
+      text-wrap: balance;
+    }
+    @media (min-width: 1024px) {
+      .je-home-hero h1 { margin-bottom: 0.625rem; }
     }
     .je-home-hero-lead {
       font-size: 0.9375rem;
       font-weight: 500;
-      line-height: 1.45;
+      line-height: 1.4;
       letter-spacing: 0.01em;
-      color: rgba(255, 255, 255, 0.78);
-      max-width: 20rem;
-      margin: 0 0 0.625rem;
+      color: rgba(255, 255, 255, 0.82);
+      max-width: 22rem;
+      margin: 0;
+      text-wrap: balance;
     }
     @media (min-width: 768px) {
-      .je-home-hero-lead {
-        font-size: 1rem;
-        margin-bottom: 1rem;
-      }
+      .je-home-hero-lead { font-size: 1rem; }
     }
     @media (min-width: 1024px) {
       .je-home-hero-lead {
         font-size: 1.0625rem;
-        display: block;
-        -webkit-line-clamp: unset;
-        overflow: visible;
+        max-width: 28rem;
       }
+    }
+    .je-home-hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4375rem;
+      margin-top: 0.875rem;
+    }
+    @media (min-width: 1024px) {
+      .je-home-hero-chips { display: none; }
+    }
+    .je-home-hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.4375rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.94);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .je-home-hero-chip:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(200, 169, 110, 0.55);
+      transform: translateY(-1px);
+    }
+    .je-home-hero-chip .material-symbols-outlined {
+      font-size: 0.875rem;
+      opacity: 0.9;
     }
     .je-home-hero-visual {
       position: relative;
-      order: -1;
       overflow: hidden;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      width: calc(100% + 2rem);
-      max-width: none;
-      margin-left: -1rem;
-      margin-right: -1rem;
-      border-radius: 0;
     }
-    @media (min-width: 768px) {
+    @media (max-width: 1023px) {
+      .je-home-hero-visual {
+        width: calc(100% + 2rem);
+        max-width: none;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+        min-height: clamp(15rem, 44vh, 20rem);
+      }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
       .je-home-hero-visual {
         width: 100%;
         margin: 0;
         border-radius: 1rem;
-        min-height: clamp(280px, 42vh, 440px);
-        max-height: min(48vh, 480px);
       }
     }
     @media (min-width: 1024px) {
@@ -170,44 +258,36 @@
         order: 1;
         border-radius: 1.125rem;
         min-height: clamp(380px, 52vh, 520px);
-        max-height: none;
         height: 100%;
       }
     }
     .je-home-hero-visual img {
       width: 100%;
-      height: auto;
+      height: 100%;
       display: block;
+      object-fit: cover;
     }
-    @media (min-width: 768px) {
+    @media (max-width: 1023px) {
       .je-home-hero-visual img {
-        height: 100%;
-        object-fit: cover;
+        position: absolute;
+        inset: 0;
       }
     }
     .je-home-hero-visual::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(7, 31, 61, 0.45) 0%, transparent 45%);
+      background: linear-gradient(to top, rgba(7, 31, 61, 0.35) 0%, transparent 55%);
       pointer-events: none;
     }
-    .je-home-hero-caption {
-      position: absolute;
-      left: 1rem;
-      right: 1rem;
-      bottom: 1rem;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.92);
+    @media (max-width: 1023px) {
+      .je-home-hero-visual::after {
+        background: linear-gradient(to top, rgba(7, 31, 61, 0.55) 0%, transparent 60%);
+      }
     }
 
     .je-home-section {
-      padding: 1.25rem 0;
+      padding: 0.875rem 0 1.25rem;
     }
     @media (min-width: 768px) {
       .je-home-section { padding: 1.5rem 0; }
@@ -536,6 +616,8 @@
     }
     @media (max-width: 767px) {
       .je-home-section-kicker { display: none; }
+      .je-home-section-block:first-of-type .je-home-section-head { display: none; }
+      .je-home-section-block:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
       .je-home-ev-cat { font-size: 0.6875rem !important; padding: 2px 7px !important; }
       .je-home-news-item:nth-child(n+4) { display: none; }
     }
@@ -552,16 +634,30 @@
       <div class="je-home-hero-grid">
         <div class="je-home-hero-visual je-home-fade-2">
           <img src="img/cong.jpg" alt="Salão do Reino da Congregação Jardim Elizabeth" width="800" height="600" decoding="async" fetchpriority="high">
-          <div class="je-home-hero-caption">
-            <span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">meeting_room</span>
-            Salão do Reino
-          </div>
         </div>
         <div class="je-home-hero-copy">
+          <p class="je-home-hero-eyebrow">
+            <span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>
+            Salão do Reino
+          </p>
           <h1>Congregação Jardim Elizabeth</h1>
           <p class="je-home-hero-lead">
-            Agenda, anúncios e territórios — tudo por perto.
+            O essencial da congregação, reunido aqui.
           </p>
+          <nav class="je-home-hero-chips" aria-label="Atalhos principais">
+            <a class="je-home-hero-chip" href="agenda.html">
+              <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+              Agenda
+            </a>
+            <a class="je-home-hero-chip" href="quadrodeanuncios.html">
+              <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
+              Anúncios
+            </a>
+            <a class="je-home-hero-chip" href="territorios.html">
+              <span class="material-symbols-outlined" aria-hidden="true">map</span>
+              Territórios
+            </a>
+          </nav>
         </div>
       </div>
     </div>
