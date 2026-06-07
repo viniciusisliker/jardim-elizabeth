@@ -288,9 +288,24 @@
       padding:0.15rem 0.4375rem;border-radius:9999px;background:#f1f5f9;color:#475569;
     }
     @media(max-width:1023px){
+      body.hub-page{
+        padding-left:0;
+        padding-right:0;
+      }
+      body.hub-page > main.flex-1{
+        padding-left:0 !important;
+        padding-right:0 !important;
+        padding-top:0 !important;
+      }
       .hub-hero{padding-top:2.5rem;padding-bottom:3.5rem}
-      .hub-hero .max-w-7xl{padding-left:1rem;padding-right:1rem}
-      .hub-main{padding-left:1rem;padding-right:1rem}
+      .hub-hero .max-w-7xl{
+        padding-left:max(1rem, env(safe-area-inset-left));
+        padding-right:max(1rem, env(safe-area-inset-right));
+      }
+      .hub-main{
+        padding-left:max(1rem, env(safe-area-inset-left)) !important;
+        padding-right:max(1rem, env(safe-area-inset-right)) !important;
+      }
       .hub-user-chip{width:100%;min-width:0}
       .hub-hero-crumb{flex-wrap:wrap;row-gap:0.25rem}
       #hub-hero-crumb-section{max-width:min(100%,14rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -367,7 +382,7 @@
   </style>
 </head>
 
-<body class="bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
+<body class="hub-page bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
 
   <div id="header"></div>
 

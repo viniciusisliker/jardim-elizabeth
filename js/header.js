@@ -131,36 +131,53 @@
     else hubBtn.setAttribute('tabindex', '-1');
   }
 
-  function updateHubAccess(profile) {
-    const canHub = !!(
-      profile
-      && window.JEAuth?.canAccessHub(profile)
-      && window.JEAuth?.hasLocalSession?.()
-    );
+  function buildMobilePromoLink({ id, href, icon, tag, label }) {
+    const link = document.createElement('a');
+    link.id = id;
+    link.href = siteUrl(href);
+    link.className = 'je-mobile-nav-item je-mobile-nav-item--promo nav-link';
+    link.innerHTML = `
+      <span class="je-mobile-nav-icon je-mobile-nav-icon--promo" aria-hidden="true">
+        <span class="material-symbols-outlined">${icon}</span>
+      </span>
+      <span class="je-mobile-nav-label">
+        <span class="je-mobile-nav-promo-tag">${tag}</span>
+        ${label}
+      </span>
+      <span class="material-symbols-outlined je-mobile-nav-chevron" aria-hidden="true">arrow_forward</span>
+    `;
+    return link;
+  }
+
+  function updateMobilePromoLinks(profile) {
+    const loggedIn = !!(profile && window.JEAuth?.hasLocalSession?.());
+    const canHub = loggedIn && window.JEAuth?.canAccessHub(profile);
 
     setHubNavVisible(canHub);
 
-    const hubSlot = qs('mobile-menu-hub-slot');
-    let mobileHub = qs('mobile-hub-link');
+    const slot = qs('mobile-menu-promo-slot');
+    if (!slot) return;
 
-    if (canHub && hubSlot && !mobileHub) {
-      mobileHub = document.createElement('a');
-      mobileHub.id = 'mobile-hub-link';
-      mobileHub.href = siteUrl('hub.html');
-      mobileHub.className = 'je-mobile-nav-item je-mobile-nav-item--hub nav-link';
-      mobileHub.innerHTML = `
-        <span class="je-mobile-nav-icon je-mobile-nav-icon--hub" aria-hidden="true">
-          <span class="material-symbols-outlined">dashboard</span>
-        </span>
-        <span class="je-mobile-nav-label">
-          <span class="je-mobile-nav-hub-tag">Administrativo</span>
-          Hub Administrativo
-        </span>
-        <span class="material-symbols-outlined je-mobile-nav-chevron" aria-hidden="true">arrow_forward</span>
-      `;
-      hubSlot.appendChild(mobileHub);
-    } else if (!canHub && mobileHub) {
-      mobileHub.remove();
+    slot.replaceChildren();
+
+    if (loggedIn) {
+      slot.appendChild(buildMobilePromoLink({
+        id: 'mobile-profile-link',
+        href: 'hub.html#perfil',
+        icon: 'account_circle',
+        tag: 'Minha conta',
+        label: 'Meu Perfil'
+      }));
+    }
+
+    if (canHub) {
+      slot.appendChild(buildMobilePromoLink({
+        id: 'mobile-hub-link',
+        href: 'hub.html',
+        icon: 'dashboard',
+        tag: 'Administrativo',
+        label: 'Hub Administrativo'
+      }));
     }
   }
 
@@ -168,13 +185,13 @@
     const content = qs('profile-dropdown-content');
     if (!content) return;
 
-    updateHubAccess(null);
+    updateMobilePromoLinks(null);
 
     content.innerHTML = `
       <div class="text-center py-2">
         <span class="material-symbols-outlined text-secondary mb-2" style="font-size:40px">account_circle</span>
         <p class="text-sm text-on-surface-variant mb-4">Entre com seu usuário e senha de responsável.</p>
-        <button id="open-login-btn" type="button" class="w-full bg-primary text-white font-semibold rounded-lg py-2 text-sm hover:bg-primary-container transition-colors">
+        <button id="open-login-btn" type="button" class="w-full flex items-center justify-center bg-primary text-white font-semibold rounded-lg py-2 text-sm hover:bg-primary-container transition-colors">
           Entrar
         </button>
       </div>
@@ -190,7 +207,7 @@
     const content = qs('profile-dropdown-content');
     if (!content || !profile) return;
 
-    updateHubAccess(profile);
+    updateMobilePromoLinks(profile);
 
     const roleLabel = window.JEAuth.getRoleLabel(profile);
     const roleClass = window.JEAuth.getRoleLabelClasses(profile);
@@ -302,8 +319,8 @@
     qs('mobile-menu-btn')?.addEventListener('click', () => toggleMobileMenu());
     qs('mobile-menu-close')?.addEventListener('click', () => closeMobileMenu());
     qs('mobile-menu-backdrop')?.addEventListener('click', () => closeMobileMenu());
-    qs('mobile-menu')?.querySelectorAll('.je-mobile-nav-item').forEach((link) => {
-      link.addEventListener('click', () => closeMobileMenu());
+    qs('mobile-menu')?.addEventListener('click', (e) => {
+      if (e.target.closest('.je-mobile-nav-item')) closeMobileMenu();
     });
 
     qs('login-modal-close')?.addEventListener('click', hideLoginModal);

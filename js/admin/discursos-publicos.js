@@ -98,9 +98,18 @@
 
   function entryTitle(entry) {
     if (entry.entry_type === 'note') return trim(entry.note_text).slice(0, 36) || 'Nota informativa';
-    if (entry.entry_type === 'convention') return trim(entry.theme) || 'Congresso';
-    if (entry.entry_type === 'special_visit') return trim(entry.speaker_name) || 'Visita SC';
-    return trim(entry.speaker_name) || 'Discurso';
+    if (entry.entry_type === 'convention') {
+      return trim(entry.theme) || (entry.event_date ? formatDisplayDate(entry.event_date) : 'Congresso');
+    }
+    if (entry.entry_type === 'special_visit') {
+      return trim(entry.speaker_name) || (entry.event_date ? formatDisplayDate(entry.event_date) : 'Visita SC');
+    }
+    const speaker = trim(entry.speaker_name);
+    if (speaker) return speaker;
+    const theme = trim(entry.theme);
+    if (theme) return theme;
+    if (entry.event_date) return formatDisplayDate(entry.event_date);
+    return 'Sem orador';
   }
 
   function entryMeta(entry) {
@@ -271,12 +280,17 @@
         ${fieldHtml('Orador', 'speaker_name', entry, 'placeholder="Nome do orador"')}
         ${fieldHtml('Esboço', 'outline_number', entry, 'inputmode="numeric" placeholder="26"')}
         ${fieldHtml('Tema', 'theme', entry, 'placeholder="Título do discurso"')}
-        <div class="dp-field span-2">
-          <label>Características</label>
-          <input data-field="characteristics" value="${escapeHtml(entry.characteristics || '')}" list="dp-characteristics-list" placeholder="Categoria do esboço"/>
-          ${charPillsHtml(entry)}
-        </div>
-        ${fieldHtml('Observação', 'observation', entry, 'placeholder="Congregação, telefone, etc."')}
+        <details class="dp-more-fields">
+          <summary>Mais campos</summary>
+          <div class="dp-more-fields-body">
+            <div class="dp-field span-2">
+              <label>Características</label>
+              <input data-field="characteristics" value="${escapeHtml(entry.characteristics || '')}" list="dp-characteristics-list" placeholder="Categoria do esboço"/>
+              ${charPillsHtml(entry)}
+            </div>
+            ${fieldHtml('Observação', 'observation', entry, 'placeholder="Congregação, telefone, etc."')}
+          </div>
+        </details>
       `;
     }
 
@@ -292,19 +306,14 @@
         <div class="dp-doc-body">
           <div class="dp-fields">${fields}</div>
         </div>
-        <div class="dp-doc-footer">
-          <div class="flex gap-2">
-            <button type="button" class="dp-nav-arrow" data-prev-entry ${idx <= 0 ? 'disabled' : ''}>
-              <span class="material-symbols-outlined" style="font-size:16px">chevron_left</span>Anterior
-            </button>
-            <button type="button" class="dp-nav-arrow" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''}>
-              Próximo<span class="material-symbols-outlined" style="font-size:16px">chevron_right</span>
-            </button>
-          </div>
-          <button type="button" class="dp-mini-btn" data-remove-entry style="color:#C00000;border-color:rgba(192,0,0,.25)">
-            <span class="material-symbols-outlined" style="font-size:16px">delete</span>Remover
-          </button>
-        </div>
+        ${window.JEHubDocFooter.renderDocEntryFooter({
+          prevDisabled: idx <= 0,
+          nextDisabled: idx >= list.length - 1,
+          removeAttrs: 'data-remove-entry',
+          nextLabel: 'Próximo',
+          removeAria: 'Remover esta entrada',
+          wrapperClass: 'je-doc-footer qa-doc-footer dp-doc-footer'
+        })}
       </div>`;
   }
 
@@ -546,6 +555,13 @@
     showToast(toastEl, 'Arranjo salvo. Orador e tema aparecem no Quadro — Final de Semana.');
   }
 
+  function syncAddMenuLayout() {
+    const menu = $('dp-add-menu');
+    if (!menu) return;
+    if (window.matchMedia('(min-width: 1024px)').matches) menu.setAttribute('open', '');
+    else menu.removeAttribute('open');
+  }
+
   async function init() {
     if (window.__JEAdminDiscursosInit) return true;
     const profile = await guardPermission('public_speeches');
@@ -580,6 +596,9 @@
       if (e.key === 'ArrowLeft') selectEntry(activeTab, selection[activeTab] - 1);
       if (e.key === 'ArrowRight') selectEntry(activeTab, selection[activeTab] + 1);
     });
+
+    syncAddMenuLayout();
+    window.addEventListener('resize', syncAddMenuLayout, { passive: true });
 
     await loadBoard({ silent: true });
     return true;

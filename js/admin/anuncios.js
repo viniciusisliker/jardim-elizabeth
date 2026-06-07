@@ -176,7 +176,7 @@
     const row1 = ['portao', 'indicador', 'som'].map((k) => fieldCell(byKey(k), entry)).join('');
     const row2 = ['microf_volantes_1', 'microf_volantes_2', 'limpeza_grupo'].map((k) => fieldCell(byKey(k), entry)).join('');
     return `
-      <div class="qa-table-block">
+      <div class="qa-table-block qa-table-block--mecanicas">
         <div class="qa-table-head"><span>Portão</span><span>Indicador</span><span>Som</span></div>
         <div class="qa-table-row">${row1}</div>
         <div class="qa-table-head"><span>Microf. volante 1</span><span>Microf. volante 2</span><span>Limpeza (grupo)</span></div>
@@ -283,15 +283,12 @@
           <div class="qa-doc-body">
             ${fieldsHtmlGrouped(fields, entry, block)}
           </div>
-          <div class="qa-doc-footer">
-            <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="qa-doc-nav-btn qa-doc-nav-prev">
-              <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span> Anterior
-            </button>
-            <button type="button" data-remove-entry="${entry.id}" class="qa-doc-nav-btn qa-doc-nav-remove">Remover esta data</button>
-            <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="qa-doc-nav-btn qa-doc-nav-next">
-              Próxima <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
-            </button>
-          </div>
+          ${window.JEHubDocFooter.renderDocEntryFooter({
+            prevDisabled: idx === 0,
+            nextDisabled: idx >= list.length - 1,
+            removeAttrs: `data-remove-entry="${entry.id}"`,
+            removeAria: 'Remover esta data'
+          })}
         </div>
       </div>`;
 
@@ -335,16 +332,15 @@
                 <option value=""></option>
                 ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
               </select></div>
-            <div class="qa-cell flex items-end justify-end pb-2">
-              <button type="button" data-remove-entry="${entry.id}" class="text-xs font-semibold text-error">Remover</button>
-            </div>
+            <div class="qa-cell" aria-hidden="true"></div>
           </div>
         </div>
-        <div class="flex justify-between text-xs font-semibold text-primary px-1">
-          <button type="button" data-prev-entry ${idx === 0 ? 'disabled' : ''} class="disabled:opacity-40">← Linha anterior</button>
-          <span class="text-on-surface-variant">Linha ${idx + 1} de ${list.length}</span>
-          <button type="button" data-next-entry ${idx >= list.length - 1 ? 'disabled' : ''} class="disabled:opacity-40">Próxima linha →</button>
-        </div>
+        ${window.JEHubDocFooter.renderDocEntryFooter({
+          prevDisabled: idx === 0,
+          nextDisabled: idx >= list.length - 1,
+          removeAttrs: `data-remove-entry="${entry.id}"`,
+          removeAria: 'Remover esta linha'
+        })}
       </div>`;
 
     bindEntryForm(container, 'limpeza_mensal', list, idx);

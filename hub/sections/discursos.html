@@ -24,29 +24,33 @@
     </section>
 
     <div id="dp-editor-shell" class="hidden">
-      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-outline-variant mb-4">
-        <nav class="flex flex-wrap gap-4 text-sm" aria-label="Direção">
-          <button type="button" data-tab="receive" class="tab-btn tab-active pb-2">Recebemos</button>
-          <button type="button" data-tab="send" class="tab-btn pb-2 text-on-surface-variant">Enviamos</button>
+      <div class="dp-editor-head">
+        <nav class="dp-tab-nav" aria-label="Direção">
+          <button type="button" data-tab="receive" class="tab-btn tab-active">Recebemos</button>
+          <button type="button" data-tab="send" class="tab-btn text-on-surface-variant">Enviamos</button>
         </nav>
+        <button type="button" id="dp-btn-save" class="dp-save-btn">
+          <span class="material-symbols-outlined" aria-hidden="true">save</span>
+          <span class="dp-save-btn-label">Salvar arranjo</span>
+        </button>
       </div>
 
       <div id="dp-stats" class="dp-stats" aria-live="polite"></div>
       <div id="dp-timeline" class="dp-timeline" role="tablist" aria-label="Linha do tempo do mês"></div>
 
-      <div class="dp-toolbar">
+      <details class="dp-add-menu" id="dp-add-menu">
+        <summary class="dp-add-menu-toggle">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Adicionar linha
+        </summary>
         <div class="dp-toolbar-actions">
-          <button type="button" id="dp-btn-regen-saturdays" class="dp-mini-btn"><span class="material-symbols-outlined" style="font-size:16px">refresh</span>Regenerar sábados</button>
+          <button type="button" id="dp-btn-regen-saturdays" class="dp-mini-btn"><span class="material-symbols-outlined" aria-hidden="true">refresh</span>Regenerar sábados</button>
           <button type="button" id="dp-btn-add-speech" class="dp-mini-btn">+ Discurso</button>
           <button type="button" id="dp-btn-add-convention" class="dp-mini-btn">+ Congresso</button>
           <button type="button" id="dp-btn-add-special" class="dp-mini-btn">+ Visita SC</button>
           <button type="button" id="dp-btn-add-note" class="dp-mini-btn">+ Nota</button>
         </div>
-        <button type="button" id="dp-btn-save" class="dp-save-btn">
-          <span class="material-symbols-outlined" style="font-size:18px">save</span>
-          Salvar arranjo
-        </button>
-      </div>
+      </details>
 
       <div class="dp-workspace">
         <nav id="dp-nav" class="dp-nav" aria-label="Entradas do mês"></nav>

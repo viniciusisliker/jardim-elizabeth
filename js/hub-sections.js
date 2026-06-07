@@ -32,15 +32,19 @@
       permission: 'announcements',
       viewId: 'hub-view-anuncios',
       partial: 'hub/sections/anuncios.html',
-      styles: ['css/hub-sections/anuncios.css?v=2026060931'],
+      styles: [
+        'css/hub-sections/doc-entry-footer.css?v=2026060977',
+        'css/hub-sections/anuncios.css?v=2026060977'
+      ],
       scripts: [
+        'js/hub-doc-footer.js?v=2026060977',
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
         'js/admin/weekend-discursos-sync.js?v=2026060527',
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
         'js/admin/anuncios-pdf.js?v=2026060526',
-        'js/admin/anuncios.js?v=2026060931'
+        'js/admin/anuncios.js?v=2026060977'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
@@ -57,9 +61,13 @@
       permission: 'public_speeches',
       viewId: 'hub-view-discursos',
       partial: 'hub/sections/discursos.html',
-      styles: ['css/hub-sections/discursos.css?v=2026060924'],
+      styles: [
+        'css/hub-sections/doc-entry-footer.css?v=2026060977',
+        'css/hub-sections/discursos.css?v=2026060980'
+      ],
       scripts: [
-        'js/admin/discursos-publicos.js?v=2026060924'
+        'js/hub-doc-footer.js?v=2026060977',
+        'js/admin/discursos-publicos.js?v=2026060980'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {

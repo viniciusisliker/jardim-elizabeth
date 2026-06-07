@@ -97,7 +97,7 @@
   </div>
 
   <div class="je-mobile-menu-body">
-    <div id="mobile-menu-hub-slot" class="je-mobile-menu-hub-slot"></div>
+    <div id="mobile-menu-promo-slot" class="je-mobile-menu-promo-slot"></div>
 
     <nav class="je-mobile-menu-nav" aria-label="Páginas do site">
       <p class="je-mobile-menu-group">Início</p>
@@ -182,6 +182,37 @@
           Enviar link
         </button>
       </form>
+      <details class="mt-4 rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+        <summary class="cursor-pointer px-3 py-2.5 text-xs font-semibold text-secondary hover:bg-surface-container-low select-none">
+          Como o e-mail chega?
+        </summary>
+        <div class="px-3 pb-3 space-y-2 border-t border-outline-variant/60">
+          <p class="text-[11px] text-on-surface-variant leading-relaxed pt-2">
+            O remetente é <strong>Supabase Auth</strong> e o assunto vem em inglês: <strong>Reset your password</strong>.
+            Abra o e-mail e toque no link <strong>Reset password</strong> — você será levado ao site para definir a nova senha.
+            Confira também a pasta de spam.
+          </p>
+          <figure class="rounded-lg border border-outline-variant overflow-hidden bg-white text-left">
+            <div class="px-3 py-2 border-b border-outline-variant/60 bg-[#f8f9fb] text-[10px] text-on-surface-variant space-y-0.5">
+              <p><span class="font-semibold">De:</span> Supabase Auth &lt;noreply@mail.app.supabase.io&gt;</p>
+              <p><span class="font-semibold">Assunto:</span> Reset your password</p>
+            </div>
+            <div class="px-4 py-4 text-[#1b1c1c]">
+              <p class="text-base font-bold mb-2">Reset your password</p>
+              <p class="text-xs text-on-surface-variant leading-relaxed mb-3">
+                We received a request to reset your password. Follow the link below to choose a new one.
+              </p>
+              <p class="text-xs font-semibold text-[#2563eb] underline mb-3">Reset password</p>
+              <p class="text-[10px] text-on-surface-variant leading-relaxed">
+                If you didn't request this, you can safely ignore this email.
+              </p>
+            </div>
+            <figcaption class="px-2 py-1.5 text-[10px] text-on-surface-variant text-center bg-surface-container-low">
+              Exemplo do e-mail enviado pelo sistema (texto em inglês)
+            </figcaption>
+          </figure>
+        </div>
+      </details>
       <button type="button" id="login-forgot-back" class="mt-4 w-full text-sm font-semibold text-secondary hover:underline">
         Voltar ao login
       </button>

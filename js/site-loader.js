@@ -635,8 +635,13 @@
       border-radius: 1.25rem 0 0 0;
       margin-top: 0.25rem;
     }
-    .je-mobile-menu-hub-slot:empty { display: none; }
-    .je-mobile-menu-hub-slot:not(:empty) { margin-bottom: 0.75rem; }
+    .je-mobile-menu-promo-slot {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .je-mobile-menu-promo-slot:empty { display: none; }
+    .je-mobile-menu-promo-slot:not(:empty) { margin-bottom: 0.75rem; }
     .je-mobile-menu-group {
       font-size: 0.625rem;
       font-weight: 800;
@@ -676,16 +681,20 @@
       background: #0f3462;
       color: #fff;
     }
+    .je-mobile-nav-item--promo,
     .je-mobile-nav-item--hub {
       background: linear-gradient(135deg, #0f3462 0%, #2b4b7a 100%);
       border-color: transparent;
       color: #fff;
     }
+    .je-mobile-nav-item--promo .je-mobile-nav-icon--promo,
     .je-mobile-nav-item--hub .je-mobile-nav-icon--hub {
       background: rgba(255, 255, 255, 0.15);
       color: #c8a96e;
     }
+    .je-mobile-nav-item--promo .je-mobile-nav-chevron,
     .je-mobile-nav-item--hub .je-mobile-nav-chevron { color: rgba(255, 255, 255, 0.7); }
+    .je-mobile-nav-item--promo .je-mobile-nav-promo-tag,
     .je-mobile-nav-item--hub .je-mobile-nav-hub-tag {
       display: block;
       font-size: 0.5625rem;
@@ -740,7 +749,7 @@
     /* Tablet + mobile only — desktop (>=1024px) unchanged */
     @media (max-width: 1023px) {
       html, body { overflow-x: clip; }
-      body {
+      body:not(.hub-page) {
         padding-left: env(safe-area-inset-left, 0);
         padding-right: env(safe-area-inset-right, 0);
       }
@@ -759,6 +768,9 @@
         min-height: 2.75rem;
         display: flex;
         align-items: center;
+      }
+      #profile-dropdown-content #open-login-btn {
+        justify-content: center;
       }
       .je-footer-info { padding-top: 2.5rem; padding-bottom: 2rem; }
       .je-footer-info > .je-footer-shell,
@@ -783,8 +795,8 @@
       .je-footer-map-btn:last-child { grid-column: 1 / -1; }
       .je-footer-email { min-height: 2.75rem; font-size: 0.8125rem; }
       .je-footer-schedule-item { min-height: 2.75rem; }
-      main[class*="max-w-"] { padding-left: 1rem !important; padding-right: 1rem !important; }
-      .je-page-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
+      main[class*="max-w-"]:not(.hub-main) { padding-left: 1rem !important; padding-right: 1rem !important; }
+      .je-page-shell:not(.hub-main) { padding-left: 1rem !important; padding-right: 1rem !important; }
     }
     @media (min-width: 768px) and (max-width: 1023px) {
       .je-footer-grid {
@@ -846,7 +858,7 @@
         padding-top: 2.5rem;
         padding-bottom: 2.5rem;
       }
-      body.min-h-screen.flex.flex-col > main.flex-1 {
+      body.min-h-screen.flex.flex-col:not(.hub-page) > main.flex-1 {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
         padding-top: 1.5rem !important;
