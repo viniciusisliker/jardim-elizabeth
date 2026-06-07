@@ -777,17 +777,18 @@
 
   function updateSlotPublisherSummary(prefix = 'eq-inline') {
     const summary = document.getElementById(`${prefix}-pub-summary`);
+    const btn = document.querySelector(`[data-eq-inline-pub-toggle]`);
     if (!summary) return;
     const names = getSelectedSlotPublisherNames(prefix);
     if (!names.length) {
-      summary.textContent = 'Nenhum publicador selecionado';
-      summary.classList.add('eq-slot-pub-picker__summary--empty');
+      summary.textContent = 'Selecionar…';
+      summary.removeAttribute('title');
+      btn?.classList.add('eq-sched-pub-btn--empty');
       return;
     }
-    summary.classList.remove('eq-slot-pub-picker__summary--empty');
-    summary.textContent = names.length === 1
-      ? `Selecionado: ${names[0]}`
-      : `${names.length} selecionados: ${names.join(', ')}`;
+    btn?.classList.remove('eq-sched-pub-btn--empty');
+    summary.title = names.join(', ');
+    summary.textContent = names.length === 1 ? names[0] : `${names.length} pub.`;
   }
 
   function renderSlotPublisherPicker(prefix = 'eq-inline') {
@@ -1182,71 +1183,64 @@
 
   function cancelInlineSlot() {
     inlineSlotDraft = null;
+    closeInlinePubPop();
     renderSchedule();
+  }
+
+  function closeInlinePubPop() {
+    document.getElementById('eq-inline-pub-pop')?.classList.add('hidden');
   }
 
   function renderInlineSlotEditor(draft) {
     const { dayOpts, periodOpts } = slotSelectOptions(draft.weekday_label, draft.period_label);
+    const pubNames = parsePublisherNames(draft.publisher_names);
+    const pubSummary = !pubNames.length ? 'Selecionar…' : (pubNames.length === 1 ? pubNames[0] : `${pubNames.length} pub.`);
     return `
-      <div class="eq-sched-editor" id="eq-inline-slot-form">
-        <div class="eq-sched-editor__head">
-          <span class="eq-sched-editor__title">${draft.mode === 'new' ? 'Nova linha' : 'Editar linha'}</span>
-        </div>
-        <div class="eq-sched-editor__grid">
-          <label class="eq-sched-editor__field">
-            <span>Dia</span>
-            <select id="eq-inline-day" class="eq-sched-editor__input">${dayOpts}</select>
-          </label>
-          <label class="eq-sched-editor__field">
-            <span>Período</span>
-            <select id="eq-inline-period" class="eq-sched-editor__input">${periodOpts}</select>
-          </label>
-          <label class="eq-sched-editor__field">
-            <span>Tipo</span>
-            <select id="eq-inline-kind" class="eq-sched-editor__input">
-              <option value="fixed" ${draft.slot_kind === 'fixed' ? 'selected' : ''}>Fixo (toda semana)</option>
-              <option value="temporary" ${draft.slot_kind === 'temporary' ? 'selected' : ''}>Temporário (só esta semana)</option>
-            </select>
-          </label>
-          <label class="eq-sched-editor__field">
-            <span>Equipamento</span>
-            <select id="eq-inline-type" class="eq-sched-editor__input">
-              <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
-              <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
-            </select>
-          </label>
-          <label class="eq-sched-editor__field eq-sched-editor__field--wide">
-            <span>Nome do equipamento</span>
-            <input id="eq-inline-equipment" class="eq-sched-editor__input" value="${escapeHtml(draft.equipment_name)}" placeholder="SOUZA, ALMEIDA, DAMASCENO…"/>
-          </label>
-          <label class="eq-sched-editor__field eq-sched-editor__field--wide">
-            <span>Local</span>
-            <input id="eq-inline-location" class="eq-sched-editor__input" value="${escapeHtml(draft.location_name)}" placeholder="Praça, endereço…"/>
-          </label>
-          <label class="eq-sched-editor__field">
-            <span>Ordem</span>
-            <input id="eq-inline-sort" type="number" class="eq-sched-editor__input" value="${escapeHtml(String(draft.sort_order ?? 0))}"/>
-          </label>
-        </div>
-        <div class="eq-sched-editor__pubs">
-          <span class="eq-sched-editor__pubs-label">Publicadores</span>
+      <div class="eq-sched-row eq-sched-row--edit" id="eq-inline-slot-form">
+        <span class="eq-sched-inline-cell eq-sched-inline-cell--day">
+          <select id="eq-inline-day" class="eq-sched-inline-input" title="Dia">${dayOpts}</select>
+          <select id="eq-inline-period" class="eq-sched-inline-input eq-sched-inline-input--period" title="Período">${periodOpts}</select>
+        </span>
+        <span>
+          <select id="eq-inline-kind" class="eq-sched-inline-input" title="Tipo de linha">
+            <option value="fixed" ${draft.slot_kind === 'fixed' ? 'selected' : ''}>Fixo</option>
+            <option value="temporary" ${draft.slot_kind === 'temporary' ? 'selected' : ''}>Temp.</option>
+          </select>
+        </span>
+        <span>
+          <select id="eq-inline-type" class="eq-sched-inline-input" title="Equipamento">
+            <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
+            <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
+          </select>
+        </span>
+        <span class="eq-sched-inline-cell eq-sched-inline-cell--pubs">
           <input type="hidden" id="eq-inline-publishers" value="${escapeHtml(draft.publisher_names)}"/>
-          <div class="eq-slot-pub-picker">
-            <div class="eq-slot-pub-picker__toolbar">
-              <input id="eq-inline-pub-search" type="search" class="eq-sched-editor__input" placeholder="Buscar na lista…" autocomplete="off"/>
-              <span class="eq-slot-pub-picker__hint" id="eq-inline-pub-hint">—</span>
+          <button type="button" class="eq-sched-pub-btn${pubNames.length ? '' : ' eq-sched-pub-btn--empty'}" data-eq-inline-pub-toggle title="Selecionar publicadores">
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>
+            <span id="eq-inline-pub-summary" class="eq-sched-pub-btn__text">${escapeHtml(pubSummary)}</span>
+          </button>
+          <div class="eq-sched-pub-pop hidden" id="eq-inline-pub-pop" role="dialog" aria-label="Publicadores">
+            <div class="eq-slot-pub-picker eq-slot-pub-picker--pop">
+              <div class="eq-slot-pub-picker__toolbar">
+                <input id="eq-inline-pub-search" type="search" class="eq-sched-inline-input" placeholder="Buscar…" autocomplete="off"/>
+                <span class="eq-slot-pub-picker__hint" id="eq-inline-pub-hint">—</span>
+              </div>
+              <div id="eq-inline-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
             </div>
-            <div id="eq-inline-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
-            <p class="eq-slot-pub-picker__summary eq-slot-pub-picker__summary--empty" id="eq-inline-pub-summary">Nenhum publicador selecionado</p>
           </div>
-        </div>
-        <div class="eq-sched-editor__foot">
-          ${draft.mode === 'edit' ? '<button type="button" class="eq-modal-btn eq-modal-btn--danger" data-eq-inline-delete>Excluir</button>' : '<span></span>'}
-          <div class="eq-sched-editor__foot-actions">
-            <button type="button" class="eq-modal-btn eq-modal-btn--ghost" data-eq-inline-cancel>Cancelar</button>
-            <button type="button" class="eq-modal-btn eq-modal-btn--primary" data-eq-inline-save>Salvar</button>
-          </div>
-        </div>
+        </span>
+        <span>
+          <input id="eq-inline-equipment" class="eq-sched-inline-input" value="${escapeHtml(draft.equipment_name)}" placeholder="Nome equip." title="Nome do equipamento"/>
+        </span>
+        <span>
+          <input id="eq-inline-location" class="eq-sched-inline-input" value="${escapeHtml(draft.location_name)}" placeholder="Local" title="Local"/>
+        </span>
+        <span class="eq-row-actions eq-row-actions--icons">
+          ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-delete title="Excluir linha"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
+          <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+          <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-save title="Salvar linha"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+        </span>
+        <input type="hidden" id="eq-inline-sort" value="${escapeHtml(String(draft.sort_order ?? 0))}"/>
       </div>`;
   }
 
@@ -1294,6 +1288,7 @@
 
     showToast(toast, 'Linha salva.');
     inlineSlotDraft = null;
+    closeInlinePubPop();
     await loadSlots();
   }
 
@@ -1349,8 +1344,7 @@
 
     if (inlineSlotDraft) {
       renderSlotPublisherPicker('eq-inline');
-      document.getElementById('eq-inline-slot-form')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      document.getElementById('eq-inline-equipment')?.focus();
+      document.getElementById('eq-inline-day')?.focus();
     }
   }
 
@@ -1439,6 +1433,25 @@
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
 
     document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
+      const pubToggle = e.target.closest('[data-eq-inline-pub-toggle]');
+      if (pubToggle) {
+        e.stopPropagation();
+        const pop = document.getElementById('eq-inline-pub-pop');
+        if (!pop) return;
+        const willOpen = pop.classList.contains('hidden');
+        pop.classList.toggle('hidden');
+        if (willOpen) {
+          renderSlotPublisherPicker('eq-inline');
+          document.getElementById('eq-inline-pub-search')?.focus();
+        }
+        return;
+      }
+
+      const pop = document.getElementById('eq-inline-pub-pop');
+      if (pop && !pop.classList.contains('hidden') && !pop.contains(e.target)) {
+        closeInlinePubPop();
+      }
+
       const editBtn = e.target.closest('[data-eq-edit-slot]');
       if (editBtn) {
         startEditSlotInline(slots.find((s) => s.id === editBtn.dataset.eqEditSlot));
@@ -1461,7 +1474,10 @@
       if (!inlineSlotDraft) return;
       const form = document.getElementById('eq-inline-slot-form');
       if (!form?.contains(e.target)) return;
-      if (e.target.name === 'eq-inline-pub') syncSlotPublishersField('eq-inline');
+      if (e.target.name === 'eq-inline-pub') {
+        syncSlotPublishersField('eq-inline');
+        return;
+      }
       if (e.target.id === 'eq-inline-day' || e.target.id === 'eq-inline-type') {
         syncSlotPublishersField('eq-inline');
         renderSlotPublisherPicker('eq-inline');
