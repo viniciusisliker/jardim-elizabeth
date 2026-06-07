@@ -929,9 +929,9 @@
   const assetBase = isAdminPath ? '..' : '.';
 
   function ensureFavicon() {
-    const iconHref = `${assetBase}/img/icon.png`;
-    const png32Href = `${assetBase}/img/favicon-32.png`;
-    const png180Href = `${assetBase}/img/favicon-180.png`;
+    const iconHref = `${assetBase}/img/icon.png?v=2026060937`;
+    const png32Href = `${assetBase}/img/favicon-32.png?v=2026060937`;
+    const png180Href = `${assetBase}/img/favicon-180.png?v=2026060937`;
 
     if (!document.querySelector('link[rel="icon"][type="image/png"][sizes="512x512"]')) {
       const mainLink = document.createElement('link');
