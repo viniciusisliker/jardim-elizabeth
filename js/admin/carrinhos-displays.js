@@ -1843,6 +1843,38 @@
     }
   }
 
+  function renderPubModalAvatar(profile) {
+    const host = document.getElementById('eq-pub-modal-avatar');
+    if (!host) return;
+    if (profile && window.JEAuth?.renderAvatarHtml) {
+      host.innerHTML = window.JEAuth.renderAvatarHtml(profile, { size: 72, className: 'je-profile-avatar' });
+      return;
+    }
+    host.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">groups</span>';
+  }
+
+  function syncPubModalPreview(row) {
+    const preview = document.getElementById('eq-pub-modal-preview');
+    if (!preview) return;
+    if (row) {
+      preview.textContent = publisherName(row);
+      renderPubModalAvatar(row.profiles || profiles.find((p) => p.id === row.profile_id));
+      return;
+    }
+    const profileId = document.getElementById('eq-publisher-profile')?.value;
+    const profile = profiles.find((p) => p.id === profileId);
+    preview.textContent = profile?.full_name || 'Selecione um irmão(ã)';
+    renderPubModalAvatar(profile || null);
+  }
+
+  function updatePubSubmitLabel(isEdit) {
+    const submitBtn = document.getElementById('eq-pub-submit');
+    if (!submitBtn) return;
+    submitBtn.innerHTML = isEdit
+      ? '<span class="material-symbols-outlined" aria-hidden="true">save</span> Salvar'
+      : '<span class="material-symbols-outlined" aria-hidden="true">person_add</span> Adicionar';
+  }
+
   function resetPublisherForm() {
     const form = document.getElementById('eq-form-publisher');
     form?.reset();
@@ -1858,9 +1890,9 @@
     document.getElementById('eq-publisher-profile')?.setAttribute('required', '');
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
     const title = document.getElementById('eq-pub-modal-title');
-    const submitBtn = document.getElementById('eq-pub-submit');
     if (title) title.textContent = 'Adicionar publicador';
-    if (submitBtn) submitBtn.textContent = 'Adicionar';
+    updatePubSubmitLabel(false);
+    syncPubModalPreview(null);
   }
 
   async function openPublisherModal(row) {
@@ -1872,12 +1904,10 @@
     if (row) {
       document.getElementById('eq-pub-id').value = row.id;
       document.getElementById('eq-pub-modal-title').textContent = 'Editar publicador';
-      document.getElementById('eq-pub-submit').textContent = 'Salvar';
+      updatePubSubmitLabel(true);
       document.getElementById('eq-pub-profile-wrap')?.classList.add('hidden');
       document.getElementById('eq-publisher-profile')?.removeAttribute('required');
-      const editName = document.getElementById('eq-pub-edit-name');
       const editNameText = document.getElementById('eq-pub-edit-name-text');
-      editName?.classList.remove('hidden');
       if (editNameText) editNameText.textContent = publisherName(row);
       document.getElementById('eq-pub-carrinho').checked = row.can_carrinho !== false;
       document.getElementById('eq-pub-display').checked = row.can_display !== false;
@@ -1888,8 +1918,10 @@
       );
       document.getElementById('eq-pub-grupo').value = row._grupo || '';
       document.getElementById('eq-pub-casa').value = row._casa || '';
+      syncPubModalPreview(row);
     } else {
       await loadProfiles();
+      syncPubModalPreview(null);
     }
 
     modal.classList.add('is-open');
@@ -2066,6 +2098,7 @@
     document.getElementById('eq-pub-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'eq-pub-modal') closePublisherModal();
     });
+    document.getElementById('eq-publisher-profile')?.addEventListener('change', () => syncPubModalPreview(null));
 
     const debouncedPubSearch = debounce(() => renderPublishersTable({ stats: false }), 150);
     document.getElementById('eq-pub-search')?.addEventListener('input', (e) => {

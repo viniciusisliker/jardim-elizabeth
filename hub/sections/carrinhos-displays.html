@@ -309,37 +309,57 @@
       </div>
     </div>
 
-    <div id="eq-pub-modal" class="eq-modal" aria-hidden="true">
-      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-pub-modal-title">
-        <div class="eq-modal__head">
-          <h2 id="eq-pub-modal-title">Adicionar publicador</h2>
-          <button type="button" id="eq-pub-modal-close" class="eq-modal__close" aria-label="Fechar">
-            <span class="material-symbols-outlined">close</span>
+    <div id="eq-pub-modal" class="eq-modal eq-modal--pub" aria-hidden="true">
+      <div class="eq-modal__panel eq-modal__panel--pub" role="dialog" aria-labelledby="eq-pub-modal-title">
+        <div class="eq-pub-modal-hero" id="eq-pub-modal-hero">
+          <button type="button" id="eq-pub-modal-close" class="eq-pub-modal-close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
+          <div class="eq-pub-modal-hero__visual">
+            <div id="eq-pub-modal-avatar" class="eq-pub-modal-avatar" aria-hidden="true">
+              <span class="material-symbols-outlined">groups</span>
+            </div>
+          </div>
+          <div class="eq-pub-modal-hero__text">
+            <p class="eq-pub-modal-hero__kicker">Voluntários de campo</p>
+            <h2 id="eq-pub-modal-title">Adicionar publicador</h2>
+            <p id="eq-pub-modal-preview" class="eq-pub-modal-hero__preview">Selecione um irmão(ã)</p>
+          </div>
         </div>
-        <form id="eq-form-publisher" class="eq-modal__body">
+        <form id="eq-form-publisher" class="eq-modal__body eq-modal__body--pub">
           <input type="hidden" id="eq-pub-id" value=""/>
           <div class="eq-pub-modal-form">
             <div id="eq-pub-profile-wrap" class="eq-pub-field">
               <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
               <select id="eq-publisher-profile" required class="eq-modal-input"></select>
             </div>
-            <div id="eq-pub-edit-name" class="eq-pub-field hidden">
-              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
-              <p class="eq-pub-edit-name" id="eq-pub-edit-name-text"></p>
+            <div id="eq-pub-edit-name" class="hidden" aria-hidden="true">
+              <p id="eq-pub-edit-name-text"></p>
             </div>
-            <div class="eq-pub-field">
-              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">category</span>Serviços</span>
-              <div class="eq-pub-svc-toggles">
-                <label class="eq-pub-svc eq-pub-svc--cart"><input type="checkbox" id="eq-pub-carrinho" checked/><span>Carrinho</span></label>
-                <label class="eq-pub-svc eq-pub-svc--display"><input type="checkbox" id="eq-pub-display" checked/><span>Display</span></label>
+            <fieldset class="eq-pub-svc-pick">
+              <legend>Serviços habilitados</legend>
+              <div class="eq-pub-svc-pick__grid">
+                <label class="eq-pub-svc-card eq-pub-svc-card--cart">
+                  <input type="checkbox" id="eq-pub-carrinho" checked/>
+                  <span class="eq-pub-svc-card__icon" aria-hidden="true">
+                    <svg class="eq-brand-icon eq-brand-icon--cart" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="72" r="4" fill="#0e7490"/><circle cx="44" cy="72" r="4" fill="#0e7490"/><rect x="12" y="62" width="40" height="6" rx="3" fill="#0e7490"/><rect x="10" y="22" width="44" height="42" rx="3" fill="#0e7490"/></svg>
+                  </span>
+                  <span class="eq-pub-svc-card__label">Carrinho</span>
+                </label>
+                <label class="eq-pub-svc-card eq-pub-svc-card--display">
+                  <input type="checkbox" id="eq-pub-display" checked/>
+                  <span class="eq-pub-svc-card__icon" aria-hidden="true">
+                    <svg class="eq-brand-icon eq-brand-icon--display" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="52" width="48" height="5" rx="2.5" fill="#6d28d9"/><rect x="8" y="12" width="5" height="42" rx="2" fill="#6d28d9"/><rect x="51" y="12" width="5" height="42" rx="2" fill="#6d28d9"/><rect x="8" y="12" width="48" height="4" rx="2" fill="#6d28d9"/></svg>
+                  </span>
+                  <span class="eq-pub-svc-card__label">Display</span>
+                </label>
               </div>
-            </div>
+            </fieldset>
             <div class="eq-pub-field">
               <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">event_available</span>Dias disponíveis</span>
               <div id="eq-pub-days" class="eq-pub-day-picks"></div>
             </div>
-            <div class="eq-modal-grid">
+            <div class="eq-modal-grid eq-modal-grid--pub">
               <label class="eq-pub-field">
                 <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Grupo</span>
                 <input id="eq-pub-grupo" type="text" class="eq-modal-input" placeholder="Ex.: Campo Limpo" autocomplete="off"/>
@@ -350,10 +370,14 @@
               </label>
             </div>
           </div>
-          <div class="eq-modal__foot">
+          <div class="eq-modal__foot eq-modal__foot--pub">
+            <p class="eq-pub-modal-hint">O publicador poderá ser designado no cronograma semanal.</p>
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-pub-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
-              <button type="submit" id="eq-pub-submit" class="eq-modal-btn eq-modal-btn--primary">Adicionar</button>
+              <button type="submit" id="eq-pub-submit" class="eq-modal-btn eq-modal-btn--primary eq-modal-btn--pub">
+                <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                Adicionar
+              </button>
             </div>
           </div>
         </form>
