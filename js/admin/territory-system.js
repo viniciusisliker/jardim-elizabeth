@@ -1275,6 +1275,69 @@
     return `<span class="terr-catalog-type ${meta.className}">${escapeHtml(meta.label)}</span>`;
   }
 
+  function catalogCoverageMetaForPreview(t, assignment, overrides = {}) {
+    if (t.status === 'designado' && assignment) {
+      const assignedIso = overrides.assigned_at
+        ?? (assignment.assigned_at ? String(assignment.assigned_at).slice(0, 10) : null);
+      const assignedLabel = assignedIso ? H().formatShortDate(assignedIso) : null;
+      return {
+        tone: 'working',
+        barPct: 100,
+        headline: 'Em campo',
+        sub: assignedLabel ? `Designado em ${assignedLabel}` : 'Trabalho em andamento',
+        title: assignedLabel ? `Designado em ${H().formatDisplayDate(assignedIso)}` : 'Território com designação ativa'
+      };
+    }
+
+    const lastWorked = overrides.last_worked_at !== undefined ? overrides.last_worked_at : t.last_worked_at;
+    const days = H().daysSince(lastWorked);
+    if (days === null) {
+      return {
+        tone: 'unknown',
+        barPct: 100,
+        headline: 'Sem registro',
+        sub: 'Nunca devolvido no sistema',
+        title: 'Sem data de último trabalho registrada'
+      };
+    }
+
+    const barPct = Math.min(100, Math.round((days / 28) * 100));
+    let tone = 'fresh';
+    if (days >= 28) tone = 'critical';
+    else if (days >= 14) tone = 'warn';
+
+    let headline;
+    if (days === 0) headline = 'Hoje';
+    else if (days === 1) headline = '1 dia';
+    else headline = `${days} dias`;
+
+    const lastIso = String(lastWorked).slice(0, 10);
+    const lastShort = H().formatShortDate(lastIso);
+    const lastLong = H().formatDisplayDate(lastIso);
+    const sub = days === 0
+      ? `Trabalhado hoje · ${lastShort}`
+      : `${days} ${days === 1 ? 'dia' : 'dias'} sem cobertura · ${lastShort}`;
+
+    return {
+      tone,
+      barPct,
+      headline,
+      sub,
+      title: `${days} dias sem cobertura · último trabalho em ${lastLong}`
+    };
+  }
+
+  function catalogCoverageCellFromMeta(m) {
+    return `
+      <span class="terr-catalog-cov terr-catalog-cov--${m.tone}" title="${escapeHtml(m.title)}">
+        <span class="terr-catalog-cov__bar" aria-hidden="true"><span class="terr-catalog-cov__fill" style="width:${m.barPct}%"></span></span>
+        <span class="terr-catalog-cov__text">
+          <strong class="terr-catalog-cov__head">${escapeHtml(m.headline)}</strong>
+          <span class="terr-catalog-cov__sub">${escapeHtml(m.sub)}</span>
+        </span>
+      </span>`;
+  }
+
   function catalogCoverageMeta(t) {
     const active = assignmentByTerritoryId.get(t.id);
     if (t.status === 'designado') {
@@ -1327,15 +1390,7 @@
   }
 
   function catalogCoverageCell(t) {
-    const m = catalogCoverageMeta(t);
-    return `
-      <span class="terr-catalog-cov terr-catalog-cov--${m.tone}" title="${escapeHtml(m.title)}">
-        <span class="terr-catalog-cov__bar" aria-hidden="true"><span class="terr-catalog-cov__fill" style="width:${m.barPct}%"></span></span>
-        <span class="terr-catalog-cov__text">
-          <strong class="terr-catalog-cov__head">${escapeHtml(m.headline)}</strong>
-          <span class="terr-catalog-cov__sub">${escapeHtml(m.sub)}</span>
-        </span>
-      </span>`;
+    return catalogCoverageCellFromMeta(catalogCoverageMeta(t));
   }
 
   function catalogAssignee(t) {
@@ -2541,71 +2596,125 @@
     initTerrColResize('over');
   }
 
+  function renderCatalogModalPreviewRowHtml(t, assignment, overrides = {}) {
+    const assignee = assignment ? profileName(assignment.profiles) : '—';
+    const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
+    const cov = catalogCoverageMetaForPreview(t, assignment, overrides);
+    return `
+      <tr class="terr-catalog-modal__preview-row">
+        <td><span class="terr-catalog-num">${escapeHtml(t.num)}</span></td>
+        <td class="terr-catalog-name">${catalogTerritoryCell(t)}</td>
+        <td>${catalogTypeCell(t)}</td>
+        <td><span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span></td>
+        <td class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</td>
+        <td>${catalogCoverageCellFromMeta(cov)}</td>
+      </tr>`;
+  }
+
+  function syncCatalogModalPreview(form, tbody, t, assignment, isDesignado) {
+    if (!form || !tbody) return;
+    const fd = new FormData(form);
+    const overrides = isDesignado
+      ? { assigned_at: fd.get('assigned_at') || null }
+      : { last_worked_at: fd.get('last_worked_at') || null };
+    tbody.innerHTML = renderCatalogModalPreviewRowHtml(t, assignment, overrides);
+  }
+
   function openCatalogRowModal(t) {
     if (!t) return;
     if (document.getElementById('catalog-row-modal-wrap')) return;
 
     const assignment = assignmentByTerritoryId.get(t.id);
     const isDesignado = t.status === 'designado' && assignment;
-    const cov = catalogCoverageMeta(t);
-    const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
     const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
     const lastWorkedIso = t.last_worked_at ? String(t.last_worked_at).slice(0, 10) : '';
 
     const wrap = document.createElement('div');
     wrap.id = 'catalog-row-modal-wrap';
-    wrap.className = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-primary/40';
+    wrap.className = 'terr-catalog-modal';
     wrap.innerHTML = `
-      <form class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl border border-outline-variant p-5 sm:p-6 space-y-4 shadow-xl max-h-[92vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="catalog-row-modal-title">
-        <div>
-          <h3 id="catalog-row-modal-title" class="font-bold text-primary">Editar registro</h3>
-          <p class="text-sm text-on-surface-variant mt-0.5">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name)}</p>
-        </div>
-        <div class="rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-2.5 space-y-1.5">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
-            <span class="text-xs text-on-surface-variant">${escapeHtml(cov.headline)}</span>
-          </div>
-          <p class="text-xs text-on-surface-variant">${escapeHtml(cov.sub)}</p>
-          ${isDesignado ? `<p class="text-xs font-semibold text-primary">Dirigente: ${escapeHtml(profileName(assignment.profiles))}</p>` : ''}
-        </div>
-        ${isDesignado ? `
-          <label class="block text-xs font-semibold text-primary">Data da designação
-            <input name="assigned_at" type="date" required value="${escapeHtml(assignedIso)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-          </label>` : `
-          <label class="block text-xs font-semibold text-primary">Último dia trabalhado
-            <input name="last_worked_at" type="date" value="${escapeHtml(lastWorkedIso)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-          </label>`}
-        <label class="block text-xs font-semibold text-primary">Observações
-          <textarea name="observations" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm">${escapeHtml(t.observations || '')}</textarea>
-        </label>
-        <div class="flex flex-wrap gap-2 pt-1">
-          <button type="submit" class="inline-flex items-center gap-1 bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">
-            <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
-            Salvar
+      <div class="terr-catalog-modal__panel" role="dialog" aria-modal="true" aria-labelledby="catalog-row-modal-title">
+        <div class="terr-catalog-modal__hero">
+          <button type="button" data-cancel class="terr-catalog-modal__close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
-          ${isDesignado ? `
-            <button type="button" data-devolver class="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg border border-outline-variant text-primary">
-              <span class="material-symbols-outlined text-base" aria-hidden="true">undo</span>
-              Devolver
-            </button>` : `
-            <button type="button" data-designar class="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg border border-outline-variant text-primary">
-              <span class="material-symbols-outlined text-base" aria-hidden="true">person_add</span>
-              Designar
-            </button>`}
-          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+          <p class="terr-catalog-modal__kicker">Painel de territórios</p>
+          <h3 id="catalog-row-modal-title">Editar registro</h3>
+          <p class="terr-catalog-modal__subtitle">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name)}</p>
         </div>
-      </form>`;
+        <form id="catalog-row-modal-form">
+          <div class="terr-catalog-modal__body">
+            <p class="terr-catalog-modal__preview-label">Prévia da linha</p>
+            <div class="terr-catalog-modal__preview-wrap">
+              <table class="terr-catalog-table terr-catalog-modal__preview-table">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Território</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Designado</th>
+                    <th scope="col">Cobertura</th>
+                  </tr>
+                </thead>
+                <tbody id="catalog-modal-preview"></tbody>
+              </table>
+            </div>
+            <div class="terr-catalog-modal__fields">
+              ${isDesignado ? `
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
+                <input name="assigned_at" type="date" required value="${escapeHtml(assignedIso)}" class="terr-catalog-modal-input"/>
+              </label>` : `
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">history</span>Último dia trabalhado</span>
+                <input name="last_worked_at" type="date" value="${escapeHtml(lastWorkedIso)}" class="terr-catalog-modal-input"/>
+              </label>`}
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
+                <textarea name="observations" rows="2" class="terr-catalog-modal-input terr-catalog-modal-input--area">${escapeHtml(t.observations || '')}</textarea>
+              </label>
+            </div>
+          </div>
+          <div class="terr-catalog-modal__foot">
+            <div class="terr-catalog-modal__foot-actions">
+              ${isDesignado ? `
+              <button type="button" data-devolver class="terr-catalog-modal-btn terr-catalog-modal-btn--warn">
+                <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+                Devolver
+              </button>` : `
+              <button type="button" data-designar class="terr-catalog-modal-btn terr-catalog-modal-btn--accent">
+                <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                Designar
+              </button>`}
+              <button type="button" data-cancel class="terr-catalog-modal-btn terr-catalog-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="terr-catalog-modal-btn terr-catalog-modal-btn--primary">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Salvar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>`;
 
     document.body.appendChild(wrap);
     document.body.style.overflow = 'hidden';
+
+    const form = wrap.querySelector('#catalog-row-modal-form');
+    const previewBody = wrap.querySelector('#catalog-modal-preview');
 
     const close = () => {
       wrap.remove();
       document.body.style.overflow = '';
     };
 
-    wrap.querySelector('[data-cancel]').addEventListener('click', close);
+    syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado);
+    form.querySelectorAll('input, select, textarea').forEach((el) => {
+      el.addEventListener('input', () => syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado));
+      el.addEventListener('change', () => syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado));
+    });
+
+    wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
     wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
 
     wrap.querySelector('[data-devolver]')?.addEventListener('click', () => {
@@ -2618,7 +2727,7 @@
       openDesignarModal({ territoryId: t.id });
     });
 
-    wrap.querySelector('form').addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
       const observations = fd.get('observations')?.trim() || null;
@@ -2764,69 +2873,209 @@
     });
   }
 
+  function scheduleModalPreviewFromForm(form, ctx) {
+    const fd = new FormData(form);
+    const weekday = fd.get('weekday_label')?.trim() || '—';
+    let dirigenteName = '—';
+    if (ctx.saturdayFromQuadro) {
+      dirigenteName = ctx.enriched?.dirigente_name || ctx.row?.dirigente_name || '—';
+    } else {
+      const profileId = fd.get('profile_id');
+      if (profileId) {
+        const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
+        dirigenteName = profileName(p) || fd.get('dirigente_name')?.trim() || '—';
+      } else {
+        dirigenteName = fd.get('dirigente_name')?.trim() || '—';
+      }
+    }
+    const territoryId = fd.get('territory_id');
+    let territorio = '—';
+    if (territoryId) {
+      const t = territories.find((tr) => tr.id === territoryId);
+      if (t) territorio = H().territoryLabel(t);
+    } else {
+      const code = fd.get('territory_code')?.trim();
+      if (code) territorio = code;
+    }
+    const location = fd.get('location_name')?.trim() || '';
+    const time = fd.get('schedule_times')?.trim() || '';
+    const sugg = fd.get('suggestion')?.trim();
+    const suggNote = fd.get('suggestion_note')?.trim();
+    let suggestionDisplay = '';
+    if (sugg) suggestionDisplay = suggNote ? `${sugg} · ${suggNote}` : sugg;
+    return {
+      weekday,
+      dirigenteName,
+      territorio,
+      location,
+      time,
+      suggestionDisplay,
+      saturdayFromQuadro: ctx.saturdayFromQuadro,
+      enriched: ctx.enriched
+    };
+  }
+
+  function renderScheduleModalPreviewHtml(values, assignment) {
+    const tone = scheduleDayTone(values.weekday);
+    const dayIcon = scheduleDayIcon(values.weekday);
+    let dirigenteHtml = escapeHtml(values.dirigenteName);
+    if (values.saturdayFromQuadro && values.enriched?.from_announcement) {
+      dirigenteHtml = `${escapeHtml(values.dirigenteName)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
+    }
+    const territorioHtml = assignment
+      ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
+          <span class="terr-sched-assigned-text">${escapeHtml(values.territorio)}</span>
+          <span class="terr-sched-assigned-badge">Designado</span>
+        </span>`
+      : `<span class="terr-sched-cell">${escapeHtml(values.territorio)}</span>`;
+    const hasSugg = !!values.suggestionDisplay;
+    return `
+      <div class="terr-sched-modal__preview-panel">
+        <div class="terr-sched-row terr-sched-row--${tone} terr-sched-modal__preview-row">
+          <span class="terr-sched-day-pill">
+            <span class="material-symbols-outlined" aria-hidden="true">${dayIcon}</span>
+            ${escapeHtml(values.weekday)}
+          </span>
+          <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
+          ${territorioHtml}
+          <span class="terr-sched-cell${values.location ? '' : ' terr-sched-cell--muted'}">${escapeHtml(values.location || '—')}</span>
+          <span class="terr-sched-time">${escapeHtml(values.time || '—')}</span>
+          <span class="terr-sched-sugg">${hasSugg ? escapeHtml(values.suggestionDisplay) : '—'}</span>
+        </div>
+      </div>`;
+  }
+
+  function syncScheduleModalPreview(form, previewEl, ctx, assignment) {
+    if (!form || !previewEl) return;
+    const values = scheduleModalPreviewFromForm(form, ctx);
+    previewEl.innerHTML = renderScheduleModalPreviewHtml(values, assignment);
+  }
+
   function openScheduleFormModal(existing) {
     const row = existing || null;
     const isEdit = Boolean(row);
     const enriched = row ? H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles) : null;
     const saturdayFromQuadro = enriched?.from_announcement;
+    const assignment = row ? findAssignmentForScheduleRow(row) : null;
+    if (document.getElementById('sched-form-modal-wrap')) return;
+
     const wrap = document.createElement('div');
-    wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
+    wrap.id = 'sched-form-modal-wrap';
+    wrap.className = 'terr-sched-modal';
     wrap.innerHTML = `
-      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-lg space-y-3 shadow-xl max-h-[90vh] overflow-y-auto">
-        <h3 class="font-bold text-primary">${isEdit ? 'Editar linha do cronograma' : 'Nova linha do cronograma'}</h3>
-        ${saturdayFromQuadro ? `
-        <p class="text-xs bg-[#faf6ef] border border-[#f0e4c8] text-[#5c4a1f] rounded-lg px-3 py-2">
-          O <strong>dirigente de sábado</strong> vem do Quadro de Anúncios
-          (${escapeHtml(enriched.announcement_dirigente || '')}).
-          Edite em <a href="anuncios.html" class="underline font-semibold">Quadro de Anúncios → Final de Semana</a>.
-        </p>` : ''}
-        <label class="block text-xs font-semibold text-primary">Dia da semana
-          <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Terça, Quarta (Tarde)"/>
-        </label>
-        <datalist id="cronograma-dias">${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
-        ${saturdayFromQuadro ? '' : `
-        <label class="block text-xs font-semibold text-primary">Dirigente (cadastrado)
-          <select name="profile_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="">— Dupla / outro —</option>
-            ${overseerOptions(row?.profile_id)}
-          </select>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Nome do dirigente
-          <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: Denison e Arnaldo"/>
-        </label>`}
-        <label class="block text-xs font-semibold text-primary">Território
-          <select name="territory_id" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="">— Selecione —</option>
-            ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
-          </select>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Código (planilha)
-          <input name="territory_code" value="${escapeHtml(row?.territory_code || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: T4"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Local
-          <input name="location_name" value="${escapeHtml(row?.location_name || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Horários
-          <input name="schedule_times" value="${escapeHtml(row?.schedule_times || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: 16:00"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Sugestão
-          <input name="suggestion" value="${escapeHtml(row?.suggestion || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Ex.: T5"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Comentário da sugestão
-          <input name="suggestion_note" value="${escapeHtml(row?.suggestion_note || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Observações
-          <input name="observations" value="${escapeHtml(row?.observations || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <div class="flex gap-2 pt-2">
-          <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
-          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+      <div class="terr-sched-modal__panel" role="dialog" aria-modal="true" aria-labelledby="sched-form-modal-title">
+        <div class="terr-sched-modal__hero">
+          <button type="button" data-cancel class="terr-sched-modal__close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+          <p class="terr-sched-modal__kicker">Cronograma semanal</p>
+          <h3 id="sched-form-modal-title">${isEdit ? 'Editar linha do cronograma' : 'Nova linha do cronograma'}</h3>
         </div>
-      </form>`;
+        <form id="sched-form-modal-form">
+          <div class="terr-sched-modal__body">
+            ${saturdayFromQuadro ? `
+            <p class="terr-sched-modal__alert">
+              O <strong>dirigente de sábado</strong> vem do Quadro de Anúncios
+              (${escapeHtml(enriched.announcement_dirigente || '')}).
+              Edite em <a href="anuncios.html">Quadro de Anúncios → Final de Semana</a>.
+            </p>` : ''}
+            <p class="terr-sched-modal__preview-label">Prévia da linha</p>
+            <div class="terr-sched-modal__preview-wrap">
+              <div id="sched-modal-preview"></div>
+            </div>
+            <div class="terr-sched-modal__fields">
+              <label class="terr-sched-modal-field">
+                <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
+                <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias-modal" class="terr-sched-modal-input" placeholder="Ex.: Terça, Quarta (Tarde)"/>
+              </label>
+              <datalist id="cronograma-dias-modal">${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
+              ${saturdayFromQuadro ? '' : `
+              <div class="terr-sched-modal-grid">
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
+                  <select name="profile_id" class="terr-sched-modal-input">
+                    <option value="">— Dupla / outro —</option>
+                    ${overseerOptions(row?.profile_id)}
+                  </select>
+                </label>
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">badge</span>Nome do dirigente</span>
+                  <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
+                </label>
+              </div>`}
+              <div class="terr-sched-modal-grid">
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
+                  <select name="territory_id" class="terr-sched-modal-input">
+                    <option value="">— Selecione —</option>
+                    ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
+                  </select>
+                </label>
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">tag</span>Código</span>
+                  <input name="territory_code" value="${escapeHtml(row?.territory_code || '')}" class="terr-sched-modal-input" placeholder="Ex.: T4"/>
+                </label>
+              </div>
+              <div class="terr-sched-modal-grid">
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>Local</span>
+                  <input name="location_name" value="${escapeHtml(row?.location_name || '')}" class="terr-sched-modal-input"/>
+                </label>
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>Horário</span>
+                  <input name="schedule_times" value="${escapeHtml(row?.schedule_times || '')}" class="terr-sched-modal-input" placeholder="Ex.: 16:00"/>
+                </label>
+              </div>
+              <div class="terr-sched-modal-grid">
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">lightbulb</span>Sugestão</span>
+                  <input name="suggestion" value="${escapeHtml(row?.suggestion || '')}" class="terr-sched-modal-input" placeholder="Ex.: T5"/>
+                </label>
+                <label class="terr-sched-modal-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">comment</span>Comentário</span>
+                  <input name="suggestion_note" value="${escapeHtml(row?.suggestion_note || '')}" class="terr-sched-modal-input"/>
+                </label>
+              </div>
+              <label class="terr-sched-modal-field">
+                <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
+                <input name="observations" value="${escapeHtml(row?.observations || '')}" class="terr-sched-modal-input"/>
+              </label>
+            </div>
+          </div>
+          <div class="terr-sched-modal__foot">
+            <div class="terr-sched-modal__foot-actions">
+              <button type="button" data-cancel class="terr-sched-modal-btn terr-sched-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="terr-sched-modal-btn terr-sched-modal-btn--primary">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Salvar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>`;
+
     document.body.appendChild(wrap);
-    wrap.querySelector('[data-cancel]').addEventListener('click', () => wrap.remove());
-    wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
-    wrap.querySelector('form').addEventListener('submit', async (e) => {
+    document.body.style.overflow = 'hidden';
+
+    const form = wrap.querySelector('#sched-form-modal-form');
+    const previewEl = wrap.querySelector('#sched-modal-preview');
+    const ctx = { saturdayFromQuadro, enriched, row };
+
+    const close = () => {
+      wrap.remove();
+      document.body.style.overflow = '';
+    };
+
+    syncScheduleModalPreview(form, previewEl, ctx, assignment);
+    form.querySelectorAll('input, select, textarea').forEach((el) => {
+      el.addEventListener('input', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
+      el.addEventListener('change', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
+    });
+
+    wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
       const profileId = saturdayFromQuadro ? (enriched.profile_id || row.profile_id) : (fd.get('profile_id') || null);
@@ -2859,7 +3108,7 @@
         suggestion_note: fd.get('suggestion_note')?.trim() || null,
         observations: fd.get('observations')?.trim() || null
       };
-      wrap.remove();
+      close();
       const req = isEdit
         ? client.from('territory_week_schedule').update(payload).eq('id', row.id)
         : client.from('territory_week_schedule').insert({ ...payload, sort_order: weekTemplate.length + 1 });
