@@ -1001,10 +1001,17 @@
     }
   }
 
+  function syncLocModalPreview() {
+    const name = document.getElementById('eq-loc-name')?.value.trim();
+    const preview = document.getElementById('eq-loc-modal-preview');
+    if (preview) preview.textContent = name || 'Novo local';
+  }
+
   function resetLocForm() {
     document.getElementById('eq-form-loc')?.reset();
     document.getElementById('eq-loc-id').value = '';
     document.getElementById('eq-loc-sort').value = '0';
+    syncLocModalPreview();
   }
 
   function openLocModal(row) {
@@ -1018,6 +1025,7 @@
       document.getElementById('eq-loc-name').value = row.name;
       document.getElementById('eq-loc-sort').value = String(row.sort_order ?? 0);
       document.getElementById('eq-loc-notes').value = row.notes || '';
+      syncLocModalPreview();
     }
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
@@ -1974,6 +1982,7 @@
     document.getElementById('eq-loc-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'eq-loc-modal') closeLocModal();
     });
+    document.getElementById('eq-loc-name')?.addEventListener('input', syncLocModalPreview);
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-btn-whatsapp-volunteers')?.addEventListener('click', openVolunteerWhatsApp);
 

@@ -202,31 +202,48 @@
       </div>
     </section>
 
-    <div id="eq-loc-modal" class="eq-modal" aria-hidden="true">
-      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-loc-modal-title">
-        <div class="eq-modal__head">
-          <h2 id="eq-loc-modal-title">Adicionar local</h2>
-          <button type="button" id="eq-loc-modal-close" class="eq-modal__close" aria-label="Fechar">
-            <span class="material-symbols-outlined">close</span>
+    <div id="eq-loc-modal" class="eq-modal eq-modal--loc" aria-hidden="true">
+      <div class="eq-modal__panel eq-modal__panel--loc" role="dialog" aria-labelledby="eq-loc-modal-title">
+        <div class="eq-loc-modal-hero">
+          <button type="button" id="eq-loc-modal-close" class="eq-loc-modal-close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
+          <div class="eq-loc-modal-hero__visual" aria-hidden="true">
+            <svg class="eq-loc-modal-svg" viewBox="0 0 80 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="40" cy="78" rx="18" ry="5" fill="rgba(0,0,0,.18)"/>
+              <path d="M40 8c-11.6 0-21 9.4-21 21 0 16.2 21 43 21 43s21-26.8 21-43c0-11.6-9.4-21-21-21z" fill="#fff" stroke="#065f46" stroke-width="2"/>
+              <circle cx="40" cy="29" r="9" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+              <path d="M18 52h44" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 6"/>
+              <rect x="14" y="58" width="52" height="8" rx="2" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)"/>
+            </svg>
+          </div>
+          <div class="eq-loc-modal-hero__text">
+            <p class="eq-loc-modal-hero__kicker">Pontos de pregação</p>
+            <h2 id="eq-loc-modal-title">Adicionar local</h2>
+            <p id="eq-loc-modal-preview" class="eq-loc-modal-hero__preview">Novo local</p>
+          </div>
         </div>
-        <form id="eq-form-loc" class="eq-modal__body">
+        <form id="eq-form-loc" class="eq-modal__body eq-modal__body--loc">
           <input type="hidden" id="eq-loc-id"/>
-          <div class="eq-modal-grid">
+          <div class="eq-modal-grid eq-modal-grid--loc">
             <label class="eq-modal-grid--full">Nome do local
-              <input id="eq-loc-name" required class="eq-modal-input" placeholder="Praça da Matriz, Estação Santo Amaro…"/>
+              <input id="eq-loc-name" required class="eq-modal-input" placeholder="Ex.: Praça da Matriz, Estação Santo Amaro" autocomplete="off"/>
             </label>
-            <label>Ordem
-              <input id="eq-loc-sort" type="number" value="0" class="eq-modal-input"/>
+            <label>Ordem no catálogo
+              <input id="eq-loc-sort" type="number" value="0" min="0" class="eq-modal-input" title="Menor número aparece primeiro"/>
             </label>
             <label class="eq-modal-grid--full">Observações
-              <input id="eq-loc-notes" class="eq-modal-input" placeholder="Opcional"/>
+              <input id="eq-loc-notes" class="eq-modal-input" placeholder="Opcional — referência, bairro, ponto de encontro…"/>
             </label>
           </div>
-          <div class="eq-modal__foot">
+          <div class="eq-modal__foot eq-modal__foot--loc">
+            <p class="eq-loc-modal-hint">O local ficará disponível no cronograma e nos equipamentos.</p>
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-loc-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
-              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Salvar</button>
+              <button type="submit" class="eq-modal-btn eq-modal-btn--primary eq-modal-btn--loc">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Salvar
+              </button>
             </div>
           </div>
         </form>
