@@ -2610,30 +2610,22 @@
       .join('');
   }
 
-  function syncCatalogModalUi(form, t, assignment) {
-    if (!form) return;
-    const status = form.querySelector('[name="status"]')?.value;
-    const isDesignado = status === 'designado';
-    const profileSel = form.querySelector('[name="profile_id"]');
-    const covLabel = form.querySelector('#catalog-modal-cov-label');
-    const covHint = form.querySelector('#catalog-modal-cov-hint');
-    const previewEl = form.querySelector('#catalog-modal-cov-preview');
-
-    if (profileSel) {
-      profileSel.disabled = !isDesignado;
-      profileSel.required = isDesignado;
-    }
-    if (covLabel) {
-      covLabel.textContent = isDesignado ? 'Data da designação' : 'Último dia trabalhado';
-    }
-    if (covHint) {
-      covHint.textContent = isDesignado
-        ? 'Define quando o território entrou em campo.'
-        : 'Dias sem cobertura são calculados a partir desta data.';
-    }
-
+  function renderCatalogModalLiveRowHtml(form, t, assignment) {
     const fd = new FormData(form);
+    const status = fd.get('status');
+    const isDesignado = status === 'designado';
+    const statusClass = isDesignado ? 'designado' : 'disponivel';
     const profileId = fd.get('profile_id');
+    let assignee = '—';
+    if (isDesignado) {
+      if (profileId) {
+        const p = profiles.find((pr) => pr.id === profileId)
+          || overseers.find((o) => o.profile_id === profileId)?.profiles;
+        assignee = profileName(p) || '—';
+      } else if (assignment) {
+        assignee = profileName(assignment.profiles);
+      }
+    }
     const coverageDate = fd.get('coverage_date') || null;
     const previewT = { ...t, status: isDesignado ? 'designado' : 'disponivel' };
     let previewAssignment = null;
@@ -2651,10 +2643,38 @@
     const overrides = isDesignado
       ? { assigned_at: coverageDate }
       : { last_worked_at: coverageDate };
-    if (previewEl) {
-      previewEl.innerHTML = catalogCoverageCellFromMeta(
-        catalogCoverageMetaForPreview(previewT, previewAssignment, overrides)
-      );
+    const cov = catalogCoverageMetaForPreview(previewT, previewAssignment, overrides);
+    return `
+      <div class="terr-catalog-modal__live-row">
+        <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[status] || status)}</span>
+        <span class="terr-catalog-modal__live-assign${assignee === '—' ? ' terr-catalog-modal__live-assign--muted' : ''}">${escapeHtml(assignee)}</span>
+        ${catalogCoverageCellFromMeta(cov)}
+      </div>`;
+  }
+
+  function syncCatalogModalUi(form, t, assignment) {
+    if (!form) return;
+    const status = form.querySelector('[name="status"]')?.value;
+    const isDesignado = status === 'designado';
+    const profileSel = form.querySelector('[name="profile_id"]');
+    const covLabel = form.querySelector('#catalog-modal-cov-label');
+    const covHint = form.querySelector('#catalog-modal-cov-hint');
+    const liveRow = form.querySelector('#catalog-modal-live-row');
+
+    if (profileSel) {
+      profileSel.disabled = !isDesignado;
+      profileSel.required = isDesignado;
+    }
+    if (covLabel) {
+      covLabel.textContent = isDesignado ? 'Data da designação' : 'Último dia trabalhado';
+    }
+    if (covHint) {
+      covHint.textContent = isDesignado
+        ? 'Define quando o território entrou em campo.'
+        : 'Dias sem cobertura são calculados a partir desta data.';
+    }
+    if (liveRow) {
+      liveRow.innerHTML = renderCatalogModalLiveRowHtml(form, t, assignment);
     }
   }
 
@@ -2757,40 +2777,34 @@
         </div>
         <form id="catalog-row-modal-form">
           <div class="terr-catalog-modal__body">
-            <div class="terr-catalog-modal__edit-wrap">
-              <div class="terr-catalog-modal__edit-head" aria-hidden="true">
-                <span>ID</span><span>Território</span><span>Tipo</span><span>Status</span><span>Designado</span><span>Cobertura</span>
+            <div class="terr-catalog-modal__context">
+              <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
+              <div class="terr-catalog-modal__context-main">
+                <span class="terr-catalog-modal__context-name">${escapeHtml(H().territoryLabel(t))}</span>
+                ${catalogTypeCell(t)}
               </div>
-              <div class="terr-catalog-modal__edit-row">
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--id">
-                  <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
-                </div>
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--name">
-                  ${catalogTerritoryCell(t)}
-                </div>
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--type">
-                  ${catalogTypeCell(t)}
-                </div>
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--status">
-                  <select name="status" class="terr-catalog-modal-input terr-catalog-modal-input--status" aria-label="Status">
-                    <option value="disponivel" ${!isDesignado ? 'selected' : ''}>Disponível</option>
-                    <option value="designado" ${isDesignado ? 'selected' : ''}>Designado</option>
-                  </select>
-                </div>
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--assign">
-                  <select name="profile_id" class="terr-catalog-modal-input" aria-label="Designado" ${!isDesignado ? 'disabled' : ''}>
-                    <option value="">— Selecione —</option>
-                    ${catalogModalOverseerOptions(t.id, selectedProfile)}
-                  </select>
-                </div>
-                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--cov">
-                  <label class="terr-catalog-modal-cov-field">
-                    <span id="catalog-modal-cov-label" class="terr-catalog-modal-cov-field__label">${isDesignado ? 'Data da designação' : 'Último dia trabalhado'}</span>
-                    <input name="coverage_date" type="date" value="${escapeHtml(coverageIso)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
-                  </label>
-                  <div id="catalog-modal-cov-preview" class="terr-catalog-modal__cov-preview"></div>
-                  <p id="catalog-modal-cov-hint" class="terr-catalog-modal__cov-hint">${isDesignado ? 'Define quando o território entrou em campo.' : 'Dias sem cobertura são calculados a partir desta data.'}</p>
-                </div>
+            </div>
+            <p class="terr-catalog-modal__section-label">Prévia da linha</p>
+            <div id="catalog-modal-live-row" class="terr-catalog-modal__live-wrap"></div>
+            <div class="terr-catalog-modal__edit-grid">
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">flag</span>Status</span>
+                <select name="status" class="terr-catalog-modal-input terr-catalog-modal-input--status" aria-label="Status">
+                  <option value="disponivel" ${!isDesignado ? 'selected' : ''}>Disponível</option>
+                  <option value="designado" ${isDesignado ? 'selected' : ''}>Designado</option>
+                </select>
+              </label>
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Designado</span>
+                <select name="profile_id" class="terr-catalog-modal-input" aria-label="Designado" ${!isDesignado ? 'disabled' : ''}>
+                  <option value="">— Selecione —</option>
+                  ${catalogModalOverseerOptions(t.id, selectedProfile)}
+                </select>
+              </label>
+              <div class="terr-catalog-modal-field terr-catalog-modal-field--cov">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><span id="catalog-modal-cov-label">${isDesignado ? 'Data da designação' : 'Último dia trabalhado'}</span></span>
+                <input name="coverage_date" type="date" value="${escapeHtml(coverageIso)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
+                <p id="catalog-modal-cov-hint" class="terr-catalog-modal__cov-hint">${isDesignado ? 'Define quando o território entrou em campo.' : 'Dias sem cobertura são calculados a partir desta data.'}</p>
               </div>
             </div>
             <label class="terr-catalog-modal-field">

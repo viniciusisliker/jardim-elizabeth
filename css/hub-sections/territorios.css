@@ -533,7 +533,7 @@
     .terr-sched-modal-btn .material-symbols-outlined{font-size:1rem;line-height:1}
     .terr-catalog-modal{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(15,52,98,.4)}
     @media(min-width:640px){.terr-catalog-modal{align-items:center;padding:1rem}}
-    .terr-catalog-modal__panel{width:min(36rem,100%);max-height:min(92vh,100dvh);display:flex;flex-direction:column;background:#fff;border-radius:1rem 1rem 0 0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+    .terr-catalog-modal__panel{width:min(28rem,100%);max-height:min(92vh,100dvh);display:flex;flex-direction:column;background:#fff;border-radius:1rem 1rem 0 0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28)}
     @media(min-width:640px){.terr-catalog-modal__panel{border-radius:1rem}}
     .terr-catalog-modal__hero{position:relative;padding:1rem 1.125rem .875rem;background:linear-gradient(135deg,#0f3462 0%,#1a4a7a 100%);color:#fff}
     .terr-catalog-modal__close{position:absolute;top:.75rem;right:.75rem;display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border:none;border-radius:9999px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}
@@ -541,24 +541,23 @@
     .terr-catalog-modal__kicker{margin:0 0 .25rem;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.72)}
     .terr-catalog-modal__hero h3{margin:0;font-size:1rem;font-weight:800;line-height:1.2;color:#fff;padding-right:2.5rem}
     .terr-catalog-modal__subtitle{margin:.25rem 0 0;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.88)}
-    .terr-catalog-modal__body{overflow:auto;padding:1rem 1.125rem;flex:1 1 auto}
-    .terr-catalog-modal__edit-wrap{border:1px solid #e2e6ef;border-radius:.75rem;overflow-x:auto;background:#fff;margin-bottom:1rem;-webkit-overflow-scrolling:touch}
-    .terr-catalog-modal__edit-head,.terr-catalog-modal__edit-row{display:grid;grid-template-columns:2.75rem minmax(7rem,1.15fr) minmax(5.5rem,.85fr) minmax(5.5rem,.9fr) minmax(7rem,1fr) minmax(9rem,1.15fr);min-width:32rem}
-    .terr-catalog-modal__edit-head{font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;background:#f7f9fc;border-bottom:1px solid var(--terr-grid-row)}
-    .terr-catalog-modal__edit-head>span{padding:.3125rem .5rem;border-right:1px solid var(--terr-grid-line)}
-    .terr-catalog-modal__edit-head>span:last-child{border-right:none}
-    .terr-catalog-modal__edit-row{align-items:stretch;font-size:.8125rem;line-height:1.3}
-    .terr-catalog-modal__cell{padding:.4375rem .5rem;border-right:1px solid var(--terr-grid-line);display:flex;flex-direction:column;justify-content:center;min-width:0}
-    .terr-catalog-modal__cell:last-child{border-right:none}
-    .terr-catalog-modal__cell--name{overflow:hidden}
-    .terr-catalog-modal__cell--cov{gap:.25rem;justify-content:flex-start;padding-top:.375rem;padding-bottom:.375rem}
-    .terr-catalog-modal-input--status{font-weight:700;font-size:.6875rem;text-transform:uppercase;letter-spacing:.03em}
-    .terr-catalog-modal-input--date{font-size:.75rem}
-    .terr-catalog-modal-cov-field{display:flex;flex-direction:column;gap:.1875rem;width:100%}
-    .terr-catalog-modal-cov-field__label{font-size:.5625rem;font-weight:700;color:#6b7280}
-    .terr-catalog-modal__cov-preview{min-height:2rem}
-    .terr-catalog-modal__cov-preview .terr-catalog-cov{gap:.1875rem}
-    .terr-catalog-modal__cov-hint{margin:0;font-size:.5625rem;color:#9ca3af;line-height:1.3}
+    .terr-catalog-modal__body{overflow:auto;padding:1rem 1.125rem;flex:1 1 auto;display:flex;flex-direction:column;gap:.875rem}
+    .terr-catalog-modal__context{display:flex;align-items:center;gap:.625rem;padding:.625rem .75rem;border:1px solid #e2e6ef;border-radius:.75rem;background:#f7f9fc}
+    .terr-catalog-modal__context-main{display:flex;flex-direction:column;gap:.25rem;min-width:0;flex:1}
+    .terr-catalog-modal__context-name{font-size:.8125rem;font-weight:700;color:#0f3462;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-catalog-modal__section-label{margin:0;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .terr-catalog-modal__live-wrap{border:1px solid #e2e6ef;border-radius:.75rem;background:#fff;padding:.5rem .625rem}
+    .terr-catalog-modal__live-row{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"status assign" "cov cov";gap:.375rem .625rem;align-items:center}
+    .terr-catalog-modal__live-row .terr-catalog-status{grid-area:status;justify-self:start}
+    .terr-catalog-modal__live-assign{grid-area:assign;font-size:.8125rem;font-weight:600;color:#0f3462;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .terr-catalog-modal__live-assign--muted{color:#9ca3af;font-style:italic;font-weight:500}
+    .terr-catalog-modal__live-row .terr-catalog-cov{grid-area:cov;width:100%}
+    .terr-catalog-modal__edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .terr-catalog-modal-field--cov{grid-column:1/-1}
+    @media(max-width:479px){.terr-catalog-modal__edit-grid{grid-template-columns:1fr}}
+    .terr-catalog-modal-input--status{font-weight:700;font-size:.75rem}
+    .terr-catalog-modal-input--date{max-width:11rem}
+    .terr-catalog-modal__cov-hint{margin:.25rem 0 0;font-size:.625rem;color:#9ca3af;line-height:1.35}
     .terr-catalog-modal-field{display:flex;flex-direction:column;gap:.3125rem;min-width:0}
     .terr-catalog-modal-field__label{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
     .terr-catalog-modal-field__label .material-symbols-outlined{font-size:.875rem;color:#3b5e97}
