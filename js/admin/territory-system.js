@@ -62,8 +62,7 @@
     territorio: {},
     location: {},
     time: {},
-    suggestion: { sim: true, nao: true },
-    assigned: { sim: true, nao: true }
+    suggestion: { sim: true, nao: true }
   };
   let schedSort = { col: 'day', dir: 'asc' };
   let overFilter = {
@@ -86,7 +85,7 @@
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
-    sched: ['92px', '168px', '200px', '172px', '96px', '160px', '96px', '88px'],
+    sched: ['92px', '168px', '200px', '172px', '96px', '160px', '88px'],
     hist: ['76px', '96px', '168px', '210px', '240px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
@@ -975,10 +974,6 @@
     return !!(row.suggestion || row.suggestion_note);
   }
 
-  function scheduleIsAssigned(row) {
-    return !!findAssignmentForScheduleRow(row);
-  }
-
   function syncSchedFilterOptions() {
     const rows = scheduleRowsForWeek();
     const days = [...new Set(rows.map((r) => r.weekday_label))].sort(
@@ -1033,9 +1028,6 @@
         case 'suggestion':
           cmp = Number(scheduleHasSuggestion(a)) - Number(scheduleHasSuggestion(b));
           break;
-        case 'assigned':
-          cmp = Number(scheduleIsAssigned(a)) - Number(scheduleIsAssigned(b));
-          break;
         default:
           cmp = scheduleDaySortIndex(a.weekday_label) - scheduleDaySortIndex(b.weekday_label);
       }
@@ -1052,7 +1044,6 @@
     list = xlfApplyMapFilter(list, schedFilter.location, (r) => r.location_name || '—');
     list = xlfApplyMapFilter(list, schedFilter.time, (r) => r.schedule_times || '—');
     list = xlfApplyMapFilter(list, schedFilter.suggestion, (r) => (scheduleHasSuggestion(r) ? 'sim' : 'nao'));
-    list = xlfApplyMapFilter(list, schedFilter.assigned, (r) => (scheduleIsAssigned(r) ? 'sim' : 'nao'));
     return getSortedScheduleRows(list);
   }
 
@@ -1070,7 +1061,6 @@
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Horário', filterKey: 'time', options: timeOpts, wrap: 'span' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'assigned', label: 'Designado', filterKey: 'assigned', options: SCHED_ASSIGNED_OPTIONS, wrap: 'span' })}
       <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
   }
 
@@ -1136,7 +1126,6 @@
         <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
         <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
         <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
-        <span class="terr-sched-cell terr-sched-cell--assigned-flag${assignment ? ' terr-sched-cell--assigned-flag--yes' : ''}" aria-hidden="true">${assignment ? '●' : ''}</span>
         <div class="terr-sched-row-actions">
           ${returnBtn}
           <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
@@ -1373,10 +1362,6 @@
   const SCHED_SUGGESTION_OPTIONS = [
     { value: 'sim', label: 'Com sugestão' },
     { value: 'nao', label: 'Sem sugestão' }
-  ];
-  const SCHED_ASSIGNED_OPTIONS = [
-    { value: 'sim', label: 'Designado' },
-    { value: 'nao', label: 'Não designado' }
   ];
   const OVER_PREF_OPTIONS = [
     { value: 'meio_de_semana', label: 'Meio de semana' },
