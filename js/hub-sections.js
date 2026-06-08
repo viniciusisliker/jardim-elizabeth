@@ -101,11 +101,12 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060971'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026060984'],
       scripts: [
+        'js/week-input-helpers.js?v=2026060984',
         'js/equipment-schedule-helpers.js?v=2026060968',
         'js/admin/table-xlf.js?v=2026060939',
-        'js/admin/carrinhos-displays.js?v=2026060972'
+        'js/admin/carrinhos-displays.js?v=2026060984'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
@@ -141,10 +142,10 @@
       permission: 'territorios',
       viewId: 'hub-view-territorios',
       partial: 'hub/sections/territorios.html',
-      styles: ['css/hub-sections/territorios.css?v=2026060983'],
+      styles: ['css/hub-sections/territorios.css?v=2026060984'],
       scripts: [
         'js/territory-column-resize.js?v=2026060919',
-        'js/admin/territory-system.js?v=2026060983'
+        'js/admin/territory-system.js?v=2026060984'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {

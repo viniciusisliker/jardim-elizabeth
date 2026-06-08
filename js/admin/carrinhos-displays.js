@@ -1737,10 +1737,15 @@
       </div>`;
   }
 
+  function syncEqWeekInput() {
+    const weekInput = document.getElementById('eq-week');
+    if (!weekInput || !window.JEWeekInput) return;
+    weekInput.value = window.JEWeekInput.weekInputFromSunday(currentWeek);
+  }
+
   function renderSchedule() {
     const list = document.getElementById('eq-sched-list');
-    const weekInput = document.getElementById('eq-week');
-    if (weekInput) weekInput.value = currentWeek;
+    syncEqWeekInput();
     if (!list) return;
 
     const rows = helpers.slotsForWeek(slots, currentWeek);
@@ -1882,7 +1887,8 @@
     ensurePublisherModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
-      currentWeek = helpers.snapToWeekStart(e.target.value);
+      currentWeek = window.JEWeekInput?.sundayFromWeekInput(e.target.value)
+        || helpers.snapToWeekStart(e.target.value);
       inlineSlotDraft = null;
       renderSchedule();
       document.getElementById('eq-whatsapp-wrap')?.classList.add('hidden');

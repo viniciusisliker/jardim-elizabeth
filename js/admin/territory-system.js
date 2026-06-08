@@ -1174,9 +1174,14 @@
     initTerrColResize('spots');
   }
 
-  function refreshSemanaView() {
+  function syncSemanaWeekInput() {
     const weekInput = document.getElementById('semana-week');
-    if (weekInput) weekInput.value = currentWeek;
+    if (!weekInput || !window.JEWeekInput) return;
+    weekInput.value = window.JEWeekInput.weekInputFromMonday(currentWeek);
+  }
+
+  function refreshSemanaView() {
+    syncSemanaWeekInput();
     renderExtraDesignados();
     renderPriorityList();
     renderMeetingSpots();
@@ -1207,7 +1212,7 @@
   }
 
   function renderSemana() {
-    document.getElementById('semana-week').value = currentWeek;
+    syncSemanaWeekInput();
     const el = document.getElementById('semana-list');
     if (!weekTemplate.length) {
       el.innerHTML = `
@@ -3042,7 +3047,9 @@
       });
 
       document.getElementById('semana-week')?.addEventListener('change', async (e) => {
-        currentWeek = helpers.snapToMonday(e.target.value);
+        currentWeek = window.JEWeekInput?.mondayFromWeekInput(e.target.value)
+          || helpers.snapToMonday(e.target.value);
+        syncSemanaWeekInput();
         try {
           await ensureSecondaryData();
           weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
