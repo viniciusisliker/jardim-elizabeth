@@ -2959,9 +2959,9 @@
       const profileId = fd.get('profile_id');
       if (profileId) {
         const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
-        dirigenteName = profileName(p) || fd.get('dirigente_name')?.trim() || '—';
+        dirigenteName = profileName(p) || '—';
       } else {
-        dirigenteName = fd.get('dirigente_name')?.trim() || '—';
+        dirigenteName = ctx.row?.dirigente_name || '—';
       }
     }
     const territoryId = fd.get('territory_id');
@@ -2969,9 +2969,8 @@
     if (territoryId) {
       const t = territories.find((tr) => tr.id === territoryId);
       if (t) territorio = H().territoryLabel(t);
-    } else {
-      const code = fd.get('territory_code')?.trim();
-      if (code) territorio = code;
+    } else if (ctx.row?.territory_code) {
+      territorio = ctx.row.territory_code;
     }
     const location = fd.get('location_name')?.trim() || '';
     const time = fd.get('schedule_times')?.trim() || '';
@@ -3060,13 +3059,21 @@
               <div id="sched-modal-preview"></div>
             </div>
             <div class="terr-sched-modal__fields">
-              <label class="terr-sched-modal-field">
+              ${saturdayFromQuadro ? `
+              <label class="terr-sched-modal-field terr-sched-modal-field--day">
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
-                <input name="weekday_label" required value="${escapeHtml(row?.weekday_label || '')}" list="cronograma-dias-modal" class="terr-sched-modal-input" placeholder="Ex.: Terça, Quarta (Tarde)"/>
-              </label>
-              <datalist id="cronograma-dias-modal">${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}">`).join('')}</datalist>
-              ${saturdayFromQuadro ? '' : `
-              <div class="terr-sched-modal-grid">
+                <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
+                  ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
+                </select>
+              </label>` : `
+              <div class="terr-sched-modal-grid terr-sched-modal-grid--lead">
+                <label class="terr-sched-modal-field terr-sched-modal-field--day">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
+                  <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
+                    <option value="">—</option>
+                    ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
+                  </select>
+                </label>
                 <label class="terr-sched-modal-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
                   <select name="profile_id" class="terr-sched-modal-input">
@@ -3074,24 +3081,14 @@
                     ${overseerOptions(row?.profile_id)}
                   </select>
                 </label>
-                <label class="terr-sched-modal-field">
-                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">badge</span>Nome do dirigente</span>
-                  <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
-                </label>
               </div>`}
-              <div class="terr-sched-modal-grid">
-                <label class="terr-sched-modal-field">
-                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
-                  <select name="territory_id" class="terr-sched-modal-input">
-                    <option value="">— Selecione —</option>
-                    ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
-                  </select>
-                </label>
-                <label class="terr-sched-modal-field">
-                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">tag</span>Código</span>
-                  <input name="territory_code" value="${escapeHtml(row?.territory_code || '')}" class="terr-sched-modal-input" placeholder="Ex.: T4"/>
-                </label>
-              </div>
+              <label class="terr-sched-modal-field">
+                <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
+                <select name="territory_id" class="terr-sched-modal-input">
+                  <option value="">— Selecione —</option>
+                  ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
+                </select>
+              </label>
               <div class="terr-sched-modal-grid">
                 <label class="terr-sched-modal-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>Local</span>
@@ -3157,20 +3154,24 @@
       const profileId = saturdayFromQuadro ? (enriched.profile_id || row.profile_id) : (fd.get('profile_id') || null);
       let dirigenteName = saturdayFromQuadro
         ? (enriched.dirigente_name || row.dirigente_name)
-        : (fd.get('dirigente_name')?.trim() || null);
+        : null;
       if (!saturdayFromQuadro && profileId) {
         const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
         dirigenteName = profileName(p) || dirigenteName;
+      } else if (!saturdayFromQuadro && !profileId && isEdit) {
+        dirigenteName = row.dirigente_name || null;
       }
       if (!saturdayFromQuadro && !profileId && !dirigenteName) {
-        showToast(toast, 'Informe o dirigente.', true);
+        showToast(toast, 'Selecione o dirigente.', true);
         return;
       }
       const territoryId = fd.get('territory_id') || null;
-      let territoryCode = fd.get('territory_code')?.trim() || null;
-      if (territoryId && !territoryCode) {
-        const t = territories.find((tr) => tr.id === territoryId);
-        if (t) territoryCode = `T${t.num}`;
+      let territoryCode = null;
+      if (territoryId) {
+        const terr = territories.find((tr) => tr.id === territoryId);
+        if (terr) territoryCode = `T${terr.num}`;
+      } else if (row?.territory_code) {
+        territoryCode = row.territory_code.trim();
       }
       const payload = {
         weekday_label: fd.get('weekday_label')?.trim(),

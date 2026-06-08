@@ -515,7 +515,10 @@
     .terr-sched-modal__preview-row{border-bottom:none!important}
     .terr-sched-modal__fields{display:grid;gap:.75rem}
     .terr-sched-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-    @media(max-width:479px){.terr-sched-modal-grid{grid-template-columns:1fr}}
+    .terr-sched-modal-grid--lead{grid-template-columns:minmax(6.25rem,7rem) minmax(0,1fr)}
+    @media(max-width:479px){.terr-sched-modal-grid,.terr-sched-modal-grid--lead{grid-template-columns:1fr}}
+    .terr-sched-modal-field--day{min-width:0}
+    .terr-sched-modal-input--day{font-size:.75rem;padding:.375rem .4375rem}
     .terr-sched-modal-field{display:flex;flex-direction:column;gap:.3125rem;min-width:0}
     .terr-sched-modal-field__label{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
     .terr-sched-modal-field__label .material-symbols-outlined{font-size:.875rem;color:#3b5e97}
