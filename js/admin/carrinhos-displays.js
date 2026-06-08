@@ -1870,7 +1870,7 @@
   }
 
   async function init() {
-    if (window.__JEAdminCarrinhosDisplaysInit) return;
+    if (window.__JEAdminCarrinhosDisplaysInit) return true;
 
     const profile = await guardPermission('agendamentos');
     if (!profile) return false;
@@ -1885,6 +1885,8 @@
     setupTabs();
     fillSelectOptions();
     ensurePublisherModalPortal();
+    ensureItemModalPortal();
+    ensureLocModalPortal();
 
     document.getElementById('eq-week')?.addEventListener('change', (e) => {
       currentWeek = window.JEWeekInput?.sundayFromWeekInput(e.target.value)
@@ -1896,8 +1898,20 @@
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal(null));
-    document.getElementById('eq-btn-add-item')?.addEventListener('click', () => startNewItemInline());
-    document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => startNewLocInline());
+    document.getElementById('eq-btn-add-item')?.addEventListener('click', () => openItemModal(null));
+    document.getElementById('eq-btn-add-loc')?.addEventListener('click', () => openLocModal(null));
+    document.getElementById('eq-form-item')?.addEventListener('submit', saveItem);
+    document.getElementById('eq-item-cancel')?.addEventListener('click', closeItemModal);
+    document.getElementById('eq-item-modal-close')?.addEventListener('click', closeItemModal);
+    document.getElementById('eq-item-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'eq-item-modal') closeItemModal();
+    });
+    document.getElementById('eq-form-loc')?.addEventListener('submit', saveLoc);
+    document.getElementById('eq-loc-cancel')?.addEventListener('click', closeLocModal);
+    document.getElementById('eq-loc-modal-close')?.addEventListener('click', closeLocModal);
+    document.getElementById('eq-loc-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'eq-loc-modal') closeLocModal();
+    });
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-btn-whatsapp-volunteers')?.addEventListener('click', openVolunteerWhatsApp);
 
@@ -2173,6 +2187,7 @@
     }
 
     window.__JEAdminCarrinhosDisplaysInit = true;
+    return true;
   }
 
   window.JEAdminCarrinhosDisplays = { init };
