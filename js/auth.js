@@ -220,9 +220,21 @@
     return window.JE_CONFIG?.adminRoles?.includes(role);
   }
 
+  /** Designações ativas no perfil — quando existem, só elas definem o acesso (exceto superuser). */
+  function hasAssignedDesignations(profile) {
+    return (profile.designations || []).length > 0;
+  }
+
   function hasPermission(profile, permission) {
     if (!profile || !permission) return false;
     if (isSuperUser(profile.role)) return true;
+
+    if (hasAssignedDesignations(profile)) {
+      if ((profile.permissions || []).includes(permission)) return true;
+      if (permission === 'announcements' && profile.can_announcements) return true;
+      return false;
+    }
+
     if (permission !== 'settings' && isAdminRole(profile.role)) return true;
     if ((profile.permissions || []).includes(permission)) return true;
     if (permission === 'announcements' && profile.can_announcements) return true;
@@ -235,7 +247,10 @@
 
   function canAccessHub(profile) {
     if (!profile) return false;
-    if (isSuperUser(profile.role) || isAdminRole(profile.role)) return true;
+    if (isSuperUser(profile.role)) return true;
+
+    if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
+
     if ((profile.permissions || []).includes('hub')) return true;
     if (window.JEAccess?.MODULE_PERMISSIONS?.some((p) => hasPermission(profile, p))) return true;
     return !!profile.can_announcements;

@@ -1,5 +1,5 @@
 (function () {
-  const { guardAdmin, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
   const { PERMISSION_LABELS, MODULE_PERMISSIONS } = window.JEAccess;
 
   const ROLES = [
@@ -60,7 +60,7 @@
   async function init() {
     if (window.__JEAdminConfigInit) return;
     window.__JEAdminConfigInit = true;
-    const profile = await guardAdmin();
+    const profile = await guardPermission('settings');
     if (!profile) return;
 
     const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
