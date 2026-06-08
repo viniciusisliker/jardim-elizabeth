@@ -142,7 +142,7 @@
       permission: 'territorios',
       viewId: 'hub-view-territorios',
       partial: 'hub/sections/territorios.html',
-      styles: ['css/hub-sections/territorios.css?v=2026060994'],
+      styles: ['css/hub-sections/territorios.css?v=2026060995'],
       scripts: [
         'js/territory-column-resize.js?v=2026060919',
         'js/admin/territory-system.js?v=2026060994'
