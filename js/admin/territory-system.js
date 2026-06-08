@@ -1805,7 +1805,7 @@
         <td class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</td>
         <td>${catalogCoverageCell(t)}</td>
         <td class="terr-catalog-actions">
-          <button type="button" data-edit-terr="${t.id}" class="terr-sched-icon-btn" title="Editar">
+          <button type="button" data-edit-catalog-row="${t.id}" class="terr-sched-icon-btn" title="Editar registro">
             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
         </td>
@@ -2541,65 +2541,128 @@
     initTerrColResize('over');
   }
 
-  function openTerrFormModal(t) {
+  function openCatalogRowModal(t) {
     if (!t) return;
+    if (document.getElementById('catalog-row-modal-wrap')) return;
+
+    const assignment = assignmentByTerritoryId.get(t.id);
+    const isDesignado = t.status === 'designado' && assignment;
+    const cov = catalogCoverageMeta(t);
+    const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
+    const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
+    const lastWorkedIso = t.last_worked_at ? String(t.last_worked_at).slice(0, 10) : '';
+
     const wrap = document.createElement('div');
-    wrap.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40';
+    wrap.id = 'catalog-row-modal-wrap';
+    wrap.className = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-primary/40';
     wrap.innerHTML = `
-      <form class="bg-white rounded-xl border border-outline-variant p-6 w-full max-w-md space-y-3 shadow-xl max-h-[90vh] overflow-y-auto">
+      <form class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl border border-outline-variant p-5 sm:p-6 space-y-4 shadow-xl max-h-[92vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="catalog-row-modal-title">
         <div>
-          <h3 class="font-bold text-primary">Editar território</h3>
+          <h3 id="catalog-row-modal-title" class="font-bold text-primary">Editar registro</h3>
           <p class="text-sm text-on-surface-variant mt-0.5">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name)}</p>
         </div>
-        <label class="block text-xs font-semibold text-primary">Nome
-          <input name="display_name" required value="${escapeHtml(t.display_name)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">URL da imagem
-          <input name="map_image_url" value="${escapeHtml(t.map_image_url || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Tipo
-          <select name="territory_type" class="mt-1 w-full rounded-lg border-outline-variant text-sm">
-            <option value="meio_de_semana" ${t.territory_type !== 'final_de_semana' ? 'selected' : ''}>Meio de semana</option>
-            <option value="final_de_semana" ${t.territory_type === 'final_de_semana' ? 'selected' : ''}>Final de semana</option>
-          </select>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Melhor ocasião
-          <input name="best_occasion" value="${escapeHtml(t.best_occasion || '')}" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Manhã, Tarde…"/>
-        </label>
+        <div class="rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-2.5 space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span>
+            <span class="text-xs text-on-surface-variant">${escapeHtml(cov.headline)}</span>
+          </div>
+          <p class="text-xs text-on-surface-variant">${escapeHtml(cov.sub)}</p>
+          ${isDesignado ? `<p class="text-xs font-semibold text-primary">Dirigente: ${escapeHtml(profileName(assignment.profiles))}</p>` : ''}
+        </div>
+        ${isDesignado ? `
+          <label class="block text-xs font-semibold text-primary">Data da designação
+            <input name="assigned_at" type="date" required value="${escapeHtml(assignedIso)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+          </label>` : `
+          <label class="block text-xs font-semibold text-primary">Último dia trabalhado
+            <input name="last_worked_at" type="date" value="${escapeHtml(lastWorkedIso)}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
+          </label>`}
         <label class="block text-xs font-semibold text-primary">Observações
           <textarea name="observations" rows="2" class="mt-1 w-full rounded-lg border-outline-variant text-sm">${escapeHtml(t.observations || '')}</textarea>
         </label>
-        <div class="flex gap-2 pt-1">
-          <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button>
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button type="submit" class="inline-flex items-center gap-1 bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
+            Salvar
+          </button>
+          ${isDesignado ? `
+            <button type="button" data-devolver class="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg border border-outline-variant text-primary">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">undo</span>
+              Devolver
+            </button>` : `
+            <button type="button" data-designar class="inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-lg border border-outline-variant text-primary">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">person_add</span>
+              Designar
+            </button>`}
           <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
         </div>
       </form>`;
+
     document.body.appendChild(wrap);
-    wrap.querySelector('[data-cancel]').addEventListener('click', () => wrap.remove());
-    wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
+    document.body.style.overflow = 'hidden';
+
+    const close = () => {
+      wrap.remove();
+      document.body.style.overflow = '';
+    };
+
+    wrap.querySelector('[data-cancel]').addEventListener('click', close);
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+
+    wrap.querySelector('[data-devolver]')?.addEventListener('click', () => {
+      close();
+      openDevolverModal(assignment);
+    });
+
+    wrap.querySelector('[data-designar]')?.addEventListener('click', () => {
+      close();
+      openDesignarModal({ territoryId: t.id });
+    });
+
     wrap.querySelector('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const { error } = await client.from('territories').update({
-        display_name: fd.get('display_name')?.trim(),
-        map_image_url: fd.get('map_image_url')?.trim() || null,
-        territory_type: fd.get('territory_type'),
-        best_occasion: fd.get('best_occasion')?.trim() || null,
-        observations: fd.get('observations')?.trim() || null
-      }).eq('id', t.id);
-      wrap.remove();
-      if (error) showToast(toast, error.message, true);
-      else {
-        showToast(toast, 'Território atualizado.');
+      const observations = fd.get('observations')?.trim() || null;
+
+      try {
+        if (isDesignado) {
+          const assignedAt = fd.get('assigned_at');
+          const { error: assignErr } = await client
+            .from('territory_active_assignments')
+            .update({ assigned_at: assignedAt })
+            .eq('id', assignment.id);
+          if (assignErr) throw assignErr;
+
+          const { error: terrErr } = await client
+            .from('territories')
+            .update({ observations })
+            .eq('id', t.id);
+          if (terrErr) throw terrErr;
+        } else {
+          const lastWorked = fd.get('last_worked_at') || null;
+          const { error } = await client
+            .from('territories')
+            .update({
+              observations,
+              last_worked_at: lastWorked || null
+            })
+            .eq('id', t.id);
+          if (error) throw error;
+        }
+
         await client.rpc('log_territory_history', {
           p_event_type: 'edicao',
           p_territory_id: t.id,
-          p_profile_id: null,
+          p_profile_id: assignment?.profile_id || null,
           p_event_date: H().toISODate(new Date()),
-          p_details: 'Catálogo atualizado pelo servo de territórios',
+          p_details: 'Registro atualizado no painel',
           p_metadata: {}
         }).catch(() => {});
+
+        close();
+        showToast(toast, 'Registro atualizado.');
         await refresh();
+      } catch (err) {
+        showToast(toast, err.message || 'Erro ao salvar.', true);
       }
     });
   }
@@ -2907,9 +2970,9 @@
     window.__JETerrDelegatedActions = true;
 
     document.getElementById('panel-painel')?.addEventListener('click', (e) => {
-      const editBtn = e.target.closest('[data-edit-terr]');
+      const editBtn = e.target.closest('[data-edit-catalog-row]');
       if (editBtn) {
-        openTerrFormModal(territories.find((x) => x.id === editBtn.dataset.editTerr));
+        openCatalogRowModal(territories.find((x) => x.id === editBtn.dataset.editCatalogRow));
       }
     });
 

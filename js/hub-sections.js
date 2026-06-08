@@ -145,7 +145,7 @@
       styles: ['css/hub-sections/territorios.css?v=2026060984'],
       scripts: [
         'js/territory-column-resize.js?v=2026060919',
-        'js/admin/territory-system.js?v=2026060984'
+        'js/admin/territory-system.js?v=2026060989'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {
