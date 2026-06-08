@@ -2596,28 +2596,139 @@
     initTerrColResize('over');
   }
 
-  function renderCatalogModalPreviewRowHtml(t, assignment, overrides = {}) {
-    const assignee = assignment ? profileName(assignment.profiles) : '—';
-    const statusClass = t.status === 'designado' ? 'designado' : 'disponivel';
-    const cov = catalogCoverageMetaForPreview(t, assignment, overrides);
-    return `
-      <tr class="terr-catalog-modal__preview-row">
-        <td><span class="terr-catalog-num">${escapeHtml(t.num)}</span></td>
-        <td class="terr-catalog-name">${catalogTerritoryCell(t)}</td>
-        <td>${catalogTypeCell(t)}</td>
-        <td><span class="terr-catalog-status terr-catalog-status--${statusClass}">${escapeHtml(STATUS_LABELS[t.status] || t.status)}</span></td>
-        <td class="terr-catalog-cell terr-catalog-assign${assignee === '—' ? ' terr-catalog-cell--muted' : ''}" title="${escapeHtml(assignee)}">${escapeHtml(assignee)}</td>
-        <td>${catalogCoverageCellFromMeta(cov)}</td>
-      </tr>`;
+  function catalogModalOverseerOptions(territoryId, selectedId) {
+    const busyElsewhere = new Set(
+      activeAssignments.filter((a) => a.territory_id !== territoryId).map((a) => a.profile_id)
+    );
+    return overseers
+      .filter((o) => o.is_active !== false)
+      .map((o) => {
+        const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
+        const disabled = busyElsewhere.has(o.profile_id) && o.profile_id !== selectedId;
+        return `<option value="${o.profile_id}" ${o.profile_id === selectedId ? 'selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (ocupado)' : ''}</option>`;
+      })
+      .join('');
   }
 
-  function syncCatalogModalPreview(form, tbody, t, assignment, isDesignado) {
-    if (!form || !tbody) return;
+  function syncCatalogModalUi(form, t, assignment) {
+    if (!form) return;
+    const status = form.querySelector('[name="status"]')?.value;
+    const isDesignado = status === 'designado';
+    const profileSel = form.querySelector('[name="profile_id"]');
+    const covLabel = form.querySelector('#catalog-modal-cov-label');
+    const covHint = form.querySelector('#catalog-modal-cov-hint');
+    const previewEl = form.querySelector('#catalog-modal-cov-preview');
+
+    if (profileSel) {
+      profileSel.disabled = !isDesignado;
+      profileSel.required = isDesignado;
+    }
+    if (covLabel) {
+      covLabel.textContent = isDesignado ? 'Data da designação' : 'Último dia trabalhado';
+    }
+    if (covHint) {
+      covHint.textContent = isDesignado
+        ? 'Define quando o território entrou em campo.'
+        : 'Dias sem cobertura são calculados a partir desta data.';
+    }
+
     const fd = new FormData(form);
+    const profileId = fd.get('profile_id');
+    const coverageDate = fd.get('coverage_date') || null;
+    const previewT = { ...t, status: isDesignado ? 'designado' : 'disponivel' };
+    let previewAssignment = null;
+    if (isDesignado) {
+      previewAssignment = assignment && assignment.profile_id === profileId
+        ? { ...assignment, assigned_at: coverageDate || assignment.assigned_at }
+        : profileId
+          ? {
+              assigned_at: coverageDate || H().toISODate(new Date()),
+              profiles: profiles.find((p) => p.id === profileId)
+                || overseers.find((o) => o.profile_id === profileId)?.profiles
+            }
+          : assignment || null;
+    }
     const overrides = isDesignado
-      ? { assigned_at: fd.get('assigned_at') || null }
-      : { last_worked_at: fd.get('last_worked_at') || null };
-    tbody.innerHTML = renderCatalogModalPreviewRowHtml(t, assignment, overrides);
+      ? { assigned_at: coverageDate }
+      : { last_worked_at: coverageDate };
+    if (previewEl) {
+      previewEl.innerHTML = catalogCoverageCellFromMeta(
+        catalogCoverageMetaForPreview(previewT, previewAssignment, overrides)
+      );
+    }
+  }
+
+  async function saveCatalogRowChanges(t, assignment, fd) {
+    const newStatus = fd.get('status');
+    const profileId = fd.get('profile_id') || null;
+    const coverageDate = fd.get('coverage_date') || null;
+    const observations = fd.get('observations')?.trim() || null;
+    const wasDesignado = t.status === 'designado' && assignment;
+
+    if (newStatus === 'designado') {
+      if (!profileId) throw new Error('Selecione o designado.');
+      const assignedAt = coverageDate || H().toISODate(new Date());
+
+      if (wasDesignado) {
+        const profileChanged = assignment.profile_id !== profileId;
+        if (profileChanged) {
+          const busy = activeAssignments.find(
+            (a) => a.profile_id === profileId && a.territory_id !== t.id
+          );
+          if (busy) throw new Error('Este dirigente já possui um território ativo.');
+          const { error } = await client
+            .from('territory_active_assignments')
+            .update({ profile_id: profileId, assigned_at: assignedAt })
+            .eq('id', assignment.id);
+          if (error) throw error;
+        } else {
+          const { error } = await client
+            .from('territory_active_assignments')
+            .update({ assigned_at: assignedAt })
+            .eq('id', assignment.id);
+          if (error) throw error;
+        }
+        const { error: terrErr } = await client
+          .from('territories')
+          .update({ observations })
+          .eq('id', t.id);
+        if (terrErr) throw terrErr;
+      } else {
+        const { error } = await client.rpc('assign_territory_field', {
+          p_territory_id: t.id,
+          p_profile_id: profileId,
+          p_assigned_at: assignedAt
+        });
+        if (error) throw error;
+        if (observations) {
+          const { error: terrErr } = await client
+            .from('territories')
+            .update({ observations })
+            .eq('id', t.id);
+          if (terrErr) throw terrErr;
+        }
+      }
+      return;
+    }
+
+    if (wasDesignado) {
+      const { error } = await client.rpc('return_territory_field', {
+        p_assignment_id: assignment.id,
+        p_work_date: coverageDate || H().toISODate(new Date()),
+        p_notes: observations
+      });
+      if (error) throw error;
+      return;
+    }
+
+    const { error } = await client
+      .from('territories')
+      .update({
+        observations,
+        last_worked_at: coverageDate || null
+      })
+      .eq('id', t.id);
+    if (error) throw error;
   }
 
   function openCatalogRowModal(t) {
@@ -2625,9 +2736,11 @@
     if (document.getElementById('catalog-row-modal-wrap')) return;
 
     const assignment = assignmentByTerritoryId.get(t.id);
-    const isDesignado = t.status === 'designado' && assignment;
+    const isDesignado = t.status === 'designado';
     const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
     const lastWorkedIso = t.last_worked_at ? String(t.last_worked_at).slice(0, 10) : '';
+    const coverageIso = isDesignado ? assignedIso : lastWorkedIso;
+    const selectedProfile = assignment?.profile_id || '';
 
     const wrap = document.createElement('div');
     wrap.id = 'catalog-row-modal-wrap';
@@ -2644,49 +2757,49 @@
         </div>
         <form id="catalog-row-modal-form">
           <div class="terr-catalog-modal__body">
-            <p class="terr-catalog-modal__preview-label">Prévia da linha</p>
-            <div class="terr-catalog-modal__preview-wrap">
-              <table class="terr-catalog-table terr-catalog-modal__preview-table">
-                <thead>
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Território</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Designado</th>
-                    <th scope="col">Cobertura</th>
-                  </tr>
-                </thead>
-                <tbody id="catalog-modal-preview"></tbody>
-              </table>
+            <div class="terr-catalog-modal__edit-wrap">
+              <div class="terr-catalog-modal__edit-head" aria-hidden="true">
+                <span>ID</span><span>Território</span><span>Tipo</span><span>Status</span><span>Designado</span><span>Cobertura</span>
+              </div>
+              <div class="terr-catalog-modal__edit-row">
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--id">
+                  <span class="terr-catalog-num">${escapeHtml(t.num)}</span>
+                </div>
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--name">
+                  ${catalogTerritoryCell(t)}
+                </div>
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--type">
+                  ${catalogTypeCell(t)}
+                </div>
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--status">
+                  <select name="status" class="terr-catalog-modal-input terr-catalog-modal-input--status" aria-label="Status">
+                    <option value="disponivel" ${!isDesignado ? 'selected' : ''}>Disponível</option>
+                    <option value="designado" ${isDesignado ? 'selected' : ''}>Designado</option>
+                  </select>
+                </div>
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--assign">
+                  <select name="profile_id" class="terr-catalog-modal-input" aria-label="Designado" ${!isDesignado ? 'disabled' : ''}>
+                    <option value="">— Selecione —</option>
+                    ${catalogModalOverseerOptions(t.id, selectedProfile)}
+                  </select>
+                </div>
+                <div class="terr-catalog-modal__cell terr-catalog-modal__cell--cov">
+                  <label class="terr-catalog-modal-cov-field">
+                    <span id="catalog-modal-cov-label" class="terr-catalog-modal-cov-field__label">${isDesignado ? 'Data da designação' : 'Último dia trabalhado'}</span>
+                    <input name="coverage_date" type="date" value="${escapeHtml(coverageIso)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
+                  </label>
+                  <div id="catalog-modal-cov-preview" class="terr-catalog-modal__cov-preview"></div>
+                  <p id="catalog-modal-cov-hint" class="terr-catalog-modal__cov-hint">${isDesignado ? 'Define quando o território entrou em campo.' : 'Dias sem cobertura são calculados a partir desta data.'}</p>
+                </div>
+              </div>
             </div>
-            <div class="terr-catalog-modal__fields">
-              ${isDesignado ? `
-              <label class="terr-catalog-modal-field">
-                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
-                <input name="assigned_at" type="date" required value="${escapeHtml(assignedIso)}" class="terr-catalog-modal-input"/>
-              </label>` : `
-              <label class="terr-catalog-modal-field">
-                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">history</span>Último dia trabalhado</span>
-                <input name="last_worked_at" type="date" value="${escapeHtml(lastWorkedIso)}" class="terr-catalog-modal-input"/>
-              </label>`}
-              <label class="terr-catalog-modal-field">
-                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
-                <textarea name="observations" rows="2" class="terr-catalog-modal-input terr-catalog-modal-input--area">${escapeHtml(t.observations || '')}</textarea>
-              </label>
-            </div>
+            <label class="terr-catalog-modal-field">
+              <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
+              <textarea name="observations" rows="2" class="terr-catalog-modal-input terr-catalog-modal-input--area">${escapeHtml(t.observations || '')}</textarea>
+            </label>
           </div>
           <div class="terr-catalog-modal__foot">
             <div class="terr-catalog-modal__foot-actions">
-              ${isDesignado ? `
-              <button type="button" data-devolver class="terr-catalog-modal-btn terr-catalog-modal-btn--warn">
-                <span class="material-symbols-outlined" aria-hidden="true">undo</span>
-                Devolver
-              </button>` : `
-              <button type="button" data-designar class="terr-catalog-modal-btn terr-catalog-modal-btn--accent">
-                <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-                Designar
-              </button>`}
               <button type="button" data-cancel class="terr-catalog-modal-btn terr-catalog-modal-btn--ghost">Cancelar</button>
               <button type="submit" class="terr-catalog-modal-btn terr-catalog-modal-btn--primary">
                 <span class="material-symbols-outlined" aria-hidden="true">save</span>
@@ -2701,72 +2814,35 @@
     document.body.style.overflow = 'hidden';
 
     const form = wrap.querySelector('#catalog-row-modal-form');
-    const previewBody = wrap.querySelector('#catalog-modal-preview');
 
     const close = () => {
       wrap.remove();
       document.body.style.overflow = '';
     };
 
-    syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado);
+    syncCatalogModalUi(form, t, assignment);
     form.querySelectorAll('input, select, textarea').forEach((el) => {
-      el.addEventListener('input', () => syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado));
-      el.addEventListener('change', () => syncCatalogModalPreview(form, previewBody, t, assignment, isDesignado));
+      el.addEventListener('input', () => syncCatalogModalUi(form, t, assignment));
+      el.addEventListener('change', () => syncCatalogModalUi(form, t, assignment));
     });
 
     wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
     wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
 
-    wrap.querySelector('[data-devolver]')?.addEventListener('click', () => {
-      close();
-      openDevolverModal(assignment);
-    });
-
-    wrap.querySelector('[data-designar]')?.addEventListener('click', () => {
-      close();
-      openDesignarModal({ territoryId: t.id });
-    });
-
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const observations = fd.get('observations')?.trim() || null;
 
       try {
-        if (isDesignado) {
-          const assignedAt = fd.get('assigned_at');
-          const { error: assignErr } = await client
-            .from('territory_active_assignments')
-            .update({ assigned_at: assignedAt })
-            .eq('id', assignment.id);
-          if (assignErr) throw assignErr;
-
-          const { error: terrErr } = await client
-            .from('territories')
-            .update({ observations })
-            .eq('id', t.id);
-          if (terrErr) throw terrErr;
-        } else {
-          const lastWorked = fd.get('last_worked_at') || null;
-          const { error } = await client
-            .from('territories')
-            .update({
-              observations,
-              last_worked_at: lastWorked || null
-            })
-            .eq('id', t.id);
-          if (error) throw error;
-        }
-
+        await saveCatalogRowChanges(t, assignment, fd);
         await client.rpc('log_territory_history', {
           p_event_type: 'edicao',
           p_territory_id: t.id,
-          p_profile_id: assignment?.profile_id || null,
+          p_profile_id: fd.get('profile_id') || assignment?.profile_id || null,
           p_event_date: H().toISODate(new Date()),
           p_details: 'Registro atualizado no painel',
           p_metadata: {}
         }).catch(() => {});
-
         close();
         showToast(toast, 'Registro atualizado.');
         await refresh();
