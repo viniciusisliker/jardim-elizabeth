@@ -233,40 +233,59 @@
       </div>
     </div>
 
-    <div id="eq-item-modal" class="eq-modal" aria-hidden="true">
-      <div class="eq-modal__panel" role="dialog" aria-labelledby="eq-item-modal-title">
-        <div class="eq-modal__head">
-          <h2 id="eq-item-modal-title">Adicionar equipamento</h2>
-          <button type="button" id="eq-item-modal-close" class="eq-modal__close" aria-label="Fechar">
-            <span class="material-symbols-outlined">close</span>
+    <div id="eq-item-modal" class="eq-modal eq-modal--item" aria-hidden="true">
+      <div class="eq-modal__panel eq-modal__panel--item" role="dialog" aria-labelledby="eq-item-modal-title">
+        <div class="eq-item-modal-hero" id="eq-item-modal-hero" data-type="carrinho">
+          <button type="button" id="eq-item-modal-close" class="eq-item-modal-close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
+          <div class="eq-item-modal-hero__visual" id="eq-item-modal-visual" aria-hidden="true"></div>
+          <div class="eq-item-modal-hero__text">
+            <p class="eq-item-modal-hero__kicker">Catálogo de equipamentos</p>
+            <h2 id="eq-item-modal-title">Adicionar equipamento</h2>
+            <p id="eq-item-modal-preview" class="eq-item-modal-hero__preview">Novo carrinho</p>
+          </div>
         </div>
-        <form id="eq-form-item" class="eq-modal__body">
+        <form id="eq-form-item" class="eq-modal__body eq-modal__body--item">
           <input type="hidden" id="eq-item-id"/>
-          <div class="eq-modal-grid">
-            <label>Nome
-              <input id="eq-item-name" required class="eq-modal-input" placeholder="SOUZA, ALMEIDA, DAMASCENO…"/>
-            </label>
-            <label>Tipo
-              <select id="eq-item-type" required class="eq-modal-input">
-                <option value="carrinho">Carrinho</option>
-                <option value="display">Display</option>
-              </select>
+          <input type="hidden" id="eq-item-type" value="carrinho"/>
+          <fieldset class="eq-item-type-pick">
+            <legend>Tipo de equipamento</legend>
+            <div class="eq-item-type-pick__grid" role="group" aria-label="Tipo de equipamento">
+              <button type="button" class="eq-item-type-card is-active" data-eq-item-type="carrinho" aria-pressed="true">
+                <span class="eq-item-type-card__icon eq-item-type-card__icon--cart" aria-hidden="true"></span>
+                <span class="eq-item-type-card__label">Carrinho</span>
+              </button>
+              <button type="button" class="eq-item-type-card" data-eq-item-type="display" aria-pressed="false">
+                <span class="eq-item-type-card__icon eq-item-type-card__icon--display" aria-hidden="true"></span>
+                <span class="eq-item-type-card__label">Display</span>
+              </button>
+            </div>
+          </fieldset>
+          <div class="eq-modal-grid eq-modal-grid--item">
+            <label class="eq-modal-grid--full">Nome do equipamento
+              <input id="eq-item-name" required class="eq-modal-input" placeholder="Ex.: SOUZA, ALMEIDA, DAMASCENO" autocomplete="off"/>
             </label>
             <label class="eq-modal-grid--full">Local padrão
-              <input id="eq-item-location" class="eq-modal-input" placeholder="Praça, endereço…"/>
+              <select id="eq-item-location" class="eq-modal-input">
+                <option value="">Selecione um local…</option>
+              </select>
             </label>
-            <label>Ordem
-              <input id="eq-item-sort" type="number" value="0" class="eq-modal-input"/>
+            <label>Ordem no catálogo
+              <input id="eq-item-sort" type="number" value="0" min="0" class="eq-modal-input" title="Menor número aparece primeiro"/>
             </label>
             <label class="eq-modal-grid--full">Observações
-              <input id="eq-item-notes" class="eq-modal-input" placeholder="Opcional"/>
+              <input id="eq-item-notes" class="eq-modal-input" placeholder="Opcional — cor, número, detalhes…"/>
             </label>
           </div>
-          <div class="eq-modal__foot">
+          <div class="eq-modal__foot eq-modal__foot--item">
+            <p class="eq-item-modal-hint">O equipamento ficará disponível no cronograma semanal.</p>
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-item-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
-              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">Salvar</button>
+              <button type="submit" class="eq-modal-btn eq-modal-btn--primary">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Salvar
+              </button>
             </div>
           </div>
         </form>

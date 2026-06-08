@@ -528,6 +528,11 @@
     renderEquipmentTable({ updateUi: true });
   }
 
+  const EQUIPMENT_BRAND_SVG = {
+    carrinho: '<svg class="eq-item-modal-svg eq-item-modal-svg--cart" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="20" cy="72" r="4" fill="#3b5e97"/><circle cx="44" cy="72" r="4" fill="#3b5e97"/><rect x="12" y="62" width="40" height="6" rx="3" fill="#3b5e97"/><rect x="10" y="22" width="44" height="42" rx="3" fill="#3b5e97"/><rect x="10" y="50" width="44" height="3" rx="1.5" fill="#2b4b7a"/><rect x="10" y="36" width="44" height="3" rx="1.5" fill="#2b4b7a"/><rect x="14" y="24" width="16" height="11" rx="1" fill="#9dbcf2"/><rect x="33" y="24" width="16" height="11" rx="1" fill="#aac7ff"/><rect x="14" y="39" width="16" height="10" rx="1" fill="#d6e3ff"/><rect x="33" y="39" width="16" height="10" rx="1" fill="#9cbffe"/><rect x="13" y="53" width="11" height="8" rx="1" fill="#c8a96e"/><rect x="26" y="53" width="11" height="8" rx="1" fill="#c8a96e"/><rect x="39" y="53" width="11" height="8" rx="1" fill="#c8a96e"/><rect x="18" y="6" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/><rect x="18" y="2" width="28" height="18" rx="2" fill="white" stroke="#3b5e97" stroke-width="1.5"/><rect x="22" y="6" width="10" height="7" rx="1" fill="#d6e3ff"/><line x1="22" y1="16" x2="34" y2="16" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/><line x1="22" y1="19" x2="30" y2="19" stroke="#3b5e97" stroke-width="1.2" stroke-linecap="round"/></svg>',
+    display: '<svg class="eq-item-modal-svg eq-item-modal-svg--display" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="8" y="52" width="48" height="5" rx="2.5" fill="#3b5e97"/><rect x="8" y="12" width="5" height="42" rx="2" fill="#3b5e97"/><rect x="51" y="12" width="5" height="42" rx="2" fill="#3b5e97"/><rect x="8" y="12" width="48" height="4" rx="2" fill="#3b5e97"/><rect x="8" y="34" width="48" height="4" rx="2" fill="#2b4b7a"/><rect x="14" y="14" width="16" height="18" rx="1.5" fill="#9dbcf2"/><rect x="33" y="14" width="16" height="18" rx="1.5" fill="#aac7ff"/><rect x="14" y="38" width="16" height="13" rx="1.5" fill="#d6e3ff"/><rect x="33" y="38" width="16" height="13" rx="1.5" fill="#9cbffe"/><rect x="16" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/><rect x="35" y="16" width="6" height="5" rx="0.5" fill="#3b5e97" opacity="0.4"/></svg>'
+  };
+
   function ensureItemModalPortal() {
     const modal = document.getElementById('eq-item-modal');
     if (modal && modal.parentElement !== document.body) {
@@ -535,15 +540,64 @@
     }
   }
 
+  function mountItemModalArt() {
+    const visual = document.getElementById('eq-item-modal-visual');
+    if (visual && !visual.querySelector('svg')) {
+      visual.innerHTML = EQUIPMENT_BRAND_SVG.carrinho;
+    }
+    const cartIcon = document.querySelector('.eq-item-type-card__icon--cart');
+    const displayIcon = document.querySelector('.eq-item-type-card__icon--display');
+    if (cartIcon && !cartIcon.querySelector('svg')) {
+      cartIcon.insertAdjacentHTML('afterbegin', EQUIPMENT_BRAND_SVG.carrinho);
+    }
+    if (displayIcon && !displayIcon.querySelector('svg')) {
+      displayIcon.insertAdjacentHTML('afterbegin', EQUIPMENT_BRAND_SVG.display);
+    }
+  }
+
+  function populateItemLocationSelect(selectedName) {
+    const select = document.getElementById('eq-item-location');
+    if (!select) return;
+    select.innerHTML = inlineLocationSelectOptions(selectedName || '');
+  }
+
+  function setItemModalType(type) {
+    const next = type === 'display' ? 'display' : 'carrinho';
+    const typeInput = document.getElementById('eq-item-type');
+    const hero = document.getElementById('eq-item-modal-hero');
+    const visual = document.getElementById('eq-item-modal-visual');
+    if (typeInput) typeInput.value = next;
+    if (hero) hero.dataset.type = next;
+    if (visual) visual.innerHTML = EQUIPMENT_BRAND_SVG[next];
+    document.querySelectorAll('[data-eq-item-type]').forEach((btn) => {
+      const active = btn.dataset.eqItemType === next;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    syncItemModalPreview();
+  }
+
+  function syncItemModalPreview() {
+    const type = document.getElementById('eq-item-type')?.value || 'carrinho';
+    const name = document.getElementById('eq-item-name')?.value.trim();
+    const typeLabel = helpers.EQUIPMENT_TYPES[type] || 'Equipamento';
+    const preview = document.getElementById('eq-item-modal-preview');
+    if (preview) {
+      preview.textContent = name || `Novo ${typeLabel.toLowerCase()}`;
+    }
+  }
+
   function resetItemForm() {
     document.getElementById('eq-form-item')?.reset();
     document.getElementById('eq-item-id').value = '';
     document.getElementById('eq-item-sort').value = '0';
-    document.getElementById('eq-item-type').value = 'carrinho';
+    setItemModalType('carrinho');
+    populateItemLocationSelect('');
   }
 
   function openItemModal(item) {
     ensureItemModalPortal();
+    mountItemModalArt();
     const modal = document.getElementById('eq-item-modal');
     if (!modal) return;
     resetItemForm();
@@ -551,10 +605,14 @@
     if (item) {
       document.getElementById('eq-item-id').value = item.id;
       document.getElementById('eq-item-name').value = item.name;
-      document.getElementById('eq-item-type').value = item.equipment_type;
-      document.getElementById('eq-item-location').value = item.default_location || '';
+      setItemModalType(item.equipment_type);
+      populateItemLocationSelect(item.default_location || '');
+      if (item.default_location) {
+        document.getElementById('eq-item-location').value = item.default_location;
+      }
       document.getElementById('eq-item-sort').value = String(item.sort_order ?? 0);
       document.getElementById('eq-item-notes').value = item.notes || '';
+      syncItemModalPreview();
     }
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
@@ -1905,6 +1963,10 @@
     document.getElementById('eq-item-modal-close')?.addEventListener('click', closeItemModal);
     document.getElementById('eq-item-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'eq-item-modal') closeItemModal();
+    });
+    document.getElementById('eq-item-name')?.addEventListener('input', syncItemModalPreview);
+    document.querySelectorAll('[data-eq-item-type]').forEach((btn) => {
+      btn.addEventListener('click', () => setItemModalType(btn.dataset.eqItemType));
     });
     document.getElementById('eq-form-loc')?.addEventListener('submit', saveLoc);
     document.getElementById('eq-loc-cancel')?.addEventListener('click', closeLocModal);
