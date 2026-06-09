@@ -33,7 +33,7 @@ JOIN public.profiles p ON (
   lower(trim(p.full_name)) = lower(trim('João Neves'))
   OR lower(trim(p.full_name)) LIKE lower(trim('João')) || '%'
 )
-WHERE t.num IN ('11', '011') OR lower(trim(t.display_name)) = lower(trim('Jd Leônidas Moreira B'))
+WHERE (t.num IN ('11', '011') OR lower(trim(t.display_name)) = lower(trim('Jd Leônidas Moreira B')))
   AND NOT EXISTS (
     SELECT 1 FROM public.territory_active_assignments a
     WHERE a.status = 'active' AND a.territory_id = t.id
@@ -55,7 +55,7 @@ JOIN public.profiles p ON (
   lower(trim(p.full_name)) = lower(trim('Lucas Dias'))
   OR lower(trim(p.full_name)) LIKE lower(trim('Lucas')) || '%'
 )
-WHERE t.num IN ('13', '013') OR lower(trim(t.display_name)) = lower(trim('CDHU A'))
+WHERE (t.num IN ('13', '013') OR lower(trim(t.display_name)) = lower(trim('CDHU A')))
   AND NOT EXISTS (
     SELECT 1 FROM public.territory_active_assignments a
     WHERE a.status = 'active' AND a.territory_id = t.id
@@ -77,7 +77,7 @@ JOIN public.profiles p ON (
   lower(trim(p.full_name)) = lower(trim('Marcelo Almeida'))
   OR lower(trim(p.full_name)) LIKE lower(trim('Marcelo Almeida')) || '%'
 )
-WHERE t.num IN ('18', '018') OR lower(trim(t.display_name)) = lower(trim('Jardim Helga C'))
+WHERE (t.num IN ('18', '018') OR lower(trim(t.display_name)) = lower(trim('Jardim Helga C')))
   AND NOT EXISTS (
     SELECT 1 FROM public.territory_active_assignments a
     WHERE a.status = 'active' AND a.territory_id = t.id
