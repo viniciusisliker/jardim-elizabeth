@@ -1302,7 +1302,7 @@
         ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
-        : '';
+        : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot" aria-hidden="true"></span>';
       return `
       <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
         <span class="terr-sched-day-pill">
