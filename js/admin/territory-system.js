@@ -256,10 +256,9 @@
       });
     }
     if (scope === 'sched' || !scope) {
-      R.mountGrid({
-        key: 'sched-v4',
-        panel: document.querySelector('#semana-sched-scroll .terr-sched-panel'),
-        headSelector: '.terr-sched-row--head',
+      R.mountTable({
+        key: 'sched-v5',
+        table: document.querySelector('#semana-sched-scroll .terr-sched-table'),
         defaults: TERR_COL_DEFAULTS.sched
       });
     }
@@ -1265,13 +1264,13 @@
     const locOpts = xlfOptionsFromKeys(Object.keys(schedFilter.location));
     const timeOpts = xlfOptionsFromKeys(Object.keys(schedFilter.time));
     return `
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'day', label: 'Dia', filterKey: 'day', options: dayOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Horário', filterKey: 'time', options: timeOpts, wrap: 'span' })}
-      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'span' })}
-      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'day', label: 'Dia', filterKey: 'day', options: dayOpts, wrap: 'th' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'th' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'th' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'th' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Horário', filterKey: 'time', options: timeOpts, wrap: 'th' })}
+      ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'th' })}
+      <th scope="col" class="terr-sched-actions-th" aria-hidden="true"></th>`;
   }
 
   function bindSchedFilters() {
@@ -1296,10 +1295,14 @@
 
     if (!filtered.length) {
       body.innerHTML = `
-        <div class="terr-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${total ? 'Nenhuma linha corresponde ao filtro.' : 'Nenhuma linha no cronograma.'}</p>
-        </div>`;
+        <tr>
+          <td colspan="7" class="terr-sched-empty-td">
+            <div class="terr-empty !border-0 !rounded-none">
+              <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+              <p class="text-sm">${total ? 'Nenhuma linha corresponde ao filtro.' : 'Nenhuma linha no cronograma.'}</p>
+            </div>
+          </td>
+        </tr>`;
       if (foot) foot.textContent = '';
       return;
     }
@@ -1323,26 +1326,28 @@
           </button>`
         : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
       return `
-      <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
-        <span class="terr-sched-day-pill">
+      <tr class="terr-sched-tr terr-sched-tr--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
+        <td><span class="terr-sched-day-pill">
           <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
           ${escapeHtml(r.weekday_label)}
-        </span>
-        <span class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</span>
-        ${territorioHtml}
-        <span class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</span>
-        <span class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</span>
-        <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
-        <div class="terr-sched-row-actions">
-          ${returnBtn}
-          <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
-            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-          </button>
-          <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del terr-sched-action--delete" title="Excluir">
-            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-          </button>
-        </div>
-      </div>`;
+        </span></td>
+        <td class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</td>
+        <td>${territorioHtml}</td>
+        <td class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</td>
+        <td class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</td>
+        <td><span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span></td>
+        <td class="terr-sched-actions-td">
+          <div class="terr-sched-row-actions">
+            ${returnBtn}
+            <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+            <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del terr-sched-action--delete" title="Excluir">
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>`;
     }).join('');
 
     if (foot) {
@@ -1407,7 +1412,7 @@
 
     const filtersChanged = syncSchedFilterOptions();
     if (filtersChanged) {
-      const head = document.querySelector('#semana-sched-scroll .terr-sched-row--head');
+      const head = document.querySelector('#semana-sched-scroll .terr-sched-table thead tr');
       if (head) head.innerHTML = schedHeaderRow();
       const scroll = document.getElementById('semana-sched-scroll');
       if (scroll) {
@@ -1432,8 +1437,10 @@
       el.innerHTML = `
         <div class="terr-sched-scroll" id="semana-sched-scroll">
           <div class="terr-sched-panel">
-            <div class="terr-sched-row terr-sched-row--head">${schedHeaderRow()}</div>
-            <div id="semana-table-body"></div>
+            <table class="terr-sched-table">
+              <thead><tr>${schedHeaderRow()}</tr></thead>
+              <tbody id="semana-table-body"></tbody>
+            </table>
             <p id="semana-table-foot" class="terr-catalog-foot"></p>
           </div>
         </div>`;
