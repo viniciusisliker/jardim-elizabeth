@@ -147,7 +147,7 @@
       scripts: [
         'js/territory-column-resize.js?v=2026060919',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/territory-system.js?v=2026060996'
+        'js/admin/territory-system.js?v=2026060997'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {

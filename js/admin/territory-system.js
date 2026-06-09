@@ -990,18 +990,52 @@
     return row.territories || null;
   }
 
+  function assignmentForTerritoryId(terrId) {
+    if (!terrId) return null;
+    const direct = assignmentByTerritoryId.get(terrId);
+    if (direct) return direct;
+    const terr = territories.find((t) => t.id === terrId);
+    if (!terr) return null;
+    const byNum = activeAssignments.find(
+      (a) => normalizeTerritoryNum(a.territories?.num) === normalizeTerritoryNum(terr.num)
+    );
+    if (byNum) return byNum;
+    if (terr.status === 'designado') {
+      return {
+        id: null,
+        territory_id: terr.id,
+        profiles: null,
+        territories: terr,
+        assigned_at: null,
+        _statusOnly: true
+      };
+    }
+    return null;
+  }
+
   function findAssignmentForScheduleRow(row) {
-    const terr = resolveScheduleTerritory(row);
-    if (terr) {
-      let assignment = activeAssignments.find((a) => a.territory_id === terr.id);
-      if (!assignment) {
-        assignment = activeAssignments.find(
-          (a) => normalizeTerritoryNum(a.territories?.num) === normalizeTerritoryNum(terr.num)
-        );
+    const terrId = resolveScheduleTerritoryId(row);
+    if (terrId) {
+      const hit = assignmentForTerritoryId(terrId);
+      if (hit) return hit;
+    }
+
+    const code = row.territory_code || '';
+    const match = code.match(/T?\s*(\d+)/i);
+    if (match) {
+      const normalized = normalizeTerritoryNum(match[1]);
+      for (const a of activeAssignments) {
+        let aNum = normalizeTerritoryNum(a.territories?.num);
+        if (!aNum && a.territory_id) {
+          const t = territories.find((item) => item.id === a.territory_id);
+          aNum = normalizeTerritoryNum(t?.num);
+        }
+        if (aNum === normalized) return a;
       }
-      if (assignment) return assignment;
-      if (terr.status === 'designado') {
-        return {
+      const terr = territories.find((t) => normalizeTerritoryNum(t.num) === normalized);
+      if (terr?.status === 'designado') {
+        const linked = assignmentByTerritoryId.get(terr.id);
+        return linked || {
           id: null,
           territory_id: terr.id,
           profiles: null,
@@ -1010,15 +1044,6 @@
           _statusOnly: true
         };
       }
-    }
-
-    const code = row.territory_code || '';
-    const match = code.match(/T?\s*(\d+)/i);
-    if (match) {
-      const normalized = normalizeTerritoryNum(match[1]);
-      return activeAssignments.find(
-        (a) => normalizeTerritoryNum(a.territories?.num) === normalized
-      ) || null;
     }
     return null;
   }
@@ -1102,6 +1127,8 @@
       return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
     }
     if (row.announcement_missing && H().isSaturdayCronogramaDay(row.weekday_label)) {
+      const manual = String(row.dirigente_name || '').trim();
+      if (manual) return escapeHtml(manual);
       return '<span class="terr-sched-cell--muted">Preencher no Quadro de Anúncios</span>';
     }
     return escapeHtml(name);

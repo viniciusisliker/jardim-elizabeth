@@ -303,17 +303,37 @@
     return result;
   }
 
+  function applyWeekendDirigenteManual(row, sat, name, profiles) {
+    const profile = resolveProfileByName(name, profiles);
+    return {
+      ...row,
+      announcement_sat_date: sat,
+      announcement_missing: false,
+      from_schedule_manual: true,
+      dirigente_name: name,
+      profile_id: profile?.id || row.profile_id || null,
+      profiles: profile ? { full_name: profile.full_name } : row.profiles || null
+    };
+  }
+
   function applyWeekendDirigente(row, weekStartIso, weekendByDate, profiles) {
     if (!isSaturdayCronogramaDay(row?.weekday_label)) return row;
     const sat = dateForWeekdayInWeek(weekStartIso, row.weekday_label);
     if (!sat) return row;
+    const manualName = String(row.dirigente_name || '').trim();
     const data = weekendByDate?.[sat];
-    if (!data) return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    if (!data) {
+      if (manualName) return applyWeekendDirigenteManual(row, sat, manualName, profiles);
+      return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    }
     if (String(data.evento_especial || '').trim()) {
       return { ...row, announcement_sat_date: sat, announcement_special: true };
     }
     const name = String(data.dirigente_sabado || '').trim();
-    if (!name) return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    if (!name) {
+      if (manualName) return applyWeekendDirigenteManual(row, sat, manualName, profiles);
+      return { ...row, announcement_sat_date: sat, announcement_missing: true };
+    }
     const profile = resolveProfileByName(name, profiles);
     return {
       ...row,

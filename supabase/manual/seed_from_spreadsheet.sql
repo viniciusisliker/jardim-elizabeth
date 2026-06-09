@@ -98,6 +98,18 @@ UPDATE public.territories SET display_name = 'CDHU C', territory_type = 'final_d
 UPDATE public.territories SET display_name = 'Jardim Helga A', territory_type = 'final_de_semana', best_occasion = NULL, last_worked_at = '2026-03-21', status = 'disponivel', observations = 'Devolvido via Form em 3/23/2026, 7:43:48 PM' WHERE lower(trim(display_name)) = lower(trim('Jardim Helga A'));
 UPDATE public.territories SET display_name = 'Jardim Helga B', territory_type = 'final_de_semana', best_occasion = NULL, last_worked_at = '2026-04-26', status = 'disponivel', observations = 'Devolvido via Form em 4/27/2026, 8:55:40 PM' WHERE lower(trim(display_name)) = lower(trim('Jardim Helga B'));
 UPDATE public.territories SET display_name = 'Jardim Helga C', territory_type = 'final_de_semana', best_occasion = NULL, last_worked_at = '2026-05-24', status = 'designado', observations = 'Designado via Form às 5/18/2026, 6:38:50 PM' WHERE lower(trim(display_name)) = lower(trim('Jardim Helga C'));
+
+INSERT INTO public.territory_active_assignments (territory_id, profile_id, assigned_at, status)
+SELECT t.id, p.id, '2026-05-24', 'active'
+FROM public.territories t
+JOIN public.profiles p ON (
+  lower(trim(p.full_name)) = lower(trim('Marcelo Almeida'))
+  OR lower(trim(p.full_name)) LIKE lower(trim('Marcelo Almeida')) || '%'
+)
+WHERE lower(trim(t.display_name)) = lower(trim('Jardim Helga C'))
+  AND NOT EXISTS (SELECT 1 FROM public.territory_active_assignments a WHERE a.status = 'active' AND a.profile_id = p.id)
+  AND NOT EXISTS (SELECT 1 FROM public.territory_active_assignments a WHERE a.status = 'active' AND a.territory_id = t.id)
+LIMIT 1;
 UPDATE public.territories SET display_name = 'Jardim Helga D', territory_type = 'final_de_semana', best_occasion = NULL, last_worked_at = '2026-05-16', status = 'disponivel', observations = 'Devolvido via Form em 5/18/2026, 6:47:50 PM' WHERE lower(trim(display_name)) = lower(trim('Jardim Helga D'));
 
 INSERT INTO public.territory_overseers (profile_id, preference, is_active)
