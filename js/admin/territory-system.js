@@ -961,15 +961,31 @@
     });
   }
 
+  function scheduleTerritoryNum(row) {
+    if (row?.territories?.num != null && row.territories.num !== '') {
+      return normalizeTerritoryNum(row.territories.num);
+    }
+    if (row?.territory_id) {
+      const linked = territories.find((t) => t.id === row.territory_id);
+      if (linked?.num != null && linked.num !== '') return normalizeTerritoryNum(linked.num);
+    }
+    for (const src of [row?.territory_code, row?.suggestion, row?.suggestion_note]) {
+      const match = String(src || '').match(/T?\s*(\d+)/i);
+      if (match) return normalizeTerritoryNum(match[1]);
+    }
+    return null;
+  }
+
+  function territoryByScheduleNum(row) {
+    const num = scheduleTerritoryNum(row);
+    if (!num) return null;
+    return territories.find((t) => normalizeTerritoryNum(t.num) === num) || null;
+  }
+
   function resolveScheduleTerritoryId(row) {
     if (row.territory_id) return row.territory_id;
     if (row.territories?.id) return row.territories.id;
-    const code = row.territory_code || '';
-    const match = code.match(/T?\s*(\d+)/i);
-    if (!match) return null;
-    const normalized = normalizeTerritoryNum(match[1]);
-    const t = territories.find((item) => normalizeTerritoryNum(item.num) === normalized);
-    return t?.id || null;
+    return territoryByScheduleNum(row)?.id || null;
   }
 
   function resolveScheduleTerritory(row) {
@@ -977,17 +993,7 @@
     if (terrId) {
       return territories.find((t) => t.id === terrId) || row.territories || null;
     }
-    if (row.territories?.num != null) {
-      const normalized = normalizeTerritoryNum(row.territories.num);
-      return territories.find((t) => normalizeTerritoryNum(t.num) === normalized) || row.territories;
-    }
-    const code = row.territory_code || '';
-    const match = code.match(/T?\s*(\d+)/i);
-    if (match) {
-      const normalized = normalizeTerritoryNum(match[1]);
-      return territories.find((t) => normalizeTerritoryNum(t.num) === normalized) || null;
-    }
-    return row.territories || null;
+    return row.territories || territoryByScheduleNum(row) || null;
   }
 
   function assignmentForTerritoryId(terrId) {
@@ -1020,10 +1026,8 @@
       if (hit) return hit;
     }
 
-    const code = row.territory_code || '';
-    const match = code.match(/T?\s*(\d+)/i);
-    if (match) {
-      const normalized = normalizeTerritoryNum(match[1]);
+    const normalized = scheduleTerritoryNum(row);
+    if (normalized) {
       for (const a of activeAssignments) {
         let aNum = normalizeTerritoryNum(a.territories?.num);
         if (!aNum && a.territory_id) {
@@ -1032,7 +1036,7 @@
         }
         if (aNum === normalized) return a;
       }
-      const terr = territories.find((t) => normalizeTerritoryNum(t.num) === normalized);
+      const terr = territoryByScheduleNum(row);
       if (terr?.status === 'designado') {
         const linked = assignmentByTerritoryId.get(terr.id);
         return linked || {
