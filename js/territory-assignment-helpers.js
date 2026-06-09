@@ -267,6 +267,19 @@
     );
   }
 
+  function domingoDirigenteName(row) {
+    if (!isSundayCronogramaDay(row?.weekday_label)) return '';
+    const idx = domingoFixedIndex(row);
+    if (idx < 0) return String(row.dirigente_name || '').trim();
+    return DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name;
+  }
+
+  function compareDomingoRows(a, b) {
+    const ia = domingoFixedIndex(a);
+    const ib = domingoFixedIndex(b);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+  }
+
   function applyDomingoFixedDirigentes(rows) {
     if (!rows?.length) return rows;
 
@@ -278,7 +291,8 @@
         ...row,
         dirigente_name: DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name,
         profile_id: null,
-        profiles: null
+        profiles: null,
+        sort_order: 6 + idx
       };
     });
 
@@ -290,11 +304,7 @@
 
     const ordered = domingoSlots
       .map((i) => patched[i])
-      .sort((a, b) => {
-        const ia = domingoFixedIndex(a);
-        const ib = domingoFixedIndex(b);
-        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
-      });
+      .sort(compareDomingoRows);
 
     const result = [...patched];
     domingoSlots.forEach((slot, j) => {
@@ -363,7 +373,10 @@
 
       msg += `🔹*${day.toUpperCase()}*\n`;
       rows.forEach((r) => {
-        const name = r.profiles?.full_name || r.dirigente_name || '—';
+        const name = domingoDirigenteName(r)
+          || r.profiles?.full_name
+          || r.dirigente_name
+          || '—';
         msg += `*Dirigente:* _${name}_\n`;
 
         const obs = (r.observation_override || '').trim();
@@ -415,6 +428,9 @@
     resolveProfileByName,
     isSaturdayCronogramaDay,
     isSundayCronogramaDay,
+    domingoFixedIndex,
+    domingoDirigenteName,
+    compareDomingoRows,
     applyDomingoFixedDirigentes,
     fetchWeekendAnnouncements,
     applyWeekendDirigente,

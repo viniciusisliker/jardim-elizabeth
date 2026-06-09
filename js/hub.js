@@ -11,8 +11,8 @@
 
   const SCRIPT_GLOBALS = {
     'js/admin-core.js?v=2026060902': 'JEAdmin',
-    'js/territory-assignment-helpers.js?v=2026060997': 'JETerritoryAssignment',
-    'js/admin/territory-system.js?v=2026060997': 'JEAdminTerritorios',
+    'js/territory-assignment-helpers.js?v=2026060999': 'JETerritoryAssignment',
+    'js/admin/territory-system.js?v=2026060999': 'JEAdminTerritorios',
     'js/equipment-schedule-helpers.js?v=2026060965': 'JEEquipmentSchedule',
     'js/admin/carrinhos-displays.js?v=2026060935': 'JEAdminCarrinhosDisplays'
   };

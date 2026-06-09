@@ -1115,13 +1115,28 @@
   }
 
   function scheduleDirigente(row) {
-    return profileName(row.profiles) || row.dirigente_name || '—';
+    if (H().isSundayCronogramaDay(row.weekday_label)) {
+      const fixed = H().domingoDirigenteName(row);
+      if (fixed) return fixed;
+    }
+    const pName = row.profiles?.full_name || row.profiles?.username;
+    if (pName) return pName;
+    const dName = String(row.dirigente_name || '').trim();
+    return dName || '—';
+  }
+
+  function scheduleDomingoSort(a, b) {
+    if (!H().isSundayCronogramaDay(a.weekday_label) || !H().isSundayCronogramaDay(b.weekday_label)) return 0;
+    return H().compareDomingoRows(a, b);
   }
 
   function scheduleDirigenteHtml(row) {
     const name = scheduleDirigente(row);
     if (row.from_announcement) {
       return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
+    }
+    if (H().isSundayCronogramaDay(row.weekday_label) && H().domingoDirigenteName(row)) {
+      return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Par de dirigentes fixo aos domingos">Fixo</span>`;
     }
     if (row.announcement_special) {
       return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
@@ -1200,6 +1215,7 @@
       switch (col) {
         case 'day':
           cmp = scheduleDaySortIndex(a.weekday_label) - scheduleDaySortIndex(b.weekday_label);
+          if (cmp === 0) cmp = scheduleDomingoSort(a, b);
           break;
         case 'dirigente':
           cmp = scheduleDirigente(a).localeCompare(scheduleDirigente(b), 'pt-BR', { sensitivity: 'base' });
@@ -1218,7 +1234,9 @@
           break;
         default:
           cmp = scheduleDaySortIndex(a.weekday_label) - scheduleDaySortIndex(b.weekday_label);
+          if (cmp === 0) cmp = scheduleDomingoSort(a, b);
       }
+      if (cmp === 0) cmp = scheduleDomingoSort(a, b);
       if (cmp === 0) cmp = (a.sort_order || 0) - (b.sort_order || 0);
       return cmp * mul;
     });
