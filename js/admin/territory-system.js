@@ -1323,6 +1323,79 @@
     return profile?.id || null;
   }
 
+  const REQUIRED_TERRITORY_DESIGNATIONS = [
+    { nums: ['11', '011'], profileNames: ['João Neves'] },
+    { nums: ['3', '03'], profileNames: ['Alexsezar Tenório'] }
+  ];
+
+  function territoryByNums(nums) {
+    const wanted = new Set(nums.map((n) => normalizeTerritoryNum(n)));
+    return territories.find((t) => wanted.has(normalizeTerritoryNum(t.num))) || null;
+  }
+
+  function resolveProfileByNames(names) {
+    for (const name of names) {
+      const profile = H().resolveProfileByName(name, profiles);
+      if (profile) return profile;
+    }
+    return null;
+  }
+
+  async function ensureTerritoryAssignment(terr, profileId) {
+    if (!terr || !profileId || assignmentByTerritoryId.has(terr.id)) return false;
+    const today = H().toISODate(new Date());
+    const busyElsewhere = activeAssignments.find((a) => a.profile_id === profileId && a.territory_id !== terr.id);
+    if (busyElsewhere) return false;
+
+    if (terr.status === 'disponivel') {
+      const { error } = await client.rpc('assign_territory_field', {
+        p_territory_id: terr.id,
+        p_profile_id: profileId,
+        p_assigned_at: today
+      });
+      if (error) {
+        console.warn('Designação obrigatória (RPC):', H().territoryLabel(terr), error.message);
+        return false;
+      }
+      return true;
+    }
+
+    if (terr.status === 'designado') {
+      const { error } = await client.from('territory_active_assignments').insert({
+        territory_id: terr.id,
+        profile_id: profileId,
+        assigned_at: today,
+        status: 'active'
+      });
+      if (error) {
+        console.warn('Designação obrigatória (insert):', H().territoryLabel(terr), error.message);
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  async function ensureRequiredDesignations() {
+    if (!client) return 0;
+    await ensureProfiles();
+    let created = 0;
+
+    for (const req of REQUIRED_TERRITORY_DESIGNATIONS) {
+      const terr = territoryByNums(req.nums);
+      const profile = resolveProfileByNames(req.profileNames);
+      if (!terr || !profile) continue;
+      const ok = await ensureTerritoryAssignment(terr, profile.id);
+      if (ok) created += 1;
+    }
+
+    if (created > 0) {
+      await Promise.all([loadTerritories(), loadActiveAssignments()]);
+    }
+    return created;
+  }
+
   async function syncScheduleDesignations() {
     if (!client || !weekTemplate.length) return 0;
 
@@ -1381,7 +1454,9 @@
     if (created > 0) {
       await Promise.all([loadTerritories(), loadActiveAssignments()]);
     }
-    return created;
+
+    const required = await ensureRequiredDesignations();
+    return created + required;
   }
 
   async function prepareSemanaView() {
