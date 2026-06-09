@@ -156,6 +156,8 @@
 
     cells.forEach((cell, index) => {
       if (index === 0) return;
+      if (cell.classList.contains('terr-sched-col--hidden')) return;
+      if (cells[index - 1]?.classList.contains('terr-sched-col--hidden')) return;
       cell.classList.add('terr-col-resize-cell');
       const handle = document.createElement('span');
       handle.className = 'terr-col-resize terr-col-resize--leading';

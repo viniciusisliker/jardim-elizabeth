@@ -165,8 +165,8 @@
           </div>
         </div>
       </div>`;
-    if (wrap === 'th') return `<th scope="col" class="${extraClass}">${inner}</th>`;
-    return `<span class="terr-xlf-head-cell ${extraClass}">${inner}</span>`;
+    if (wrap === 'th') return `<th scope="col" class="${extraClass}" data-sched-col="${col}">${inner}</th>`;
+    return `<span class="terr-xlf-head-cell ${extraClass}" data-sched-col="${col}">${inner}</span>`;
   }
 
   function bindXlfPanel(root, sortAttr, filterState, sortState, onRefresh) {

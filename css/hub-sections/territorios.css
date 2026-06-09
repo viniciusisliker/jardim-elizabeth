@@ -83,6 +83,14 @@
     .terr-priority-modal__list{overflow:auto;max-height:min(50vh,24rem)}
     .terr-priority-modal__foot{display:flex;justify-content:flex-end;padding:.625rem 1rem;border-top:1px solid #eef0f4;background:#f7f9fc}
     .terr-sched-toolbar-btn .material-symbols-outlined{font-size:1rem}
+    .terr-sched-cols-wrap{position:relative;flex-shrink:0}
+    .terr-sched-cols-menu{
+      position:absolute;top:calc(100% + .375rem);right:0;z-index:40;
+      min-width:11.5rem;max-width:14rem;box-sizing:border-box;
+      padding:.625rem .625rem .5rem;background:#fff;border:1px solid #dbe3ef;border-radius:.5rem;
+      box-shadow:0 8px 24px rgba(15,52,98,.18);
+    }
+    .terr-sched-col--hidden{display:none!important}
     .terr-wa-icon{width:1rem;height:1rem;flex-shrink:0;display:block}
     .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
     .terr-sched-panel{width:100%;min-width:0}

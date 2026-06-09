@@ -245,6 +245,179 @@
     spots: ['72px', '280px', '48px']
   };
 
+  const SCHED_COLUMNS = [
+    { id: 'day', label: 'Dia' },
+    { id: 'dirigente', label: 'Dirigente' },
+    { id: 'territorio', label: 'Território' },
+    { id: 'location', label: 'Local' },
+    { id: 'time', label: 'Horário' },
+    { id: 'suggestion', label: 'Sugestão' },
+    { id: 'actions', label: 'Ações', locked: true }
+  ];
+
+  const SCHED_COL_STORAGE = 'je-terr-sched-cols';
+
+  function loadSchedColVisibility() {
+    const base = Object.fromEntries(SCHED_COLUMNS.map((c) => [c.id, true]));
+    try {
+      const raw = localStorage.getItem(SCHED_COL_STORAGE);
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      SCHED_COLUMNS.forEach((c) => {
+        if (c.locked) base[c.id] = true;
+        else if (typeof saved[c.id] === 'boolean') base[c.id] = saved[c.id];
+      });
+    } catch {
+      /* ignore */
+    }
+    return base;
+  }
+
+  let schedColVisibility = loadSchedColVisibility();
+
+  function saveSchedColVisibility() {
+    try {
+      localStorage.setItem(SCHED_COL_STORAGE, JSON.stringify(schedColVisibility));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function isSchedColVisible(id) {
+    if (id === 'actions') return true;
+    return schedColVisibility[id] !== false;
+  }
+
+  function visibleSchedColCount() {
+    return SCHED_COLUMNS.filter((c) => isSchedColVisible(c.id)).length;
+  }
+
+  function tagSchedColgroup(table) {
+    const cols = table?.querySelectorAll('colgroup col');
+    if (!cols?.length) return;
+    SCHED_COLUMNS.forEach((col, i) => {
+      if (cols[i]) cols[i].dataset.schedCol = col.id;
+    });
+  }
+
+  function redistributeSchedColWidths(table) {
+    if (!table) return;
+    const colgroup = table.querySelector('colgroup');
+    if (!colgroup) return;
+    const defaults = TERR_COL_DEFAULTS.sched;
+    const visible = SCHED_COLUMNS.filter((c) => isSchedColVisible(c.id));
+    const totalPct = visible.reduce((sum, col) => {
+      const idx = SCHED_COLUMNS.findIndex((c) => c.id === col.id);
+      return sum + (parseFloat(defaults[idx]) || 0);
+    }, 0);
+    SCHED_COLUMNS.forEach((col, i) => {
+      const colEl = colgroup.children[i];
+      if (!colEl) return;
+      if (!isSchedColVisible(col.id)) {
+        colEl.style.width = '0';
+        return;
+      }
+      const pct = parseFloat(defaults[i]) || 0;
+      const scaled = totalPct > 0 ? (pct / totalPct) * 100 : 100 / visible.length;
+      colEl.style.width = `${scaled.toFixed(2)}%`;
+    });
+  }
+
+  function applySchedColVisibility() {
+    const table = document.querySelector('#semana-sched-scroll .terr-sched-table');
+    if (!table) return;
+    SCHED_COLUMNS.forEach((col) => {
+      const hidden = !isSchedColVisible(col.id);
+      table.querySelectorAll(`[data-sched-col="${col.id}"]`).forEach((el) => {
+        el.classList.toggle('terr-sched-col--hidden', hidden);
+        if (hidden) el.setAttribute('aria-hidden', 'true');
+        else el.removeAttribute('aria-hidden');
+      });
+    });
+    initTerrColResize('sched');
+    tagSchedColgroup(table);
+    redistributeSchedColWidths(table);
+    const emptyTd = table.querySelector('.terr-sched-empty-td');
+    if (emptyTd) emptyTd.colSpan = visibleSchedColCount();
+  }
+
+  function renderSchedColsMenu() {
+    const menu = document.getElementById('sched-cols-menu');
+    if (!menu) return;
+    const checks = SCHED_COLUMNS.filter((c) => !c.locked).map((col) => `
+      <label class="terr-xlf-check">
+        <input type="checkbox" data-sched-col-toggle="${col.id}" ${isSchedColVisible(col.id) ? 'checked' : ''}>
+        <span>${escapeHtml(col.label)}</span>
+      </label>`).join('');
+    menu.innerHTML = `
+      <p class="terr-xlf-menu-title">Colunas visíveis</p>
+      <div class="terr-xlf-checks">${checks}</div>
+      <div class="terr-xlf-menu-actions">
+        <button type="button" class="terr-xlf-clear" data-sched-cols-reset>Restaurar todas</button>
+      </div>`;
+  }
+
+  function closeSchedColsMenu() {
+    const menu = document.getElementById('sched-cols-menu');
+    const btn = document.getElementById('btn-sched-cols');
+    menu?.classList.add('hidden');
+    btn?.setAttribute('aria-expanded', 'false');
+  }
+
+  function setupSchedColsMenu() {
+    if (window.__JESchedColsMenuBound) return;
+    window.__JESchedColsMenuBound = true;
+    renderSchedColsMenu();
+    const wrap = document.getElementById('sched-cols-wrap');
+    const btn = document.getElementById('btn-sched-cols');
+    const menu = document.getElementById('sched-cols-menu');
+    if (!wrap || !btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = menu.classList.contains('hidden');
+      document.querySelectorAll('.terr-sched-cols-menu').forEach((m) => m.classList.add('hidden'));
+      if (open) {
+        renderSchedColsMenu();
+        menu.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeSchedColsMenu();
+      }
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const reset = e.target.closest('[data-sched-cols-reset]');
+      if (!reset) return;
+      schedColVisibility = Object.fromEntries(SCHED_COLUMNS.map((c) => [c.id, true]));
+      saveSchedColVisibility();
+      renderSchedColsMenu();
+      applySchedColVisibility();
+    });
+
+    menu.addEventListener('change', (e) => {
+      const box = e.target.closest('[data-sched-col-toggle]');
+      if (!box) return;
+      const id = box.dataset.schedColToggle;
+      if (!id || id === 'actions') return;
+      const nextVisible = box.checked;
+      const othersVisible = SCHED_COLUMNS.filter((c) => !c.locked && c.id !== id && isSchedColVisible(c.id)).length;
+      if (!nextVisible && othersVisible < 1) {
+        box.checked = true;
+        if (toast) showToast(toast, 'Deixe pelo menos uma coluna visível.', true);
+        return;
+      }
+      schedColVisibility[id] = nextVisible;
+      saveSchedColVisibility();
+      applySchedColVisibility();
+    });
+
+    document.addEventListener('click', () => closeSchedColsMenu());
+    document.addEventListener('scroll', () => closeSchedColsMenu(), true);
+    window.addEventListener('resize', () => closeSchedColsMenu());
+  }
+
   function initTerrColResize(scope) {
     const R = window.JETerrColumnResize;
     if (!R) return;
@@ -1270,7 +1443,7 @@
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'location', label: 'Local', filterKey: 'location', options: locOpts, wrap: 'th' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'time', label: 'Horário', filterKey: 'time', options: timeOpts, wrap: 'th' })}
       ${xlfColumnHeader('sched-sort', schedSort, schedFilter, { col: 'suggestion', label: 'Sugestão', filterKey: 'suggestion', options: SCHED_SUGGESTION_OPTIONS, wrap: 'th' })}
-      <th scope="col" class="terr-sched-actions-th" aria-hidden="true"></th>`;
+      <th scope="col" class="terr-sched-actions-th" data-sched-col="actions" aria-hidden="true"></th>`;
   }
 
   function bindSchedFilters() {
@@ -1296,7 +1469,7 @@
     if (!filtered.length) {
       body.innerHTML = `
         <tr>
-          <td colspan="7" class="terr-sched-empty-td">
+          <td colspan="${visibleSchedColCount()}" class="terr-sched-empty-td">
             <div class="terr-empty !border-0 !rounded-none">
               <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
               <p class="text-sm">${total ? 'Nenhuma linha corresponde ao filtro.' : 'Nenhuma linha no cronograma.'}</p>
@@ -1304,6 +1477,7 @@
           </td>
         </tr>`;
       if (foot) foot.textContent = '';
+      applySchedColVisibility();
       return;
     }
 
@@ -1327,16 +1501,16 @@
         : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
       return `
       <tr class="terr-sched-tr terr-sched-tr--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
-        <td><span class="terr-sched-day-pill">
+        <td data-sched-col="day"><span class="terr-sched-day-pill">
           <span class="material-symbols-outlined" aria-hidden="true">${scheduleDayIcon(r.weekday_label)}</span>
           ${escapeHtml(r.weekday_label)}
         </span></td>
-        <td class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</td>
-        <td>${territorioHtml}</td>
-        <td class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</td>
-        <td class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</td>
-        <td><span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span></td>
-        <td class="terr-sched-actions-td">
+        <td data-sched-col="dirigente" class="terr-sched-cell terr-sched-cell--dirigente">${dirigenteHtml}</td>
+        <td data-sched-col="territorio">${territorioHtml}</td>
+        <td data-sched-col="location" class="terr-sched-cell${r.location_name ? '' : ' terr-sched-cell--muted'}">${escapeHtml(r.location_name || '—')}</td>
+        <td data-sched-col="time" class="terr-sched-time">${escapeHtml(r.schedule_times || '—')}</td>
+        <td data-sched-col="suggestion"><span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span></td>
+        <td data-sched-col="actions" class="terr-sched-actions-td">
           <div class="terr-sched-row-actions">
             ${returnBtn}
             <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
@@ -1356,6 +1530,7 @@
       const suffix = filtered.length < total ? ` (${total} no total)` : '';
       foot.textContent = `Exibindo ${filtered.length} linha${filtered.length === 1 ? '' : 's'}${suffix}${filterNote}`;
     }
+    applySchedColVisibility();
   }
 
   function renderMeetingSpots() {
@@ -1446,7 +1621,7 @@
         </div>`;
       bindSchedFilters();
       renderSemanaTable();
-      initTerrColResize('sched');
+      setupSchedColsMenu();
     }
 
     renderExtraDesignados();
@@ -1812,8 +1987,8 @@
           </div>
         </div>
       </div>`;
-    if (wrap === 'th') return `<th scope="col" class="${extraClass}">${inner}</th>`;
-    return `<span class="terr-xlf-head-cell ${extraClass}">${inner}</span>`;
+    if (wrap === 'th') return `<th scope="col" class="${extraClass}" data-sched-col="${col}">${inner}</th>`;
+    return `<span class="terr-xlf-head-cell ${extraClass}" data-sched-col="${col}">${inner}</span>`;
   }
 
   function bindXlfPanel(root, sortAttr, filterState, sortState, onRefresh) {
@@ -3682,6 +3857,7 @@
       setupDelegatedActions();
       setupPriorityModal();
       setupTerritoryMapLightbox();
+      setupSchedColsMenu();
 
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
       document.getElementById('btn-whatsapp')?.addEventListener('click', async () => {
