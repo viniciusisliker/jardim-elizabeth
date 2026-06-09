@@ -95,6 +95,15 @@
       flex:1 1 auto;min-height:0;max-height:none;margin:.25rem 0;
       overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     }
+    .terr-sched-cols-menu__head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:0 .125rem .25rem}
+    .terr-sched-cols-menu__head .terr-xlf-menu-title{margin:0;flex:1;min-width:0}
+    .terr-sched-cols-menu__close{
+      display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+      width:1.625rem;height:1.625rem;margin:0;padding:0;border:1px solid #e2e6ef;border-radius:.375rem;
+      background:#f7f9fc;color:#6b7280;cursor:pointer;
+    }
+    .terr-sched-cols-menu__close:hover{background:#eef3fa;color:#0f3462;border-color:#dbe3ef}
+    .terr-sched-cols-menu__close .material-symbols-outlined{font-size:1rem;line-height:1}
     .terr-sched-col--hidden{display:none!important}
     .terr-wa-icon{width:1rem;height:1rem;flex-shrink:0;display:block}
     .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}

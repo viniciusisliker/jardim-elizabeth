@@ -339,7 +339,12 @@
         <span>${escapeHtml(col.label)}</span>
       </label>`).join('');
     menu.innerHTML = `
-      <p class="terr-xlf-menu-title">Colunas visíveis</p>
+      <div class="terr-sched-cols-menu__head">
+        <p class="terr-xlf-menu-title">Colunas visíveis</p>
+        <button type="button" class="terr-sched-cols-menu__close" data-sched-cols-close aria-label="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
       <div class="terr-xlf-checks">${checks}</div>
       <div class="terr-xlf-menu-actions">
         <button type="button" class="terr-xlf-clear" data-sched-cols-reset>Restaurar todas</button>
@@ -377,6 +382,10 @@
 
     menu.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (e.target.closest('[data-sched-cols-close]')) {
+        closeSchedColsMenu();
+        return;
+      }
       const reset = e.target.closest('[data-sched-cols-reset]');
       if (!reset) return;
       schedColVisibility = Object.fromEntries(SCHED_COLUMNS.map((c) => [c.id, true]));
