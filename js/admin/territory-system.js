@@ -3464,14 +3464,15 @@
       try {
         await saveCatalogRowChanges(t, assignment, fd);
         pushUndo(undoEntry);
-        await client.rpc('log_territory_history', {
+        const { error: logErr } = await client.rpc('log_territory_history', {
           p_event_type: 'edicao',
           p_territory_id: t.id,
           p_profile_id: fd.get('profile_id') || assignment?.profile_id || null,
           p_event_date: H().toISODate(new Date()),
           p_details: 'Registro atualizado no painel',
           p_metadata: {}
-        }).catch(() => {});
+        });
+        if (logErr) console.warn('Histórico (painel):', logErr.message);
         close();
         showToast(toast, 'Registro atualizado.');
         await refresh();
