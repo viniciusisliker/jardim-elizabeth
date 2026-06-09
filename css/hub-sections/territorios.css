@@ -84,8 +84,10 @@
     .terr-sched-toolbar-btn .material-symbols-outlined{font-size:1rem}
     .terr-wa-icon{width:1rem;height:1rem;flex-shrink:0;display:block}
     .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
-    .terr-sched-panel{min-width:48rem;--terr-grid-cols:5.75rem minmax(7.5rem,1.08fr) minmax(10rem,1.2fr) minmax(7.5rem,1.05fr) 5.5rem minmax(12rem,1.35fr) 5.5rem}
+    .terr-sched-panel{min-width:100%;width:max-content;--terr-grid-cols:5.75rem minmax(7.5rem,1.08fr) minmax(10rem,1.2fr) minmax(7.5rem,1.05fr) 4.5rem minmax(14rem,1.35fr) 5.5rem}
     .terr-sched-row{display:grid;grid-template-columns:var(--terr-grid-cols);column-gap:0;row-gap:.375rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid var(--terr-grid-row);font-size:.8125rem;line-height:1.3}
+    .terr-sched-row>*{min-width:0}
+    .terr-sched-row>.terr-sched-row-actions{min-width:4.3125rem;width:4.3125rem;max-width:4.3125rem;overflow:visible}
     .terr-sched-row:last-child{border-bottom:none}
     .terr-sched-row:not(.terr-sched-row--head):hover{background:#fafbfc}
     .terr-sched-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1;overflow:visible;align-items:stretch}
@@ -103,10 +105,10 @@
     .terr-sched-cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1b1c1c}
     .terr-sched-cell--dirigente{font-weight:600;color:#0f3462}
     .terr-sched-cell--muted{color:#9ca3af;font-style:italic}
-    .terr-sched-time{font-size:.6875rem;font-weight:700;color:#3b5e97;text-align:center}
-    .terr-sched-sugg{font-size:.6875rem;color:#5c4a1f;background:#fef9ee;border:1px solid #f0e4c8;padding:.0625rem .3125rem;border-radius:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-sched-time{font-size:.6875rem;font-weight:700;color:#3b5e97;text-align:center;min-width:0}
+    .terr-sched-sugg{font-size:.6875rem;color:#5c4a1f;background:#fef9ee;border:1px solid #f0e4c8;padding:.0625rem .3125rem;border-radius:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;width:100%;max-width:100%;box-sizing:border-box;display:block}
     .terr-sched-qa-badge{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;background:#faf6ef;color:#5c4a1f;border:1px solid #f0e4c8;margin-left:.25rem;vertical-align:middle}
-    .terr-sched-row-actions{display:grid;grid-template-columns:repeat(3,1.4375rem);justify-content:end;justify-items:center;align-items:center;width:100%;gap:0}
+    .terr-sched-row-actions{display:grid;grid-template-columns:repeat(3,1.4375rem);justify-content:end;justify-items:center;align-items:center;width:auto;max-width:100%;gap:0;box-sizing:border-box;flex-shrink:0}
     .terr-sched-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:1.4375rem;height:1.4375rem;padding:.1875rem;border:none;background:transparent;color:#3b5e97;cursor:pointer;border-radius:.3125rem;line-height:0;box-sizing:border-box}
     .terr-sched-icon-btn--slot{visibility:hidden;pointer-events:none}
     .terr-sched-icon-btn .material-symbols-outlined{font-size:1.0625rem}
@@ -177,8 +179,8 @@
     .terr-col-resize-cell{position:relative;overflow:visible}
     .terr-catalog-table th.terr-col-resize-cell{position:sticky}
     .terr-sched-row--head .terr-col-resize-cell,.terr-hist-row--head .terr-col-resize-cell,.terr-over-row--head .terr-col-resize-cell,.terr-spot-row--head .terr-col-resize-cell{overflow:visible}
-    .terr-col-resize{position:absolute;top:0;right:-4px;width:10px;height:100%;cursor:col-resize;user-select:none;touch-action:none;z-index:20}
-    .terr-col-resize--leading{left:-5px;right:auto}
+    .terr-col-resize{position:absolute;top:0;right:-4px;width:12px;height:100%;cursor:col-resize;user-select:none;touch-action:none;z-index:25}
+    .terr-col-resize--leading{left:-6px;right:auto}
     .terr-col-resize::after{content:'';position:absolute;top:12%;bottom:12%;left:50%;width:2px;margin-left:-1px;background:transparent;border-radius:1px;transition:background .15s,box-shadow .15s}
     .terr-col-resize:hover::after,.terr-col-resize--active::after{background:rgba(59,94,151,.55);box-shadow:0 0 0 1px rgba(59,94,151,.15)}
     body.terr-col-resizing{cursor:col-resize!important;user-select:none!important}
@@ -188,7 +190,7 @@
     .terr-xlf-sort span:first-child,.terr-catalog-sort span:first-child,.terr-hist-sort span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
     .terr-xlf-head-cell,.terr-xlf-head,.terr-xlf-filter{overflow:visible}
     .terr-xlf-filter{position:relative;flex-shrink:0}
-    .terr-xlf-filter-btn{display:inline-flex;align-items:center;justify-content:center;width:1.375rem;height:1.375rem;margin:0;padding:0;border:1px solid transparent;border-radius:.3125rem;background:transparent;color:#9ca3af;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+    .terr-xlf-filter-btn{display:inline-flex;align-items:center;justify-content:center;width:1.375rem;height:1.375rem;margin:0;padding:0;border:1px solid transparent;border-radius:.3125rem;background:transparent;color:#9ca3af;cursor:pointer;transition:background .15s,border-color .15s,color .15s;position:relative;z-index:1}
     .terr-xlf-filter-btn .material-symbols-outlined{font-size:.9375rem!important;line-height:1}
     .terr-xlf-filter-btn:hover{background:#eef3fa;color:#0f3462;border-color:#dbe3ef}
     .terr-xlf-filter-btn--active{background:#eef3fa;color:#0f3462;border-color:#3b5e97}

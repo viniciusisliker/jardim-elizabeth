@@ -36,6 +36,7 @@
   function applyGrid(panel, widths) {
     if (!panel || !widths?.length) return;
     panel.style.setProperty('--terr-grid-cols', widths.join(' '));
+    panel.style.removeProperty('width');
   }
 
   function ensureColgroup(table, count) {
@@ -92,20 +93,22 @@
       const startX = e.clientX;
       const startPair = [widthsPx[pairIndex], widthsPx[pairIndex + 1]];
       handle.classList.add('terr-col-resize--active');
+      const minFor = (idx) => (idx === cells.length - 1 ? 69 : 48);
 
       const onMove = (ev) => {
         const delta = ev.clientX - startX;
         const total = startPair[0] + startPair[1];
-        const min = 48;
+        const minLeft = minFor(pairIndex);
+        const minRight = minFor(pairIndex + 1);
         let left = startPair[0] + delta;
         let right = total - left;
-        if (left < min) {
-          left = min;
-          right = total - min;
+        if (left < minLeft) {
+          left = minLeft;
+          right = total - minLeft;
         }
-        if (right < min) {
-          right = min;
-          left = total - min;
+        if (right < minRight) {
+          right = minRight;
+          left = total - minRight;
         }
         widthsPx = widthsPx.slice();
         widthsPx[pairIndex] = left;
@@ -141,9 +144,9 @@
       cell.appendChild(handle);
 
       const pairIndex = index - 1;
-      handle.addEventListener('mousedown', (e) => startDrag(handle, pairIndex, e));
       handle.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'mouse') return;
+        if (e.button !== 0) return;
+        e.preventDefault();
         startDrag(handle, pairIndex, e);
       });
 

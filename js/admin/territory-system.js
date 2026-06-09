@@ -239,7 +239,7 @@
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
-    sched: ['92px', '168px', '200px', '172px', '80px', '260px', '88px'],
+    sched: ['92px', '168px', '200px', '172px', '72px', '320px', '72px'],
     hist: ['76px', '96px', '168px', '210px', '240px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
@@ -257,7 +257,7 @@
     }
     if (scope === 'sched' || !scope) {
       R.mountGrid({
-        key: 'sched',
+        key: 'sched-v3',
         panel: document.querySelector('#semana-sched-scroll .terr-sched-panel'),
         headSelector: '.terr-sched-row--head',
         defaults: TERR_COL_DEFAULTS.sched
