@@ -12,10 +12,19 @@
     { value: 'active', label: 'Ativo' },
     { value: 'inactive', label: 'Inativo' }
   ];
-  const ITEM_TYPE_OPTIONS = [
-    { value: 'carrinho', label: 'Carrinho' },
-    { value: 'display', label: 'Display' }
+  const ITEM_UNDO_FIELDS = ['name', 'equipment_type', 'default_location', 'sort_order', 'notes'];
+  const LOC_UNDO_FIELDS = ['name', 'sort_order', 'notes'];
+  const SLOT_UNDO_FIELDS = [
+    'weekday_label', 'period_label', 'slot_kind', 'week_start', 'equipment_type',
+    'equipment_name', 'location_name', 'publisher_names', 'sort_order', 'is_active'
   ];
+  const PUB_UNDO_FIELDS = ['publisher_name', 'can_carrinho', 'can_display', 'available_days', 'notes'];
+
+  const UNDO_SCOPE = 'carrinhos-displays';
+
+  function undoApi() {
+    return window.JEHubUndo;
+  }
 
   let toast;
   let client;
@@ -643,15 +652,29 @@
       return;
     }
 
-    const { error } = id
-      ? await client.from('equipment_items').update(payload).eq('id', id)
-      : await client.from('equipment_items').insert({ ...payload, is_active: true });
-
-    if (error) {
-      showToast(toast, error.message.includes('equipment_items_name_type_unique')
-        ? 'Já existe um equipamento com este nome e tipo.'
-        : error.message, true);
-      return;
+    const beforeRow = id ? equipmentItems.find((item) => item.id === id) : null;
+    if (id) {
+      const { error } = await client.from('equipment_items').update(payload).eq('id', id);
+      if (error) {
+        showToast(toast, error.message.includes('equipment_items_name_type_unique')
+          ? 'Já existe um equipamento com este nome e tipo.'
+          : error.message, true);
+        return;
+      }
+      undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_items', id, beforeRow, 'Equipamento', ITEM_UNDO_FIELDS);
+    } else {
+      const { data: inserted, error } = await client
+        .from('equipment_items')
+        .insert({ ...payload, is_active: true })
+        .select('id')
+        .single();
+      if (error) {
+        showToast(toast, error.message.includes('equipment_items_name_type_unique')
+          ? 'Já existe um equipamento com este nome e tipo.'
+          : error.message, true);
+        return;
+      }
+      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
     }
 
     showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
@@ -731,15 +754,29 @@
       return;
     }
     const { id, ...data } = payload;
-    const { error } = id
-      ? await client.from('equipment_items').update(data).eq('id', id)
-      : await client.from('equipment_items').insert({ ...data, is_active: true });
-
-    if (error) {
-      showToast(toast, error.message.includes('equipment_items_name_type_unique')
-        ? 'Já existe um equipamento com este nome e tipo.'
-        : error.message, true);
-      return;
+    const beforeRow = id ? equipmentItems.find((item) => item.id === id) : null;
+    if (id) {
+      const { error } = await client.from('equipment_items').update(data).eq('id', id);
+      if (error) {
+        showToast(toast, error.message.includes('equipment_items_name_type_unique')
+          ? 'Já existe um equipamento com este nome e tipo.'
+          : error.message, true);
+        return;
+      }
+      undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_items', id, beforeRow, 'Equipamento', ITEM_UNDO_FIELDS);
+    } else {
+      const { data: inserted, error } = await client
+        .from('equipment_items')
+        .insert({ ...data, is_active: true })
+        .select('id')
+        .single();
+      if (error) {
+        showToast(toast, error.message.includes('equipment_items_name_type_unique')
+          ? 'Já existe um equipamento com este nome e tipo.'
+          : error.message, true);
+        return;
+      }
+      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
     }
 
     showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
@@ -750,9 +787,11 @@
   async function deleteInlineItem() {
     const id = inlineItemDraft?.id;
     if (!id || !confirm('Excluir este equipamento?')) return;
+    const row = equipmentItems.find((item) => item.id === id);
     const { error } = await client.from('equipment_items').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
     else {
+      if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_items', { ...row }, 'Equipamento');
       showToast(toast, 'Equipamento excluído.');
       inlineItemDraft = null;
       await loadEquipment();
@@ -1054,15 +1093,29 @@
       return;
     }
 
-    const { error } = id
-      ? await client.from('equipment_locations').update(payload).eq('id', id)
-      : await client.from('equipment_locations').insert({ ...payload, is_active: true });
-
-    if (error) {
-      showToast(toast, error.message.includes('equipment_locations_name_unique')
-        ? 'Já existe um local com este nome.'
-        : error.message, true);
-      return;
+    const beforeRow = id ? locations.find((item) => item.id === id) : null;
+    if (id) {
+      const { error } = await client.from('equipment_locations').update(payload).eq('id', id);
+      if (error) {
+        showToast(toast, error.message.includes('equipment_locations_name_unique')
+          ? 'Já existe um local com este nome.'
+          : error.message, true);
+        return;
+      }
+      undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_locations', id, beforeRow, 'Local', LOC_UNDO_FIELDS);
+    } else {
+      const { data: inserted, error } = await client
+        .from('equipment_locations')
+        .insert({ ...payload, is_active: true })
+        .select('id')
+        .single();
+      if (error) {
+        showToast(toast, error.message.includes('equipment_locations_name_unique')
+          ? 'Já existe um local com este nome.'
+          : error.message, true);
+        return;
+      }
+      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
     }
 
     showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
@@ -1133,15 +1186,29 @@
       return;
     }
     const { id, ...data } = payload;
-    const { error } = id
-      ? await client.from('equipment_locations').update(data).eq('id', id)
-      : await client.from('equipment_locations').insert({ ...data, is_active: true });
-
-    if (error) {
-      showToast(toast, error.message.includes('equipment_locations_name_unique')
-        ? 'Já existe um local com este nome.'
-        : error.message, true);
-      return;
+    const beforeRow = id ? locations.find((item) => item.id === id) : null;
+    if (id) {
+      const { error } = await client.from('equipment_locations').update(data).eq('id', id);
+      if (error) {
+        showToast(toast, error.message.includes('equipment_locations_name_unique')
+          ? 'Já existe um local com este nome.'
+          : error.message, true);
+        return;
+      }
+      undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_locations', id, beforeRow, 'Local', LOC_UNDO_FIELDS);
+    } else {
+      const { data: inserted, error } = await client
+        .from('equipment_locations')
+        .insert({ ...data, is_active: true })
+        .select('id')
+        .single();
+      if (error) {
+        showToast(toast, error.message.includes('equipment_locations_name_unique')
+          ? 'Já existe um local com este nome.'
+          : error.message, true);
+        return;
+      }
+      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
     }
 
     showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
@@ -1152,9 +1219,11 @@
   async function deleteInlineLoc() {
     const id = inlineLocDraft?.id;
     if (!id || !confirm('Excluir este local?')) return;
+    const row = locations.find((item) => item.id === id);
     const { error } = await client.from('equipment_locations').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
     else {
+      if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_locations', { ...row }, 'Local');
       showToast(toast, 'Local excluído.');
       inlineLocDraft = null;
       await loadLocations();
@@ -1761,13 +1830,27 @@
     }
 
     const { id, ...data } = payload;
-    const { error } = id
-      ? await client.from('equipment_schedule_slots').update(data).eq('id', id)
-      : await client.from('equipment_schedule_slots').insert(data);
-
-    if (error) {
-      showToast(toast, error.message, true);
-      return;
+    const beforeRow = id ? slots.find((item) => item.id === id) : null;
+    if (id) {
+      const { error } = await client.from('equipment_schedule_slots').update(data).eq('id', id);
+      if (error) {
+        showToast(toast, error.message, true);
+        return;
+      }
+      undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_schedule_slots', id, beforeRow, 'Linha do cronograma', SLOT_UNDO_FIELDS);
+    } else {
+      const { data: inserted, error } = await client
+        .from('equipment_schedule_slots')
+        .insert(data)
+        .select('id')
+        .single();
+      if (error) {
+        showToast(toast, error.message, true);
+        return;
+      }
+      if (inserted?.id) {
+        undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_schedule_slots', inserted.id, 'Linha do cronograma');
+      }
     }
 
     showToast(toast, 'Linha salva.');
@@ -1779,9 +1862,11 @@
   async function deleteInlineSlot() {
     const id = inlineSlotDraft?.id;
     if (!id || !confirm('Excluir esta linha do cronograma?')) return;
+    const row = slots.find((item) => item.id === id);
     const { error } = await client.from('equipment_schedule_slots').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
     else {
+      if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_schedule_slots', { ...row }, 'Linha do cronograma');
       showToast(toast, 'Linha excluída.');
       inlineSlotDraft = null;
       await loadSlots();
@@ -2156,6 +2241,7 @@
       if (!toggleBtn) return;
       const row = locations.find((l) => l.id === toggleBtn.dataset.eqToggleLoc);
       if (!row) return;
+      const prevActive = row.is_active !== false;
       const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_locations')
@@ -2163,6 +2249,7 @@
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
+        undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_locations', row.id, 'is_active', prevActive, 'Local');
         row.is_active = nextActive;
         showToast(toast, nextActive ? 'Local reativado.' : 'Local desativado.');
         refreshLocationsView();
@@ -2179,6 +2266,7 @@
       if (!toggleBtn) return;
       const row = equipmentItems.find((i) => i.id === toggleBtn.dataset.eqToggleItem);
       if (!row) return;
+      const prevActive = row.is_active !== false;
       const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_items')
@@ -2186,6 +2274,7 @@
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
+        undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_items', row.id, 'is_active', prevActive, 'Equipamento');
         row.is_active = nextActive;
         showToast(toast, nextActive ? 'Equipamento reativado.' : 'Equipamento desativado.');
         refreshEquipmentView();
@@ -2202,6 +2291,7 @@
       if (!btn) return;
       const row = publishers.find((p) => p.id === btn.dataset.eqTogglePub);
       if (!row) return;
+      const prevActive = row.is_active !== false;
       const nextActive = row.is_active === false;
       const { error } = await client
         .from('equipment_publishers')
@@ -2209,6 +2299,7 @@
         .eq('id', row.id);
       if (error) showToast(toast, error.message, true);
       else {
+        undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_publishers', row.id, 'is_active', prevActive, 'Publicador');
         row.is_active = nextActive;
         showToast(toast, nextActive ? 'Publicador reativado.' : 'Publicador desativado.');
         refreshPublishersView();
@@ -2246,6 +2337,7 @@
         const { error } = await client.from('equipment_publishers').update(payload).eq('id', id);
         if (error) showToast(toast, error.message, true);
         else {
+          undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_publishers', id, row, 'Publicador', PUB_UNDO_FIELDS);
           Object.assign(row, payload);
           enrichPublisherRow(row);
           showToast(toast, 'Publicador atualizado.');
@@ -2269,11 +2361,24 @@
 
       if (error) showToast(toast, error.message, true);
       else {
+        if (inserted?.id) {
+          undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_publishers', inserted.id, 'Publicador');
+        }
         if (inserted) publishers.push(enrichPublisherRow(inserted));
         showToast(toast, 'Publicador adicionado.');
         closePublisherModal();
         refreshPublishersView();
       }
+    });
+
+    undoApi()?.bind(UNDO_SCOPE, {
+      getClient: async () => client,
+      onAfterUndo: async () => {
+        await Promise.all([fetchPublishers(), fetchSlots(), fetchEquipment(), fetchLocations()]);
+        refreshAllViews();
+      },
+      showToast,
+      toastEl: toast
     });
 
     try {

@@ -16,6 +16,160 @@
     return true;
   }
 
+  const UNDO_SCOPE = 'territorios';
+
+  function undoApi() {
+    return window.JEHubUndo;
+  }
+
+  function pushUndo(entry) {
+    undoApi()?.push(UNDO_SCOPE, entry);
+  }
+
+  function snapTerritory(t) {
+    if (!t) return null;
+    return {
+      id: t.id,
+      status: t.status,
+      last_worked_at: t.last_worked_at ?? null,
+      observations: t.observations ?? null
+    };
+  }
+
+  function snapAssignment(a) {
+    if (!a) return null;
+    return {
+      id: a.id,
+      profile_id: a.profile_id,
+      assigned_at: a.assigned_at,
+      status: a.status,
+      returned_at: a.returned_at ?? null,
+      return_notes: a.return_notes ?? null,
+      last_work_date: a.last_work_date ?? null
+    };
+  }
+
+  function buildCatalogRowUndo(t, assignment, fd) {
+    const beforeT = snapTerritory(t);
+    const beforeA = snapAssignment(assignment);
+    const newStatus = fd.get('status');
+    const observations = fd.get('observations')?.trim() || null;
+    const coverageDate = fd.get('coverage_date') || null;
+    const wasDesignado = t.status === 'designado' && assignment;
+
+    return {
+      label: 'Edição no painel',
+      undo: async (c) => {
+        if (wasDesignado && newStatus === 'designado') {
+          if (beforeA) {
+            const { error } = await c.from('territory_active_assignments').update({
+              profile_id: beforeA.profile_id,
+              assigned_at: beforeA.assigned_at
+            }).eq('id', beforeA.id);
+            if (error) throw error;
+          }
+          const { error: terrErr } = await c.from('territories').update({
+            observations: beforeT.observations
+          }).eq('id', beforeT.id);
+          if (terrErr) throw terrErr;
+          return;
+        }
+        if (!wasDesignado && newStatus === 'designado') {
+          const { data: asn } = await c
+            .from('territory_active_assignments')
+            .select('id, assigned_at')
+            .eq('territory_id', beforeT.id)
+            .eq('status', 'active')
+            .maybeSingle();
+          if (asn) {
+            const { error } = await c.rpc('return_territory_field', {
+              p_assignment_id: asn.id,
+              p_work_date: String(asn.assigned_at || coverageDate).slice(0, 10),
+              p_notes: null
+            });
+            if (error) throw error;
+          }
+          if (beforeT.observations !== observations) {
+            await c.from('territories').update({ observations: beforeT.observations }).eq('id', beforeT.id);
+          }
+          return;
+        }
+        if (wasDesignado && newStatus !== 'designado') {
+          if (beforeA) {
+            const { error } = await c.from('territory_active_assignments').update({
+              status: 'active',
+              returned_at: null,
+              return_notes: null,
+              last_work_date: beforeA.last_work_date
+            }).eq('id', beforeA.id);
+            if (error) throw error;
+          }
+          const { error: terrErr } = await c.from('territories').update({
+            status: 'designado',
+            last_worked_at: beforeT.last_worked_at,
+            observations: beforeT.observations
+          }).eq('id', beforeT.id);
+          if (terrErr) throw terrErr;
+          return;
+        }
+        const { error } = await c.from('territories').update({
+          observations: beforeT.observations,
+          last_worked_at: beforeT.last_worked_at
+        }).eq('id', beforeT.id);
+        if (error) throw error;
+      }
+    };
+  }
+
+  function buildAssignUndo(territoryId, observationsBefore) {
+    return {
+      label: 'Designação de território',
+      undo: async (c) => {
+        const { data: asn } = await c
+          .from('territory_active_assignments')
+          .select('id, assigned_at')
+          .eq('territory_id', territoryId)
+          .eq('status', 'active')
+          .maybeSingle();
+        if (!asn) return;
+        const { error } = await c.rpc('return_territory_field', {
+          p_assignment_id: asn.id,
+          p_work_date: String(asn.assigned_at).slice(0, 10),
+          p_notes: null
+        });
+        if (error) throw error;
+        if (observationsBefore != null) {
+          await c.from('territories').update({ observations: observationsBefore }).eq('id', territoryId);
+        }
+      }
+    };
+  }
+
+  function buildReturnUndo(t, assignment) {
+    const beforeT = snapTerritory(t);
+    const beforeA = snapAssignment(assignment);
+    return {
+      label: 'Devolução de território',
+      undo: async (c) => {
+        if (beforeA) {
+          const { error } = await c.from('territory_active_assignments').update({
+            status: 'active',
+            returned_at: null,
+            return_notes: null,
+            last_work_date: beforeA.last_work_date
+          }).eq('id', beforeA.id);
+          if (error) throw error;
+        }
+        const { error: terrErr } = await c.from('territories').update({
+          status: 'designado',
+          last_worked_at: beforeT.last_worked_at,
+          observations: beforeT.observations
+        }).eq('id', beforeT.id);
+        if (terrErr) throw terrErr;
+      }
+    };
+  }
+
   async function ensureAccess(permission) {
     if (window.JEHubRouter) {
       const profile = window.JEHubRouter.getProfile?.() || await window.JEAuth.getCurrentProfile();
@@ -731,13 +885,17 @@
 
     wrap.querySelector('#form-designar').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const territoryId = document.getElementById('designar-territory').value;
+      const terr = territories.find((item) => item.id === territoryId);
+      const undoEntry = buildAssignUndo(territoryId, terr?.observations ?? null);
       const { error } = await client.rpc('assign_territory_field', {
-        p_territory_id: document.getElementById('designar-territory').value,
+        p_territory_id: territoryId,
         p_profile_id: document.getElementById('designar-profile').value,
         p_assigned_at: document.getElementById('designar-date').value
       });
       if (error) showToast(toast, error.message, true);
       else {
+        pushUndo(undoEntry);
         showToast(toast, 'Território designado com sucesso.');
         close();
         await refresh();
@@ -786,6 +944,8 @@
     wrap.querySelector('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const terr = territories.find((item) => item.id === assignment.territory_id) || assignment.territories;
+      const undoEntry = buildReturnUndo(terr, assignment);
       const { error } = await client.rpc('return_territory_field', {
         p_assignment_id: assignment.id,
         p_work_date: fd.get('work_date'),
@@ -794,6 +954,7 @@
       close();
       if (error) showToast(toast, error.message, true);
       else {
+        pushUndo(undoEntry);
         showToast(toast, 'Território devolvido.');
         await refresh();
       }
@@ -2846,9 +3007,11 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const undoEntry = buildCatalogRowUndo(t, assignment, fd);
 
       try {
         await saveCatalogRowChanges(t, assignment, fd);
+        pushUndo(undoEntry);
         await client.rpc('log_territory_history', {
           p_event_type: 'edicao',
           p_territory_id: t.id,
@@ -2897,23 +3060,45 @@
 
   async function deleteScheduleRow(id) {
     if (!window.confirm('Excluir esta linha do cronograma?')) return;
+    const row = weekTemplate.find((item) => item.id === id);
     const { error } = await client.from('territory_week_schedule').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
-    else { showToast(toast, 'Linha removida.'); await refresh(); }
+    else {
+      if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'territory_week_schedule', { ...row }, 'Linha do cronograma');
+      showToast(toast, 'Linha removida.');
+      await refresh();
+    }
   }
 
   async function deleteSpot(id) {
     if (!window.confirm('Excluir este local?')) return;
+    const row = meetingSpots.find((item) => item.id === id);
     const { error } = await client.from('territory_meeting_spots').delete().eq('id', id);
     if (error) showToast(toast, error.message, true);
-    else { showToast(toast, 'Local removido.'); await refresh(); }
+    else {
+      if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'territory_meeting_spots', { ...row }, 'Local de encontro');
+      showToast(toast, 'Local removido.');
+      await refresh();
+    }
   }
 
   async function removeOverseer(profileId) {
     if (!window.confirm('Remover este dirigente da lista?')) return;
+    const row = overseers.find((item) => item.profile_id === profileId);
     const { error } = await client.from('territory_overseers').delete().eq('profile_id', profileId);
     if (error) showToast(toast, error.message, true);
-    else { showToast(toast, 'Dirigente removido.'); await refresh(); }
+    else {
+      if (row) {
+        undoApi()?.registerDelete(UNDO_SCOPE, 'territory_overseers', {
+          profile_id: row.profile_id,
+          preference: row.preference,
+          available_days: row.available_days,
+          is_active: row.is_active !== false
+        }, 'Dirigente removido');
+      }
+      showToast(toast, 'Dirigente removido.');
+      await refresh();
+    }
   }
 
   function openOverseerEditModal(overseer) {
@@ -2950,6 +3135,8 @@
         showToast(toast, 'Selecione pelo menos um dia.', true);
         return;
       }
+      const beforeDays = [...H().overseerDays(overseer)];
+      const beforePref = overseer.preference;
       const { error } = await client.from('territory_overseers').update({
         available_days: days,
         preference: H().preferenceFromDays(days)
@@ -2957,6 +3144,16 @@
       wrap.remove();
       if (error) showToast(toast, error.message, true);
       else {
+        pushUndo({
+          label: 'Dias do dirigente',
+          undo: async (c) => {
+            const { error: undoErr } = await c.from('territory_overseers').update({
+              available_days: beforeDays,
+              preference: beforePref
+            }).eq('profile_id', overseer.profile_id);
+            if (undoErr) throw undoErr;
+          }
+        });
         showToast(toast, 'Dias atualizados.');
         await refresh();
       }
@@ -3200,14 +3397,39 @@
         observations: fd.get('observations')?.trim() || null
       };
       close();
-      const req = isEdit
-        ? client.from('territory_week_schedule').update(payload).eq('id', row.id)
-        : client.from('territory_week_schedule').insert({ ...payload, sort_order: weekTemplate.length + 1 });
-      const { error } = await req;
-      if (error) showToast(toast, error.message, true);
-      else {
-        showToast(toast, isEdit ? 'Linha atualizada.' : 'Linha adicionada.');
-        await refresh();
+      if (isEdit) {
+        const beforeRow = { ...row };
+        const { error } = await client.from('territory_week_schedule').update(payload).eq('id', row.id);
+        if (error) showToast(toast, error.message, true);
+        else {
+          undoApi()?.registerUpdate(
+            UNDO_SCOPE,
+            'territory_week_schedule',
+            row.id,
+            beforeRow,
+            'Linha do cronograma',
+            [
+              'weekday_label', 'profile_id', 'dirigente_name', 'territory_id', 'territory_code',
+              'location_name', 'schedule_times', 'suggestion', 'suggestion_note', 'observations'
+            ]
+          );
+          showToast(toast, 'Linha atualizada.');
+          await refresh();
+        }
+      } else {
+        const { data: inserted, error } = await client
+          .from('territory_week_schedule')
+          .insert({ ...payload, sort_order: weekTemplate.length + 1 })
+          .select()
+          .single();
+        if (error) showToast(toast, error.message, true);
+        else {
+          if (inserted?.id) {
+            undoApi()?.registerInsert(UNDO_SCOPE, 'territory_week_schedule', inserted.id, 'Linha do cronograma');
+          }
+          showToast(toast, 'Linha adicionada.');
+          await refresh();
+        }
       }
     });
   }
@@ -3242,15 +3464,21 @@
     wrap.querySelector('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const { error } = await client.from('territory_meeting_spots').insert({
+      const { data: inserted, error } = await client.from('territory_meeting_spots').insert({
         weekday_label: fd.get('weekday_label'),
         location_name: fd.get('location_name')?.trim(),
         address: fd.get('address')?.trim() || null,
         schedule_times: fd.get('schedule_times')?.trim() || null
-      });
+      }).select().single();
       wrap.remove();
       if (error) showToast(toast, error.message, true);
-      else { showToast(toast, 'Local adicionado.'); await refresh(); }
+      else {
+        if (inserted?.id) {
+          undoApi()?.registerInsert(UNDO_SCOPE, 'territory_meeting_spots', inserted.id, 'Local de encontro');
+        }
+        showToast(toast, 'Local adicionado.');
+        await refresh();
+      }
     });
   }
 
@@ -3373,6 +3601,7 @@
   async function init() {
     if (window.__JEAdminTerritoriosInit) {
       queueNavIndicatorRefresh();
+      undoApi()?.updateUi(UNDO_SCOPE);
       if (!tabsRendered.painel && territories.length) {
         if (document.getElementById('catalogo-table-body')) refreshCatalogoView();
         else renderCatalogo();
@@ -3434,19 +3663,34 @@
 
       document.getElementById('form-overseer')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const profileId = document.getElementById('overseer-profile').value;
         const preference = document.getElementById('overseer-pref').value;
         const { error } = await client.from('territory_overseers').upsert({
-          profile_id: document.getElementById('overseer-profile').value,
+          profile_id: profileId,
           preference,
           available_days: helpers.daysFromPreference(preference),
           is_active: true
         });
         if (error) showToast(toast, error.message, true);
         else {
+          pushUndo({
+            label: 'Dirigente adicionado',
+            undo: async (c) => {
+              const { error: undoErr } = await c.from('territory_overseers').delete().eq('profile_id', profileId);
+              if (undoErr) throw undoErr;
+            }
+          });
           showToast(toast, 'Dirigente adicionado.');
           e.target.reset();
           await refresh();
         }
+      });
+
+      undoApi()?.bind(UNDO_SCOPE, {
+        getClient: async () => client,
+        onAfterUndo: refresh,
+        showToast,
+        toastEl: toast
       });
 
       document.getElementById('semana-week')?.addEventListener('change', async (e) => {
