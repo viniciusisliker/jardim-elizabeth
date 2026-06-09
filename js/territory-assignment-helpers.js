@@ -280,18 +280,27 @@
     return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
   }
 
-  function applyDomingoFixedDirigentes(rows) {
+  function primaryDirigenteFromPair(name) {
+    const raw = String(name || '').trim();
+    if (!raw) return '';
+    const parts = raw.split(/\s+e\s+/i);
+    return parts[0].trim();
+  }
+
+  function applyDomingoFixedDirigentes(rows, profiles) {
     if (!rows?.length) return rows;
 
     const patched = rows.map((row) => {
       if (!isSundayCronogramaDay(row.weekday_label)) return row;
       const idx = domingoFixedIndex(row);
       if (idx < 0) return row;
+      const fixedName = DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name;
+      const profile = resolveProfileByName(primaryDirigenteFromPair(fixedName), profiles);
       return {
         ...row,
-        dirigente_name: DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name,
-        profile_id: null,
-        profiles: null,
+        dirigente_name: fixedName,
+        profile_id: profile?.id || row.profile_id || null,
+        profiles: profile ? { full_name: profile.full_name, username: profile.username } : row.profiles || null,
         sort_order: 6 + idx
       };
     });
@@ -431,6 +440,7 @@
     domingoFixedIndex,
     domingoDirigenteName,
     compareDomingoRows,
+    primaryDirigenteFromPair,
     applyDomingoFixedDirigentes,
     fetchWeekendAnnouncements,
     applyWeekendDirigente,

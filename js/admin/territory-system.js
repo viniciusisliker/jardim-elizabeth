@@ -667,11 +667,13 @@
       tabsRendered.painel = true;
       return;
     }
-    await ensureTabData(tab);
-    if (tab === 'semana' && !tabsRendered.semana) {
-      renderSemana();
+    if (tab === 'semana') {
+      await prepareSemanaView();
       tabsRendered.semana = true;
-    } else if (tab === 'historico' && !tabsRendered.historico) {
+      return;
+    }
+    await ensureTabData(tab);
+    if (tab === 'historico' && !tabsRendered.historico) {
       renderHistorico();
       tabsRendered.historico = true;
     } else if (tab === 'dirigentes' && !tabsRendered.dirigentes) {
@@ -1328,7 +1330,83 @@
 
   function scheduleRowsForWeek() {
     const rows = weekTemplate.map((row) => H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
-    return H().applyDomingoFixedDirigentes(rows);
+    return H().applyDomingoFixedDirigentes(rows, profiles);
+  }
+
+  function resolveScheduleProfileId(row) {
+    if (row?.profile_id) return row.profile_id;
+    const name = scheduleDirigente(row);
+    if (!name || name === '—') return null;
+    const primary = H().primaryDirigenteFromPair(name);
+    const profile = H().resolveProfileByName(primary, profiles);
+    return profile?.id || null;
+  }
+
+  async function syncScheduleDesignations() {
+    if (!client || !weekTemplate.length) return 0;
+
+    await ensureProfiles();
+
+    const busyProfiles = new Set(activeAssignments.map((a) => a.profile_id));
+    const busyTerritories = new Set(activeAssignments.map((a) => a.territory_id));
+    let created = 0;
+    const today = H().toISODate(new Date());
+
+    for (const row of scheduleRowsForWeek()) {
+      const terrId = resolveScheduleTerritoryId(row);
+      if (!terrId || busyTerritories.has(terrId)) continue;
+
+      const profileId = resolveScheduleProfileId(row);
+      if (!profileId || busyProfiles.has(profileId)) continue;
+
+      const terr = territories.find((t) => t.id === terrId);
+      if (!terr) continue;
+      if (assignmentByTerritoryId.has(terrId)) continue;
+
+      try {
+        if (terr.status === 'disponivel') {
+          const { error } = await client.rpc('assign_territory_field', {
+            p_territory_id: terrId,
+            p_profile_id: profileId,
+            p_assigned_at: today
+          });
+          if (error) {
+            console.warn('Sync designação (RPC):', H().territoryLabel(terr), error.message);
+            continue;
+          }
+        } else if (terr.status === 'designado') {
+          const { error } = await client.from('territory_active_assignments').insert({
+            territory_id: terrId,
+            profile_id: profileId,
+            assigned_at: today,
+            status: 'active'
+          });
+          if (error) {
+            console.warn('Sync designação (insert):', H().territoryLabel(terr), error.message);
+            continue;
+          }
+        } else {
+          continue;
+        }
+
+        created += 1;
+        busyProfiles.add(profileId);
+        busyTerritories.add(terrId);
+      } catch (err) {
+        console.warn('Sync designação:', terrId, err);
+      }
+    }
+
+    if (created > 0) {
+      await Promise.all([loadTerritories(), loadActiveAssignments()]);
+    }
+    return created;
+  }
+
+  async function prepareSemanaView() {
+    await ensureTabData('semana');
+    await syncScheduleDesignations();
+    renderSemana();
   }
 
   function scheduleDirigente(row) {
@@ -1638,7 +1716,8 @@
     weekInput.value = window.JEWeekInput.weekInputFromMonday(currentWeek);
   }
 
-  function refreshSemanaView() {
+  async function refreshSemanaView() {
+    await syncScheduleDesignations();
     syncSemanaWeekInput();
     renderExtraDesignados();
     renderPriorityList();
@@ -4022,7 +4101,7 @@
         try {
           await ensureTabData('semana');
           weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
-          renderSemana();
+          await refreshSemanaView();
           tabsRendered.semana = true;
         } catch (err) {
           console.error('Semana change:', err);
