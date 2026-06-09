@@ -132,6 +132,9 @@
     .terr-sched-icon-btn--return{color:#b45309}
     .terr-sched-icon-btn--return:hover{background:#fef3c7}
     .terr-sched-cell--assigned{font-weight:700;color:#047857;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .terr-sched-terr-btn.terr-sched-cell--assigned{font-weight:700;color:#047857}
+    .terr-sched-terr-btn.terr-sched-cell--assigned .terr-hist-terr-num,
+    .terr-sched-terr-btn.terr-sched-cell--assigned .terr-hist-terr-name{color:inherit}
     .terr-xlf-head-cell{display:flex;align-items:center;min-width:0}
     .terr-xlf-head-cell .terr-xlf-head{width:100%;min-width:0}
     .terr-xlf-head-cell--actions{justify-content:flex-end;min-width:4.3125rem}

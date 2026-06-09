@@ -228,7 +228,6 @@
   let overSort = { col: 'name', dir: 'asc' };
   let weekendByDate = {};
   let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
-  let secondaryLoadPromise = null;
   let assignmentByTerritoryId = new Map();
   let catalogTableTimer = null;
   let histTableTimer = null;
@@ -496,8 +495,10 @@
     return H().sortByPriority(territories.filter((t) => t.status !== 'designado'));
   }
 
+  const TERRITORY_LIST_SELECT = 'id, num, display_name, status, map_image_url, last_worked_at, territory_type, observations, sort_order';
+
   async function loadTerritories() {
-    const { data, error } = await client.from('territories').select('*').order('sort_order');
+    const { data, error } = await client.from('territories').select(TERRITORY_LIST_SELECT).order('sort_order');
     if (error) throw error;
     territories = data || [];
   }
@@ -546,7 +547,7 @@
         location_name, schedule_times, suggestion, suggestion_note, observations,
         profile_id, territory_id,
         profiles ( full_name ),
-        territories ( num, display_name )
+        territories ( num, display_name, map_image_url )
       `)
       .order('sort_order', { ascending: true });
     if (error) throw error;
@@ -569,7 +570,9 @@
   }
 
   async function loadMeetingSpots() {
-    const { data, error } = await client.from('territory_meeting_spots').select('*');
+    const { data, error } = await client
+      .from('territory_meeting_spots')
+      .select('id, weekday_label, location_name, address, schedule_times, sort_order');
     if (error) throw error;
     meetingSpots = (data || []).sort((a, b) =>
       H().CRONOGRAMA_DAYS.indexOf(a.weekday_label) - H().CRONOGRAMA_DAYS.indexOf(b.weekday_label) ||
@@ -589,36 +592,69 @@
     return errors;
   }
 
-  async function reloadSecondary() {
-    const results = await Promise.allSettled([
-      loadProfiles(),
-      loadOverseers(),
-      loadWeekTemplate(),
-      loadHistory(),
-      loadMeetingSpots()
-    ]);
-    const labels = ['profiles', 'overseers', 'schedule', 'history', 'spots'];
+  const tabLoadPromises = new Map();
+
+  async function loadTabData(tab) {
+    const loads = [];
+    const labels = [];
+
+    if (tab === 'designar' || tab === 'semana' || tab === 'dirigentes') {
+      if (!profiles.length) {
+        loads.push(loadProfiles());
+        labels.push('profiles');
+      }
+    }
+    if (tab === 'semana') {
+      loads.push(loadWeekTemplate(), loadMeetingSpots());
+      labels.push('schedule', 'spots');
+    }
+    if (tab === 'historico') {
+      loads.push(loadHistory());
+      labels.push('history');
+    }
+    if (tab === 'dirigentes') {
+      loads.push(loadOverseers());
+      labels.push('overseers');
+    }
+
+    const results = await Promise.allSettled(loads);
     const errors = results
       .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
       .filter(Boolean);
     if (errors.length && toast) {
       showToast(toast, `Alguns dados não carregaram: ${errors[0]}`, true);
     }
-    try {
-      weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
-    } catch (err) {
-      console.warn('Weekend announcements:', err);
+
+    if (tab === 'semana') {
+      try {
+        weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+      } catch (err) {
+        console.warn('Weekend announcements:', err);
+      }
     }
-    fillOverseerProfileSelect();
+    if (tab === 'dirigentes') fillOverseerProfileSelect();
     return errors;
   }
 
-  function ensureSecondaryData() {
-    if (secondaryLoadPromise) return secondaryLoadPromise;
-    secondaryLoadPromise = reloadSecondary().finally(() => {
-      secondaryLoadPromise = null;
+  function ensureTabData(tab) {
+    if (tabLoadPromises.has(tab)) return tabLoadPromises.get(tab);
+    const promise = loadTabData(tab).finally(() => {
+      tabLoadPromises.delete(tab);
     });
-    return secondaryLoadPromise;
+    tabLoadPromises.set(tab, promise);
+    return promise;
+  }
+
+  async function ensureProfiles() {
+    if (profiles.length) return;
+    await loadProfiles();
+  }
+
+  async function ensureCatalogModalData() {
+    const loads = [];
+    if (!profiles.length) loads.push(loadProfiles());
+    if (!overseers.length) loads.push(loadOverseers());
+    if (loads.length) await Promise.all(loads);
   }
 
   function activeTerrTab() {
@@ -631,7 +667,7 @@
       tabsRendered.painel = true;
       return;
     }
-    await ensureSecondaryData();
+    await ensureTabData(tab);
     if (tab === 'semana' && !tabsRendered.semana) {
       renderSemana();
       tabsRendered.semana = true;
@@ -644,17 +680,22 @@
     }
   }
 
-  async function reloadAll() {
-    const results = await Promise.allSettled([
-      loadTerritories(),
-      loadProfiles(),
-      loadOverseers(),
-      loadActiveAssignments(),
-      loadWeekTemplate(),
-      loadHistory(),
-      loadMeetingSpots()
-    ]);
-    const labels = ['territories', 'profiles', 'overseers', 'active', 'schedule', 'history', 'spots'];
+  async function reloadForRefresh() {
+    const loads = [loadTerritories(), loadActiveAssignments()];
+    const labels = ['territories', 'active'];
+    if (tabsRendered.semana) {
+      loads.push(loadWeekTemplate(), loadMeetingSpots());
+      labels.push('schedule', 'spots');
+    }
+    if (tabsRendered.historico) {
+      loads.push(loadHistory());
+      labels.push('history');
+    }
+    if (tabsRendered.dirigentes) {
+      loads.push(loadProfiles(), loadOverseers());
+      labels.push('profiles', 'overseers');
+    }
+    const results = await Promise.allSettled(loads);
     const errors = results
       .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
       .filter(Boolean);
@@ -1011,7 +1052,7 @@
 
   function openDesignarModal(preset = {}) {
     if (document.getElementById('designar-modal-wrap')) return;
-    ensureSecondaryData()
+    ensureTabData('designar')
       .then(() => openDesignarModalInner(preset))
       .catch((err) => {
         console.error('Designar modal:', err);
@@ -1330,6 +1371,39 @@
     return row.territory_code || '—';
   }
 
+  function scheduleTerritoryMapUrl(row, assignment) {
+    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
+    const num = terr?.num ?? scheduleTerritoryNum(row);
+    return H().resolveTerritoryMapUrl(terr?.map_image_url ?? assignment?.territories?.map_image_url, num);
+  }
+
+  function scheduleTerritoryCell(row, assignment) {
+    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
+    const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
+    const terrNum = terr?.num ?? scheduleTerritoryNum(row);
+    const terrText = terr?.display_name || label;
+    const mapUrl = scheduleTerritoryMapUrl(row, assignment);
+    const assignedClass = assignment ? ' terr-sched-cell--assigned' : '';
+    const title = assignment
+      ? `Designado · ${scheduleAssignmentTitle(assignment)}`
+      : (row.observations || label);
+
+    const inner = `
+      ${terrNum != null && terrNum !== '' ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}
+      <span class="terr-hist-terr-name">${escapeHtml(terrText)}</span>
+      ${mapUrl ? '<span class="material-symbols-outlined terr-hist-terr-map-icon" aria-hidden="true">map</span>' : ''}`;
+
+    if (!mapUrl) {
+      return `<span class="terr-hist-terr-btn terr-sched-terr-btn${assignedClass}" title="${escapeHtml(title)}">${inner}</span>`;
+    }
+
+    return `
+      <button type="button" class="terr-hist-terr-btn terr-hist-terr-btn--map terr-sched-terr-btn${assignedClass}"
+        data-terr-map="${escapeHtml(mapUrl)}"
+        data-terr-title="${escapeHtml(label)}"
+        title="Ver mapa · ${escapeHtml(title)}">${inner}</button>`;
+  }
+
   function scheduleSuggestion(row) {
     if (!row.suggestion) return '—';
     return row.suggestion_note ? `${row.suggestion} · ${row.suggestion_note}` : row.suggestion;
@@ -1484,11 +1558,8 @@
     body.innerHTML = filtered.map((r) => {
       const tone = scheduleDayTone(r.weekday_label);
       const dirigenteHtml = scheduleDirigenteHtml(r);
-      const territorio = scheduleTerritory(r);
       const assignment = findAssignmentForScheduleRow(r);
-      const territorioHtml = assignment
-        ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">${escapeHtml(territorio)}</span>`
-        : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
+      const territorioHtml = scheduleTerritoryCell(r, assignment);
       const sugg = scheduleSuggestion(r);
       const hasSugg = r.suggestion || r.suggestion_note;
       const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
@@ -3145,6 +3216,23 @@
     if (!t) return;
     if (document.getElementById('catalog-row-modal-wrap')) return;
 
+    const open = () => openCatalogRowModalInner(t);
+    if (!profiles.length || !overseers.length) {
+      ensureCatalogModalData()
+        .then(open)
+        .catch((err) => {
+          console.error('Catalog modal:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao carregar dados do modal.', true);
+        });
+      return;
+    }
+    open();
+  }
+
+  function openCatalogRowModalInner(t) {
+    if (!t) return;
+    if (document.getElementById('catalog-row-modal-wrap')) return;
+
     const assignment = assignmentByTerritoryId.get(t.id);
     const isDesignado = t.status === 'designado';
     const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
@@ -3260,13 +3348,15 @@
 
   async function refresh() {
     try {
-      await reloadAll();
-      try {
-        weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
-      } catch (err) {
-        console.warn('Weekend announcements:', err);
+      await reloadForRefresh();
+      if (tabsRendered.semana) {
+        try {
+          weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+        } catch (err) {
+          console.warn('Weekend announcements:', err);
+        }
       }
-      fillOverseerProfileSelect();
+      if (tabsRendered.dirigentes) fillOverseerProfileSelect();
       if (tabsRendered.painel) refreshCatalogoView();
       else renderCatalogo();
       tabsRendered.painel = true;
@@ -3822,6 +3912,11 @@
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
     });
+    document.getElementById('semana-list')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-terr-map]');
+      if (!btn) return;
+      openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
+    });
   }
 
   async function init() {
@@ -3862,7 +3957,7 @@
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
       document.getElementById('btn-whatsapp')?.addEventListener('click', async () => {
         try {
-          await ensureSecondaryData();
+          await ensureTabData('semana');
           copyWhatsApp();
         } catch (err) {
           console.error('WhatsApp cronograma:', err);
@@ -3871,7 +3966,7 @@
       });
       document.getElementById('btn-new-schedule')?.addEventListener('click', async () => {
         try {
-          await ensureSecondaryData();
+          await ensureTabData('semana');
           openScheduleFormModal();
         } catch (err) {
           console.error('Schedule modal:', err);
@@ -3880,7 +3975,7 @@
       });
       document.getElementById('btn-new-spot')?.addEventListener('click', async () => {
         try {
-          await ensureSecondaryData();
+          await ensureTabData('semana');
           openSpotFormModal();
         } catch (err) {
           console.error('Spot modal:', err);
@@ -3925,7 +4020,7 @@
           || helpers.snapToMonday(e.target.value);
         syncSemanaWeekInput();
         try {
-          await ensureSecondaryData();
+          await ensureTabData('semana');
           weekendByDate = await helpers.fetchWeekendAnnouncements(client, currentWeek);
           renderSemana();
           tabsRendered.semana = true;
@@ -3939,7 +4034,6 @@
       renderCatalogo();
       renderPriorityList();
       tabsRendered = { painel: true, semana: false, historico: false, dirigentes: false };
-      ensureSecondaryData().catch((err) => console.warn('Territory secondary load:', err));
       return true;
     } catch (err) {
       delete window.__JEAdminTerritoriosInit;

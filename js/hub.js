@@ -95,9 +95,14 @@
 
   async function loadSectionScripts(scripts) {
     if (!scripts?.length) return;
-    for (const src of scripts) {
-      await loadScript(src, { requiredGlobal: scriptGlobalFor(src) });
+    if (scripts.length === 1) {
+      await loadScript(scripts[0], { requiredGlobal: scriptGlobalFor(scripts[0]) });
+      return;
     }
+    const deps = scripts.slice(0, -1);
+    const terminal = scripts[scripts.length - 1];
+    await Promise.all(deps.map((src) => loadScript(src)));
+    await loadScript(terminal, { requiredGlobal: scriptGlobalFor(terminal) });
   }
 
   function prefetchSection(sectionId) {

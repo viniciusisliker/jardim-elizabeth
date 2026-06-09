@@ -66,6 +66,13 @@
   let locFilterSig = '';
   let catalogCache = { equipmentByType: null, locations: null };
   let inlinePubSearchTimer = null;
+  let tabsRendered = {
+    cronograma: false,
+    publicadores: false,
+    equipamentos: false,
+    locais: false,
+    checklist: false
+  };
 
   function debounce(fn, wait) {
     let timer;
@@ -103,15 +110,41 @@
     indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
   }
 
+  function ensureEqTabReady(tab) {
+    if (tab === 'cronograma') {
+      if (!tabsRendered.cronograma) renderSchedule();
+      tabsRendered.cronograma = true;
+      return;
+    }
+    if (tab === 'publicadores') {
+      if (!tabsRendered.publicadores) renderPublishers();
+      tabsRendered.publicadores = true;
+      return;
+    }
+    if (tab === 'equipamentos') {
+      if (!tabsRendered.equipamentos) renderEquipment();
+      tabsRendered.equipamentos = true;
+      return;
+    }
+    if (tab === 'locais') {
+      if (!tabsRendered.locais) renderLocations();
+      tabsRendered.locais = true;
+      return;
+    }
+    if (tab === 'checklist') tabsRendered.checklist = true;
+  }
+
   function setupTabs() {
     const tabs = document.querySelectorAll('[data-eq-tab]');
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
+        const tabId = tab.dataset.eqTab;
         tabs.forEach((t) => t.classList.toggle('active', t === tab));
         document.querySelectorAll('.eq-panel').forEach((panel) => {
-          panel.classList.toggle('active', panel.id === `eq-panel-${tab.dataset.eqTab}`);
+          panel.classList.toggle('active', panel.id === `eq-panel-${tabId}`);
         });
         moveNavIndicator(tab);
+        ensureEqTabReady(tabId);
       });
     });
     moveNavIndicator(document.querySelector('[data-eq-tab].active'));
@@ -276,7 +309,7 @@
   async function fetchEquipment() {
     const { data, error } = await client
       .from('equipment_items')
-      .select('*')
+      .select('id, name, equipment_type, default_location, sort_order, is_active, notes')
       .order('sort_order')
       .order('name');
     if (error) throw error;
@@ -801,7 +834,7 @@
   async function fetchLocations() {
     const { data, error } = await client
       .from('equipment_locations')
-      .select('*')
+      .select('id, name, sort_order, is_active, notes')
       .order('sort_order')
       .order('name');
     if (error) throw error;
@@ -1344,14 +1377,20 @@
     renderSchedule();
   }
 
-  function refreshAllViews() {
+  function refreshRenderedViews() {
     renderSchedule();
-    if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
-    else renderPublishers();
-    if (document.getElementById('eq-item-table-body')) refreshEquipmentView();
-    else renderEquipment();
-    if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
-    else renderLocations();
+    if (tabsRendered.publicadores) {
+      if (document.getElementById('eq-pub-table-body')) refreshPublishersView();
+      else renderPublishers();
+    }
+    if (tabsRendered.equipamentos) {
+      if (document.getElementById('eq-item-table-body')) refreshEquipmentView();
+      else renderEquipment();
+    }
+    if (tabsRendered.locais) {
+      if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
+      else renderLocations();
+    }
   }
 
   function parsePublisherNotes(notes) {
@@ -2375,7 +2414,7 @@
       getClient: async () => client,
       onAfterUndo: async () => {
         await Promise.all([fetchPublishers(), fetchSlots(), fetchEquipment(), fetchLocations()]);
-        refreshAllViews();
+        refreshRenderedViews();
       },
       showToast,
       toastEl: toast
@@ -2383,7 +2422,14 @@
 
     try {
       await Promise.all([fetchPublishers(), fetchSlots(), fetchEquipment(), fetchLocations()]);
-      refreshAllViews();
+      renderSchedule();
+      tabsRendered = {
+        cronograma: true,
+        publicadores: false,
+        equipamentos: false,
+        locais: false,
+        checklist: false
+      };
     } catch (err) {
       console.error('Carrinhos e Displays:', err);
       const msg = String(err?.message || err);
