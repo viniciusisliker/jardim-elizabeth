@@ -2019,7 +2019,66 @@
 
   function catalogAssignee(t) {
     const active = assignmentByTerritoryId.get(t.id);
-    return active ? profileName(active.profiles) : '—';
+    if (!active) return '—';
+    const pairLabel = H().domingoPairAssigneeLabel(t.num, active, profiles);
+    return pairLabel || profileName(active.profiles);
+  }
+
+  function catalogModalDesigneeLabel(rawProfileId, t, assignment) {
+    const pairNum = H().parseDomingoPairOptionValue(rawProfileId);
+    if (pairNum) {
+      const pair = H().domingoPairForTerritoryNum(pairNum);
+      return pair?.dirigente_name || '—';
+    }
+    if (rawProfileId) {
+      const terrPair = H().domingoPairForTerritoryNum(t?.num);
+      if (terrPair && H().profileInDomingoPair(rawProfileId, terrPair.dirigente_name, profiles)) {
+        return terrPair.dirigente_name;
+      }
+      const p = profiles.find((pr) => pr.id === rawProfileId)
+        || overseers.find((o) => o.profile_id === rawProfileId)?.profiles;
+      return profileName(p) || '—';
+    }
+    if (assignment) {
+      const pairLabel = H().domingoPairAssigneeLabel(t?.num, assignment, profiles);
+      return pairLabel || profileName(assignment.profiles);
+    }
+    return '—';
+  }
+
+  function catalogModalSelectedDesignee(t, assignment) {
+    const currentId = assignment?.profile_id || '';
+    const terrPair = H().domingoPairForTerritoryNum(t?.num);
+    if (terrPair && assignment && H().profileInDomingoPair(currentId, terrPair.dirigente_name, profiles)) {
+      return { profileId: H().domingoPairOptionValue(t.num), pairMode: true };
+    }
+    for (const pair of H().listDomingoPairs()) {
+      if (assignment && H().profileInDomingoPair(currentId, pair.dirigente_name, profiles)) {
+        const pairTerr = territories.find(
+          (tr) => H().normalizeTerritoryNum(tr.num) === H().normalizeTerritoryNum(pair.territory_num)
+        );
+        if (pairTerr?.id === t.id) {
+          return { profileId: H().domingoPairOptionValue(pair.territory_num), pairMode: true };
+        }
+      }
+    }
+    return { profileId: currentId, pairMode: false };
+  }
+
+  function resolveCatalogProfileId(rawProfileId, territoryId) {
+    const pairNum = H().parseDomingoPairOptionValue(rawProfileId);
+    if (pairNum) {
+      const resolved = H().resolveProfileIdForDomingoPair(
+        pairNum,
+        territoryId,
+        profiles,
+        activeAssignments,
+        null
+      );
+      if (!resolved) throw new Error('Não foi possível resolver a dupla selecionada.');
+      return resolved;
+    }
+    return rawProfileId || null;
   }
 
   function catalogCoverageDays(t) {
@@ -3224,14 +3283,40 @@
     const busyElsewhere = new Set(
       activeAssignments.filter((a) => a.territory_id !== territoryId).map((a) => a.profile_id)
     );
-    return overseers
+    const currentProfileId = H().parseDomingoPairOptionValue(selectedId)
+      ? null
+      : (selectedId || null);
+    const pairOptions = H().listDomingoPairs()
+      .map((pair) => {
+        const value = H().domingoPairOptionValue(pair.territory_num);
+        const selectable = H().domingoPairSelectable(
+          pair,
+          territoryId,
+          activeAssignments,
+          profiles,
+          currentProfileId
+        );
+        const selected = selectedId === value;
+        return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)}${!selectable && !selected ? ' (ocupado)' : ''}</option>`;
+      })
+      .join('');
+    const individualOptions = overseers
       .filter((o) => o.is_active !== false)
       .map((o) => {
         const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-        const disabled = busyElsewhere.has(o.profile_id) && o.profile_id !== selectedId;
+        const disabled = busyElsewhere.has(o.profile_id)
+          && o.profile_id !== currentProfileId
+          && selectedId !== o.profile_id;
         return `<option value="${o.profile_id}" ${o.profile_id === selectedId ? 'selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (ocupado)' : ''}</option>`;
       })
       .join('');
+    return `
+      <optgroup label="Duplas (domingo)">
+        ${pairOptions}
+      </optgroup>
+      <optgroup label="Dirigentes">
+        ${individualOptions}
+      </optgroup>`;
   }
 
   function renderCatalogModalLiveRowHtml(form, t, assignment) {
@@ -3242,25 +3327,28 @@
     const profileId = fd.get('profile_id');
     let assignee = '—';
     if (isDesignado) {
-      if (profileId) {
-        const p = profiles.find((pr) => pr.id === profileId)
-          || overseers.find((o) => o.profile_id === profileId)?.profiles;
-        assignee = profileName(p) || '—';
-      } else if (assignment) {
-        assignee = profileName(assignment.profiles);
-      }
+      assignee = catalogModalDesigneeLabel(profileId, t, assignment);
     }
     const coverageDate = fd.get('coverage_date') || null;
     const previewT = { ...t, status: isDesignado ? 'designado' : 'disponivel' };
     let previewAssignment = null;
     if (isDesignado) {
-      previewAssignment = assignment && assignment.profile_id === profileId
+      const resolvedId = H().parseDomingoPairOptionValue(profileId)
+        ? H().resolveProfileIdForDomingoPair(
+          H().parseDomingoPairOptionValue(profileId),
+          t.id,
+          profiles,
+          activeAssignments,
+          assignment?.profile_id || null
+        )
+        : profileId;
+      previewAssignment = assignment && assignment.profile_id === resolvedId
         ? { ...assignment, assigned_at: coverageDate || assignment.assigned_at }
-        : profileId
+        : resolvedId
           ? {
               assigned_at: coverageDate || H().toISODate(new Date()),
-              profiles: profiles.find((p) => p.id === profileId)
-                || overseers.find((o) => o.profile_id === profileId)?.profiles
+              profiles: profiles.find((p) => p.id === resolvedId)
+                || overseers.find((o) => o.profile_id === resolvedId)?.profiles
             }
           : assignment || null;
     }
@@ -3304,7 +3392,7 @@
 
   async function saveCatalogRowChanges(t, assignment, fd) {
     const newStatus = fd.get('status');
-    const profileId = fd.get('profile_id') || null;
+    const profileId = resolveCatalogProfileId(fd.get('profile_id'), t.id);
     const coverageDate = fd.get('coverage_date') || null;
     const observations = fd.get('observations')?.trim() || null;
     const wasDesignado = t.status === 'designado' && assignment;
@@ -3401,7 +3489,7 @@
     const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
     const lastWorkedIso = t.last_worked_at ? String(t.last_worked_at).slice(0, 10) : '';
     const coverageIso = isDesignado ? assignedIso : lastWorkedIso;
-    const selectedProfile = assignment?.profile_id || '';
+    const { profileId: selectedProfile } = catalogModalSelectedDesignee(t, assignment);
 
     const wrap = document.createElement('div');
     wrap.id = 'catalog-row-modal-wrap';

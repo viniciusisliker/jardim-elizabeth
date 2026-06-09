@@ -287,6 +287,82 @@
     return parts[0].trim();
   }
 
+  function normalizeTerritoryNum(num) {
+    return String(num ?? '').replace(/^0+/, '') || '0';
+  }
+
+  function listDomingoPairs() {
+    return DOMINGO_FIXED_DIRIGENTES.map((p) => ({ ...p }));
+  }
+
+  function domingoPairForTerritoryNum(num) {
+    const n = normalizeTerritoryNum(num);
+    return DOMINGO_FIXED_DIRIGENTES.find(
+      (f) => normalizeTerritoryNum(f.territory_num) === n
+    ) || null;
+  }
+
+  function domingoPairOptionValue(num) {
+    return `pair:${normalizeTerritoryNum(num)}`;
+  }
+
+  function parseDomingoPairOptionValue(value) {
+    const m = String(value || '').match(/^pair:(\d+)$/);
+    return m ? m[1] : null;
+  }
+
+  function profilesInDomingoPair(pairName, profiles) {
+    return String(pairName || '')
+      .split(/\s+e\s+/i)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((name) => resolveProfileByName(name, profiles))
+      .filter(Boolean);
+  }
+
+  function profileInDomingoPair(profileId, pairName, profiles) {
+    if (!profileId) return false;
+    return profilesInDomingoPair(pairName, profiles).some((p) => p.id === profileId);
+  }
+
+  function domingoPairAssigneeLabel(territoryNum, assignment, profiles) {
+    const pair = domingoPairForTerritoryNum(territoryNum);
+    if (!pair || !assignment?.profile_id) return null;
+    if (profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
+      return pair.dirigente_name;
+    }
+    return null;
+  }
+
+  function domingoPairSelectable(pair, territoryId, activeAssignments, profiles, currentProfileId) {
+    const members = profilesInDomingoPair(pair.dirigente_name, profiles);
+    if (!members.length) return false;
+    if (currentProfileId && members.some((m) => m.id === currentProfileId)) return true;
+    return members.some(
+      (m) => !activeAssignments.some(
+        (a) => a.profile_id === m.id && a.territory_id !== territoryId
+      )
+    );
+  }
+
+  function resolveProfileIdForDomingoPair(pairNum, territoryId, profiles, activeAssignments, preferProfileId) {
+    const pair = domingoPairForTerritoryNum(pairNum);
+    if (!pair) return null;
+    const members = profilesInDomingoPair(pair.dirigente_name, profiles);
+    if (!members.length) return null;
+    if (preferProfileId && members.some((m) => m.id === preferProfileId)) return preferProfileId;
+    const onTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    if (onTerritory && members.some((m) => m.id === onTerritory.profile_id)) {
+      return onTerritory.profile_id;
+    }
+    const free = members.find(
+      (m) => !activeAssignments.some(
+        (a) => a.profile_id === m.id && a.territory_id !== territoryId
+      )
+    );
+    return (free || members[0]).id;
+  }
+
   function domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById) {
     if (!isSundayCronogramaDay(weekdayLabel)) return '';
     const fakeRow = { weekday_label: weekdayLabel, territory_id: territoryId, territory_code: territoryCode };
@@ -453,6 +529,16 @@
     domingoPairNameForSchedule,
     compareDomingoRows,
     primaryDirigenteFromPair,
+    listDomingoPairs,
+    domingoPairForTerritoryNum,
+    normalizeTerritoryNum,
+    domingoPairOptionValue,
+    parseDomingoPairOptionValue,
+    profilesInDomingoPair,
+    profileInDomingoPair,
+    domingoPairAssigneeLabel,
+    domingoPairSelectable,
+    resolveProfileIdForDomingoPair,
     applyDomingoFixedDirigentes,
     fetchWeekendAnnouncements,
     applyWeekendDirigente,
