@@ -194,8 +194,9 @@
     .terr-col-resize-cell{position:relative;overflow:visible}
     .terr-catalog-table th.terr-col-resize-cell{position:sticky}
     .terr-sched-table th.terr-col-resize-cell,.terr-hist-row--head .terr-col-resize-cell,.terr-over-row--head .terr-col-resize-cell,.terr-spot-row--head .terr-col-resize-cell{overflow:visible}
-    .terr-col-resize{position:absolute;top:0;width:10px;height:100%;cursor:col-resize;user-select:none;touch-action:none;z-index:25}
+    .terr-col-resize{position:absolute;top:0;width:12px;height:100%;cursor:col-resize;user-select:none;touch-action:none;z-index:25}
     .terr-col-resize--leading{left:0;right:auto;transform:translateX(-50%)}
+    .terr-col-resize--trailing{right:0;left:auto;transform:translateX(50%)}
     .terr-col-resize::after{content:'';position:absolute;top:12%;bottom:12%;left:50%;width:2px;transform:translateX(-50%);background:transparent;border-radius:1px;transition:background .15s,box-shadow .15s}
     .terr-col-resize:hover::after,.terr-col-resize--active::after{background:rgba(59,94,151,.55);box-shadow:0 0 0 1px rgba(59,94,151,.15)}
     body.terr-col-resizing{cursor:col-resize!important;user-select:none!important}

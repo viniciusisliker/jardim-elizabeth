@@ -238,7 +238,7 @@
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
-    sched: ['8%', '14%', '17%', '15%', '7%', '31%', '8%'],
+    sched: ['64px', '148px', '172px', '152px', '72px', '280px', '69px'],
     hist: ['76px', '96px', '168px', '210px', '240px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
@@ -299,27 +299,8 @@
     });
   }
 
-  function redistributeSchedColWidths(table) {
-    if (!table) return;
-    const colgroup = table.querySelector('colgroup');
-    if (!colgroup) return;
-    const defaults = TERR_COL_DEFAULTS.sched;
-    const visible = SCHED_COLUMNS.filter((c) => isSchedColVisible(c.id));
-    const totalPct = visible.reduce((sum, col) => {
-      const idx = SCHED_COLUMNS.findIndex((c) => c.id === col.id);
-      return sum + (parseFloat(defaults[idx]) || 0);
-    }, 0);
-    SCHED_COLUMNS.forEach((col, i) => {
-      const colEl = colgroup.children[i];
-      if (!colEl) return;
-      if (!isSchedColVisible(col.id)) {
-        colEl.style.width = '0';
-        return;
-      }
-      const pct = parseFloat(defaults[i]) || 0;
-      const scaled = totalPct > 0 ? (pct / totalPct) * 100 : 100 / visible.length;
-      colEl.style.width = `${scaled.toFixed(2)}%`;
-    });
+  function schedColVisible(cell) {
+    return cell && !cell.classList.contains('terr-sched-col--hidden');
   }
 
   function applySchedColVisibility() {
@@ -333,9 +314,8 @@
         else el.removeAttribute('aria-hidden');
       });
     });
-    initTerrColResize('sched');
     tagSchedColgroup(table);
-    redistributeSchedColWidths(table);
+    initTerrColResize('sched');
     const emptyTd = table.querySelector('.terr-sched-empty-td');
     if (emptyTd) emptyTd.colSpan = visibleSchedColCount();
   }
@@ -429,9 +409,10 @@
     }
     if (scope === 'sched' || !scope) {
       R.mountTable({
-        key: 'sched-v6',
+        key: 'sched-v7',
         table: document.querySelector('#semana-sched-scroll .terr-sched-table'),
-        defaults: TERR_COL_DEFAULTS.sched
+        defaults: TERR_COL_DEFAULTS.sched,
+        isColVisible: schedColVisible
       });
     }
     if (scope === 'spots' || !scope) {

@@ -10,34 +10,33 @@
     }
   }
 
-  function normalizeWidths(saved, defaults) {
-    if (!Array.isArray(saved) || !Array.isArray(defaults) || saved.length !== defaults.length) {
-      return defaults;
-    }
-    return saved.map((w, i) => {
-      const savedStr = String(w || '');
-      const defStr = String(defaults[i] || '');
-      if (savedStr.includes('%') || defStr.includes('%')) {
-        const savedVal = parseFloat(savedStr) || 0;
-        const minVal = parseFloat(defStr) || 4;
-        return `${Math.max(savedVal, minVal)}%`;
-      }
-      const savedPx = parseFloat(savedStr) || 0;
-      const minPx = parseFloat(defStr) || 48;
-      return toPx(Math.max(savedPx, minPx));
-    });
-  }
-
-  function save(key, widths) {
+  function save(key, widthsPx) {
     try {
-      localStorage.setItem(`${STORAGE}:${key}`, JSON.stringify(widths));
+      localStorage.setItem(`${STORAGE}:${key}`, JSON.stringify(widthsPx.map((n) => toPx(n))));
     } catch {
       /* ignore quota */
     }
   }
 
   function toPx(n) {
-    return `${Math.max(48, Math.round(n))}px`;
+    return `${Math.max(40, Math.round(Number(n) || 0))}px`;
+  }
+
+  function parsePx(value, fallback) {
+    const n = parseFloat(String(value || ''));
+    if (Number.isFinite(n) && n > 0) return n;
+    return fallback;
+  }
+
+  function normalizePxWidths(saved, defaults) {
+    if (!Array.isArray(defaults) || !defaults.length) return [];
+    const defPx = defaults.map((w, i) => parsePx(w, [64, 140, 168, 148, 72, 260, 69][i] || 72));
+    if (!Array.isArray(saved) || saved.length !== defaults.length) return defPx;
+    return saved.map((w, i) => {
+      const n = parsePx(w, 0);
+      if (n > 0) return Math.max(40, n);
+      return defPx[i];
+    });
   }
 
   function applyGrid(panel, widths) {
@@ -57,16 +56,6 @@
     return colgroup;
   }
 
-  function applyTable(table, widths) {
-    if (!table || !widths?.length) return;
-    table.style.tableLayout = 'fixed';
-    table.style.width = '100%';
-    const colgroup = ensureColgroup(table, widths.length);
-    [...colgroup.children].forEach((col, i) => {
-      if (widths[i]) col.style.width = widths[i];
-    });
-  }
-
   function headCells(headRow, includeAll) {
     if (!headRow) return [];
     const cells = [...headRow.children];
@@ -74,54 +63,74 @@
     return cells.filter((el) => !el.classList.contains('terr-catalog-actions'));
   }
 
-  function hasPercentWidths(widths) {
-    return Array.isArray(widths) && widths.some((w) => String(w).includes('%'));
+  function cellVisible(cell, index, isColVisible) {
+    if (!isColVisible) return true;
+    return isColVisible(cell, index);
   }
 
-  function toPxWidths(widths, headRow, includeAll) {
-    const measured = measureCells(headRow, includeAll);
-    if (!Array.isArray(widths) || !widths.length || hasPercentWidths(widths)) {
-      return measured.length ? measured : [];
-    }
-    const px = widths.map((w) => parseFloat(w) || 0);
-    if (px.some((n) => n < 24) || Math.abs(px.reduce((a, b) => a + b, 0) - measured.reduce((a, b) => a + b, 0)) > measured.reduce((a, b) => a + b, 0) * 0.5) {
-      return measured;
-    }
-    return px.map((n) => Math.max(48, n));
+  function measureColWidths(headRow, includeAll, isColVisible) {
+    return headCells(headRow, includeAll).map((cell, index) => {
+      if (!cellVisible(cell, index, isColVisible)) return 0;
+      return cell.getBoundingClientRect().width;
+    });
   }
 
-  function measureCells(row, includeAll) {
-    return headCells(row, includeAll).map((cell) => cell.getBoundingClientRect().width);
+  function applyTable(table, widthsPx, isColVisible) {
+    if (!table || !widthsPx?.length) return;
+    table.style.tableLayout = 'fixed';
+    table.style.width = '100%';
+    const colgroup = ensureColgroup(table, widthsPx.length);
+    const headCellsList = table.querySelector('thead tr') ? [...table.querySelector('thead tr').children] : [];
+    [...colgroup.children].forEach((col, i) => {
+      const cell = headCellsList[i];
+      const visible = !isColVisible || isColVisible(cell, i);
+      const w = widthsPx[i] || 0;
+      col.style.width = visible && w > 0 ? toPx(w) : '0px';
+    });
   }
 
-  function attachHandles(headRow, applyFn, targetEl, key, defaults, includeAll) {
+  function visibleColIndices(cells, isColVisible) {
+    const indices = [];
+    cells.forEach((cell, index) => {
+      if (cellVisible(cell, index, isColVisible)) indices.push(index);
+    });
+    return indices;
+  }
+
+  function attachHandles(headRow, applyFn, targetEl, key, defaults, includeAll, isColVisible) {
     if (!headRow) return;
     headRow.querySelectorAll('.terr-col-resize').forEach((el) => el.remove());
 
     const cells = headCells(headRow, includeAll);
+    const defPx = normalizePxWidths(null, defaults);
 
-    const startDrag = (handle, pairIndex, e) => {
+    const startDrag = (handle, leftIndex, rightIndex, e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const stored = load(key);
-      const normalized = normalizeWidths(stored, defaults);
-      let widthsPx = toPxWidths(stored || normalized, headRow, includeAll);
-      if (widthsPx.length < cells.length) {
-        widthsPx = measureCells(headRow, includeAll);
+      let widthsPx = normalizePxWidths(load(key), defaults);
+      const measured = measureColWidths(headRow, includeAll, isColVisible);
+      if (measured.length === widthsPx.length && measured.some((w) => w > 0)) {
+        const measuredTotal = measured.reduce((a, b) => a + b, 0);
+        const savedTotal = widthsPx.reduce((a, b) => a + b, 0);
+        if (Math.abs(measuredTotal - savedTotal) > measuredTotal * 0.35) {
+          widthsPx = measured.map((w, i) => (w > 0 ? w : widthsPx[i]));
+        }
       }
 
       const startX = e.clientX;
-      const startPair = [widthsPx[pairIndex], widthsPx[pairIndex + 1]];
+      const startLeft = widthsPx[leftIndex];
+      const startRight = widthsPx[rightIndex];
+      const total = startLeft + startRight;
+      const minLeft = leftIndex === cells.length - 2 ? 69 : 48;
+      const minRight = rightIndex === cells.length - 1 ? 69 : 48;
+
       handle.classList.add('terr-col-resize--active');
-      const minFor = (idx) => (idx === cells.length - 1 ? 69 : 48);
+      document.body.classList.add('terr-col-resizing');
 
       const onMove = (ev) => {
         const delta = ev.clientX - startX;
-        const total = startPair[0] + startPair[1];
-        const minLeft = minFor(pairIndex);
-        const minRight = minFor(pairIndex + 1);
-        let left = startPair[0] + delta;
+        let left = startLeft + delta;
         let right = total - left;
         if (left < minLeft) {
           left = minLeft;
@@ -132,52 +141,53 @@
           left = total - minRight;
         }
         widthsPx = widthsPx.slice();
-        widthsPx[pairIndex] = left;
-        widthsPx[pairIndex + 1] = right;
-        applyFn(targetEl, widthsPx.map(toPx));
+        widthsPx[leftIndex] = left;
+        widthsPx[rightIndex] = right;
+        applyFn(targetEl, widthsPx);
       };
 
-      const onUp = () => {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
+      const onUp = (ev) => {
         document.removeEventListener('pointermove', onMove);
         document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
+        if (handle.hasPointerCapture?.(ev.pointerId)) {
+          handle.releasePointerCapture(ev.pointerId);
+        }
         document.body.classList.remove('terr-col-resizing');
         handle.classList.remove('terr-col-resize--active');
-        save(key, widthsPx.map(toPx));
+        save(key, widthsPx);
       };
 
-      document.body.classList.add('terr-col-resizing');
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      if (handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
       document.addEventListener('pointermove', onMove);
       document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
     };
 
-    cells.forEach((cell, index) => {
-      if (index === 0) return;
-      if (cell.classList.contains('terr-sched-col--hidden')) return;
-      if (cells[index - 1]?.classList.contains('terr-sched-col--hidden')) return;
+    const vis = visibleColIndices(cells, isColVisible);
+    vis.forEach((colIndex, visPos) => {
+      if (visPos === vis.length - 1) return;
+      const cell = cells[colIndex];
+      const nextIndex = vis[visPos + 1];
       cell.classList.add('terr-col-resize-cell');
       const handle = document.createElement('span');
-      handle.className = 'terr-col-resize terr-col-resize--leading';
+      handle.className = 'terr-col-resize terr-col-resize--trailing';
       handle.title = 'Arraste para redimensionar';
       handle.setAttribute('role', 'separator');
       handle.setAttribute('aria-orientation', 'vertical');
       cell.appendChild(handle);
 
-      const pairIndex = index - 1;
       handle.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
-        e.preventDefault();
-        startDrag(handle, pairIndex, e);
+        startDrag(handle, colIndex, nextIndex, e);
       });
 
       handle.addEventListener('dblclick', (e) => {
         e.preventDefault();
         e.stopPropagation();
         localStorage.removeItem(`${STORAGE}:${key}`);
-        applyFn(targetEl, defaults);
+        applyFn(targetEl, defPx);
+        save(key, defPx);
       });
     });
   }
@@ -185,20 +195,26 @@
   function mountGrid({ key, panel, headSelector, defaults }) {
     const panelEl = typeof panel === 'string' ? document.querySelector(panel) : panel;
     if (!panelEl) return;
-    const widths = normalizeWidths(load(key), defaults);
-    applyGrid(panelEl, widths);
+    const widthsPx = normalizePxWidths(load(key), defaults);
+    applyGrid(panelEl, widthsPx.map(toPx));
     const headRow = panelEl.querySelector(headSelector);
-    attachHandles(headRow, applyGrid, panelEl, key, defaults, false);
+    const applyFn = (el, px) => applyGrid(el, px.map(toPx));
+    attachHandles(headRow, applyFn, panelEl, key, defaults, false, null);
   }
 
-  function mountTable({ key, table, defaults }) {
+  function mountTable({ key, table, defaults, isColVisible }) {
     const tableEl = typeof table === 'string' ? document.querySelector(table) : table;
     if (!tableEl) return;
-    const widths = normalizeWidths(load(key), defaults);
-    applyTable(tableEl, widths);
+    const widthsPx = normalizePxWidths(load(key), defaults);
+    const applyFn = (el, px) => applyTable(el, px, isColVisible);
+    applyFn(tableEl, widthsPx);
     const headRow = tableEl.querySelector('thead tr');
-    attachHandles(headRow, applyTable, tableEl, key, defaults, true);
+    attachHandles(headRow, applyFn, tableEl, key, defaults, true, isColVisible);
   }
 
-  window.JETerrColumnResize = { mountGrid, mountTable, reset: (key) => localStorage.removeItem(`${STORAGE}:${key}`) };
+  function reset(key) {
+    localStorage.removeItem(`${STORAGE}:${key}`);
+  }
+
+  window.JETerrColumnResize = { mountGrid, mountTable, reset };
 })();
