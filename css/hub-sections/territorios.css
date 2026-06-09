@@ -117,9 +117,7 @@
     .terr-sched-icon-btn--del:hover{background:#fef2f2}
     .terr-sched-icon-btn--return{color:#b45309}
     .terr-sched-icon-btn--return:hover{background:#fef3c7}
-    .terr-sched-cell--assigned{display:inline-flex;align-items:center;gap:.25rem;max-width:100%;min-width:0;font-weight:700;color:#047857;overflow:visible;white-space:normal}
-    .terr-sched-assigned-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-    .terr-sched-assigned-badge{display:inline-flex;flex-shrink:0;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;background:#d1fae5;color:#047857;vertical-align:middle}
+    .terr-sched-cell--assigned{font-weight:700;color:#047857;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .terr-xlf-head-cell{display:flex;align-items:center;min-width:0}
     .terr-xlf-head-cell .terr-xlf-head{width:100%;min-width:0}
     .terr-xlf-head-cell--actions{justify-content:flex-end}

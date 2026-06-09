@@ -1306,10 +1306,7 @@
       const territorio = scheduleTerritory(r);
       const assignment = findAssignmentForScheduleRow(r);
       const territorioHtml = assignment
-        ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
-            <span class="terr-sched-assigned-text">${escapeHtml(territorio)}</span>
-            <span class="terr-sched-assigned-badge">Designado</span>
-          </span>`
+        ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">${escapeHtml(territorio)}</span>`
         : `<span class="terr-sched-cell" title="${escapeHtml(r.observations || '')}">${escapeHtml(territorio)}</span>`;
       const sugg = scheduleSuggestion(r);
       const hasSugg = r.suggestion || r.suggestion_note;
@@ -3255,10 +3252,7 @@
       dirigenteHtml = `${escapeHtml(values.dirigenteName)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
     }
     const territorioHtml = assignment
-      ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">
-          <span class="terr-sched-assigned-text">${escapeHtml(values.territorio)}</span>
-          <span class="terr-sched-assigned-badge">Designado</span>
-        </span>`
+      ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">${escapeHtml(values.territorio)}</span>`
       : `<span class="terr-sched-cell">${escapeHtml(values.territorio)}</span>`;
     const hasSugg = !!values.suggestionDisplay;
     return `
