@@ -56,10 +56,20 @@
     const observations = fd.get('observations')?.trim() || null;
     const coverageDate = fd.get('coverage_date') || null;
     const wasDesignado = t.status === 'designado' && assignment;
+    const orphanDesignado = t.status === 'designado' && !assignment;
 
     return {
       label: 'Edição no painel',
       undo: async (c) => {
+        if (orphanDesignado && newStatus !== 'designado') {
+          const { error: terrErr } = await c.from('territories').update({
+            status: 'designado',
+            last_worked_at: beforeT.last_worked_at,
+            observations: beforeT.observations
+          }).eq('id', beforeT.id);
+          if (terrErr) throw terrErr;
+          return;
+        }
         if (wasDesignado && newStatus === 'designado') {
           if (beforeA) {
             const { error } = await c.from('territory_active_assignments').update({
@@ -3396,6 +3406,7 @@
     const coverageDate = fd.get('coverage_date') || null;
     const observations = fd.get('observations')?.trim() || null;
     const wasDesignado = t.status === 'designado' && assignment;
+    const orphanDesignado = t.status === 'designado' && !assignment;
 
     if (newStatus === 'designado') {
       if (!profileId) throw new Error('Selecione o designado.');
@@ -3449,6 +3460,19 @@
         p_work_date: coverageDate || H().toISODate(new Date()),
         p_notes: observations
       });
+      if (error) throw error;
+      return;
+    }
+
+    if (orphanDesignado) {
+      const { error } = await client
+        .from('territories')
+        .update({
+          status: 'disponivel',
+          observations,
+          last_worked_at: coverageDate || null
+        })
+        .eq('id', t.id);
       if (error) throw error;
       return;
     }
