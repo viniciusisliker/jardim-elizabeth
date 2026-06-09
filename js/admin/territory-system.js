@@ -239,7 +239,7 @@
 
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
-    sched: ['92px', '168px', '200px', '172px', '72px', '320px', '72px'],
+    sched: ['92px', '168px', '200px', '172px', '72px', '320px', '88px'],
     hist: ['76px', '96px', '168px', '210px', '240px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
@@ -257,7 +257,7 @@
     }
     if (scope === 'sched' || !scope) {
       R.mountGrid({
-        key: 'sched-v3',
+        key: 'sched-v4',
         panel: document.querySelector('#semana-sched-scroll .terr-sched-panel'),
         headSelector: '.terr-sched-row--head',
         defaults: TERR_COL_DEFAULTS.sched
@@ -1318,10 +1318,10 @@
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
       const returnBtn = assignment?.id
-        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
-        : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot" aria-hidden="true"></span>';
+        : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
       return `
       <div class="terr-sched-row terr-sched-row--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
         <span class="terr-sched-day-pill">
@@ -1335,10 +1335,10 @@
         <span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span>
         <div class="terr-sched-row-actions">
           ${returnBtn}
-          <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn" title="Editar">
+          <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
-          <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir">
+          <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del terr-sched-action--delete" title="Excluir">
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
           </button>
         </div>

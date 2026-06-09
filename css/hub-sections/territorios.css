@@ -86,8 +86,21 @@
     .terr-sched-scroll{overflow-x:auto;border:1px solid #e2e6ef;border-radius:.75rem;background:#fff}
     .terr-sched-panel{min-width:100%;width:max-content;--terr-grid-cols:5.75rem minmax(7.5rem,1.08fr) minmax(10rem,1.2fr) minmax(7.5rem,1.05fr) 4.5rem minmax(14rem,1.35fr) 5.5rem}
     .terr-sched-row{display:grid;grid-template-columns:var(--terr-grid-cols);column-gap:0;row-gap:.375rem;align-items:center;padding:.4375rem .75rem;border-bottom:1px solid var(--terr-grid-row);font-size:.8125rem;line-height:1.3}
-    .terr-sched-row>*{min-width:0}
-    .terr-sched-row>.terr-sched-row-actions{min-width:4.3125rem;width:4.3125rem;max-width:4.3125rem;overflow:visible}
+    .terr-sched-row>*:not(.terr-sched-row-actions){min-width:0}
+    .terr-sched-row>.terr-sched-row-actions{
+      display:grid;
+      grid-template-columns:1.4375rem 1.4375rem 1.4375rem;
+      grid-template-areas:"return edit delete";
+      width:4.3125rem;
+      min-width:4.3125rem;
+      max-width:4.3125rem;
+      justify-self:end;
+      flex-shrink:0;
+      box-sizing:border-box;
+      position:relative;
+      z-index:2;
+      overflow:visible;
+    }
     .terr-sched-row:last-child{border-bottom:none}
     .terr-sched-row:not(.terr-sched-row--head):hover{background:#fafbfc}
     .terr-sched-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:.375rem .75rem;position:sticky;top:0;z-index:1;overflow:visible;align-items:stretch}
@@ -98,7 +111,9 @@
     .terr-sched-row--head .terr-xlf-head-cell:nth-child(5) .terr-xlf-head{justify-content:center}
     .terr-sched-row--head .terr-xlf-head-cell:nth-child(7){justify-content:flex-end}
     .terr-sched-row>:nth-child(5){justify-self:center;text-align:center}
-    .terr-sched-row-actions{justify-self:end}
+    .terr-sched-action--return{grid-area:return}
+    .terr-sched-action--edit{grid-area:edit}
+    .terr-sched-action--delete{grid-area:delete}
     .terr-sched-day-pill{display:inline-flex;align-items:center;gap:.1875rem;font-size:.6875rem;font-weight:800;padding:.125rem .375rem;border-radius:.3125rem;background:#eef3fa;color:#0f3462;white-space:nowrap}
     .terr-sched-day-pill .material-symbols-outlined{font-size:.875rem}
     .terr-sched-row--weekend .terr-sched-day-pill{background:#ecfdf5;color:#047857}
@@ -106,10 +121,9 @@
     .terr-sched-cell--dirigente{font-weight:600;color:#0f3462}
     .terr-sched-cell--muted{color:#9ca3af;font-style:italic}
     .terr-sched-time{font-size:.6875rem;font-weight:700;color:#3b5e97;text-align:center;min-width:0}
-    .terr-sched-sugg{font-size:.6875rem;color:#5c4a1f;background:#fef9ee;border:1px solid #f0e4c8;padding:.0625rem .3125rem;border-radius:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;width:100%;max-width:100%;box-sizing:border-box;display:block}
+    .terr-sched-sugg{font-size:.6875rem;color:#5c4a1f;background:#fef9ee;border:1px solid #f0e4c8;padding:.0625rem .3125rem;border-radius:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;width:100%;max-width:100%;box-sizing:border-box;display:block;position:relative;z-index:1}
     .terr-sched-qa-badge{display:inline-flex;font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:.0625rem .3125rem;border-radius:.25rem;background:#faf6ef;color:#5c4a1f;border:1px solid #f0e4c8;margin-left:.25rem;vertical-align:middle}
-    .terr-sched-row-actions{display:grid;grid-template-columns:repeat(3,1.4375rem);justify-content:end;justify-items:center;align-items:center;width:auto;max-width:100%;gap:0;box-sizing:border-box;flex-shrink:0}
-    .terr-sched-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:1.4375rem;height:1.4375rem;padding:.1875rem;border:none;background:transparent;color:#3b5e97;cursor:pointer;border-radius:.3125rem;line-height:0;box-sizing:border-box}
+    .terr-sched-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:1.4375rem;height:1.4375rem;min-width:1.4375rem;min-height:1.4375rem;padding:.1875rem;border:none;background:transparent;color:#3b5e97;cursor:pointer;border-radius:.3125rem;line-height:0;box-sizing:border-box;flex-shrink:0}
     .terr-sched-icon-btn--slot{visibility:hidden;pointer-events:none}
     .terr-sched-icon-btn .material-symbols-outlined{font-size:1.0625rem}
     .terr-sched-icon-btn:hover{background:#eef3fa}
@@ -120,7 +134,7 @@
     .terr-sched-cell--assigned{font-weight:700;color:#047857;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .terr-xlf-head-cell{display:flex;align-items:center;min-width:0}
     .terr-xlf-head-cell .terr-xlf-head{width:100%;min-width:0}
-    .terr-xlf-head-cell--actions{justify-content:flex-end}
+    .terr-xlf-head-cell--actions{justify-content:flex-end;min-width:4.3125rem}
     .terr-sched-row--head .terr-xlf-head-cell,.terr-hist-row--head .terr-xlf-head-cell,.terr-over-row--head .terr-xlf-head-cell{align-self:stretch}
     .terr-xlf-sort{display:inline-flex;align-items:center;gap:.125rem;margin:0;padding:0;border:none;background:transparent;font:inherit;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;cursor:pointer;white-space:nowrap;text-align:left;min-width:0}
     .terr-xlf-sort-icon{font-size:.875rem!important;opacity:.45;flex-shrink:0}
