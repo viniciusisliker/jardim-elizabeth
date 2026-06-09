@@ -15,8 +15,15 @@
       return defaults;
     }
     return saved.map((w, i) => {
-      const savedPx = parseFloat(w) || 0;
-      const minPx = parseFloat(defaults[i]) || 48;
+      const savedStr = String(w || '');
+      const defStr = String(defaults[i] || '');
+      if (savedStr.includes('%') || defStr.includes('%')) {
+        const savedVal = parseFloat(savedStr) || 0;
+        const minVal = parseFloat(defStr) || 4;
+        return `${Math.max(savedVal, minVal)}%`;
+      }
+      const savedPx = parseFloat(savedStr) || 0;
+      const minPx = parseFloat(defStr) || 48;
       return toPx(Math.max(savedPx, minPx));
     });
   }
