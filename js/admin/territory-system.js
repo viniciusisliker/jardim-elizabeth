@@ -1113,53 +1113,97 @@
     });
   }
 
+  function resolveDevolverAssignment(assignment) {
+    if (!assignment) return null;
+    if (assignment.id) return assignment;
+    const terrId = assignment.territory_id || assignment.territories?.id;
+    if (!terrId) return null;
+    return activeAssignments.find((a) => a.territory_id === terrId && a.status === 'active') || null;
+  }
+
+  function devolverAssigneeLabel(assignment) {
+    const terr = assignment.territories
+      || territories.find((t) => t.id === assignment.territory_id);
+    const pairLabel = terr ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles) : null;
+    return pairLabel || profileName(assignment.profiles);
+  }
+
   function openDevolverModal(assignment) {
-    if (!assignment) return;
+    const resolved = resolveDevolverAssignment(assignment);
+    if (!resolved?.id) {
+      if (toast) showToast(toast, 'Não há designação ativa para devolver.', true);
+      return;
+    }
     if (document.getElementById('devolver-modal-wrap')) return;
+
     const today = H().toISODate(new Date());
-    const terrLabel = H().territoryLabel(assignment.territories);
-    const person = profileName(assignment.profiles);
+    const terr = territories.find((item) => item.id === resolved.territory_id) || resolved.territories;
+    const terrLabel = H().territoryLabel(terr);
+    const person = devolverAssigneeLabel({ ...resolved, territories: terr });
+    const assignedIso = resolved.assigned_at ? String(resolved.assigned_at).slice(0, 10) : '';
+
     const wrap = document.createElement('div');
     wrap.id = 'devolver-modal-wrap';
-    wrap.className = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-primary/40';
+    wrap.className = 'terr-catalog-modal';
     wrap.innerHTML = `
-      <form class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl border border-outline-variant p-5 sm:p-6 space-y-4 shadow-xl max-h-[92vh] overflow-y-auto" role="dialog" aria-modal="true">
-        <div>
-          <h3 class="font-bold text-primary">Devolver território</h3>
-          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(terrLabel)}</p>
-          <p class="text-xs text-on-surface-variant mt-0.5">Dirigente: ${escapeHtml(person)}</p>
-        </div>
-        <label class="block text-xs font-semibold text-primary">Último dia trabalhado
-          <input name="work_date" type="date" required value="${today}" class="mt-1 w-full rounded-lg border-outline-variant text-sm"/>
-        </label>
-        <label class="block text-xs font-semibold text-primary">Observações
-          <input name="notes" type="text" class="mt-1 w-full rounded-lg border-outline-variant text-sm" placeholder="Opcional"/>
-        </label>
-        <div class="flex gap-2 pt-1">
-          <button type="submit" class="inline-flex items-center gap-1 bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">
-            <span class="material-symbols-outlined text-base" aria-hidden="true">undo</span>
-            Confirmar devolução
+      <div class="terr-catalog-modal__panel" role="dialog" aria-modal="true" aria-labelledby="devolver-modal-title">
+        <div class="terr-catalog-modal__hero">
+          <button type="button" data-cancel class="terr-catalog-modal__close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
-          <button type="button" data-cancel class="text-sm px-3">Cancelar</button>
+          <p class="terr-catalog-modal__kicker">Devolução de território</p>
+          <h3 id="devolver-modal-title">Devolver território</h3>
+          <p class="terr-catalog-modal__subtitle">${escapeHtml(terrLabel)}</p>
         </div>
-      </form>`;
+        <form id="devolver-modal-form">
+          <div class="terr-catalog-modal__body">
+            <div class="terr-catalog-modal__context">
+              <span class="terr-catalog-num">${escapeHtml(terr?.num || '—')}</span>
+              <div class="terr-catalog-modal__context-main">
+                <span class="terr-catalog-modal__context-name">${escapeHtml(terrLabel)}</span>
+                <span class="text-xs text-on-surface-variant">Designado: ${escapeHtml(person)}${assignedIso ? ` · desde ${escapeHtml(H().formatDisplayDate(assignedIso))}` : ''}</span>
+              </div>
+            </div>
+            <label class="terr-catalog-modal-field">
+              <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da devolução</span>
+              <input name="work_date" type="date" required value="${escapeHtml(today)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
+              <p class="terr-catalog-modal__cov-hint">Último dia em que o território foi trabalhado. Padrão: hoje.</p>
+            </label>
+            <label class="terr-catalog-modal-field">
+              <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
+              <input name="notes" type="text" class="terr-catalog-modal-input" placeholder="Opcional"/>
+            </label>
+          </div>
+          <div class="terr-catalog-modal__foot">
+            <div class="terr-catalog-modal__foot-actions">
+              <button type="button" data-cancel class="terr-catalog-modal-btn terr-catalog-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="terr-catalog-modal-btn terr-catalog-modal-btn--warn">
+                <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+                Confirmar devolução
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>`;
     document.body.appendChild(wrap);
     document.body.style.overflow = 'hidden';
+
     const close = () => {
       wrap.remove();
       document.body.style.overflow = '';
     };
-    wrap.querySelector('[data-cancel]').addEventListener('click', close);
+
+    wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
     wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
-    wrap.querySelector('form').addEventListener('submit', async (e) => {
+    wrap.querySelector('#devolver-modal-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const terr = territories.find((item) => item.id === assignment.territory_id) || assignment.territories;
-      const undoEntry = buildReturnUndo(terr, assignment);
+      const workDate = fd.get('work_date') || today;
+      const undoEntry = buildReturnUndo(terr, resolved);
       const { error } = await client.rpc('return_territory_field', {
-        p_assignment_id: assignment.id,
-        p_work_date: fd.get('work_date'),
-        p_notes: fd.get('notes') || null
+        p_assignment_id: resolved.id,
+        p_work_date: workDate,
+        p_notes: fd.get('notes')?.trim() || null
       });
       close();
       if (error) showToast(toast, error.message, true);
