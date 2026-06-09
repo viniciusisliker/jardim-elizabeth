@@ -71,68 +71,80 @@
   }
 
   function attachHandles(headRow, applyFn, targetEl, key, defaults, includeAll) {
-    if (!headRow || headRow.querySelector('.terr-col-resize')) return;
+    if (!headRow) return;
+    headRow.querySelectorAll('.terr-col-resize').forEach((el) => el.remove());
 
     const cells = headCells(headRow, includeAll);
+
+    const startDrag = (handle, pairIndex, e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let saved = normalizeWidths(load(key), defaults);
+      let widthsPx;
+      if (saved?.length === cells.length) {
+        widthsPx = saved.map((w) => parseFloat(w) || 48);
+      } else {
+        widthsPx = measureCells(headRow, includeAll);
+        if (widthsPx.length < cells.length) widthsPx = defaults.map((w) => parseFloat(w) || 80);
+      }
+
+      const startX = e.clientX;
+      const startPair = [widthsPx[pairIndex], widthsPx[pairIndex + 1]];
+      handle.classList.add('terr-col-resize--active');
+
+      const onMove = (ev) => {
+        const delta = ev.clientX - startX;
+        const total = startPair[0] + startPair[1];
+        const min = 48;
+        let left = startPair[0] + delta;
+        let right = total - left;
+        if (left < min) {
+          left = min;
+          right = total - min;
+        }
+        if (right < min) {
+          right = min;
+          left = total - min;
+        }
+        widthsPx = widthsPx.slice();
+        widthsPx[pairIndex] = left;
+        widthsPx[pairIndex + 1] = right;
+        applyFn(targetEl, widthsPx.map(toPx));
+      };
+
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.body.classList.remove('terr-col-resizing');
+        handle.classList.remove('terr-col-resize--active');
+        save(key, widthsPx.map(toPx));
+      };
+
+      document.body.classList.add('terr-col-resizing');
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    };
+
     cells.forEach((cell, index) => {
-      if (index >= cells.length - 1) return;
+      if (index === 0) return;
       cell.classList.add('terr-col-resize-cell');
       const handle = document.createElement('span');
-      handle.className = 'terr-col-resize';
+      handle.className = 'terr-col-resize terr-col-resize--leading';
       handle.title = 'Arraste para redimensionar';
       handle.setAttribute('role', 'separator');
       handle.setAttribute('aria-orientation', 'vertical');
       cell.appendChild(handle);
 
-      handle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        let saved = normalizeWidths(load(key), defaults);
-        let widthsPx;
-        if (saved?.length === cells.length) {
-          widthsPx = saved.map((w) => parseFloat(w) || 48);
-        } else {
-          widthsPx = measureCells(headRow, includeAll);
-          if (widthsPx.length < cells.length) widthsPx = defaults.map((w) => parseFloat(w) || 80);
-        }
-
-        const startX = e.clientX;
-        const startPair = [widthsPx[index], widthsPx[index + 1]];
-        handle.classList.add('terr-col-resize--active');
-
-        const onMove = (ev) => {
-          const delta = ev.clientX - startX;
-          const total = startPair[0] + startPair[1];
-          const min = 48;
-          let left = startPair[0] + delta;
-          let right = total - left;
-          if (left < min) {
-            left = min;
-            right = total - min;
-          }
-          if (right < min) {
-            right = min;
-            left = total - min;
-          }
-          widthsPx = widthsPx.slice();
-          widthsPx[index] = left;
-          widthsPx[index + 1] = right;
-          const formatted = widthsPx.map(toPx);
-          applyFn(targetEl, formatted);
-        };
-
-        const onUp = () => {
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.body.classList.remove('terr-col-resizing');
-          handle.classList.remove('terr-col-resize--active');
-          save(key, widthsPx.map(toPx));
-        };
-
-        document.body.classList.add('terr-col-resizing');
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
+      const pairIndex = index - 1;
+      handle.addEventListener('mousedown', (e) => startDrag(handle, pairIndex, e));
+      handle.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse') return;
+        startDrag(handle, pairIndex, e);
       });
 
       handle.addEventListener('dblclick', (e) => {
