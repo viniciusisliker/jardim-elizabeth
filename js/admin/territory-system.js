@@ -403,7 +403,11 @@
     });
 
     document.addEventListener('click', () => closeSchedColsMenu());
-    document.addEventListener('scroll', () => closeSchedColsMenu(), true);
+    document.addEventListener('scroll', (e) => {
+      if (!menu.classList.contains('hidden') && e.target instanceof Node && menu.contains(e.target)) return;
+      closeSchedColsMenu();
+    }, true);
+    menu.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
     window.addEventListener('resize', () => closeSchedColsMenu());
   }
 
@@ -2375,7 +2379,10 @@
     if (!window.__JETerrXlfBound) {
       window.__JETerrXlfBound = true;
       document.addEventListener('click', () => xlfCloseMenus());
-      document.addEventListener('scroll', () => xlfCloseMenus(), true);
+      document.addEventListener('scroll', (e) => {
+        if (e.target instanceof Node && e.target.closest('[data-xlf-menu]:not(.hidden)')) return;
+        xlfCloseMenus();
+      }, true);
       window.addEventListener('resize', () => xlfCloseMenus());
     }
   }

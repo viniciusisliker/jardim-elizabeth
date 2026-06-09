@@ -244,7 +244,10 @@
     if (!window.__JETableXlfBound) {
       window.__JETableXlfBound = true;
       document.addEventListener('click', () => xlfCloseMenus());
-      document.addEventListener('scroll', () => xlfCloseMenus(), true);
+      document.addEventListener('scroll', (e) => {
+        if (e.target instanceof Node && e.target.closest('[data-xlf-menu]:not(.hidden)')) return;
+        xlfCloseMenus();
+      }, true);
       window.addEventListener('resize', () => xlfCloseMenus());
     }
   }
