@@ -1311,16 +1311,42 @@
 
   function scheduleRowsForWeek() {
     const rows = weekTemplate.map((row) => H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles));
-    return H().applyDomingoFixedDirigentes(rows, profiles);
+    return H().applyDomingoFixedDirigentes(rows);
   }
 
   function resolveScheduleProfileId(row) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
     if (row?.profile_id) return row.profile_id;
     const name = scheduleDirigente(row);
     if (!name || name === '—') return null;
     const primary = H().primaryDirigenteFromPair(name);
     const profile = H().resolveProfileByName(primary, profiles);
     return profile?.id || null;
+  }
+
+  async function sanitizeDomingoScheduleRows() {
+    if (!client || !weekTemplate.length) return;
+    const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
+    const dirty = weekTemplate.filter((row) => {
+      if (!H().isSundayCronogramaDay(row.weekday_label)) return false;
+      if (row.profile_id) return true;
+      const expected = H().domingoDirigenteName(row)
+        || H().domingoPairNameForSchedule(row.weekday_label, row.territory_id, row.territory_code, territoriesById)
+        || String(row.dirigente_name || '').trim();
+      return expected && row.dirigente_name !== expected;
+    });
+    if (!dirty.length) return;
+    for (const row of dirty) {
+      const pairName = H().domingoDirigenteName(row)
+        || H().domingoPairNameForSchedule(row.weekday_label, row.territory_id, row.territory_code, territoriesById)
+        || String(row.dirigente_name || '').trim();
+      const { error } = await client.from('territory_week_schedule').update({
+        profile_id: null,
+        dirigente_name: pairName || row.dirigente_name
+      }).eq('id', row.id);
+      if (error) console.warn('Domingo (cronograma):', error.message);
+    }
+    await loadWeekTemplate();
   }
 
   const REQUIRED_TERRITORY_DESIGNATIONS = [
@@ -1399,6 +1425,7 @@
   async function syncScheduleDesignations() {
     if (!client || !weekTemplate.length) return 0;
 
+    await sanitizeDomingoScheduleRows();
     await ensureProfiles();
 
     const busyProfiles = new Set(activeAssignments.map((a) => a.profile_id));
@@ -1407,6 +1434,7 @@
     const today = H().toISODate(new Date());
 
     for (const row of scheduleRowsForWeek()) {
+      if (H().isSundayCronogramaDay(row.weekday_label)) continue;
       const terrId = resolveScheduleTerritoryId(row);
       if (!terrId || busyTerritories.has(terrId)) continue;
 
@@ -1467,8 +1495,8 @@
 
   function scheduleDirigente(row) {
     if (H().isSundayCronogramaDay(row.weekday_label)) {
-      const fixed = H().domingoDirigenteName(row);
-      if (fixed) return fixed;
+      const pair = H().domingoDirigenteName(row) || String(row.dirigente_name || '').trim();
+      return pair || '—';
     }
     const pName = row.profiles?.full_name || row.profiles?.username;
     if (pName) return pName;
@@ -1486,8 +1514,8 @@
     if (row.from_announcement) {
       return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
     }
-    if (H().isSundayCronogramaDay(row.weekday_label) && H().domingoDirigenteName(row)) {
-      return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Par de dirigentes fixo aos domingos">Fixo</span>`;
+    if (H().isSundayCronogramaDay(row.weekday_label) && name && name !== '—') {
+      return `${escapeHtml(name)} <span class="terr-sched-qa-badge" title="Par de dirigentes aos domingos">Dupla</span>`;
     }
     if (row.announcement_special) {
       return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
@@ -3621,6 +3649,13 @@
     let dirigenteName = '—';
     if (ctx.saturdayFromQuadro) {
       dirigenteName = ctx.enriched?.dirigente_name || ctx.row?.dirigente_name || '—';
+    } else if (H().isSundayCronogramaDay(weekday)) {
+      const territoryId = fd.get('territory_id') || ctx.row?.territory_id || null;
+      const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
+      dirigenteName = H().domingoPairNameForSchedule(weekday, territoryId, ctx.row?.territory_code, territoriesById)
+        || fd.get('dirigente_name')?.trim()
+        || ctx.row?.dirigente_name
+        || '—';
     } else {
       const profileId = fd.get('profile_id');
       if (profileId) {
@@ -3662,6 +3697,8 @@
     let dirigenteHtml = escapeHtml(values.dirigenteName);
     if (values.saturdayFromQuadro && values.enriched?.from_announcement) {
       dirigenteHtml = `${escapeHtml(values.dirigenteName)} <span class="terr-sched-qa-badge" title="Definido no Quadro de Anúncios — Final de Semana">Quadro</span>`;
+    } else if (H().isSundayCronogramaDay(values.weekday) && values.dirigenteName && values.dirigenteName !== '—') {
+      dirigenteHtml = `${escapeHtml(values.dirigenteName)} <span class="terr-sched-qa-badge" title="Par de dirigentes aos domingos">Dupla</span>`;
     }
     const territorioHtml = assignment
       ? `<span class="terr-sched-cell terr-sched-cell--assigned" title="Designado · ${escapeHtml(scheduleAssignmentTitle(assignment))}">${escapeHtml(values.territorio)}</span>`
@@ -3694,6 +3731,10 @@
     const isEdit = Boolean(row);
     const enriched = row ? H().applyWeekendDirigente(row, currentWeek, weekendByDate, profiles) : null;
     const saturdayFromQuadro = enriched?.from_announcement;
+    const sundayRow = row && H().isSundayCronogramaDay(row.weekday_label);
+    const sundayPairName = sundayRow
+      ? (H().domingoDirigenteName(row) || String(row.dirigente_name || '').trim())
+      : '';
     const assignment = row ? findAssignmentForScheduleRow(row) : null;
     if (document.getElementById('sched-form-modal-wrap')) return;
 
@@ -3717,32 +3758,46 @@
               (${escapeHtml(enriched.announcement_dirigente || '')}).
               Edite em <a href="anuncios.html">Quadro de Anúncios → Final de Semana</a>.
             </p>` : ''}
+            ${sundayRow ? `
+            <p class="terr-sched-modal__alert">
+              Nos <strong>domingos</strong> o cronograma usa o nome da <strong>dupla</strong>
+              ${sundayPairName ? `(${escapeHtml(sundayPairName)})` : ''} — sem designar uma pessoa no Painel.
+            </p>` : ''}
             <p class="terr-sched-modal__preview-label">Prévia da linha</p>
             <div class="terr-sched-modal__preview-wrap">
               <div id="sched-modal-preview"></div>
             </div>
             <div class="terr-sched-modal__fields">
-              ${saturdayFromQuadro ? `
+              ${saturdayFromQuadro || sundayRow ? `
               <label class="terr-sched-modal-field terr-sched-modal-field--day">
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
                 <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
                   ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                 </select>
-              </label>` : `
+              </label>
+              ${sundayRow && !sundayPairName ? `
+              <label class="terr-sched-modal-field">
+                <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla</span>
+                <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
+              </label>` : ''}` : `
               <div class="terr-sched-modal-grid terr-sched-modal-grid--lead">
                 <label class="terr-sched-modal-field terr-sched-modal-field--day">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
-                  <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
+                  <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day" id="sched-weekday-select">
                     <option value="">—</option>
                     ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                   </select>
                 </label>
-                <label class="terr-sched-modal-field">
+                <label class="terr-sched-modal-field" id="sched-profile-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
                   <select name="profile_id" class="terr-sched-modal-input">
                     <option value="">— Dupla / outro —</option>
                     ${overseerOptions(row?.profile_id)}
                   </select>
+                </label>
+                <label class="terr-sched-modal-field hidden" id="sched-pair-field">
+                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla</span>
+                  <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
                 </label>
               </div>`}
               <label class="terr-sched-modal-field">
@@ -3795,17 +3850,38 @@
 
     const form = wrap.querySelector('#sched-form-modal-form');
     const previewEl = wrap.querySelector('#sched-modal-preview');
-    const ctx = { saturdayFromQuadro, enriched, row };
+    const ctx = { saturdayFromQuadro, sundayRow, enriched, row };
+
+    const syncSchedLeadFields = () => {
+      const weekdaySel = form.querySelector('#sched-weekday-select');
+      const profileField = form.querySelector('#sched-profile-field');
+      const pairField = form.querySelector('#sched-pair-field');
+      if (!weekdaySel || !profileField || !pairField) return;
+      const isSunday = H().isSundayCronogramaDay(weekdaySel.value);
+      profileField.classList.toggle('hidden', isSunday);
+      pairField.classList.toggle('hidden', !isSunday);
+      if (isSunday) {
+        const profileSel = profileField.querySelector('[name="profile_id"]');
+        if (profileSel) profileSel.value = '';
+      }
+    };
 
     const close = () => {
       wrap.remove();
       document.body.style.overflow = '';
     };
 
+    syncSchedLeadFields();
     syncScheduleModalPreview(form, previewEl, ctx, assignment);
     form.querySelectorAll('input, select, textarea').forEach((el) => {
-      el.addEventListener('input', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
-      el.addEventListener('change', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
+      el.addEventListener('input', () => {
+        syncSchedLeadFields();
+        syncScheduleModalPreview(form, previewEl, ctx, assignment);
+      });
+      el.addEventListener('change', () => {
+        syncSchedLeadFields();
+        syncScheduleModalPreview(form, previewEl, ctx, assignment);
+      });
     });
 
     wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
@@ -3814,20 +3890,8 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const profileId = saturdayFromQuadro ? (enriched.profile_id || row.profile_id) : (fd.get('profile_id') || null);
-      let dirigenteName = saturdayFromQuadro
-        ? (enriched.dirigente_name || row.dirigente_name)
-        : null;
-      if (!saturdayFromQuadro && profileId) {
-        const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
-        dirigenteName = profileName(p) || dirigenteName;
-      } else if (!saturdayFromQuadro && !profileId && isEdit) {
-        dirigenteName = row.dirigente_name || null;
-      }
-      if (!saturdayFromQuadro && !profileId && !dirigenteName) {
-        showToast(toast, 'Selecione o dirigente.', true);
-        return;
-      }
+      const weekdayLabel = fd.get('weekday_label')?.trim();
+      const isSunday = H().isSundayCronogramaDay(weekdayLabel);
       const territoryId = fd.get('territory_id') || null;
       let territoryCode = null;
       if (territoryId) {
@@ -3836,8 +3900,37 @@
       } else if (row?.territory_code) {
         territoryCode = row.territory_code.trim();
       }
+      const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
+      let profileId = null;
+      let dirigenteName = null;
+      if (saturdayFromQuadro) {
+        profileId = enriched.profile_id || row.profile_id;
+        dirigenteName = enriched.dirigente_name || row.dirigente_name;
+      } else if (isSunday) {
+        profileId = null;
+        dirigenteName = H().domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById)
+          || fd.get('dirigente_name')?.trim()
+          || row?.dirigente_name
+          || null;
+        if (!dirigenteName) {
+          showToast(toast, 'Informe o nome da dupla ou selecione um território com par fixo.', true);
+          return;
+        }
+      } else {
+        profileId = fd.get('profile_id') || null;
+        if (profileId) {
+          const p = profiles.find((pr) => pr.id === profileId) || overseers.find((o) => o.profile_id === profileId)?.profiles;
+          dirigenteName = profileName(p) || null;
+        } else if (isEdit) {
+          dirigenteName = row.dirigente_name || null;
+        }
+        if (!profileId && !dirigenteName) {
+          showToast(toast, 'Selecione o dirigente.', true);
+          return;
+        }
+      }
       const payload = {
-        weekday_label: fd.get('weekday_label')?.trim(),
+        weekday_label: weekdayLabel,
         profile_id: profileId,
         dirigente_name: dirigenteName,
         territory_id: territoryId,

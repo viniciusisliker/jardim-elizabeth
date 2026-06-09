@@ -287,21 +287,32 @@
     return parts[0].trim();
   }
 
-  function applyDomingoFixedDirigentes(rows, profiles) {
+  function domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById) {
+    if (!isSundayCronogramaDay(weekdayLabel)) return '';
+    const fakeRow = { weekday_label: weekdayLabel, territory_id: territoryId, territory_code: territoryCode };
+    if (territoriesById && territoryId && territoriesById[territoryId]) {
+      fakeRow.territories = territoriesById[territoryId];
+    }
+    const fixed = domingoDirigenteName(fakeRow);
+    if (fixed) return fixed;
+    return '';
+  }
+
+  function applyDomingoFixedDirigentes(rows) {
     if (!rows?.length) return rows;
 
     const patched = rows.map((row) => {
       if (!isSundayCronogramaDay(row.weekday_label)) return row;
       const idx = domingoFixedIndex(row);
-      if (idx < 0) return row;
-      const fixedName = DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name;
-      const profile = resolveProfileByName(primaryDirigenteFromPair(fixedName), profiles);
+      const fixedName = idx >= 0 ? DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name : '';
+      const pairName = fixedName || String(row.dirigente_name || '').trim();
       return {
         ...row,
-        dirigente_name: fixedName,
-        profile_id: profile?.id || row.profile_id || null,
-        profiles: profile ? { full_name: profile.full_name, username: profile.username } : row.profiles || null,
-        sort_order: 6 + idx
+        dirigente_name: pairName || row.dirigente_name,
+        profile_id: null,
+        profiles: null,
+        domingo_pair: true,
+        sort_order: idx >= 0 ? 6 + idx : row.sort_order
       };
     });
 
@@ -383,8 +394,8 @@
       msg += `🔹*${day.toUpperCase()}*\n`;
       rows.forEach((r) => {
         const name = domingoDirigenteName(r)
-          || r.profiles?.full_name
           || r.dirigente_name
+          || r.profiles?.full_name
           || '—';
         msg += `*Dirigente:* _${name}_\n`;
 
@@ -439,6 +450,7 @@
     isSundayCronogramaDay,
     domingoFixedIndex,
     domingoDirigenteName,
+    domingoPairNameForSchedule,
     compareDomingoRows,
     primaryDirigenteFromPair,
     applyDomingoFixedDirigentes,
