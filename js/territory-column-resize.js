@@ -74,6 +74,22 @@
     return cells.filter((el) => !el.classList.contains('terr-catalog-actions'));
   }
 
+  function hasPercentWidths(widths) {
+    return Array.isArray(widths) && widths.some((w) => String(w).includes('%'));
+  }
+
+  function toPxWidths(widths, headRow, includeAll) {
+    const measured = measureCells(headRow, includeAll);
+    if (!Array.isArray(widths) || !widths.length || hasPercentWidths(widths)) {
+      return measured.length ? measured : [];
+    }
+    const px = widths.map((w) => parseFloat(w) || 0);
+    if (px.some((n) => n < 24) || Math.abs(px.reduce((a, b) => a + b, 0) - measured.reduce((a, b) => a + b, 0)) > measured.reduce((a, b) => a + b, 0) * 0.5) {
+      return measured;
+    }
+    return px.map((n) => Math.max(48, n));
+  }
+
   function measureCells(row, includeAll) {
     return headCells(row, includeAll).map((cell) => cell.getBoundingClientRect().width);
   }
@@ -88,13 +104,11 @@
       e.preventDefault();
       e.stopPropagation();
 
-      let saved = normalizeWidths(load(key), defaults);
-      let widthsPx;
-      if (saved?.length === cells.length) {
-        widthsPx = saved.map((w) => parseFloat(w) || 48);
-      } else {
+      const stored = load(key);
+      const normalized = normalizeWidths(stored, defaults);
+      let widthsPx = toPxWidths(stored || normalized, headRow, includeAll);
+      if (widthsPx.length < cells.length) {
         widthsPx = measureCells(headRow, includeAll);
-        if (widthsPx.length < cells.length) widthsPx = defaults.map((w) => parseFloat(w) || 80);
       }
 
       const startX = e.clientX;
