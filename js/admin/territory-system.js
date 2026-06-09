@@ -2060,19 +2060,26 @@
     const currentId = assignment?.profile_id || '';
     const terrPair = H().domingoPairForTerritoryNum(t?.num);
     if (terrPair && assignment && H().profileInDomingoPair(currentId, terrPair.dirigente_name, profiles)) {
-      return { profileId: H().domingoPairOptionValue(t.num), pairMode: true };
+      return { pairId: H().domingoPairOptionValue(t.num), profileId: '' };
     }
-    for (const pair of H().listDomingoPairs()) {
-      if (assignment && H().profileInDomingoPair(currentId, pair.dirigente_name, profiles)) {
-        const pairTerr = territories.find(
-          (tr) => H().normalizeTerritoryNum(tr.num) === H().normalizeTerritoryNum(pair.territory_num)
-        );
-        if (pairTerr?.id === t.id) {
-          return { profileId: H().domingoPairOptionValue(pair.territory_num), pairMode: true };
-        }
+    return { pairId: '', profileId: currentId };
+  }
+
+  function catalogPairTerritoryId(pair) {
+    return territories.find(
+      (tr) => H().normalizeTerritoryNum(tr.num) === H().normalizeTerritoryNum(pair.territory_num)
+    )?.id || null;
+  }
+
+  function scheduleModalSelectedProfileId(row) {
+    if (!row?.profile_id) {
+      const name = String(row?.dirigente_name || '').trim();
+      if (name && !H().isSundayCronogramaDay(row.weekday_label)) {
+        const profile = H().resolveProfileByName(name, profiles);
+        if (profile) return profile.id;
       }
     }
-    return { profileId: currentId, pairMode: false };
+    return row?.profile_id || '';
   }
 
   function resolveCatalogProfileId(rawProfileId, territoryId) {
@@ -3289,44 +3296,37 @@
     initTerrColResize('over');
   }
 
-  function catalogModalOverseerOptions(territoryId, selectedId) {
-    const busyElsewhere = new Set(
-      activeAssignments.filter((a) => a.territory_id !== territoryId).map((a) => a.profile_id)
-    );
-    const currentProfileId = H().parseDomingoPairOptionValue(selectedId)
-      ? null
-      : (selectedId || null);
-    const pairOptions = H().listDomingoPairs()
+  function catalogModalPairOptions(territoryId, selectedPairId, currentProfileId) {
+    return H().listDomingoPairs()
       .map((pair) => {
         const value = H().domingoPairOptionValue(pair.territory_num);
+        const homeTerritoryId = catalogPairTerritoryId(pair);
         const selectable = H().domingoPairSelectable(
           pair,
           territoryId,
           activeAssignments,
           profiles,
-          currentProfileId
+          currentProfileId,
+          homeTerritoryId
         );
-        const selected = selectedId === value;
+        const selected = selectedPairId === value;
         return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)}${!selectable && !selected ? ' (ocupado)' : ''}</option>`;
       })
       .join('');
-    const individualOptions = overseers
+  }
+
+  function catalogModalIndividualOptions(territoryId, selectedProfileId) {
+    const busyElsewhere = new Set(
+      activeAssignments.filter((a) => a.territory_id !== territoryId).map((a) => a.profile_id)
+    );
+    return overseers
       .filter((o) => o.is_active !== false)
       .map((o) => {
         const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-        const disabled = busyElsewhere.has(o.profile_id)
-          && o.profile_id !== currentProfileId
-          && selectedId !== o.profile_id;
-        return `<option value="${o.profile_id}" ${o.profile_id === selectedId ? 'selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (ocupado)' : ''}</option>`;
+        const disabled = busyElsewhere.has(o.profile_id) && o.profile_id !== selectedProfileId;
+        return `<option value="${o.profile_id}" ${o.profile_id === selectedProfileId ? 'selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (ocupado)' : ''}</option>`;
       })
       .join('');
-    return `
-      <optgroup label="Duplas (domingo)">
-        ${pairOptions}
-      </optgroup>
-      <optgroup label="Dirigentes">
-        ${individualOptions}
-      </optgroup>`;
   }
 
   function renderCatalogModalLiveRowHtml(form, t, assignment) {
@@ -3334,24 +3334,24 @@
     const status = fd.get('status');
     const isDesignado = status === 'designado';
     const statusClass = isDesignado ? 'designado' : 'disponivel';
-    const profileId = fd.get('profile_id');
+    const designeeRaw = fd.get('pair_id') || fd.get('profile_id');
     let assignee = '—';
     if (isDesignado) {
-      assignee = catalogModalDesigneeLabel(profileId, t, assignment);
+      assignee = catalogModalDesigneeLabel(designeeRaw, t, assignment);
     }
     const coverageDate = fd.get('coverage_date') || null;
     const previewT = { ...t, status: isDesignado ? 'designado' : 'disponivel' };
     let previewAssignment = null;
     if (isDesignado) {
-      const resolvedId = H().parseDomingoPairOptionValue(profileId)
+      const resolvedId = H().parseDomingoPairOptionValue(designeeRaw)
         ? H().resolveProfileIdForDomingoPair(
-          H().parseDomingoPairOptionValue(profileId),
+          H().parseDomingoPairOptionValue(designeeRaw),
           t.id,
           profiles,
           activeAssignments,
           assignment?.profile_id || null
         )
-        : profileId;
+        : designeeRaw;
       previewAssignment = assignment && assignment.profile_id === resolvedId
         ? { ...assignment, assigned_at: coverageDate || assignment.assigned_at }
         : resolvedId
@@ -3378,15 +3378,18 @@
     if (!form) return;
     const status = form.querySelector('[name="status"]')?.value;
     const isDesignado = status === 'designado';
+    const pairSel = form.querySelector('[name="pair_id"]');
     const profileSel = form.querySelector('[name="profile_id"]');
     const covLabel = form.querySelector('#catalog-modal-cov-label');
     const covHint = form.querySelector('#catalog-modal-cov-hint');
     const liveRow = form.querySelector('#catalog-modal-live-row');
 
+    if (pairSel) pairSel.disabled = !isDesignado;
     if (profileSel) {
       profileSel.disabled = !isDesignado;
-      profileSel.required = isDesignado;
+      profileSel.required = isDesignado && !pairSel?.value;
     }
+    if (pairSel) pairSel.required = isDesignado && !profileSel?.value;
     if (covLabel) {
       covLabel.textContent = isDesignado ? 'Data da designação' : 'Último dia trabalhado';
     }
@@ -3402,7 +3405,7 @@
 
   async function saveCatalogRowChanges(t, assignment, fd) {
     const newStatus = fd.get('status');
-    const profileId = resolveCatalogProfileId(fd.get('profile_id'), t.id);
+    const profileId = resolveCatalogProfileId(fd.get('pair_id') || fd.get('profile_id'), t.id);
     const coverageDate = fd.get('coverage_date') || null;
     const observations = fd.get('observations')?.trim() || null;
     const wasDesignado = t.status === 'designado' && assignment;
@@ -3513,7 +3516,7 @@
     const assignedIso = assignment?.assigned_at ? String(assignment.assigned_at).slice(0, 10) : H().toISODate(new Date());
     const lastWorkedIso = t.last_worked_at ? String(t.last_worked_at).slice(0, 10) : '';
     const coverageIso = isDesignado ? assignedIso : lastWorkedIso;
-    const { profileId: selectedProfile } = catalogModalSelectedDesignee(t, assignment);
+    const { pairId: selectedPair, profileId: selectedProfile } = catalogModalSelectedDesignee(t, assignment);
 
     const wrap = document.createElement('div');
     wrap.id = 'catalog-row-modal-wrap';
@@ -3548,10 +3551,17 @@
                 </select>
               </label>
               <label class="terr-catalog-modal-field">
-                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Designado</span>
-                <select name="profile_id" class="terr-catalog-modal-input" aria-label="Designado" ${!isDesignado ? 'disabled' : ''}>
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla (domingo)</span>
+                <select name="pair_id" class="terr-catalog-modal-input" aria-label="Dupla" ${!isDesignado ? 'disabled' : ''}>
+                  <option value="">— Nenhuma —</option>
+                  ${catalogModalPairOptions(t.id, selectedPair, selectedProfile)}
+                </select>
+              </label>
+              <label class="terr-catalog-modal-field">
+                <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
+                <select name="profile_id" class="terr-catalog-modal-input" aria-label="Dirigente" ${!isDesignado ? 'disabled' : ''}>
                   <option value="">— Selecione —</option>
-                  ${catalogModalOverseerOptions(t.id, selectedProfile)}
+                  ${catalogModalIndividualOptions(t.id, selectedProfile)}
                 </select>
               </label>
               <div class="terr-catalog-modal-field terr-catalog-modal-field--cov">
@@ -3590,7 +3600,17 @@
     syncCatalogModalUi(form, t, assignment);
     form.querySelectorAll('input, select, textarea').forEach((el) => {
       el.addEventListener('input', () => syncCatalogModalUi(form, t, assignment));
-      el.addEventListener('change', () => syncCatalogModalUi(form, t, assignment));
+      el.addEventListener('change', () => {
+        if (el.name === 'pair_id' && el.value) {
+          const profileField = form.querySelector('[name="profile_id"]');
+          if (profileField) profileField.value = '';
+        }
+        if (el.name === 'profile_id' && el.value) {
+          const pairField = form.querySelector('[name="pair_id"]');
+          if (pairField) pairField.value = '';
+        }
+        syncCatalogModalUi(form, t, assignment);
+      });
     });
 
     wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
@@ -3607,7 +3627,7 @@
         const { error: logErr } = await client.rpc('log_territory_history', {
           p_event_type: 'edicao',
           p_territory_id: t.id,
-          p_profile_id: fd.get('profile_id') || assignment?.profile_id || null,
+          p_profile_id: resolveCatalogProfileId(fd.get('pair_id') || fd.get('profile_id'), t.id) || assignment?.profile_id || null,
           p_event_date: H().toISODate(new Date()),
           p_details: 'Registro atualizado no painel',
           p_metadata: {}
@@ -3895,21 +3915,17 @@
               <div class="terr-sched-modal-grid terr-sched-modal-grid--lead">
                 <label class="terr-sched-modal-field terr-sched-modal-field--day">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
-                  <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day" id="sched-weekday-select">
+                  <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
                     <option value="">—</option>
                     ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                   </select>
                 </label>
-                <label class="terr-sched-modal-field" id="sched-profile-field">
+                <label class="terr-sched-modal-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
                   <select name="profile_id" class="terr-sched-modal-input">
-                    <option value="">— Dupla / outro —</option>
-                    ${overseerOptions(row?.profile_id)}
+                    <option value="">— Selecione —</option>
+                    ${overseerOptions(scheduleModalSelectedProfileId(row))}
                   </select>
-                </label>
-                <label class="terr-sched-modal-field hidden" id="sched-pair-field">
-                  <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla</span>
-                  <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
                 </label>
               </div>`}
               <label class="terr-sched-modal-field">
@@ -3964,36 +3980,15 @@
     const previewEl = wrap.querySelector('#sched-modal-preview');
     const ctx = { saturdayFromQuadro, sundayRow, enriched, row };
 
-    const syncSchedLeadFields = () => {
-      const weekdaySel = form.querySelector('#sched-weekday-select');
-      const profileField = form.querySelector('#sched-profile-field');
-      const pairField = form.querySelector('#sched-pair-field');
-      if (!weekdaySel || !profileField || !pairField) return;
-      const isSunday = H().isSundayCronogramaDay(weekdaySel.value);
-      profileField.classList.toggle('hidden', isSunday);
-      pairField.classList.toggle('hidden', !isSunday);
-      if (isSunday) {
-        const profileSel = profileField.querySelector('[name="profile_id"]');
-        if (profileSel) profileSel.value = '';
-      }
-    };
-
     const close = () => {
       wrap.remove();
       document.body.style.overflow = '';
     };
 
-    syncSchedLeadFields();
     syncScheduleModalPreview(form, previewEl, ctx, assignment);
     form.querySelectorAll('input, select, textarea').forEach((el) => {
-      el.addEventListener('input', () => {
-        syncSchedLeadFields();
-        syncScheduleModalPreview(form, previewEl, ctx, assignment);
-      });
-      el.addEventListener('change', () => {
-        syncSchedLeadFields();
-        syncScheduleModalPreview(form, previewEl, ctx, assignment);
-      });
+      el.addEventListener('input', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
+      el.addEventListener('change', () => syncScheduleModalPreview(form, previewEl, ctx, assignment));
     });
 
     wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));

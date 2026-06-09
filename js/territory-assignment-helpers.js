@@ -334,9 +334,10 @@
     return null;
   }
 
-  function domingoPairSelectable(pair, territoryId, activeAssignments, profiles, currentProfileId) {
+  function domingoPairSelectable(pair, territoryId, activeAssignments, profiles, currentProfileId, homeTerritoryId) {
+    if (homeTerritoryId && territoryId && homeTerritoryId === territoryId) return true;
     const members = profilesInDomingoPair(pair.dirigente_name, profiles);
-    if (!members.length) return false;
+    if (!members.length) return true;
     if (currentProfileId && members.some((m) => m.id === currentProfileId)) return true;
     return members.some(
       (m) => !activeAssignments.some(
