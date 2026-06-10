@@ -1373,8 +1373,8 @@
   }
 
   function scheduleRowAcceptsAssignment(row, assignment) {
-    if (!assignment) return false;
-    if (H().isSundayCronogramaDay(row?.weekday_label)) return true;
+    if (!assignment?.id) return false;
+    if (H().isSundayCronogramaDay(row?.weekday_label)) return false;
     return !H().isDomingoPairContextAssignment(assignment, profiles);
   }
 
@@ -1388,6 +1388,9 @@
   }
 
   function resolveScheduleDisplayContext(row) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) {
+      return { terr: resolveScheduleTerritory(row), assignment: null };
+    }
     const byProfile = assignmentForScheduleProfile(row);
     if (byProfile?.territories) {
       return { terr: byProfile.territories, assignment: byProfile };
@@ -1825,11 +1828,12 @@
       const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
-      const returnBtn = assignment?.id
+      const canReturn = assignment?.id && scheduleRowAcceptsAssignment(r, assignment);
+      const returnBtn = canReturn
         ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
-        : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
+        : '';
       return `
       <tr class="terr-sched-tr terr-sched-tr--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
         <td data-sched-col="day"><span class="terr-sched-day-pill">
@@ -1843,13 +1847,13 @@
         <td data-sched-col="suggestion"><span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span></td>
         <td data-sched-col="actions" class="terr-sched-actions-td">
           <div class="terr-sched-row-actions">
-            ${returnBtn}
             <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
               <span class="material-symbols-outlined" aria-hidden="true">edit</span>
             </button>
             <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del terr-sched-action--delete" title="Excluir">
               <span class="material-symbols-outlined" aria-hidden="true">delete</span>
             </button>
+            ${returnBtn}
           </div>
         </td>
       </tr>`;
@@ -3979,7 +3983,9 @@
     const sundayPairName = sundayRow
       ? (H().domingoDirigenteName(row) || String(row.dirigente_name || '').trim())
       : '';
-    const assignment = row ? findAssignmentForScheduleRow(row) : null;
+    const assignment = row && !H().isSundayCronogramaDay(row.weekday_label)
+      ? findAssignmentForScheduleRow(row)
+      : null;
     const designationAssignment = row ? scheduleModalDesignationAssignment(row) : null;
     const assignedAtIso = scheduleModalAssignedAtIso(row, designationAssignment);
     if (document.getElementById('sched-form-modal-wrap')) return;
