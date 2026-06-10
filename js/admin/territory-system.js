@@ -1436,6 +1436,30 @@
     return !H().isDomingoPairContextAssignment(assignment, profiles);
   }
 
+  /** Designação individual devolvível para esta linha (prioriza território da linha). */
+  function scheduleReturnAssignment(row) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
+    const terrId = resolveScheduleTerritoryId(row);
+    if (terrId) {
+      const onTerritory = activeAssignments.find(
+        (a) => a.territory_id === terrId
+          && a.status === 'active'
+          && !H().isDomingoPairContextAssignment(a, profiles)
+      );
+      if (onTerritory?.id) return onTerritory;
+    }
+    const profileId = resolveScheduleProfileId(row);
+    if (profileId) {
+      const onProfile = activeAssignments.find(
+        (a) => a.profile_id === profileId
+          && a.status === 'active'
+          && !H().isDomingoPairContextAssignment(a, profiles)
+      );
+      if (onProfile?.id) return onProfile;
+    }
+    return null;
+  }
+
   function assignmentForScheduleProfile(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
     const profileId = resolveScheduleProfileId(row);
@@ -1886,12 +1910,12 @@
       const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
-      const canReturn = assignment?.id && scheduleRowAcceptsAssignment(r, assignment);
-      const returnBtn = canReturn
-        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+      const returnAssignment = scheduleReturnAssignment(r);
+      const returnBtn = returnAssignment?.id
+        ? `<button type="button" data-return-assignment="${returnAssignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().territoryLabel(returnAssignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
-        : '';
+        : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
       return `
       <tr class="terr-sched-tr terr-sched-tr--${tone}" title="${escapeHtml(r.observations || '')}${satHint}">
         <td data-sched-col="day"><span class="terr-sched-day-pill">
@@ -1905,13 +1929,13 @@
         <td data-sched-col="suggestion"><span class="terr-sched-sugg" title="${escapeHtml(sugg)}">${hasSugg ? escapeHtml(sugg) : '—'}</span></td>
         <td data-sched-col="actions" class="terr-sched-actions-td">
           <div class="terr-sched-row-actions">
+            ${returnBtn}
             <button type="button" data-edit-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-action--edit" title="Editar">
               <span class="material-symbols-outlined" aria-hidden="true">edit</span>
             </button>
             <button type="button" data-del-schedule="${r.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del terr-sched-action--delete" title="Excluir">
               <span class="material-symbols-outlined" aria-hidden="true">delete</span>
             </button>
-            ${returnBtn}
           </div>
         </td>
       </tr>`;
