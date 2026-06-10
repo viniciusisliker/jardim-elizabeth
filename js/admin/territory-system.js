@@ -514,6 +514,46 @@
     ).join('');
   }
 
+  function scheduleModalDesignationAssignment(row) {
+    if (!row || H().isSundayCronogramaDay(row.weekday_label)) return null;
+    const profileId = scheduleModalSelectedProfileId(row);
+    if (profileId) {
+      const byProfile = activeAssignments.find(
+        (a) => a.profile_id === profileId && !H().isDomingoPairContextAssignment(a, profiles)
+      );
+      if (byProfile) return byProfile;
+    }
+    const byRow = findAssignmentForScheduleRow(row);
+    if (byRow?.id && !H().isDomingoPairContextAssignment(byRow, profiles)) return byRow;
+    return null;
+  }
+
+  function scheduleModalAssignedAtIso(row, assignment) {
+    const asn = assignment || scheduleModalDesignationAssignment(row);
+    if (asn?.assigned_at) return String(asn.assigned_at).slice(0, 10);
+    return H().toISODate(new Date());
+  }
+
+  async function syncScheduleAssignmentDate(profileId, territoryId, assignedAt, priorAssignment) {
+    if (!client || !assignedAt || !profileId) return;
+    let asn = priorAssignment?.id ? priorAssignment : null;
+    if (!asn?.id && profileId && territoryId) {
+      asn = activeAssignments.find((a) => a.profile_id === profileId && a.territory_id === territoryId) || null;
+    }
+    if (!asn?.id) {
+      asn = activeAssignments.find(
+        (a) => a.profile_id === profileId && !H().isDomingoPairContextAssignment(a, profiles)
+      ) || null;
+    }
+    if (!asn?.id) return;
+    if (String(asn.assigned_at).slice(0, 10) === assignedAt) return;
+    const { error } = await client
+      .from('territory_active_assignments')
+      .update({ assigned_at: assignedAt })
+      .eq('id', asn.id);
+    if (error) throw error;
+  }
+
   function availableTerritories() {
     return H().sortByPriority(territories.filter((t) => t.status !== 'designado'));
   }
@@ -1068,7 +1108,7 @@
               </div>
             </div>
             <div class="terr-assign-foot">
-              <p class="terr-assign-note">Territórios listados por prioridade de cobertura. Dirigentes com designação ativa ficam desabilitados.</p>
+              <p class="terr-assign-note">Territórios em ordem numérica (T01, T02…). Dirigentes com designação ativa ficam desabilitados.</p>
               <button type="submit" class="terr-assign-submit">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 Confirmar designação
@@ -3940,6 +3980,8 @@
       ? (H().domingoDirigenteName(row) || String(row.dirigente_name || '').trim())
       : '';
     const assignment = row ? findAssignmentForScheduleRow(row) : null;
+    const designationAssignment = row ? scheduleModalDesignationAssignment(row) : null;
+    const assignedAtIso = scheduleModalAssignedAtIso(row, designationAssignment);
     if (document.getElementById('sched-form-modal-wrap')) return;
 
     const wrap = document.createElement('div');
@@ -4005,9 +4047,17 @@
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
                 <select name="territory_id" class="terr-sched-modal-input">
                   <option value="">— Selecione —</option>
-                  ${territories.map((t) => `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)}</option>`).join('')}
+                  ${[...territories].sort((a, b) => territoryNumSortKey(a.num) - territoryNumSortKey(b.num)).map((t) =>
+                    `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
+                  ).join('')}
                 </select>
               </label>
+              ${!sundayRow ? `
+              <label class="terr-sched-modal-field">
+                <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
+                <input name="assigned_at" type="date" value="${escapeHtml(assignedAtIso)}" class="terr-sched-modal-input"/>
+                <p class="terr-catalog-modal__cov-hint">Atualiza a data da designação ativa do dirigente, quando houver.</p>
+              </label>` : ''}
               <div class="terr-sched-modal-grid">
                 <label class="terr-sched-modal-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>Local</span>
@@ -4106,6 +4156,7 @@
           return;
         }
       }
+      const assignedAt = !isSunday ? (fd.get('assigned_at')?.trim() || null) : null;
       const payload = {
         weekday_label: weekdayLabel,
         profile_id: profileId,
@@ -4124,6 +4175,14 @@
         const { error } = await client.from('territory_week_schedule').update(payload).eq('id', row.id);
         if (error) showToast(toast, error.message, true);
         else {
+          try {
+            if (assignedAt && profileId) {
+              await syncScheduleAssignmentDate(profileId, territoryId, assignedAt, designationAssignment);
+            }
+          } catch (syncErr) {
+            console.warn('Data da designação (cronograma):', syncErr);
+            showToast(toast, syncErr.message || 'Linha salva, mas a data da designação não foi atualizada.', true);
+          }
           undoApi()?.registerUpdate(
             UNDO_SCOPE,
             'territory_week_schedule',
@@ -4146,6 +4205,14 @@
           .single();
         if (error) showToast(toast, error.message, true);
         else {
+          try {
+            if (assignedAt && profileId) {
+              await syncScheduleAssignmentDate(profileId, territoryId, assignedAt, null);
+            }
+          } catch (syncErr) {
+            console.warn('Data da designação (cronograma):', syncErr);
+            showToast(toast, syncErr.message || 'Linha salva, mas a data da designação não foi atualizada.', true);
+          }
           if (inserted?.id) {
             undoApi()?.registerInsert(UNDO_SCOPE, 'territory_week_schedule', inserted.id, 'Linha do cronograma');
           }
