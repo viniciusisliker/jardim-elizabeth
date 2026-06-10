@@ -551,6 +551,23 @@
     return H().toISODate(new Date());
   }
 
+  function formatDesignationError(err) {
+    const msg = String(err?.message || err || '');
+    if (/territory_active_one_per_profile|territory_active_one_individual_per_profile/i.test(msg)) {
+      return 'Este dirigente já possui um território individual ativo. Devolva-o antes ou use outro dirigente.';
+    }
+    if (/territory_active_one_per_territory/i.test(msg)) {
+      return 'Este território já possui designação ativa.';
+    }
+    if (/territory_active_one_domingo_per_profile/i.test(msg)) {
+      return 'Este dirigente já está em uma dupla de domingo ativa.';
+    }
+    if (/duplicate key/i.test(msg) && /domingo_pair/i.test(msg)) {
+      return 'Conflito de designação: dupla de domingo e território individual exigem migração no banco. Avise o administrador.';
+    }
+    return msg || 'Erro ao designar território.';
+  }
+
   async function repairOrphanTerritoryStatus(territoryId) {
     const terr = territories.find((t) => t.id === territoryId);
     if (!terr || terr.status !== 'designado') return;
@@ -627,7 +644,7 @@
       });
       if (legacyErr) throw legacyErr;
     } else if (rpcError) {
-      throw rpcError;
+      throw new Error(formatDesignationError(rpcError));
     }
 
     await Promise.all([loadActiveAssignments(), loadTerritories()]);
@@ -4368,7 +4385,7 @@
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
             syncOk = false;
-            syncMessage = syncErr.message || 'Linha salva, mas a designação no Painel falhou.';
+            syncMessage = formatDesignationError(syncErr);
           }
           undoApi()?.registerUpdate(
             UNDO_SCOPE,
@@ -4418,7 +4435,7 @@
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
             syncOk = false;
-            syncMessage = syncErr.message || 'Linha salva, mas a designação no Painel falhou.';
+            syncMessage = formatDesignationError(syncErr);
           }
           if (inserted?.id) {
             undoApi()?.registerInsert(UNDO_SCOPE, 'territory_week_schedule', inserted.id, 'Linha do cronograma');
