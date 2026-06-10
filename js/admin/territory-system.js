@@ -556,6 +556,12 @@
     if (/territory_active_one_per_profile|territory_active_one_individual_per_profile/i.test(msg)) {
       return 'Este dirigente já possui um território individual ativo. Devolva-o antes ou use outro dirigente.';
     }
+    if (/já possui um território ativo/i.test(msg) && !/domingo/i.test(msg)) {
+      return 'Este dirigente já possui um território individual ativo.';
+    }
+    if (/dupla de domingo ativa/i.test(msg)) {
+      return msg;
+    }
     if (/territory_active_one_per_territory/i.test(msg)) {
       return 'Este território já possui designação ativa.';
     }
@@ -652,23 +658,39 @@
   }
 
   async function syncScheduleDomingoPairDesignation({ territoryId, assignedAt }) {
-    if (!client || !territoryId) return;
+    if (!client) throw new Error('Sem conexão com o Supabase.');
+    if (!territoryId) throw new Error('Selecione o território de dupla (T07, T12 ou T18).');
     const terr = territories.find((t) => t.id === territoryId);
-    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return;
+    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) {
+      throw new Error('Domingo exige território de dupla: T07, T12 ou T18.');
+    }
 
-    const existingOnTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    await repairOrphanTerritoryStatus(territoryId);
+
+    const existingOnTerritory = activeAssignments.find(
+      (a) => a.territory_id === territoryId && a.status === 'active'
+    );
     if (existingOnTerritory?.id) {
       const assignedDate = assignedAt || H().toISODate(new Date());
+      const patch = {};
       if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
+        patch.assigned_at = assignedDate;
+      }
+      if (!existingOnTerritory.is_domingo_pair) {
+        patch.is_domingo_pair = true;
+      }
+      if (Object.keys(patch).length) {
         const { error } = await client
           .from('territory_active_assignments')
-          .update({ assigned_at: assignedDate })
+          .update(patch)
           .eq('id', existingOnTerritory.id);
         if (error) throw error;
+        await loadActiveAssignments();
       }
       return;
     }
 
+    await ensureProfiles();
     const profileId = H().resolveProfileIdForDomingoPair(
       terr.num,
       territoryId,
@@ -676,7 +698,11 @@
       activeAssignments,
       null
     );
-    if (!profileId) return;
+    if (!profileId) {
+      throw new Error(
+        'Não foi possível designar a dupla: verifique se os nomes estão no cadastro e se nenhum membro já está em outra dupla de domingo.'
+      );
+    }
 
     const assignedDate = assignedAt || H().toISODate(new Date());
     const { error } = await client.rpc('assign_territory_field', {
@@ -685,7 +711,9 @@
       p_assigned_at: assignedDate,
       p_is_domingo_pair: true
     });
-    if (error) throw error;
+    if (error) throw new Error(formatDesignationError(error));
+
+    await Promise.all([loadActiveAssignments(), loadTerritories()]);
   }
 
   function availableTerritories() {

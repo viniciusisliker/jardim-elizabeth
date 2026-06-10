@@ -368,17 +368,22 @@
     return ids;
   }
 
+  function profileHasDomingoElsewhere(profileId, territoryId, activeAssignments) {
+    return activeAssignments.some(
+      (a) => a.profile_id === profileId
+        && a.status === 'active'
+        && a.is_domingo_pair === true
+        && a.territory_id !== territoryId
+    );
+  }
+
   function domingoPairSelectable(pair, territoryId, activeAssignments, profiles, currentProfileId, homeTerritoryId) {
     if (homeTerritoryId && territoryId && homeTerritoryId === territoryId) return true;
     const members = profilesInDomingoPair(pair.dirigente_name, profiles);
     if (!members.length) return true;
     if (currentProfileId && members.some((m) => m.id === currentProfileId)) return true;
     return members.some(
-      (m) => !activeAssignments.some(
-        (a) => a.profile_id === m.id
-          && assignmentBlocksIndividualDesignation(a, profiles)
-          && a.territory_id !== territoryId
-      )
+      (m) => !profileHasDomingoElsewhere(m.id, territoryId, activeAssignments)
     );
   }
 
@@ -387,19 +392,19 @@
     if (!pair) return null;
     const members = profilesInDomingoPair(pair.dirigente_name, profiles);
     if (!members.length) return null;
-    if (preferProfileId && members.some((m) => m.id === preferProfileId)) return preferProfileId;
-    const onTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    if (preferProfileId && members.some((m) => m.id === preferProfileId)) {
+      if (!profileHasDomingoElsewhere(preferProfileId, territoryId, activeAssignments)) {
+        return preferProfileId;
+      }
+    }
+    const onTerritory = activeAssignments.find((a) => a.territory_id === territoryId && a.status === 'active');
     if (onTerritory && members.some((m) => m.id === onTerritory.profile_id)) {
       return onTerritory.profile_id;
     }
     const free = members.find(
-      (m) => !activeAssignments.some(
-        (a) => a.profile_id === m.id
-          && assignmentBlocksIndividualDesignation(a, profiles)
-          && a.territory_id !== territoryId
-      )
+      (m) => !profileHasDomingoElsewhere(m.id, territoryId, activeAssignments)
     );
-    return (free || members[0]).id;
+    return free?.id || null;
   }
 
   function domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById) {
