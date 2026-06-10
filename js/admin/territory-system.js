@@ -616,9 +616,11 @@
       loads.push(loadHistory());
       labels.push('history');
     }
-    if (tab === 'dirigentes') {
-      loads.push(loadOverseers());
-      labels.push('overseers');
+    if (tab === 'designar' || tab === 'dirigentes') {
+      if (!overseers.length) {
+        loads.push(loadOverseers());
+        labels.push('overseers');
+      }
     }
 
     const results = await Promise.allSettled(loads);
@@ -937,12 +939,14 @@
     const freeOverseers = activeOverseers.filter((o) => !activeProfileIds.has(o.profile_id));
     const avail = availableTerritories();
 
-    profSel.innerHTML = `<option value="">Selecione o dirigente</option>${activeOverseers
-      .map((o) => {
-        const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-        const disabled = activeProfileIds.has(o.profile_id) ? ' disabled' : '';
-        return `<option value="${o.profile_id}"${disabled}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
-      }).join('')}`;
+    const overseerOpts = activeOverseers.length
+      ? activeOverseers.map((o) => {
+          const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
+          const disabled = activeProfileIds.has(o.profile_id) ? ' disabled' : '';
+          return `<option value="${o.profile_id}"${disabled}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
+        }).join('')
+      : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
+    profSel.innerHTML = `<option value="">Selecione o dirigente</option>${overseerOpts}`;
 
     terrSel.innerHTML = `<option value="">Selecione (por prioridade)</option>${avail.map((t) => {
       const p = H().computePriority(t);
