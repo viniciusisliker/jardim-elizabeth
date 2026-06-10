@@ -515,17 +515,7 @@
   }
 
   function scheduleModalDesignationAssignment(row) {
-    if (!row || H().isSundayCronogramaDay(row.weekday_label)) return null;
-    const profileId = scheduleModalSelectedProfileId(row);
-    if (profileId) {
-      const byProfile = activeAssignments.find(
-        (a) => a.profile_id === profileId && !H().isDomingoPairContextAssignment(a, profiles)
-      );
-      if (byProfile) return byProfile;
-    }
-    const byRow = findAssignmentForScheduleRow(row);
-    if (byRow?.id && !H().isDomingoPairContextAssignment(byRow, profiles)) return byRow;
-    return null;
+    return scheduleIndividualAssignment(row);
   }
 
   function scheduleModalAssignedAtIso(row, assignment) {
@@ -556,14 +546,12 @@
     }
 
     const profileBusy = activeAssignments.find(
-      (a) => a.profile_id === profileId && H().assignmentBlocksIndividualDesignation(a, profiles)
+      (a) => a.profile_id === profileId
+        && a.territory_id !== territoryId
+        && H().assignmentBlocksIndividualDesignation(a, profiles)
     );
     if (profileBusy) {
       throw new Error('Este dirigente já possui um território ativo.');
-    }
-
-    if (terr?.status === 'designado') {
-      throw new Error('Este território já está designado.');
     }
 
     const { error } = await client.rpc('assign_territory_field', {
@@ -1436,9 +1424,10 @@
     return !H().isDomingoPairContextAssignment(assignment, profiles);
   }
 
-  /** Designação individual devolvível para esta linha (prioriza território da linha). */
-  function scheduleReturnAssignment(row) {
+  /** Designação individual da linha (prioriza território; ignora dupla de domingo). */
+  function scheduleIndividualAssignment(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
+    const profileId = resolveScheduleProfileId(row);
     const terrId = resolveScheduleTerritoryId(row);
     if (terrId) {
       const onTerritory = activeAssignments.find(
@@ -1446,9 +1435,10 @@
           && a.status === 'active'
           && !H().isDomingoPairContextAssignment(a, profiles)
       );
-      if (onTerritory?.id) return onTerritory;
+      if (onTerritory?.id && (!profileId || onTerritory.profile_id === profileId)) {
+        return onTerritory;
+      }
     }
-    const profileId = resolveScheduleProfileId(row);
     if (profileId) {
       const onProfile = activeAssignments.find(
         (a) => a.profile_id === profileId
@@ -1460,11 +1450,17 @@
     return null;
   }
 
+  function scheduleReturnAssignment(row) {
+    return scheduleIndividualAssignment(row);
+  }
+
   function assignmentForScheduleProfile(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
     const profileId = resolveScheduleProfileId(row);
     if (!profileId) return null;
-    const hit = activeAssignments.find((a) => a.profile_id === profileId);
+    const hit = activeAssignments.find(
+      (a) => a.profile_id === profileId && !H().isDomingoPairContextAssignment(a, profiles)
+    );
     if (!hit || !scheduleRowAcceptsAssignment(row, hit)) return null;
     return hit;
   }
@@ -1473,13 +1469,32 @@
     if (H().isSundayCronogramaDay(row?.weekday_label)) {
       return { terr: resolveScheduleTerritory(row), assignment: null };
     }
-    const byProfile = assignmentForScheduleProfile(row);
-    if (byProfile?.territories) {
-      return { terr: byProfile.territories, assignment: byProfile };
+    const individual = scheduleIndividualAssignment(row);
+    if (individual?.id) {
+      const terr = individual.territories
+        || territories.find((t) => t.id === individual.territory_id)
+        || resolveScheduleTerritory(row);
+      return { terr, assignment: individual };
     }
-    const assignment = findAssignmentForScheduleRow(row);
-    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
-    return { terr, assignment };
+    const terr = resolveScheduleTerritory(row);
+    if (terr?.status === 'designado') {
+      const linked = assignmentByTerritoryId.get(terr.id);
+      if (linked?.id && !H().isDomingoPairContextAssignment(linked, profiles)) {
+        return { terr, assignment: linked };
+      }
+      return {
+        terr,
+        assignment: {
+          id: null,
+          territory_id: terr.id,
+          profiles: null,
+          territories: terr,
+          assigned_at: null,
+          _statusOnly: true
+        }
+      };
+    }
+    return { terr, assignment: null };
   }
 
   function scheduleTerritoryCodeFromTerr(terr) {
@@ -1522,39 +1537,10 @@
   }
 
   function findAssignmentForScheduleRow(row) {
-    const byProfile = assignmentForScheduleProfile(row);
-    if (byProfile) return byProfile;
-
-    const terrId = resolveScheduleTerritoryId(row);
-    if (terrId) {
-      const hit = assignmentForTerritoryId(terrId);
-      if (hit && scheduleRowAcceptsAssignment(row, hit)) return hit;
-    }
-
-    const normalized = scheduleTerritoryNum(row);
-    if (normalized) {
-      for (const a of activeAssignments) {
-        let aNum = normalizeTerritoryNum(a.territories?.num);
-        if (!aNum && a.territory_id) {
-          const t = territories.find((item) => item.id === a.territory_id);
-          aNum = normalizeTerritoryNum(t?.num);
-        }
-        if (aNum === normalized && scheduleRowAcceptsAssignment(row, a)) return a;
-      }
-      const terr = territoryByScheduleNum(row);
-      if (terr?.status === 'designado') {
-        const linked = assignmentByTerritoryId.get(terr.id);
-        return linked || {
-          id: null,
-          territory_id: terr.id,
-          profiles: null,
-          territories: terr,
-          assigned_at: null,
-          _statusOnly: true
-        };
-      }
-    }
-    return null;
+    const individual = scheduleIndividualAssignment(row);
+    if (individual?.id) return individual;
+    const ctx = resolveScheduleDisplayContext(row);
+    return ctx.assignment || null;
   }
 
   function scheduleAssignmentTitle(assignment) {
@@ -4241,6 +4227,11 @@
         } else if (isEdit) {
           dirigenteName = row.dirigente_name || null;
         }
+        if (!profileId && dirigenteName) {
+          const resolved = H().resolveProfileByName(dirigenteName, profiles)
+            || H().resolveProfileByName(H().primaryDirigenteFromPair(dirigenteName), profiles);
+          profileId = resolved?.id || null;
+        }
         if (!profileId && !dirigenteName) {
           showToast(toast, 'Selecione o dirigente.', true);
           return;
@@ -4447,7 +4438,10 @@
     document.getElementById('semana-list')?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-edit-schedule]');
       if (editBtn) {
-        openScheduleFormModal(weekTemplate.find((r) => r.id === editBtn.dataset.editSchedule));
+        openScheduleFormModal(
+          scheduleRowsForWeek().find((r) => r.id === editBtn.dataset.editSchedule)
+            || weekTemplate.find((r) => r.id === editBtn.dataset.editSchedule)
+        );
         return;
       }
       const delBtn = e.target.closest('[data-del-schedule]');
