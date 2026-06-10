@@ -814,7 +814,7 @@
     const { data, error } = await client
       .from('territory_active_assignments')
       .select(`
-        id, assigned_at, territory_id, profile_id, is_domingo_pair,
+        id, assigned_at, territory_id, profile_id, is_domingo_pair, status,
         territories ( num, display_name, map_image_url ),
         profiles!profile_id ( full_name, username )
       `)
@@ -823,6 +823,13 @@
     if (error) throw error;
     activeAssignments = data || [];
     assignmentByTerritoryId = new Map(activeAssignments.map((a) => [a.territory_id, a]));
+  }
+
+  function activeAssignmentForTerritoryId(terrId) {
+    if (!terrId) return null;
+    const fromMap = assignmentByTerritoryId.get(terrId);
+    if (fromMap?.id) return fromMap;
+    return activeAssignments.find((a) => a.territory_id === terrId) || null;
   }
 
   async function loadWeekTemplate() {
@@ -1600,18 +1607,12 @@
     const terr = territories.find((t) => t.id === terrId);
     if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return null;
 
-    const fromMap = assignmentByTerritoryId.get(terrId);
-    if (fromMap?.id && fromMap.status === 'active') return fromMap;
-
-    const onTerritory = activeAssignments.find(
-      (a) => a.territory_id === terrId && a.status === 'active'
-    );
-    if (onTerritory?.id) return onTerritory;
+    const direct = activeAssignmentForTerritoryId(terrId);
+    if (direct?.id) return direct;
 
     const normalized = scheduleTerritoryNum(row);
     if (normalized) {
       for (const a of activeAssignments) {
-        if (a.status !== 'active') continue;
         let aNum = normalizeTerritoryNum(a.territories?.num);
         if (!aNum && a.territory_id) {
           const t = territories.find((item) => item.id === a.territory_id);
