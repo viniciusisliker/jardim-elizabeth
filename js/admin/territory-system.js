@@ -541,7 +541,8 @@
   }
 
   function scheduleModalDesignationAssignment(row) {
-    if (!row || H().isSundayCronogramaDay(row.weekday_label)) return null;
+    if (!row) return null;
+    if (H().isSundayCronogramaDay(row.weekday_label)) return scheduleDomingoPairAssignment(row);
     return scheduleActiveAssignment(row);
   }
 
@@ -577,8 +578,18 @@
   async function repairOrphanTerritoryStatus(territoryId) {
     const terr = territories.find((t) => t.id === territoryId);
     if (!terr || terr.status !== 'designado') return;
-    const active = activeAssignments.find((a) => a.territory_id === territoryId && a.status === 'active');
-    if (active?.id) return;
+    let active = activeAssignments.find((a) => a.territory_id === territoryId && a.status === 'active');
+    if (!active?.id && client) {
+      const { data } = await client
+        .from('territory_active_assignments')
+        .select('id')
+        .eq('territory_id', territoryId)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (data?.id) return;
+    } else if (active?.id) {
+      return;
+    }
     const { error } = await client
       .from('territories')
       .update({ status: 'disponivel' })
@@ -665,6 +676,7 @@
       throw new Error('Domingo exige território de dupla: T07, T12 ou T18.');
     }
 
+    await loadActiveAssignments();
     await repairOrphanTerritoryStatus(territoryId);
 
     const existingOnTerritory = activeAssignments.find(
@@ -1544,6 +1556,43 @@
     return !!assignment?.id && !H().isDomingoPairContextAssignment(assignment, profiles);
   }
 
+  function isScheduleDomingoPairAssignment(assignment) {
+    return !!assignment?.id && H().isDomingoPairContextAssignment(assignment, profiles);
+  }
+
+  function scheduleDomingoPairAssignment(row) {
+    if (!H().isSundayCronogramaDay(row?.weekday_label)) return null;
+    const terrId = resolveScheduleTerritoryId(row);
+    if (!terrId) return null;
+    const terr = territories.find((t) => t.id === terrId);
+    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return null;
+
+    const fromMap = assignmentByTerritoryId.get(terrId);
+    if (isScheduleDomingoPairAssignment(fromMap)) return fromMap;
+
+    const onTerritory = activeAssignments.find(
+      (a) => a.territory_id === terrId
+        && a.status === 'active'
+        && isScheduleDomingoPairAssignment(a)
+    );
+    if (onTerritory) return onTerritory;
+
+    const normalized = scheduleTerritoryNum(row);
+    if (normalized) {
+      for (const a of activeAssignments) {
+        if (!isScheduleDomingoPairAssignment(a)) continue;
+        let aNum = normalizeTerritoryNum(a.territories?.num);
+        if (!aNum && a.territory_id) {
+          const t = territories.find((item) => item.id === a.territory_id);
+          aNum = normalizeTerritoryNum(t?.num);
+        }
+        if (aNum === normalized) return a;
+      }
+    }
+
+    return null;
+  }
+
   /** Designação ativa individual da linha (com id — usada no verde e no Devolver). */
   function scheduleActiveAssignment(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
@@ -1586,6 +1635,13 @@
     return null;
   }
 
+  function scheduleRowAssignment(row) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) {
+      return scheduleDomingoPairAssignment(row);
+    }
+    return scheduleActiveAssignment(row);
+  }
+
   function scheduleReturnAssignment(row) {
     return scheduleActiveAssignment(row);
   }
@@ -1603,7 +1659,8 @@
 
   function resolveScheduleDisplayContext(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) {
-      return { terr: resolveScheduleTerritory(row), assignment: null };
+      const assignment = scheduleDomingoPairAssignment(row);
+      return { terr: resolveScheduleTerritory(row), assignment: assignment || null };
     }
     const assignment = scheduleActiveAssignment(row);
     const terr = assignment?.territories
@@ -1652,11 +1709,15 @@
   }
 
   function findAssignmentForScheduleRow(row) {
-    return scheduleActiveAssignment(row);
+    return scheduleRowAssignment(row);
   }
 
   function scheduleAssignmentTitle(assignment) {
     if (!assignment) return '';
+    const terr = assignment.territories
+      || territories.find((t) => t.id === assignment.territory_id);
+    const pairLabel = terr ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles) : null;
+    if (pairLabel) return pairLabel;
     const person = profileName(assignment.profiles);
     return person !== '—' ? person : 'Em campo';
   }
@@ -2032,7 +2093,7 @@
     body.innerHTML = filtered.map((r) => {
       const tone = scheduleDayTone(r.weekday_label);
       const dirigenteHtml = scheduleDirigenteHtml(r);
-      const assignment = scheduleActiveAssignment(r);
+      const assignment = scheduleRowAssignment(r);
       const territorioHtml = scheduleTerritoryCell(r, assignment);
       const sugg = scheduleSuggestion(r);
       const hasSugg = r.suggestion || r.suggestion_note;
