@@ -249,7 +249,7 @@
   const TERR_COL_DEFAULTS = {
     catalog: ['52px', '220px', '128px', '96px', '148px', '196px', '52px'],
     sched: ['64px', '148px', '172px', '152px', '72px', '280px', '69px'],
-    hist: ['76px', '96px', '168px', '210px', '240px'],
+    hist: ['76px', '96px', '168px', '210px', '240px', '40px'],
     over: ['220px', '136px', '200px', '88px', '72px'],
     spots: ['72px', '280px', '48px']
   };
@@ -851,7 +851,7 @@
     const { data, error } = await client
       .from('territory_history')
       .select(`
-        id, event_type, event_date, details, metadata, created_at, territory_id,
+        id, event_type, event_date, details, metadata, created_at, created_by, territory_id, profile_id,
         territories ( num, display_name, map_image_url ),
         profiles!profile_id ( full_name )
       `)
@@ -3410,7 +3410,8 @@
       ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'day', label: 'Dia', filterKey: 'day', options: dayOpts, wrap: 'span' })}
       ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'dirigente', label: 'Dirigente', filterKey: 'dirigente', options: dirOpts, wrap: 'span' })}
       ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'territorio', label: 'Território', filterKey: 'territorio', options: terrOpts, wrap: 'span' })}
-      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'obs', label: 'Observações', filterKey: 'eventType', options: eventOpts, wrap: 'span' })}`;
+      ${xlfColumnHeader('hist-sort', histSort, histFilter, { col: 'obs', label: 'Observações', filterKey: 'eventType', options: eventOpts, wrap: 'span' })}
+      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
   }
 
   function updateHistSortUI() {
@@ -3536,6 +3537,11 @@
         <span class="terr-hist-cell terr-hist-cell--dirigente${historyDirigente(h) === '—' ? ' terr-hist-cell--muted' : ''}" title="${escapeHtml(historyDirigente(h))}">${escapeHtml(historyDirigente(h))}</span>
         <span class="terr-hist-cell">${historyTerritoryCell(h)}</span>
         <span class="terr-hist-obs${obs ? '' : ' terr-hist-obs--empty'}" title="${escapeHtml(obs || 'Sem observações')}">${historyTypeBadge(h)}${escapeHtml(obs || '—')}</span>
+        <div class="terr-hist-actions">
+          <button type="button" data-del-history="${h.id}" class="terr-sched-icon-btn terr-sched-icon-btn--del" title="Excluir registro">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
       </div>`;
     }).join('');
 
@@ -4249,6 +4255,30 @@
     }
   }
 
+  async function deleteHistoryEntry(id) {
+    if (!window.confirm('Excluir este registro do histórico?')) return;
+    const row = history.find((item) => item.id === id);
+    const { error } = await client.from('territory_history').delete().eq('id', id);
+    if (error) showToast(toast, error.message, true);
+    else {
+      if (row) {
+        undoApi()?.registerDelete(UNDO_SCOPE, 'territory_history', {
+          id: row.id,
+          event_type: row.event_type,
+          event_date: row.event_date,
+          details: row.details,
+          metadata: row.metadata,
+          territory_id: row.territory_id,
+          profile_id: row.profile_id,
+          created_by: row.created_by,
+          created_at: row.created_at
+        }, 'Registro do histórico');
+      }
+      showToast(toast, 'Registro excluído.');
+      await refresh();
+    }
+  }
+
   async function deleteScheduleRow(id) {
     if (!window.confirm('Excluir esta linha do cronograma?')) return;
     const row = weekTemplate.find((item) => item.id === id);
@@ -4902,6 +4932,11 @@
       if (e.key === 'Escape') closeTerritoryMapLightbox();
     });
     document.getElementById('panel-historico')?.addEventListener('click', (e) => {
+      const delBtn = e.target.closest('[data-del-history]');
+      if (delBtn) {
+        deleteHistoryEntry(delBtn.dataset.delHistory);
+        return;
+      }
       const btn = e.target.closest('[data-terr-map]');
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
