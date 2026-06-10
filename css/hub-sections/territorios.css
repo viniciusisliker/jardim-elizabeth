@@ -83,6 +83,8 @@
     .terr-priority-modal__list{overflow:auto;max-height:min(50vh,24rem)}
     .terr-priority-modal__foot{display:flex;justify-content:flex-end;padding:.625rem 1rem;border-top:1px solid #eef0f4;background:#f7f9fc}
     .terr-sched-toolbar-btn .material-symbols-outlined{font-size:1rem}
+    .terr-sched-toolbar-btn--spin .material-symbols-outlined{animation:terr-toolbar-spin .75s linear infinite}
+    @keyframes terr-toolbar-spin{to{transform:rotate(360deg)}}
     .terr-sched-cols-wrap{position:relative;flex-shrink:0}
     .terr-sched-cols-menu{
       position:absolute;top:calc(100% + .375rem);right:0;z-index:40;

@@ -1111,14 +1111,16 @@
       const territoryId = document.getElementById('designar-territory').value;
       const terr = territories.find((item) => item.id === territoryId);
       const undoEntry = buildAssignUndo(territoryId, terr?.observations ?? null);
+      const profileId = document.getElementById('designar-profile').value;
       const { error } = await client.rpc('assign_territory_field', {
         p_territory_id: territoryId,
-        p_profile_id: document.getElementById('designar-profile').value,
+        p_profile_id: profileId,
         p_assigned_at: document.getElementById('designar-date').value
       });
       if (error) showToast(toast, error.message, true);
       else {
         pushUndo(undoEntry);
+        await syncScheduleRowsForAssignment(profileId, territoryId);
         showToast(toast, 'Território designado com sucesso.');
         close();
         await refresh();
@@ -1295,7 +1297,62 @@
     return null;
   }
 
+  function assignmentForScheduleProfile(row) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
+    const profileId = resolveScheduleProfileId(row);
+    if (!profileId) return null;
+    return activeAssignments.find((a) => a.profile_id === profileId) || null;
+  }
+
+  function resolveScheduleDisplayContext(row) {
+    const byProfile = assignmentForScheduleProfile(row);
+    if (byProfile?.territories) {
+      return { terr: byProfile.territories, assignment: byProfile };
+    }
+    const assignment = findAssignmentForScheduleRow(row);
+    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
+    return { terr, assignment };
+  }
+
+  function scheduleTerritoryCodeFromTerr(terr) {
+    if (!terr?.num && terr?.num !== 0) return null;
+    return `T${terr.num}`;
+  }
+
+  async function syncScheduleRowsForAssignment(profileId, territoryId) {
+    if (!client || !profileId || !territoryId) return;
+    const terr = territories.find((t) => t.id === territoryId);
+    if (!terr) return;
+    const territoryCode = scheduleTerritoryCodeFromTerr(terr);
+    const rows = weekTemplate.filter((row) => {
+      if (H().isSundayCronogramaDay(row.weekday_label)) return false;
+      return resolveScheduleProfileId(row) === profileId;
+    });
+    const updates = rows.filter(
+      (row) => row.territory_id !== territoryId || row.territory_code !== territoryCode
+    );
+    if (!updates.length) return;
+    const results = await Promise.allSettled(
+      updates.map((row) => client.from('territory_week_schedule').update({
+        territory_id: territoryId,
+        territory_code: territoryCode
+      }).eq('id', row.id))
+    );
+    const failed = results.find((r) => r.status === 'rejected' || r.value?.error);
+    if (failed) {
+      const msg = failed.status === 'rejected'
+        ? failed.reason?.message
+        : failed.value?.error?.message;
+      console.warn('Sync cronograma (designação):', msg);
+      return;
+    }
+    await loadWeekTemplate();
+  }
+
   function findAssignmentForScheduleRow(row) {
+    const byProfile = assignmentForScheduleProfile(row);
+    if (byProfile) return byProfile;
+
     const terrId = resolveScheduleTerritoryId(row);
     if (terrId) {
       const hit = assignmentForTerritoryId(terrId);
@@ -1477,25 +1534,31 @@
   }
 
   function scheduleTerritory(row) {
+    const { terr } = resolveScheduleDisplayContext(row);
+    if (terr) return H().territoryLabel(terr);
     if (row.territories) return H().territoryLabel(row.territories);
     return row.territory_code || '—';
   }
 
   function scheduleTerritoryMapUrl(row, assignment) {
-    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
+    const ctx = resolveScheduleDisplayContext(row);
+    const terr = ctx.terr;
+    const asn = assignment || ctx.assignment;
     const num = terr?.num ?? scheduleTerritoryNum(row);
-    return H().resolveTerritoryMapUrl(terr?.map_image_url ?? assignment?.territories?.map_image_url, num);
+    return H().resolveTerritoryMapUrl(terr?.map_image_url ?? asn?.territories?.map_image_url, num);
   }
 
   function scheduleTerritoryCell(row, assignment) {
-    const terr = resolveScheduleTerritory(row) || assignment?.territories || null;
+    const ctx = resolveScheduleDisplayContext(row);
+    const terr = ctx.terr;
+    const assignmentResolved = assignment || ctx.assignment;
     const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
     const terrNum = terr?.num ?? scheduleTerritoryNum(row);
     const terrText = terr?.display_name || label;
-    const mapUrl = scheduleTerritoryMapUrl(row, assignment);
-    const assignedClass = assignment ? ' terr-sched-cell--assigned' : '';
-    const title = assignment
-      ? `Designado · ${scheduleAssignmentTitle(assignment)}`
+    const mapUrl = scheduleTerritoryMapUrl(row, assignmentResolved);
+    const assignedClass = assignmentResolved ? ' terr-sched-cell--assigned' : '';
+    const title = assignmentResolved
+      ? `Designado · ${scheduleAssignmentTitle(assignmentResolved)}`
       : (row.observations || label);
 
     const inner = `
@@ -1746,6 +1809,33 @@
     const weekInput = document.getElementById('semana-week');
     if (!weekInput || !window.JEWeekInput) return;
     weekInput.value = window.JEWeekInput.weekInputFromMonday(currentWeek);
+  }
+
+  async function syncAllScheduleRowsFromAssignments() {
+    for (const a of activeAssignments) {
+      if (a.profile_id && a.territory_id) {
+        await syncScheduleRowsForAssignment(a.profile_id, a.territory_id);
+      }
+    }
+  }
+
+  async function reloadSemanaData() {
+    const results = await Promise.allSettled([
+      loadWeekTemplate(),
+      loadMeetingSpots(),
+      loadTerritories(),
+      loadActiveAssignments()
+    ]);
+    const errors = results
+      .filter((r) => r.status === 'rejected')
+      .map((r) => r.reason?.message || String(r.reason));
+    if (errors.length) throw new Error(errors[0]);
+    await syncAllScheduleRowsFromAssignments();
+    try {
+      weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
+    } catch (err) {
+      console.warn('Weekend announcements:', err);
+    }
   }
 
   async function refreshSemanaView() {
@@ -3395,6 +3485,7 @@
           if (terrErr) throw terrErr;
         }
       }
+      await syncScheduleRowsForAssignment(profileId, t.id);
       return;
     }
 
@@ -4075,9 +4166,22 @@
     });
   }
 
+  function scheduleRowsEnrichedForExport() {
+    return scheduleRowsForWeek().map((row) => {
+      const { terr } = resolveScheduleDisplayContext(row);
+      if (!terr) return row;
+      return {
+        ...row,
+        territory_id: terr.id,
+        territory_code: scheduleTerritoryCodeFromTerr(terr),
+        territories: terr
+      };
+    });
+  }
+
   function copyWhatsApp() {
     const byId = Object.fromEntries(territories.map((t) => [t.id, t]));
-    const msg = H().generateWhatsAppSchedule(currentWeek, scheduleRowsForWeek(), byId);
+    const msg = H().generateWhatsAppSchedule(currentWeek, scheduleRowsEnrichedForExport(), byId);
     document.getElementById('semana-whatsapp').textContent = msg;
     document.getElementById('semana-whatsapp-wrap').classList.remove('hidden');
     navigator.clipboard?.writeText(msg).then(
@@ -4232,6 +4336,24 @@
       setupSchedColsMenu();
 
       document.getElementById('btn-designar')?.addEventListener('click', () => openDesignarModal());
+      document.getElementById('btn-semana-refresh')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btn-semana-refresh');
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
+        btn.classList.add('terr-sched-toolbar-btn--spin');
+        try {
+          await reloadSemanaData();
+          await refreshSemanaView();
+          tabsRendered.semana = true;
+          if (toast) showToast(toast, 'Cronograma atualizado.');
+        } catch (err) {
+          console.error('Refresh cronograma:', err);
+          if (toast) showToast(toast, err.message || 'Erro ao atualizar cronograma.', true);
+        } finally {
+          btn.disabled = false;
+          btn.classList.remove('terr-sched-toolbar-btn--spin');
+        }
+      });
       document.getElementById('btn-whatsapp')?.addEventListener('click', async () => {
         try {
           await ensureTabData('semana');
