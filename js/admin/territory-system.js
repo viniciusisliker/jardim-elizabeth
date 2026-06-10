@@ -575,6 +575,22 @@
     return msg || 'Erro ao designar território.';
   }
 
+  async function fetchActiveAssignmentForTerritory(territoryId) {
+    if (!client || !territoryId) return null;
+    const { data, error } = await client
+      .from('territory_active_assignments')
+      .select(`
+        id, assigned_at, territory_id, profile_id, is_domingo_pair, status,
+        territories ( num, display_name, map_image_url ),
+        profiles!profile_id ( full_name, username )
+      `)
+      .eq('territory_id', territoryId)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (error) throw error;
+    return data || null;
+  }
+
   async function repairOrphanTerritoryStatus(territoryId) {
     const terr = territories.find((t) => t.id === territoryId);
     if (!terr || terr.status !== 'designado') return;
@@ -679,26 +695,33 @@
     await loadActiveAssignments();
     await repairOrphanTerritoryStatus(territoryId);
 
-    const existingOnTerritory = activeAssignments.find(
+    let existingOnTerritory = activeAssignments.find(
       (a) => a.territory_id === territoryId && a.status === 'active'
     );
-    if (existingOnTerritory?.id) {
+    if (!existingOnTerritory?.id) {
+      existingOnTerritory = await fetchActiveAssignmentForTerritory(territoryId);
+      if (existingOnTerritory?.id) await loadActiveAssignments();
+    }
+
+    const reconcileDomingoAssignment = async (existing) => {
       const assignedDate = assignedAt || H().toISODate(new Date());
       const patch = {};
-      if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
+      if (String(existing.assigned_at || '').slice(0, 10) !== assignedDate) {
         patch.assigned_at = assignedDate;
       }
-      if (!existingOnTerritory.is_domingo_pair) {
-        patch.is_domingo_pair = true;
-      }
+      if (!existing.is_domingo_pair) patch.is_domingo_pair = true;
       if (Object.keys(patch).length) {
-        const { error } = await client
+        const { error: patchErr } = await client
           .from('territory_active_assignments')
           .update(patch)
-          .eq('id', existingOnTerritory.id);
-        if (error) throw error;
+          .eq('id', existing.id);
+        if (patchErr) throw patchErr;
         await loadActiveAssignments();
       }
+    };
+
+    if (existingOnTerritory?.id) {
+      await reconcileDomingoAssignment(existingOnTerritory);
       return;
     }
 
@@ -723,7 +746,17 @@
       p_assigned_at: assignedDate,
       p_is_domingo_pair: true
     });
-    if (error) throw new Error(formatDesignationError(error));
+    if (error) {
+      if (/já possui designação ativa|already has an active assignment/i.test(String(error.message || ''))) {
+        const existing = await fetchActiveAssignmentForTerritory(territoryId);
+        if (existing?.id) {
+          await reconcileDomingoAssignment(existing);
+          await loadActiveAssignments();
+          return;
+        }
+      }
+      throw new Error(formatDesignationError(error));
+    }
 
     await Promise.all([loadActiveAssignments(), loadTerritories()]);
   }
@@ -1568,25 +1601,23 @@
     if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return null;
 
     const fromMap = assignmentByTerritoryId.get(terrId);
-    if (isScheduleDomingoPairAssignment(fromMap)) return fromMap;
+    if (fromMap?.id && fromMap.status === 'active') return fromMap;
 
     const onTerritory = activeAssignments.find(
-      (a) => a.territory_id === terrId
-        && a.status === 'active'
-        && isScheduleDomingoPairAssignment(a)
+      (a) => a.territory_id === terrId && a.status === 'active'
     );
-    if (onTerritory) return onTerritory;
+    if (onTerritory?.id) return onTerritory;
 
     const normalized = scheduleTerritoryNum(row);
     if (normalized) {
       for (const a of activeAssignments) {
-        if (!isScheduleDomingoPairAssignment(a)) continue;
+        if (a.status !== 'active') continue;
         let aNum = normalizeTerritoryNum(a.territories?.num);
         if (!aNum && a.territory_id) {
           const t = territories.find((item) => item.id === a.territory_id);
           aNum = normalizeTerritoryNum(t?.num);
         }
-        if (aNum === normalized) return a;
+        if (aNum === normalized && H().isDomingoPairTerritoryNum(aNum)) return a;
       }
     }
 
@@ -1718,6 +1749,8 @@
       || territories.find((t) => t.id === assignment.territory_id);
     const pairLabel = terr ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles) : null;
     if (pairLabel) return pairLabel;
+    const pair = terr ? H().domingoPairForTerritoryNum(terr.num) : null;
+    if (pair && H().isDomingoPairTerritoryNum(terr?.num)) return pair.dirigente_name;
     const person = profileName(assignment.profiles);
     return person !== '—' ? person : 'Em campo';
   }
