@@ -334,6 +334,40 @@
     return null;
   }
 
+  function isDomingoPairTerritoryNum(num) {
+    return !!domingoPairForTerritoryNum(num);
+  }
+
+  function assignmentTerritoryNum(assignment) {
+    if (assignment?.territories?.num != null && assignment.territories.num !== '') {
+      return normalizeTerritoryNum(assignment.territories.num);
+    }
+    return null;
+  }
+
+  function isDomingoPairContextAssignment(assignment, profiles) {
+    if (!assignment?.profile_id) return false;
+    if (assignment.is_domingo_pair === true) return true;
+    const num = assignmentTerritoryNum(assignment);
+    if (!num) return false;
+    const pair = domingoPairForTerritoryNum(num);
+    if (!pair) return false;
+    return profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles);
+  }
+
+  function assignmentBlocksIndividualDesignation(assignment, profiles) {
+    if (!assignment?.profile_id) return false;
+    return !isDomingoPairContextAssignment(assignment, profiles);
+  }
+
+  function profilesWithIndividualAssignment(activeAssignments, profiles) {
+    const ids = new Set();
+    for (const a of activeAssignments) {
+      if (assignmentBlocksIndividualDesignation(a, profiles)) ids.add(a.profile_id);
+    }
+    return ids;
+  }
+
   function domingoPairSelectable(pair, territoryId, activeAssignments, profiles, currentProfileId, homeTerritoryId) {
     if (homeTerritoryId && territoryId && homeTerritoryId === territoryId) return true;
     const members = profilesInDomingoPair(pair.dirigente_name, profiles);
@@ -341,7 +375,9 @@
     if (currentProfileId && members.some((m) => m.id === currentProfileId)) return true;
     return members.some(
       (m) => !activeAssignments.some(
-        (a) => a.profile_id === m.id && a.territory_id !== territoryId
+        (a) => a.profile_id === m.id
+          && assignmentBlocksIndividualDesignation(a, profiles)
+          && a.territory_id !== territoryId
       )
     );
   }
@@ -358,7 +394,9 @@
     }
     const free = members.find(
       (m) => !activeAssignments.some(
-        (a) => a.profile_id === m.id && a.territory_id !== territoryId
+        (a) => a.profile_id === m.id
+          && assignmentBlocksIndividualDesignation(a, profiles)
+          && a.territory_id !== territoryId
       )
     );
     return (free || members[0]).id;
@@ -538,6 +576,10 @@
     profilesInDomingoPair,
     profileInDomingoPair,
     domingoPairAssigneeLabel,
+    isDomingoPairTerritoryNum,
+    isDomingoPairContextAssignment,
+    assignmentBlocksIndividualDesignation,
+    profilesWithIndividualAssignment,
     domingoPairSelectable,
     resolveProfileIdForDomingoPair,
     applyDomingoFixedDirigentes,

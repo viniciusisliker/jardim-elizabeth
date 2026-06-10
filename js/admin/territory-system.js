@@ -532,7 +532,7 @@
     const { data, error } = await client
       .from('territory_active_assignments')
       .select(`
-        id, assigned_at, territory_id, profile_id,
+        id, assigned_at, territory_id, profile_id, is_domingo_pair,
         territories ( num, display_name, map_image_url ),
         profiles!profile_id ( full_name, username )
       `)
@@ -934,15 +934,15 @@
     const terrSel = document.getElementById('designar-territory');
     const dateEl = document.getElementById('designar-date');
     if (!profSel || !terrSel || !dateEl) return;
-    const activeProfileIds = new Set(activeAssignments.map((a) => a.profile_id));
+    const busyProfileIds = H().profilesWithIndividualAssignment(activeAssignments, profiles);
     const activeOverseers = overseers.filter((o) => o.is_active !== false);
-    const freeOverseers = activeOverseers.filter((o) => !activeProfileIds.has(o.profile_id));
+    const freeOverseers = activeOverseers.filter((o) => !busyProfileIds.has(o.profile_id));
     const avail = availableTerritories();
 
     const overseerOpts = activeOverseers.length
       ? activeOverseers.map((o) => {
           const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-          const disabled = activeProfileIds.has(o.profile_id) ? ' disabled' : '';
+          const disabled = busyProfileIds.has(o.profile_id) ? ' disabled' : '';
           return `<option value="${o.profile_id}"${disabled}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
         }).join('')
       : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
@@ -962,17 +962,20 @@
     const statBusy = document.getElementById('designar-stat-busy');
     if (statAvail) statAvail.textContent = String(avail.length);
     if (statFree) statFree.textContent = String(freeOverseers.length);
-    if (statBusy) statBusy.textContent = String(activeAssignments.length);
+    const individualAssignments = activeAssignments.filter(
+      (a) => H().assignmentBlocksIndividualDesignation(a, profiles)
+    );
+    if (statBusy) statBusy.textContent = String(individualAssignments.length);
 
     const busyWrap = document.getElementById('designar-busy-wrap');
     const busyList = document.getElementById('designar-busy-list');
     if (busyWrap && busyList) {
-      if (!activeAssignments.length) {
+      if (!individualAssignments.length) {
         busyWrap.classList.add('hidden');
         busyList.innerHTML = '';
       } else {
         busyWrap.classList.remove('hidden');
-        busyList.innerHTML = activeAssignments.map((a) => `
+        busyList.innerHTML = individualAssignments.map((a) => `
           <div class="terr-assign-busy__row">
             <span class="terr-assign-busy__person">${escapeHtml(profileName(a.profiles))}</span>
             <span class="terr-assign-busy__terr">${escapeHtml(H().territoryLabel(a.territories))}</span>
@@ -1297,11 +1300,19 @@
     return null;
   }
 
+  function scheduleRowAcceptsAssignment(row, assignment) {
+    if (!assignment) return false;
+    if (H().isSundayCronogramaDay(row?.weekday_label)) return true;
+    return !H().isDomingoPairContextAssignment(assignment, profiles);
+  }
+
   function assignmentForScheduleProfile(row) {
     if (H().isSundayCronogramaDay(row?.weekday_label)) return null;
     const profileId = resolveScheduleProfileId(row);
     if (!profileId) return null;
-    return activeAssignments.find((a) => a.profile_id === profileId) || null;
+    const hit = activeAssignments.find((a) => a.profile_id === profileId);
+    if (!hit || !scheduleRowAcceptsAssignment(row, hit)) return null;
+    return hit;
   }
 
   function resolveScheduleDisplayContext(row) {
@@ -1321,6 +1332,10 @@
 
   async function syncScheduleRowsForAssignment(profileId, territoryId) {
     if (!client || !profileId || !territoryId) return;
+    const existing = activeAssignments.find(
+      (a) => a.profile_id === profileId && a.territory_id === territoryId
+    );
+    if (existing && H().isDomingoPairContextAssignment(existing, profiles)) return;
     const terr = territories.find((t) => t.id === territoryId);
     if (!terr) return;
     const territoryCode = scheduleTerritoryCodeFromTerr(terr);
@@ -1356,7 +1371,7 @@
     const terrId = resolveScheduleTerritoryId(row);
     if (terrId) {
       const hit = assignmentForTerritoryId(terrId);
-      if (hit) return hit;
+      if (hit && scheduleRowAcceptsAssignment(row, hit)) return hit;
     }
 
     const normalized = scheduleTerritoryNum(row);
@@ -1367,7 +1382,7 @@
           const t = territories.find((item) => item.id === a.territory_id);
           aNum = normalizeTerritoryNum(t?.num);
         }
-        if (aNum === normalized) return a;
+        if (aNum === normalized && scheduleRowAcceptsAssignment(row, a)) return a;
       }
       const terr = territoryByScheduleNum(row);
       if (terr?.status === 'designado') {
@@ -1813,7 +1828,7 @@
 
   async function syncAllScheduleRowsFromAssignments() {
     for (const a of activeAssignments) {
-      if (a.profile_id && a.territory_id) {
+      if (a.profile_id && a.territory_id && !H().isDomingoPairContextAssignment(a, profiles)) {
         await syncScheduleRowsForAssignment(a.profile_id, a.territory_id);
       }
     }
@@ -3348,7 +3363,9 @@
 
   function catalogModalIndividualOptions(territoryId, selectedProfileId) {
     const busyElsewhere = new Set(
-      activeAssignments.filter((a) => a.territory_id !== territoryId).map((a) => a.profile_id)
+      activeAssignments
+        .filter((a) => a.territory_id !== territoryId && H().assignmentBlocksIndividualDesignation(a, profiles))
+        .map((a) => a.profile_id)
     );
     return overseers
       .filter((o) => o.is_active !== false)
@@ -3445,12 +3462,15 @@
     if (newStatus === 'designado') {
       if (!profileId) throw new Error('Selecione o designado.');
       const assignedAt = coverageDate || H().toISODate(new Date());
+      const isDomingoPair = Boolean(H().parseDomingoPairOptionValue(fd.get('pair_id')));
 
       if (wasDesignado) {
         const profileChanged = assignment.profile_id !== profileId;
         if (profileChanged) {
           const busy = activeAssignments.find(
-            (a) => a.profile_id === profileId && a.territory_id !== t.id
+            (a) => a.profile_id === profileId
+              && a.territory_id !== t.id
+              && H().assignmentBlocksIndividualDesignation(a, profiles)
           );
           if (busy) throw new Error('Este dirigente já possui um território ativo.');
           const { error } = await client
@@ -3474,7 +3494,8 @@
         const { error } = await client.rpc('assign_territory_field', {
           p_territory_id: t.id,
           p_profile_id: profileId,
-          p_assigned_at: assignedAt
+          p_assigned_at: assignedAt,
+          p_is_domingo_pair: isDomingoPair
         });
         if (error) throw error;
         if (observations) {
@@ -3485,7 +3506,7 @@
           if (terrErr) throw terrErr;
         }
       }
-      await syncScheduleRowsForAssignment(profileId, t.id);
+      if (!isDomingoPair) await syncScheduleRowsForAssignment(profileId, t.id);
       return;
     }
 
