@@ -124,15 +124,15 @@
       permission: 'audio_video',
       viewId: 'hub-view-audio-video',
       partial: 'hub/sections/audio-video.html',
-      styles: ['css/hub-sections/audio-video.css?v=2026060973'],
+      styles: ['css/hub-sections/audio-video.css?v=2026061048'],
       scripts: [
-        'js/admin/audio-video.js?v=2026060973'
+        'js/admin/audio-video.js?v=2026061048'
       ],
       initKey: 'JEAdminAudioVideo',
       hero: {
         kicker: 'Técnico e mídia',
         title: 'Áudio e Vídeo',
-        subtitle: 'Mesa de som, projeção, checklists e notas compartilhadas da equipe.',
+        subtitle: 'Mesa de som, projeção, Zoom, checklists e notas compartilhadas da equipe.',
         showChangelog: false,
         showBack: true
       }

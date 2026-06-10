@@ -23,7 +23,7 @@
       <div class="av-toolbar">
         <div class="flex-1 min-w-[10rem]">
           <h2>Áudio e Vídeo</h2>
-          <p>Referência rápida para quem cuida da mesa de som, projeção e transmissão.</p>
+          <p>Referência rápida para quem cuida da mesa de som, projeção e transmissão Zoom.</p>
         </div>
       </div>
 
@@ -39,7 +39,7 @@
           <span class="av-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">videocam</span></span>
           <div>
             <p class="av-stat__label">Vídeo</p>
-            <p class="av-stat__hint">Projeção, câmeras e transmissão</p>
+            <p class="av-stat__hint">Projeção, Zoom e transmissão</p>
           </div>
         </div>
         <div class="av-stat av-stat--prep">
@@ -58,10 +58,11 @@
             <h3>Boas práticas</h3>
           </div>
           <ul class="av-list">
-            <li>Testar microfones e projeção <strong>antes</strong> da reunião começar.</li>
+            <li>Testar microfones, projeção e Zoom <strong>antes</strong> da reunião começar.</li>
+            <li>Abrir a reunião Zoom com antecedência e conferir transmissão.</li>
             <li>Manter um volume confortável — nem baixo demais, nem alto.</li>
-            <li>Confirmar gravação ou transmissão, quando houver.</li>
-            <li>Desligar equipamentos e guardar cabos ao final.</li>
+            <li>Confirmar gravação na nuvem, quando houver.</li>
+            <li>Encerrar transmissão Zoom e desligar equipamentos ao final.</li>
             <li>Comunicar problemas técnicos ao responsável da equipe.</li>
           </ul>
         </article>
@@ -74,7 +75,8 @@
             <li>Mesa de som / mixer</li>
             <li>Microfones de púlpito e auxiliar</li>
             <li>Projetor ou TV do salão</li>
-            <li>Notebook com JW Library ou mídia</li>
+            <li>Notebook com JW Library, mídia e Zoom</li>
+            <li>Conta Zoom configurada para transmissão do salão</li>
             <li>Cabos HDMI, extensões e adaptadores</li>
           </ul>
         </article>
@@ -85,13 +87,14 @@
       <div class="av-toolbar">
         <div class="flex-1 min-w-[10rem]">
           <h2>Checklists</h2>
-          <p>Marque os itens durante a preparação. O progresso fica salvo neste navegador.</p>
+          <p>Marque os itens durante a preparação. Inclui etapas de Zoom e salão. O progresso fica salvo neste navegador.</p>
         </div>
         <button type="button" id="av-btn-reset-checklists" class="av-toolbar-btn av-toolbar-btn--ghost" title="Limpar todas as marcações">
           <span class="material-symbols-outlined text-base" aria-hidden="true">restart_alt</span>
-          Limpar
+          Limpar tudo
         </button>
       </div>
+      <p id="av-checklist-summary" class="av-checklist-summary"></p>
       <div id="av-checklists" class="av-checklist-grid"></div>
     </section>
 

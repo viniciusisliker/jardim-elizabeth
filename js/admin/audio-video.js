@@ -5,41 +5,97 @@
     {
       id: 'midweek',
       title: 'Reunião do meio de semana',
-      items: [
-        'Chegar com antecedência para preparar o salão',
-        'Ligar mesa de som, projetor/TV e notebook',
-        'Testar microfone de púlpito e auxiliar',
-        'Ajustar níveis de volume no mixer',
-        'Confirmar projeção da mídia (JW Library / vídeos)',
-        'Verificar gravação ou transmissão, se aplicável',
-        'Acompanhar entradas e saídas de microfone durante a reunião',
-        'Desligar equipamentos e organizar cabos ao final'
+      icon: 'calendar_today',
+      sections: [
+        {
+          id: 'prep',
+          label: 'Pré-reunião',
+          icon: 'schedule',
+          items: [
+            'Chegar com antecedência para preparar o salão',
+            'Ligar mesa de som, projetor/TV e notebook',
+            'Testar microfone de púlpito e auxiliar',
+            'Ajustar níveis de volume no mixer'
+          ]
+        },
+        {
+          id: 'zoom',
+          label: 'Zoom',
+          icon: 'videocam',
+          items: [
+            'Abrir a reunião Zoom com 15–30 min de antecedência',
+            'Testar microfone, câmera e áudio do computador no Zoom',
+            'Ativar transmissão quando o salão estiver pronto',
+            'Compartilhar tela ou mídia (JW Library / vídeos)',
+            'Monitorar participantes remotos e chat durante a reunião'
+          ]
+        },
+        {
+          id: 'during',
+          label: 'Durante',
+          icon: 'play_circle',
+          items: [
+            'Confirmar projeção da mídia no salão',
+            'Acompanhar entradas e saídas de microfone',
+            'Verificar gravação na nuvem, se aplicável'
+          ]
+        },
+        {
+          id: 'close',
+          label: 'Encerramento',
+          icon: 'power_settings_new',
+          items: [
+            'Encerrar compartilhamento de tela e transmissão Zoom',
+            'Desligar equipamentos e organizar cabos'
+          ]
+        }
       ]
     },
     {
       id: 'weekend',
       title: 'Reunião de fim de semana',
-      items: [
-        'Preparar áudio e vídeo antes do discurso público',
-        'Testar microfones para orador e presidentes',
-        'Confirmar projeção de imagens e vídeos da reunião',
-        'Ajustar volume para música e partes da reunião',
-        'Verificar transmissão ao vivo, se houver',
-        'Apoiar entradas de visitantes no microfone auxiliar',
-        'Guardar equipamentos após a reunião'
-      ]
-    },
-    {
-      id: 'special',
-      title: 'Assembleia / evento especial',
-      items: [
-        'Revisar programação e horários com antecedência',
-        'Testar todos os microfones e entradas do mixer',
-        'Confirmar câmeras, gravação e transmissão',
-        'Verificar backup de cabos e adaptadores',
-        'Combinar sinalização com o responsável do evento',
-        'Manter contato com o ancião de apoio durante o evento',
-        'Fazer checklist final ao encerrar'
+      icon: 'event',
+      sections: [
+        {
+          id: 'prep',
+          label: 'Pré-reunião',
+          icon: 'schedule',
+          items: [
+            'Preparar áudio e vídeo antes do discurso público',
+            'Testar microfones para orador e presidentes',
+            'Confirmar projeção de imagens e vídeos no salão'
+          ]
+        },
+        {
+          id: 'zoom',
+          label: 'Zoom',
+          icon: 'videocam',
+          items: [
+            'Abrir Zoom cedo e testar microfone e câmera',
+            'Conferir qualidade de áudio para participantes remotos',
+            'Ativar transmissão ao vivo antes do discurso',
+            'Compartilhar tela ou vídeos da reunião quando necessário',
+            'Destacar orador ou vídeo para quem assiste online'
+          ]
+        },
+        {
+          id: 'during',
+          label: 'Durante',
+          icon: 'play_circle',
+          items: [
+            'Ajustar volume para música e partes da reunião',
+            'Apoiar visitantes no microfone auxiliar'
+          ]
+        },
+        {
+          id: 'close',
+          label: 'Encerramento',
+          icon: 'power_settings_new',
+          items: [
+            'Encerrar transmissão Zoom e gravação na nuvem',
+            'Guardar equipamentos após a reunião'
+          ]
+        }
       ]
     }
   ];
@@ -88,12 +144,59 @@
     localStorage.setItem(`${STORAGE_PREFIX}${id}`, JSON.stringify(state));
   }
 
+  function checklistItems(checklist) {
+    return checklist.sections.flatMap((section) => section.items);
+  }
+
+  function checklistProgress(checklist) {
+    const state = readChecklistState(checklist.id);
+    const items = checklistItems(checklist);
+    const done = items.filter((_, idx) => state[idx]).length;
+    return { done, total: items.length };
+  }
+
   function updateChecklistProgress(card, checklist) {
     const progress = card.querySelector('.av-checklist__progress');
-    if (!progress) return;
-    const total = checklist.items.length;
-    const done = checklist.items.filter((_, idx) => readChecklistState(checklist.id)[idx]).length;
-    progress.textContent = `${done} de ${total} concluído${done === 1 ? '' : 's'}`;
+    const bar = card.querySelector('.av-checklist__bar-fill');
+    const { done, total } = checklistProgress(checklist);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    if (progress) {
+      progress.textContent = `${done} de ${total} concluído${done === 1 ? '' : 's'}`;
+    }
+    if (bar) {
+      bar.style.width = `${pct}%`;
+    }
+    const barWrap = card.querySelector('.av-checklist__bar');
+    if (barWrap) barWrap.setAttribute('aria-valuenow', String(pct));
+    card.classList.toggle('av-checklist--done', total > 0 && done === total);
+    card.dataset.progress = String(pct);
+  }
+
+  function renderChecklistSections(checklist, state) {
+    let idx = 0;
+    return checklist.sections.map((section) => {
+      const itemsHtml = section.items.map((label) => {
+        const currentIdx = idx;
+        idx += 1;
+        const checked = !!state[currentIdx];
+        return `
+          <li>
+            <label class="av-check-item${checked ? ' av-check-item--done' : ''}">
+              <input type="checkbox" data-av-check="${checklist.id}" data-av-check-idx="${currentIdx}" ${checked ? 'checked' : ''}/>
+              <span class="av-check-item__box" aria-hidden="true"></span>
+              <span class="av-check-item__text">${label}</span>
+            </label>
+          </li>`;
+      }).join('');
+      return `
+        <div class="av-checklist__section">
+          <h4 class="av-checklist__section-title">
+            <span class="material-symbols-outlined" aria-hidden="true">${section.icon}</span>
+            ${section.label}
+          </h4>
+          <ul class="av-checklist__list">${itemsHtml}</ul>
+        </div>`;
+    }).join('');
   }
 
   function renderChecklists() {
@@ -102,21 +205,26 @@
 
     root.innerHTML = CHECKLISTS.map((checklist) => {
       const state = readChecklistState(checklist.id);
-      const itemsHtml = checklist.items.map((label, idx) => `
-        <li>
-          <label class="av-check-item">
-            <input type="checkbox" data-av-check="${checklist.id}" data-av-check-idx="${idx}" ${state[idx] ? 'checked' : ''}/>
-            <span>${label}</span>
-          </label>
-        </li>`).join('');
-
       return `
         <article class="av-checklist" data-av-checklist="${checklist.id}">
           <div class="av-checklist__head">
-            <h3>${checklist.title}</h3>
-            <p class="av-checklist__progress">—</p>
+            <div class="av-checklist__title-row">
+              <span class="av-checklist__icon" aria-hidden="true">
+                <span class="material-symbols-outlined">${checklist.icon}</span>
+              </span>
+              <div class="av-checklist__title-wrap">
+                <h3>${checklist.title}</h3>
+                <p class="av-checklist__progress">—</p>
+              </div>
+              <button type="button" class="av-checklist__reset" data-av-reset-checklist="${checklist.id}" title="Limpar este checklist">
+                <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+              </button>
+            </div>
+            <div class="av-checklist__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="av-checklist__bar-fill"></span>
+            </div>
           </div>
-          <ul class="av-checklist__list">${itemsHtml}</ul>
+          <div class="av-checklist__body">${renderChecklistSections(checklist, state)}</div>
         </article>`;
     }).join('');
 
@@ -124,6 +232,24 @@
       const card = root.querySelector(`[data-av-checklist="${checklist.id}"]`);
       if (card) updateChecklistProgress(card, checklist);
     });
+
+    updateChecklistSummary();
+  }
+
+  function updateChecklistSummary() {
+    const summary = document.getElementById('av-checklist-summary');
+    if (!summary) return;
+    const totals = CHECKLISTS.reduce((acc, checklist) => {
+      const { done, total } = checklistProgress(checklist);
+      acc.done += done;
+      acc.total += total;
+      return acc;
+    }, { done: 0, total: 0 });
+    if (!totals.total) {
+      summary.textContent = '';
+      return;
+    }
+    summary.textContent = `${totals.done} de ${totals.total} itens marcados no total`;
   }
 
   function bindChecklistEvents() {
@@ -139,10 +265,28 @@
       const state = readChecklistState(id);
       state[idx] = input.checked;
       writeChecklistState(id, state);
+      const label = input.closest('.av-check-item');
+      label?.classList.toggle('av-check-item--done', input.checked);
       const card = root.querySelector(`[data-av-checklist="${id}"]`);
       const checklist = CHECKLISTS.find((c) => c.id === id);
       if (card && checklist) updateChecklistProgress(card, checklist);
+      updateChecklistSummary();
     });
+
+    root.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-av-reset-checklist]');
+      if (!btn) return;
+      resetChecklist(btn.dataset.avResetChecklist);
+    });
+  }
+
+  function resetChecklist(id) {
+    const checklist = CHECKLISTS.find((c) => c.id === id);
+    if (!checklist) return;
+    if (!confirm(`Limpar as marcações de "${checklist.title}"?`)) return;
+    localStorage.removeItem(`${STORAGE_PREFIX}${id}`);
+    renderChecklists();
+    showToast(toastEl(), 'Checklist limpo.');
   }
 
   function resetChecklists() {
@@ -184,6 +328,7 @@
     if (!profile) return false;
 
     setupTabs();
+    localStorage.removeItem(`${STORAGE_PREFIX}special`);
     renderChecklists();
     bindChecklistEvents();
     document.getElementById('av-btn-reset-checklists')?.addEventListener('click', resetChecklists);
