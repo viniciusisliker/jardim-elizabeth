@@ -495,6 +495,25 @@
     ).join('');
   }
 
+  function scheduleModalSelectedProfileId(row) {
+    if (!row) return '';
+    if (row.profile_id) return row.profile_id;
+    const name = String(row.dirigente_name || '').trim();
+    if (!name || H().isSundayCronogramaDay(row.weekday_label)) return '';
+    const profile = H().resolveProfileByName(name, profiles)
+      || H().resolveProfileByName(H().primaryDirigenteFromPair(name), profiles);
+    return profile?.id || '';
+  }
+
+  function scheduleDirigenteOptions(selectedId) {
+    const sorted = [...profiles].sort((a, b) =>
+      profileName(a).localeCompare(profileName(b), 'pt-BR', { sensitivity: 'base' })
+    );
+    return sorted.map((p) =>
+      `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(profileName(p))}</option>`
+    ).join('');
+  }
+
   function availableTerritories() {
     return H().sortByPriority(territories.filter((t) => t.status !== 'designado'));
   }
@@ -2112,17 +2131,6 @@
     return territories.find(
       (tr) => H().normalizeTerritoryNum(tr.num) === H().normalizeTerritoryNum(pair.territory_num)
     )?.id || null;
-  }
-
-  function scheduleModalSelectedProfileId(row) {
-    if (!row?.profile_id) {
-      const name = String(row?.dirigente_name || '').trim();
-      if (name && !H().isSundayCronogramaDay(row.weekday_label)) {
-        const profile = H().resolveProfileByName(name, profiles);
-        if (profile) return profile.id;
-      }
-    }
-    return row?.profile_id || '';
   }
 
   function resolveCatalogProfileId(rawProfileId, territoryId) {
@@ -3832,9 +3840,7 @@
     const fd = new FormData(form);
     const weekday = fd.get('weekday_label')?.trim() || '—';
     let dirigenteName = '—';
-    if (ctx.saturdayFromQuadro) {
-      dirigenteName = ctx.enriched?.dirigente_name || ctx.row?.dirigente_name || '—';
-    } else if (H().isSundayCronogramaDay(weekday)) {
+    if (H().isSundayCronogramaDay(weekday)) {
       const territoryId = fd.get('territory_id') || ctx.row?.territory_id || null;
       const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
       dirigenteName = H().domingoPairNameForSchedule(weekday, territoryId, ctx.row?.territory_code, territoriesById)
@@ -3939,9 +3945,10 @@
           <div class="terr-sched-modal__body">
             ${saturdayFromQuadro ? `
             <p class="terr-sched-modal__alert">
-              O <strong>dirigente de sábado</strong> vem do Quadro de Anúncios
-              (${escapeHtml(enriched.announcement_dirigente || '')}).
-              Edite em <a href="anuncios.html">Quadro de Anúncios → Final de Semana</a>.
+              Sugestão do Quadro de Anúncios para este sábado:
+              <strong>${escapeHtml(enriched.announcement_dirigente || enriched.dirigente_name || '—')}</strong>.
+              Você pode escolher outro dirigente abaixo ou editar em
+              <a href="anuncios.html">Quadro de Anúncios → Final de Semana</a>.
             </p>` : ''}
             ${sundayRow ? `
             <p class="terr-sched-modal__alert">
@@ -3953,14 +3960,14 @@
               <div id="sched-modal-preview"></div>
             </div>
             <div class="terr-sched-modal__fields">
-              ${saturdayFromQuadro || sundayRow ? `
+              ${sundayRow ? `
               <label class="terr-sched-modal-field terr-sched-modal-field--day">
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">today</span>Dia</span>
                 <select name="weekday_label" required class="terr-sched-modal-input terr-sched-modal-input--day">
                   ${H().CRONOGRAMA_DAYS.map((d) => `<option value="${escapeHtml(d)}" ${row?.weekday_label === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                 </select>
               </label>
-              ${sundayRow && !sundayPairName ? `
+              ${!sundayPairName ? `
               <label class="terr-sched-modal-field">
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla</span>
                 <input name="dirigente_name" value="${escapeHtml(row?.dirigente_name || '')}" class="terr-sched-modal-input" placeholder="Ex.: Denison e Arnaldo"/>
@@ -3977,7 +3984,7 @@
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
                   <select name="profile_id" class="terr-sched-modal-input">
                     <option value="">— Selecione —</option>
-                    ${overseerOptions(scheduleModalSelectedProfileId(row))}
+                    ${scheduleDirigenteOptions(scheduleModalSelectedProfileId(row))}
                   </select>
                 </label>
               </div>`}
@@ -4063,10 +4070,7 @@
       const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
       let profileId = null;
       let dirigenteName = null;
-      if (saturdayFromQuadro) {
-        profileId = enriched.profile_id || row.profile_id;
-        dirigenteName = enriched.dirigente_name || row.dirigente_name;
-      } else if (isSunday) {
+      if (isSunday) {
         profileId = null;
         dirigenteName = H().domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById)
           || fd.get('dirigente_name')?.trim()
