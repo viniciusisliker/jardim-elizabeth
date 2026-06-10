@@ -505,6 +505,32 @@
     return profile?.id || '';
   }
 
+  function scheduleModalSelectedTerritoryId(row) {
+    if (!row) return '';
+    if (row.territory_id) return row.territory_id;
+    return territoryByScheduleNum(row)?.id || '';
+  }
+
+  function resolveScheduleTerritoryPayload(row, territoryIdFromForm) {
+    let territoryId = territoryIdFromForm || row?.territory_id || null;
+    let territoryCode = null;
+    if (territoryId) {
+      const terr = territories.find((tr) => tr.id === territoryId);
+      if (terr) territoryCode = scheduleTerritoryCodeFromTerr(terr);
+    }
+    if (!territoryId && row) {
+      const terr = territoryByScheduleNum(row);
+      if (terr) {
+        territoryId = terr.id;
+        territoryCode = scheduleTerritoryCodeFromTerr(terr);
+      }
+    }
+    if (!territoryCode && row?.territory_code) {
+      territoryCode = String(row.territory_code).trim();
+    }
+    return { territoryId, territoryCode };
+  }
+
   function scheduleDirigenteOptions(selectedId) {
     const sorted = [...profiles].sort((a, b) =>
       profileName(a).localeCompare(profileName(b), 'pt-BR', { sensitivity: 'base' })
@@ -532,6 +558,9 @@
 
     const existingOnTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
     if (existingOnTerritory?.id) {
+      if (H().isDomingoPairContextAssignment(existingOnTerritory, profiles)) {
+        throw new Error(`${terr ? H().territoryLabel(terr) : 'Território'} está reservado para dupla de domingo.`);
+      }
       if (existingOnTerritory.profile_id === profileId) {
         if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
           const { error } = await client
@@ -1641,9 +1670,39 @@
     await loadWeekTemplate();
   }
 
+  async function backfillScheduleRowLinks() {
+    if (!client || !weekTemplate.length) return;
+    const dirty = weekTemplate.filter((row) => {
+      if (H().isSundayCronogramaDay(row.weekday_label)) return false;
+      const needsTerritory = !row.territory_id && territoryByScheduleNum(row);
+      const needsProfile = !row.profile_id && scheduleModalSelectedProfileId(row);
+      return needsTerritory || needsProfile;
+    });
+    if (!dirty.length) return;
+    for (const row of dirty) {
+      const patch = {};
+      if (!row.territory_id) {
+        const terr = territoryByScheduleNum(row);
+        if (terr) {
+          patch.territory_id = terr.id;
+          patch.territory_code = scheduleTerritoryCodeFromTerr(terr) || row.territory_code;
+        }
+      }
+      if (!row.profile_id) {
+        const profileId = scheduleModalSelectedProfileId(row);
+        if (profileId) patch.profile_id = profileId;
+      }
+      if (!Object.keys(patch).length) continue;
+      const { error } = await client.from('territory_week_schedule').update(patch).eq('id', row.id);
+      if (error) console.warn('Cronograma (vínculos):', error.message);
+    }
+    await loadWeekTemplate();
+  }
+
   async function syncScheduleDesignations() {
     if (!client || !weekTemplate.length) return 0;
     await sanitizeDomingoScheduleRows();
+    await backfillScheduleRowLinks();
     return 0;
   }
 
@@ -4119,9 +4178,10 @@
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
                 <select name="territory_id" class="terr-sched-modal-input">
                   <option value="">— Selecione —</option>
-                  ${[...territories].sort((a, b) => territoryNumSortKey(a.num) - territoryNumSortKey(b.num)).map((t) =>
-                    `<option value="${t.id}" ${row?.territory_id === t.id ? 'selected' : ''}>${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
-                  ).join('')}
+                  ${[...territories].sort((a, b) => territoryNumSortKey(a.num) - territoryNumSortKey(b.num)).map((t) => {
+                    const selectedTerrId = scheduleModalSelectedTerritoryId(row);
+                    return `<option value="${t.id}" ${t.id === selectedTerrId ? 'selected' : ''}>${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`;
+                  }).join('')}
                 </select>
               </label>
               <label class="terr-sched-modal-field">
@@ -4195,14 +4255,7 @@
       const fd = new FormData(e.target);
       const weekdayLabel = fd.get('weekday_label')?.trim();
       const isSunday = H().isSundayCronogramaDay(weekdayLabel);
-      const territoryId = fd.get('territory_id') || null;
-      let territoryCode = null;
-      if (territoryId) {
-        const terr = territories.find((tr) => tr.id === territoryId);
-        if (terr) territoryCode = `T${terr.num}`;
-      } else if (row?.territory_code) {
-        territoryCode = row.territory_code.trim();
-      }
+      const { territoryId, territoryCode } = resolveScheduleTerritoryPayload(row, fd.get('territory_id') || null);
       const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
       let profileId = null;
       let dirigenteName = null;
@@ -4260,6 +4313,10 @@
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
+            } else if (profileId && !territoryId) {
+              showToast(toast, 'Linha salva, mas falta o território para designar no Painel.', true);
+            } else if (!profileId && territoryId) {
+              showToast(toast, 'Linha salva, mas falta o dirigente para designar no Painel.', true);
             }
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
@@ -4294,6 +4351,10 @@
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
+            } else if (profileId && !territoryId) {
+              showToast(toast, 'Linha salva, mas falta o território para designar no Painel.', true);
+            } else if (!profileId && territoryId) {
+              showToast(toast, 'Linha salva, mas falta o dirigente para designar no Painel.', true);
             }
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
