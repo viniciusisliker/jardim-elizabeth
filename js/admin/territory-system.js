@@ -534,23 +534,81 @@
     return H().toISODate(new Date());
   }
 
-  async function syncScheduleAssignmentDate(profileId, territoryId, assignedAt, priorAssignment) {
-    if (!client || !assignedAt || !profileId) return;
-    let asn = priorAssignment?.id ? priorAssignment : null;
-    if (!asn?.id && profileId && territoryId) {
-      asn = activeAssignments.find((a) => a.profile_id === profileId && a.territory_id === territoryId) || null;
+  async function syncScheduleFieldDesignation({ profileId, territoryId, assignedAt }) {
+    if (!client || !profileId || !territoryId) return;
+    const assignedDate = assignedAt || H().toISODate(new Date());
+    const terr = territories.find((t) => t.id === territoryId);
+
+    const existingOnTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    if (existingOnTerritory?.id) {
+      if (existingOnTerritory.profile_id === profileId) {
+        if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
+          const { error } = await client
+            .from('territory_active_assignments')
+            .update({ assigned_at: assignedDate })
+            .eq('id', existingOnTerritory.id);
+          if (error) throw error;
+        }
+        return;
+      }
+      const name = profileName(existingOnTerritory.profiles);
+      throw new Error(`${terr ? H().territoryLabel(terr) : 'Território'} já está designado para ${name}.`);
     }
-    if (!asn?.id) {
-      asn = activeAssignments.find(
-        (a) => a.profile_id === profileId && !H().isDomingoPairContextAssignment(a, profiles)
-      ) || null;
+
+    const profileBusy = activeAssignments.find(
+      (a) => a.profile_id === profileId && H().assignmentBlocksIndividualDesignation(a, profiles)
+    );
+    if (profileBusy) {
+      throw new Error('Este dirigente já possui um território ativo.');
     }
-    if (!asn?.id) return;
-    if (String(asn.assigned_at).slice(0, 10) === assignedAt) return;
-    const { error } = await client
-      .from('territory_active_assignments')
-      .update({ assigned_at: assignedAt })
-      .eq('id', asn.id);
+
+    if (terr?.status === 'designado') {
+      throw new Error('Este território já está designado.');
+    }
+
+    const { error } = await client.rpc('assign_territory_field', {
+      p_territory_id: territoryId,
+      p_profile_id: profileId,
+      p_assigned_at: assignedDate,
+      p_is_domingo_pair: false
+    });
+    if (error) throw error;
+  }
+
+  async function syncScheduleDomingoPairDesignation({ territoryId, assignedAt }) {
+    if (!client || !territoryId) return;
+    const terr = territories.find((t) => t.id === territoryId);
+    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return;
+
+    const existingOnTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    if (existingOnTerritory?.id) {
+      const assignedDate = assignedAt || H().toISODate(new Date());
+      if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
+        const { error } = await client
+          .from('territory_active_assignments')
+          .update({ assigned_at: assignedDate })
+          .eq('id', existingOnTerritory.id);
+        if (error) throw error;
+      }
+      return;
+    }
+
+    const profileId = H().resolveProfileIdForDomingoPair(
+      terr.num,
+      territoryId,
+      profiles,
+      activeAssignments,
+      null
+    );
+    if (!profileId) return;
+
+    const assignedDate = assignedAt || H().toISODate(new Date());
+    const { error } = await client.rpc('assign_territory_field', {
+      p_territory_id: territoryId,
+      p_profile_id: profileId,
+      p_assigned_at: assignedDate,
+      p_is_domingo_pair: true
+    });
     if (error) throw error;
   }
 
@@ -4013,8 +4071,9 @@
             </p>` : ''}
             ${sundayRow ? `
             <p class="terr-sched-modal__alert">
-              Nos <strong>domingos</strong> o cronograma usa o nome da <strong>dupla</strong>
-              ${sundayPairName ? `(${escapeHtml(sundayPairName)})` : ''} — sem designar uma pessoa no Painel.
+              Nos <strong>domingos</strong> o cronograma usa a <strong>dupla</strong>
+              ${sundayPairName ? `(${escapeHtml(sundayPairName)})` : ''}.
+              Ao salvar, designa o território de dupla no Painel (T07, T12, T18).
             </p>` : ''}
             <p class="terr-sched-modal__preview-label">Prévia da linha</p>
             <div class="terr-sched-modal__preview-wrap">
@@ -4058,12 +4117,13 @@
                   ).join('')}
                 </select>
               </label>
-              ${!sundayRow ? `
               <label class="terr-sched-modal-field">
                 <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da designação</span>
                 <input name="assigned_at" type="date" value="${escapeHtml(assignedAtIso)}" class="terr-sched-modal-input"/>
-                <p class="terr-catalog-modal__cov-hint">Atualiza a data da designação ativa do dirigente, quando houver.</p>
-              </label>` : ''}
+                <p class="terr-catalog-modal__cov-hint">${sundayRow
+                  ? 'Designa a dupla de domingo no Painel ao salvar.'
+                  : 'Designa o território no Painel ao salvar (dirigente + território disponível).'}</p>
+              </label>
               <div class="terr-sched-modal-grid">
                 <label class="terr-sched-modal-field">
                   <span class="terr-sched-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>Local</span>
@@ -4162,7 +4222,7 @@
           return;
         }
       }
-      const assignedAt = !isSunday ? (fd.get('assigned_at')?.trim() || null) : null;
+      const assignedAt = fd.get('assigned_at')?.trim() || H().toISODate(new Date());
       const payload = {
         weekday_label: weekdayLabel,
         profile_id: profileId,
@@ -4181,13 +4241,17 @@
         const { error } = await client.from('territory_week_schedule').update(payload).eq('id', row.id);
         if (error) showToast(toast, error.message, true);
         else {
+          let designationNote = '';
           try {
-            if (assignedAt && profileId) {
-              await syncScheduleAssignmentDate(profileId, territoryId, assignedAt, designationAssignment);
+            if (isSunday && territoryId) {
+              await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
+            } else if (profileId && territoryId) {
+              await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
+              designationNote = ' e designado no Painel';
             }
           } catch (syncErr) {
-            console.warn('Data da designação (cronograma):', syncErr);
-            showToast(toast, syncErr.message || 'Linha salva, mas a data da designação não foi atualizada.', true);
+            console.warn('Designação (cronograma):', syncErr);
+            showToast(toast, syncErr.message || 'Linha salva, mas a designação no Painel falhou.', true);
           }
           undoApi()?.registerUpdate(
             UNDO_SCOPE,
@@ -4200,7 +4264,7 @@
               'location_name', 'schedule_times', 'suggestion', 'suggestion_note', 'observations'
             ]
           );
-          showToast(toast, 'Linha atualizada.');
+          showToast(toast, `Linha atualizada${designationNote}.`);
           await refresh();
         }
       } else {
@@ -4211,18 +4275,22 @@
           .single();
         if (error) showToast(toast, error.message, true);
         else {
+          let designationNote = '';
           try {
-            if (assignedAt && profileId) {
-              await syncScheduleAssignmentDate(profileId, territoryId, assignedAt, null);
+            if (isSunday && territoryId) {
+              await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
+            } else if (profileId && territoryId) {
+              await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
+              designationNote = ' e designado no Painel';
             }
           } catch (syncErr) {
-            console.warn('Data da designação (cronograma):', syncErr);
-            showToast(toast, syncErr.message || 'Linha salva, mas a data da designação não foi atualizada.', true);
+            console.warn('Designação (cronograma):', syncErr);
+            showToast(toast, syncErr.message || 'Linha salva, mas a designação no Painel falhou.', true);
           }
           if (inserted?.id) {
             undoApi()?.registerInsert(UNDO_SCOPE, 'territory_week_schedule', inserted.id, 'Linha do cronograma');
           }
-          showToast(toast, 'Linha adicionada.');
+          showToast(toast, `Linha adicionada${designationNote}.`);
           await refresh();
         }
       }
@@ -4365,8 +4433,12 @@
       }
       const retBtn = e.target.closest('[data-return-assignment]');
       if (retBtn) {
-        const assignment = activeAssignments.find((a) => a.id === retBtn.dataset.returnAssignment);
-        openDevolverModal(assignment);
+        if (e.target.closest('[data-edit-schedule]') || e.target.closest('[data-del-schedule]')) return;
+        const asn = activeAssignments.find((a) => a.id === retBtn.dataset.returnAssignment);
+        if (asn && !H().isDomingoPairContextAssignment(asn, profiles)) {
+          openDevolverModal(asn);
+        }
+        return;
       }
     });
 
