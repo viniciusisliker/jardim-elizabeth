@@ -518,6 +518,22 @@
     return H().sortByPriority(territories.filter((t) => t.status !== 'designado'));
   }
 
+  function territoryNumSortKey(num) {
+    return parseInt(normalizeTerritoryNum(num), 10) || 0;
+  }
+
+  function territoryNumLabel(num) {
+    const n = parseInt(normalizeTerritoryNum(num), 10);
+    return Number.isNaN(n) ? `T${num}` : `T${String(n).padStart(2, '0')}`;
+  }
+
+  function availableTerritoriesByNum() {
+    return territories
+      .filter((t) => t.status !== 'designado')
+      .sort((a, b) => territoryNumSortKey(a.num) - territoryNumSortKey(b.num)
+        || String(a.num).localeCompare(String(b.num), 'pt-BR', { numeric: true }));
+  }
+
   const TERRITORY_LIST_SELECT = 'id, num, display_name, status, map_image_url, last_worked_at, territory_type, observations, sort_order';
 
   async function loadTerritories() {
@@ -956,7 +972,7 @@
     const busyProfileIds = H().profilesWithIndividualAssignment(activeAssignments, profiles);
     const activeOverseers = overseers.filter((o) => o.is_active !== false);
     const freeOverseers = activeOverseers.filter((o) => !busyProfileIds.has(o.profile_id));
-    const avail = availableTerritories();
+    const avail = availableTerritoriesByNum();
 
     const overseerOpts = activeOverseers.length
       ? activeOverseers.map((o) => {
@@ -967,12 +983,9 @@
       : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
     profSel.innerHTML = `<option value="">Selecione o dirigente</option>${overseerOpts}`;
 
-    terrSel.innerHTML = `<option value="">Selecione (por prioridade)</option>${avail.map((t) => {
-      const p = H().computePriority(t);
-      const days = H().daysSince(t.last_worked_at);
-      const extra = days !== null ? ` · ${days}d sem cobertura` : '';
-      return `<option value="${t.id}">T${escapeHtml(t.num)} — ${escapeHtml(t.display_name)} (${escapeHtml(p.label)}${escapeHtml(extra)})</option>`;
-    }).join('')}`;
+    terrSel.innerHTML = `<option value="">Selecione o território</option>${avail.map((t) =>
+      `<option value="${t.id}">${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
+    ).join('')}`;
 
     dateEl.value = H().toISODate(new Date());
 
