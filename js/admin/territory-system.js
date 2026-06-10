@@ -551,15 +551,34 @@
     return H().toISODate(new Date());
   }
 
+  async function repairOrphanTerritoryStatus(territoryId) {
+    const terr = territories.find((t) => t.id === territoryId);
+    if (!terr || terr.status !== 'designado') return;
+    const active = activeAssignments.find((a) => a.territory_id === territoryId && a.status === 'active');
+    if (active?.id) return;
+    const { error } = await client
+      .from('territories')
+      .update({ status: 'disponivel' })
+      .eq('id', territoryId);
+    if (error) throw error;
+    terr.status = 'disponivel';
+  }
+
   async function syncScheduleFieldDesignation({ profileId, territoryId, assignedAt }) {
-    if (!client || !profileId || !territoryId) return;
+    if (!client) throw new Error('Sem conexão com o Supabase.');
+    if (!profileId || !territoryId) {
+      throw new Error('Dirigente e território são obrigatórios para designar no Painel.');
+    }
     const assignedDate = assignedAt || H().toISODate(new Date());
     const terr = territories.find((t) => t.id === territoryId);
+    if (!terr) throw new Error('Território não encontrado.');
 
-    const existingOnTerritory = activeAssignments.find((a) => a.territory_id === territoryId);
+    const existingOnTerritory = activeAssignments.find(
+      (a) => a.territory_id === territoryId && a.status === 'active'
+    );
     if (existingOnTerritory?.id) {
       if (H().isDomingoPairContextAssignment(existingOnTerritory, profiles)) {
-        throw new Error(`${terr ? H().territoryLabel(terr) : 'Território'} está reservado para dupla de domingo.`);
+        throw new Error(`${H().territoryLabel(terr)} está reservado para dupla de domingo.`);
       }
       if (existingOnTerritory.profile_id === profileId) {
         if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
@@ -568,29 +587,51 @@
             .update({ assigned_at: assignedDate })
             .eq('id', existingOnTerritory.id);
           if (error) throw error;
+          await loadActiveAssignments();
         }
         return;
       }
       const name = profileName(existingOnTerritory.profiles);
-      throw new Error(`${terr ? H().territoryLabel(terr) : 'Território'} já está designado para ${name}.`);
+      throw new Error(`${H().territoryLabel(terr)} já está designado para ${name}.`);
     }
 
     const profileBusy = activeAssignments.find(
       (a) => a.profile_id === profileId
         && a.territory_id !== territoryId
+        && a.status === 'active'
         && H().assignmentBlocksIndividualDesignation(a, profiles)
     );
     if (profileBusy) {
-      throw new Error('Este dirigente já possui um território ativo.');
+      const busyTerr = territories.find((t) => t.id === profileBusy.territory_id);
+      throw new Error(
+        `Este dirigente já possui ${busyTerr ? H().territoryLabel(busyTerr) : 'um território'} ativo.`
+      );
     }
 
+    await repairOrphanTerritoryStatus(territoryId);
+
+    let rpcError = null;
     const { error } = await client.rpc('assign_territory_field', {
       p_territory_id: territoryId,
       p_profile_id: profileId,
       p_assigned_at: assignedDate,
       p_is_domingo_pair: false
     });
-    if (error) throw error;
+    if (error) rpcError = error;
+
+    if (rpcError && /function|does not exist|42883/i.test(String(rpcError.message || ''))) {
+      const { error: legacyErr } = await client.rpc('assign_territory_field', {
+        p_territory_id: territoryId,
+        p_profile_id: profileId,
+        p_assigned_at: assignedDate
+      });
+      if (legacyErr) throw legacyErr;
+    } else if (rpcError) {
+      throw rpcError;
+    }
+
+    await Promise.all([loadActiveAssignments(), loadTerritories()]);
+    await syncScheduleRowsForAssignment(profileId, territoryId);
   }
 
   async function syncScheduleDomingoPairDesignation({ territoryId, assignedAt }) {
@@ -4252,6 +4293,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      await ensureProfiles();
       const fd = new FormData(e.target);
       const weekdayLabel = fd.get('weekday_label')?.trim();
       const isSunday = H().isSundayCronogramaDay(weekdayLabel);
@@ -4307,20 +4349,26 @@
         if (error) showToast(toast, error.message, true);
         else {
           let designationNote = '';
+          let syncOk = true;
+          let syncMessage = '';
           try {
             if (isSunday && territoryId) {
               await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
+              designationNote = ' e designado no Painel';
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
             } else if (profileId && !territoryId) {
-              showToast(toast, 'Linha salva, mas falta o território para designar no Painel.', true);
+              syncOk = false;
+              syncMessage = 'Linha salva, mas falta o território para designar no Painel.';
             } else if (!profileId && territoryId) {
-              showToast(toast, 'Linha salva, mas falta o dirigente para designar no Painel.', true);
+              syncOk = false;
+              syncMessage = 'Linha salva, mas falta o dirigente para designar no Painel.';
             }
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
-            showToast(toast, syncErr.message || 'Linha salva, mas a designação no Painel falhou.', true);
+            syncOk = false;
+            syncMessage = syncErr.message || 'Linha salva, mas a designação no Painel falhou.';
           }
           undoApi()?.registerUpdate(
             UNDO_SCOPE,
@@ -4333,7 +4381,13 @@
               'location_name', 'schedule_times', 'suggestion', 'suggestion_note', 'observations'
             ]
           );
-          showToast(toast, `Linha atualizada${designationNote}.`);
+          if (syncOk && designationNote) {
+            showToast(toast, `Linha atualizada${designationNote}.`);
+          } else if (syncOk) {
+            showToast(toast, 'Linha atualizada.');
+          } else {
+            showToast(toast, syncMessage, true);
+          }
           await refresh();
         }
       } else {
@@ -4345,25 +4399,37 @@
         if (error) showToast(toast, error.message, true);
         else {
           let designationNote = '';
+          let syncOk = true;
+          let syncMessage = '';
           try {
             if (isSunday && territoryId) {
               await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
+              designationNote = ' e designado no Painel';
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
             } else if (profileId && !territoryId) {
-              showToast(toast, 'Linha salva, mas falta o território para designar no Painel.', true);
+              syncOk = false;
+              syncMessage = 'Linha salva, mas falta o território para designar no Painel.';
             } else if (!profileId && territoryId) {
-              showToast(toast, 'Linha salva, mas falta o dirigente para designar no Painel.', true);
+              syncOk = false;
+              syncMessage = 'Linha salva, mas falta o dirigente para designar no Painel.';
             }
           } catch (syncErr) {
             console.warn('Designação (cronograma):', syncErr);
-            showToast(toast, syncErr.message || 'Linha salva, mas a designação no Painel falhou.', true);
+            syncOk = false;
+            syncMessage = syncErr.message || 'Linha salva, mas a designação no Painel falhou.';
           }
           if (inserted?.id) {
             undoApi()?.registerInsert(UNDO_SCOPE, 'territory_week_schedule', inserted.id, 'Linha do cronograma');
           }
-          showToast(toast, `Linha adicionada${designationNote}.`);
+          if (syncOk && designationNote) {
+            showToast(toast, `Linha adicionada${designationNote}.`);
+          } else if (syncOk) {
+            showToast(toast, 'Linha adicionada.');
+          } else {
+            showToast(toast, syncMessage, true);
+          }
           await refresh();
         }
       }
