@@ -2151,6 +2151,72 @@
     return null;
   }
 
+  function lastTerritoryWorkedForRow(row) {
+    const profileId = resolveScheduleProfileId(row);
+    if (profileId) return lastTerritoryWorkedByProfile(profileId, row);
+
+    const terrId = resolveScheduleTerritoryId(row);
+    const dirigenteName = scheduleDirigente(row);
+    const cacheKey = terrId ? `terr:${terrId}` : `row:${row?.id || dirigenteName}`;
+    if (lastTerritoryByProfileCache.has(cacheKey)) {
+      return lastTerritoryByProfileCache.get(cacheKey);
+    }
+
+    const entry = history.find((h) => {
+      if (!(h.territory_id || h.territories || h.metadata?.territory_num)) return false;
+      if (terrId && h.territory_id === terrId) return true;
+      if (dirigenteName && dirigenteName !== '—') {
+        const entryName = historyDirigente(h);
+        if (!entryName || entryName === '—') return false;
+        return entryName.localeCompare(dirigenteName, 'pt-BR', { sensitivity: 'base' }) === 0;
+      }
+      return false;
+    });
+    if (entry) {
+      const terr = resolveHistoryTerritory(entry);
+      if (terr) {
+        const result = { terr, eventDate: entry.event_date };
+        lastTerritoryByProfileCache.set(cacheKey, result);
+        return result;
+      }
+    }
+
+    const fromRow = resolveScheduleTerritory(row);
+    if (fromRow) {
+      const result = { terr: fromRow, eventDate: null };
+      lastTerritoryByProfileCache.set(cacheKey, result);
+      return result;
+    }
+
+    lastTerritoryByProfileCache.set(cacheKey, null);
+    return null;
+  }
+
+  function scheduleEmptyTerritoryCell(row) {
+    const last = lastTerritoryWorkedForRow(row);
+    const dateHint = last?.eventDate
+      ? ` · ${H().formatShortDate(String(last.eventDate).slice(0, 10))}`
+      : '';
+    const lastHtml = last
+      ? scheduleTerritoryInnerHtml(
+        last.terr,
+        H().territoryLabel(last.terr),
+        last.terr.num,
+        H().resolveTerritoryMapUrl(last.terr.map_image_url, last.terr.num),
+        '',
+        `Último território${dateHint}`
+      )
+      : '<span class="terr-sched-cell--muted">Nenhum registro encontrado</span>';
+
+    return `
+      <div class="terr-sched-terr-empty" data-sched-reveal-wrap>
+        <button type="button" class="terr-sched-no-terr-btn" data-sched-reveal-last-terr aria-expanded="false" title="Clique para ver o último território trabalhado">
+          Sem Territórios
+        </button>
+        <div class="terr-sched-last-terr" hidden>${lastHtml}</div>
+      </div>`;
+  }
+
   function scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title) {
     const inner = `
       ${terrNum != null && terrNum !== '' ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}
@@ -2169,23 +2235,27 @@
   }
 
   function scheduleTerritoryCell(row, assignment) {
-    if (H().isSundayCronogramaDay(row?.weekday_label)) {
-      const ctx = resolveScheduleDisplayContext(row);
-      const terr = ctx.terr;
-      const assignmentResolved = assignment || ctx.assignment;
-      const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
-      const terrNum = terr?.num ?? scheduleTerritoryNum(row);
-      const mapUrl = scheduleTerritoryMapUrl(row, assignmentResolved);
-      const isDesignated = !!assignmentResolved?.id;
-      const assignedClass = isDesignated ? ' terr-sched-cell--assigned' : '';
-      const title = isDesignated
-        ? `Designado · ${scheduleAssignmentTitle(assignmentResolved)}`
-        : (row.observations || label);
-      return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title);
-    }
-
     if (row.announcement_special) {
       return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
+    }
+
+    if (H().isSundayCronogramaDay(row?.weekday_label)) {
+      const domingoAssignment = assignment || scheduleDomingoPairAssignment(row);
+      if (domingoAssignment?.id) {
+        const terr = domingoAssignment.territories
+          || (domingoAssignment.territory_id && territories.find((t) => t.id === domingoAssignment.territory_id))
+          || resolveScheduleTerritory(row);
+        const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
+        const terrNum = terr?.num ?? scheduleTerritoryNum(row);
+        const mapUrl = terr
+          ? H().resolveTerritoryMapUrl(terr.map_image_url, terrNum)
+          : scheduleTerritoryMapUrl(row, domingoAssignment);
+        const title = `Designado · ${scheduleAssignmentTitle(domingoAssignment)}`;
+        return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, ' terr-sched-cell--assigned', title);
+      }
+      if (scheduleDirigente(row) && scheduleDirigente(row) !== '—') {
+        return scheduleEmptyTerritoryCell(row);
+      }
     }
 
     const profileId = resolveScheduleProfileId(row);
@@ -2208,28 +2278,7 @@
     }
 
     if (profileId || (scheduleDirigente(row) && scheduleDirigente(row) !== '—')) {
-      const last = lastTerritoryWorkedByProfile(profileId, row);
-      const dateHint = last?.eventDate
-        ? ` · ${H().formatShortDate(String(last.eventDate).slice(0, 10))}`
-        : '';
-      const lastHtml = last
-        ? scheduleTerritoryInnerHtml(
-          last.terr,
-          H().territoryLabel(last.terr),
-          last.terr.num,
-          H().resolveTerritoryMapUrl(last.terr.map_image_url, last.terr.num),
-          '',
-          `Último território${dateHint}`
-        )
-        : '<span class="terr-sched-cell--muted">Nenhum registro encontrado</span>';
-
-      return `
-        <div class="terr-sched-terr-empty" data-sched-reveal-wrap>
-          <button type="button" class="terr-sched-no-terr-btn" data-sched-reveal-last-terr aria-expanded="false" title="Clique para ver o último território trabalhado">
-            Sem Territórios
-          </button>
-          <div class="terr-sched-last-terr" hidden>${lastHtml}</div>
-        </div>`;
+      return scheduleEmptyTerritoryCell(row);
     }
 
     const terr = ctx.terr;
