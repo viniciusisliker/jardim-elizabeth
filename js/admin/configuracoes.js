@@ -51,6 +51,15 @@
     return /^[a-z0-9._-]{3,32}$/.test(normalizeUsername(value));
   }
 
+  function normalizeFullName(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ');
+  }
+
+  function isValidFullName(value) {
+    const name = normalizeFullName(value);
+    return name.length >= 2 && name.length <= 120;
+  }
+
   function avatarFileExtension(file) {
     if (file.type === 'image/png') return 'png';
     if (file.type === 'image/webp') return 'webp';
@@ -62,6 +71,7 @@
     window.__JEAdminConfigInit = true;
     const profile = await guardPermission('settings');
     if (!profile) return;
+    const currentProfileId = profile.id;
 
     const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
     const client = await getClient();
@@ -476,6 +486,10 @@
           ${m.avatar_url ? `<button type="button" class="cfg-avatar-remove" data-member-avatar-remove="${m.id}" title="Remover foto" aria-label="Remover foto">×</button>` : ''}`
         : `<span class="cfg-avatar-btn" aria-hidden="true">${avatarInner}</span>`;
 
+      const nameLine = isSuper
+        ? `<input type="text" value="${escapeHtml(m.full_name || '')}" data-member-fullname="${m.id}" placeholder="Nome completo" class="cfg-field cfg-field--name" autocomplete="name" spellcheck="false" title="Nome exibido no site"/>`
+        : `<span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">${escapeHtml(m.full_name || '—')}</span>`;
+
       const userLine = isSuper
         ? `<label class="cfg-member-user-edit" title="Usuário de login">
             <span class="cfg-member-user-prefix" aria-hidden="true">@</span>
@@ -487,7 +501,7 @@
         <div class="cfg-member-main">
           ${avatarControl}
           <div class="cfg-member-text">
-            <span class="cfg-member-name" title="${escapeHtml(m.full_name || '')}">${escapeHtml(m.full_name || '—')}</span>
+            ${nameLine}
             ${userLine}
           </div>
         </div>`;
@@ -692,6 +706,47 @@
         };
 
         input.addEventListener('blur', saveEmail);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+          }
+        });
+      });
+
+      root.querySelectorAll('[data-member-fullname]').forEach((input) => {
+        const saveFullName = async () => {
+          const profileId = input.dataset.memberFullname;
+          const member = members.find((m) => m.id === profileId);
+          const nextName = normalizeFullName(input.value);
+          const prevName = normalizeFullName(member?.full_name || '');
+          if (nextName === prevName) return;
+          if (!isValidFullName(nextName)) {
+            showToast(toast, 'Informe um nome entre 2 e 120 caracteres.', true);
+            input.value = member?.full_name || '';
+            return;
+          }
+          const { error } = await client.rpc('admin_update_profile_full_name', {
+            p_profile_id: profileId,
+            p_full_name: nextName
+          });
+          if (error) {
+            showToast(toast, error.message, true);
+            input.value = member?.full_name || '';
+            return;
+          }
+          if (member) member.full_name = nextName;
+          showToast(toast, 'Nome atualizado.');
+          if (profileId === currentProfileId) {
+            const fresh = await window.JEAuth.refreshCurrentProfile();
+            if (fresh) {
+              window.dispatchEvent(new CustomEvent('je:profile-updated', { detail: { profile: fresh } }));
+            }
+          }
+          renderMembers({ updateUi: true });
+        };
+
+        input.addEventListener('blur', saveFullName);
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();

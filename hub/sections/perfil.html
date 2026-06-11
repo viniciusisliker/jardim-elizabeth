@@ -38,9 +38,12 @@
             <h2 id="perf-info-title">Sua conta</h2>
           </div>
           <dl class="perf-info-list">
-            <div class="perf-info-row">
+            <div class="perf-info-row perf-info-row--name">
               <dt>Nome</dt>
-              <dd id="perf-info-name">—</dd>
+              <dd>
+                <input id="perf-info-name" type="text" class="perf-info-name-input" autocomplete="name" spellcheck="false" placeholder="Seu nome completo"/>
+                <p id="perf-name-status" class="perf-status hidden" role="status"></p>
+              </dd>
             </div>
             <div class="perf-info-row">
               <dt>Usuário</dt>

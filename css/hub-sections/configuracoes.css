@@ -68,6 +68,7 @@
     .cfg-member-user{font-size:.5625rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .cfg-member-user-edit{display:flex;align-items:center;gap:.0625rem;min-width:0;margin-top:.0625rem}
     .cfg-member-user-prefix{font-size:.5625rem;font-weight:700;color:#6b7280;flex-shrink:0;line-height:1}
+    .cfg-field--name{font-size:.75rem;font-weight:700;color:#0f3462;padding:.125rem .3125rem}
     .cfg-field--username{font-size:.5625rem;padding:.125rem .25rem;min-width:0}
     .cfg-avatar-btn{position:relative;display:flex;align-shrink:0;width:1.625rem;height:1.625rem;border-radius:9999px;overflow:hidden;background:#eef3fa;border:1px solid #dbe3ef;cursor:pointer;align-items:center;justify-content:center}
     .cfg-avatar-btn:hover{border-color:#93c5fd;box-shadow:0 0 0 2px rgba(59,94,151,.12)}

@@ -43,6 +43,12 @@
     .perf-info-row:last-child{border-bottom:none}
     .perf-info-row dt{font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin:0}
     .perf-info-row dd{margin:0;font-weight:600;color:#0f3462;word-break:break-word}
+    .perf-info-row--name dd{display:grid;gap:.25rem}
+    .perf-info-name-input{
+      width:100%;min-height:2.25rem;padding:.375rem .625rem;border:1px solid #c3c6d0;border-radius:.5rem;
+      font-size:.875rem;font-weight:600;font-family:inherit;color:#0f3462;background:#fafafa;
+    }
+    .perf-info-name-input:focus{outline:none;border-color:#0f3462;background:#fff;box-shadow:0 0 0 3px rgba(15,52,98,.1)}
     .perf-info-row dd.je-role-emblem{font-size:.875rem;font-weight:700}
     .perf-foot{font-size:.6875rem;color:#6b7280;line-height:1.45;margin:0;padding:.625rem .75rem .875rem;border-top:1px solid #eef0f4;background:#fafbfc}
     .perf-card--info,.perf-card--password{display:flex;flex-direction:column;min-height:100%}

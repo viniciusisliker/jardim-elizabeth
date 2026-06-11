@@ -34,8 +34,18 @@
       .replace(/</g, '&lt;');
   }
 
+  function normalizeFullName(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ');
+  }
+
+  function isValidFullName(value) {
+    const name = normalizeFullName(value);
+    return name.length >= 2 && name.length <= 120;
+  }
+
   function renderInfo(profile) {
-    document.getElementById('perf-info-name').textContent = profile.full_name || '—';
+    const nameInput = document.getElementById('perf-info-name');
+    if (nameInput) nameInput.value = profile.full_name || '';
     document.getElementById('perf-info-username').textContent = profile.username ? `@${profile.username}` : '—';
     window.JEAuth.applyRoleLabelEl(document.getElementById('perf-info-role'), profile);
 
@@ -89,6 +99,56 @@
       return 'Muitas tentativas seguidas. Aguarde um minuto e tente novamente.';
     }
     return err?.message || 'Não foi possível alterar a senha.';
+  }
+
+  function bindNameField(profile, client) {
+    const input = document.getElementById('perf-info-name');
+    const statusEl = document.getElementById('perf-name-status');
+    if (!input || input.dataset.bound === '1') return;
+    input.dataset.bound = '1';
+
+    const saveName = async () => {
+      hideMsg(statusEl);
+      const nextName = normalizeFullName(input.value);
+      const prevName = normalizeFullName(profile.full_name || '');
+      if (nextName === prevName) return;
+      if (!isValidFullName(nextName)) {
+        showMsg(statusEl, 'Informe um nome entre 2 e 120 caracteres.', false);
+        input.value = profile.full_name || '';
+        input.focus();
+        return;
+      }
+
+      input.disabled = true;
+      showMsg(statusEl, 'Salvando nome…', true);
+
+      try {
+        const { error } = await client.rpc('update_my_profile_full_name', { p_full_name: nextName });
+        if (error) throw error;
+        const fresh = await window.JEAuth.refreshCurrentProfile();
+        const updated = fresh || { ...profile, full_name: nextName };
+        Object.assign(profile, updated);
+        await syncProfileUi(updated);
+        showMsg(statusEl, 'Nome atualizado.', true);
+        window.JEToast?.show('Nome atualizado.');
+      } catch (err) {
+        console.error('Name update:', err);
+        const friendly = err?.message || 'Não foi possível alterar o nome.';
+        showMsg(statusEl, friendly, false);
+        input.value = profile.full_name || '';
+        window.JEToast?.show(friendly, { error: true });
+      } finally {
+        input.disabled = false;
+      }
+    };
+
+    input.addEventListener('blur', saveName);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur();
+      }
+    });
   }
 
   function bindPasswordForm() {
@@ -162,6 +222,8 @@
         renderInfo(profile);
       }
       bindPasswordForm();
+      const client = await window.JEAuth.getClient();
+      if (profile) bindNameField(profile, client);
       return true;
     }
 
@@ -177,6 +239,7 @@
     renderAvatar(profile);
     renderInfo(profile);
     bindPasswordForm();
+    bindNameField(profile, client);
 
     input?.addEventListener('change', async () => {
       const file = input.files?.[0];
