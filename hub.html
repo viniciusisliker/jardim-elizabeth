@@ -329,26 +329,31 @@
       .hub-ev-preview-card{position:static;top:auto}
     }
 
-    .hub-terr-assign{margin-bottom:0.5rem}
+    .hub-terr-assign{margin-bottom:0.5rem;display:flex;flex-direction:column;align-items:center}
+    #hub-territory-assignment-content{display:flex;flex-direction:column;align-items:center;width:100%;gap:0.75rem}
     .hub-terr-card{
-      display:grid;gap:0.625rem;
-      grid-template-columns:minmax(0,1fr) clamp(5.75rem,30vw,10.5rem);
+      display:grid;gap:0.75rem;
+      grid-template-columns:auto clamp(5.75rem,28vw,10rem);
       align-items:stretch;
+      width:fit-content;max-width:100%;
       background:linear-gradient(135deg,#0a2847 0%,#0f3462 52%,#1a4a7a 100%);
       border:1px solid rgba(200,169,110,.35);border-radius:0.875rem;
       padding:0.75rem 0.875rem;color:#fff;overflow:hidden;position:relative;
     }
     @media(min-width:768px){
       .hub-terr-card{
-        grid-template-columns:minmax(0,1fr) clamp(8.5rem,22vw,11.5rem);
-        padding:0.75rem 0.75rem 0.75rem 1rem;
+        grid-template-columns:auto clamp(8.5rem,18vw,11rem);
+        padding:0.75rem 0.875rem 0.75rem 1rem;
       }
+    }
+    @media(max-width:479px){
+      .hub-terr-card{width:100%;grid-template-columns:minmax(0,1fr) clamp(5.25rem,34vw,7.5rem)}
     }
     .hub-terr-card::before{
       content:'';position:absolute;inset:0;pointer-events:none;
       background:radial-gradient(ellipse 70% 80% at 100% 0%,rgba(200,169,110,.18) 0%,transparent 55%);
     }
-    .hub-terr-card-main{position:relative;z-index:1;min-width:0}
+    .hub-terr-card-main{position:relative;z-index:1;width:max-content;max-width:100%}
     .hub-terr-kicker{
       font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;
       color:#c8a96e;margin-bottom:0.2rem;
@@ -397,7 +402,6 @@
     .hub-terr-map-lightbox__body{overflow:auto;padding:.75rem;background:#f5f8fc}
     .hub-terr-map-lightbox__body img{display:block;width:100%;height:auto;margin:0 auto}
     .hub-terr-map-lightbox__fallback{padding:2rem 1rem;text-align:center;font-size:.8125rem;color:#6b7280}
-    .hub-terr-card + .hub-terr-card{margin-top:0.75rem}
     body.hub-auth-pending main,
     body.hub-auth-pending #footer { visibility: hidden; }
     body.hub-auth-pending #header { visibility: hidden; }

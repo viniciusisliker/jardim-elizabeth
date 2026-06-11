@@ -472,12 +472,40 @@
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
   }
 
+  function normalizePeriodLabel(value) {
+    const labels = helpers.PERIOD_LABELS || ['Manhã', 'Tarde'];
+    const raw = String(value ?? '').trim();
+    if (labels.includes(raw)) return raw;
+    const norm = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (norm.startsWith('manh')) return 'Manhã';
+    if (norm.startsWith('tard')) return 'Tarde';
+    return labels[0] || 'Manhã';
+  }
+
+  function normalizeWeekdayLabel(value) {
+    const raw = String(value ?? '').trim();
+    const match = helpers.EQUIPMENT_DAYS.find((d) => d === raw || helpers.weekdayMatches(d, raw));
+    return match || helpers.DEFAULT_SLOT_DAY || helpers.EQUIPMENT_DAYS[0];
+  }
+
+  function formatSlotDbError(error) {
+    const msg = String(error?.message || '');
+    if (msg.includes('period_label')) return 'Período inválido. Selecione Manhã ou Tarde.';
+    if (msg.includes('equipment_schedule_week_start')) {
+      return 'Linha temporária exige semana selecionada no cronograma.';
+    }
+    if (msg.includes('equipment_type')) return 'Tipo de equipamento inválido.';
+    return msg;
+  }
+
   function slotSelectOptions(selectedDay, selectedPeriod) {
+    const day = normalizeWeekdayLabel(selectedDay);
+    const period = normalizePeriodLabel(selectedPeriod);
     const dayOpts = helpers.EQUIPMENT_DAYS.map((d) =>
-      `<option value="${escapeHtml(d)}" ${d === selectedDay ? 'selected' : ''}>${escapeHtml(d)}</option>`
+      `<option value="${escapeHtml(d)}" ${d === day ? 'selected' : ''}>${escapeHtml(d)}</option>`
     ).join('');
     const periodOpts = helpers.PERIOD_LABELS.map((p) =>
-      `<option value="${escapeHtml(p)}" ${p === selectedPeriod ? 'selected' : ''}>${escapeHtml(p)}</option>`
+      `<option value="${escapeHtml(p)}" ${p === period ? 'selected' : ''}>${escapeHtml(p)}</option>`
     ).join('');
     return { dayOpts, periodOpts };
   }
@@ -2252,8 +2280,10 @@
   function defaultSlotDraft(item) {
     return {
       id: item?.id || '',
-      weekday_label: item?.weekday_label || helpers.DEFAULT_SLOT_DAY || helpers.EQUIPMENT_DAYS[1] || helpers.EQUIPMENT_DAYS[0],
-      period_label: item?.period_label || 'Manhã',
+      weekday_label: normalizeWeekdayLabel(
+        item?.weekday_label || helpers.DEFAULT_SLOT_DAY || helpers.EQUIPMENT_DAYS[1] || helpers.EQUIPMENT_DAYS[0]
+      ),
+      period_label: normalizePeriodLabel(item?.period_label),
       slot_kind: item?.slot_kind || 'temporary',
       equipment_type: item?.equipment_type || 'carrinho',
       equipment_name: item?.equipment_name || '',
@@ -2450,10 +2480,12 @@
     const publisherNames = document.getElementById(`${prefix}-publishers`)?.value.trim() || '';
     const slotKind = document.getElementById(`${prefix}-kind`)?.value || 'temporary';
     const sortEl = document.getElementById(`${prefix}-sort`);
+    const weekdayLabel = normalizeWeekdayLabel(document.getElementById(`${prefix}-day`)?.value);
+    const periodLabel = normalizePeriodLabel(document.getElementById(`${prefix}-period`)?.value);
     return {
       id: prefix === 'eq-inline' ? (inlineSlotDraft?.id || '') : '',
-      weekday_label: document.getElementById(`${prefix}-day`)?.value,
-      period_label: document.getElementById(`${prefix}-period`)?.value,
+      weekday_label: weekdayLabel,
+      period_label: periodLabel,
       slot_kind: slotKind,
       week_start: slotKind === 'temporary' ? currentWeek : null,
       equipment_type: document.getElementById(`${prefix}-type`)?.value,
@@ -2481,13 +2513,21 @@
       showToast(toast, needsOther ? 'Informe o nome do outro local.' : 'Selecione equipamento e local.', true);
       return false;
     }
+    if (!payload.weekday_label || !payload.period_label) {
+      showToast(toast, 'Selecione dia e período.', true);
+      return false;
+    }
+    if (payload.slot_kind === 'temporary' && !payload.week_start) {
+      showToast(toast, 'Selecione a semana no cronograma antes de salvar.', true);
+      return false;
+    }
 
     const { id, ...data } = payload;
     const beforeRow = id ? slots.find((item) => item.id === id) : null;
     if (id) {
       const { error } = await client.from('equipment_schedule_slots').update(data).eq('id', id);
       if (error) {
-        showToast(toast, error.message, true);
+        showToast(toast, formatSlotDbError(error), true);
         return false;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_schedule_slots', id, beforeRow, 'Linha do cronograma', SLOT_UNDO_FIELDS);
@@ -2498,7 +2538,7 @@
         .select('id')
         .single();
       if (error) {
-        showToast(toast, error.message, true);
+        showToast(toast, formatSlotDbError(error), true);
         return false;
       }
       if (inserted?.id) {
@@ -2522,6 +2562,8 @@
 
   async function saveSlotModal(e) {
     e?.preventDefault();
+    const form = document.getElementById('eq-form-slot');
+    if (form && !form.reportValidity()) return;
     const payload = readSlotPayload('eq-slot');
     const ok = await persistSlotPayload(payload);
     if (!ok) return;
