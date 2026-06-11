@@ -1,7 +1,12 @@
 (function () {
   const EQUIPMENT_DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const DEFAULT_SLOT_DAY = 'Terça';
-  const PERIOD_LABELS = ['Manhã', 'Tarde'];
+  const PERIOD_STORAGE = ['Manha', 'Tarde'];
+  const PERIOD_OPTIONS = [
+    { value: 'Manha', label: 'Manhã' },
+    { value: 'Tarde', label: 'Tarde' }
+  ];
+  const PERIOD_LABELS = PERIOD_OPTIONS.map((o) => o.label);
   const EQUIPMENT_TYPES = {
     carrinho: 'Carrinho',
     display: 'Display'
@@ -53,13 +58,28 @@
     return norm.startsWith(target) || target.startsWith(norm);
   }
 
+  function normalizePeriodStorage(value) {
+    const raw = String(value ?? '').trim();
+    if (PERIOD_STORAGE.includes(raw)) return raw;
+    const norm = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (norm.startsWith('manh')) return 'Manha';
+    if (norm.startsWith('tard')) return 'Tarde';
+    return 'Manha';
+  }
+
+  function displayPeriodLabel(value) {
+    const key = normalizePeriodStorage(value);
+    const match = PERIOD_OPTIONS.find((o) => o.value === key);
+    return match ? match.label : (String(value || '').trim() || '—');
+  }
+
   function dayIndex(dayLabel) {
     const idx = EQUIPMENT_DAYS.findIndex((d) => weekdayMatches(d, dayLabel));
     return idx < 0 ? 999 : idx;
   }
 
   function periodIndex(period) {
-    const idx = PERIOD_LABELS.indexOf(period);
+    const idx = PERIOD_STORAGE.indexOf(normalizePeriodStorage(period));
     return idx < 0 ? 999 : idx;
   }
 
@@ -74,7 +94,7 @@
   }
 
   function periodEmoji(period) {
-    return period === 'Tarde' ? '🌤️' : '☀️';
+    return normalizePeriodStorage(period) === 'Tarde' ? '🌤️' : '☀️';
   }
 
   function equipmentTypeLabel(type) {
@@ -109,7 +129,8 @@
 
       dayRows.forEach((row) => {
         const fixedTag = row.slot_kind === 'fixed' ? ' (FIXO)' : '';
-        msg += `${periodEmoji(row.period_label)} *${day.toUpperCase()} - ${row.period_label.toUpperCase()}${fixedTag}*\n`;
+        const periodLabel = displayPeriodLabel(row.period_label);
+        msg += `${periodEmoji(row.period_label)} *${day.toUpperCase()} - ${periodLabel.toUpperCase()}${fixedTag}*\n`;
         const names = String(row.publisher_names || '').trim();
         if (names) msg += `▫️ *${names}*\n`;
         msg += ` ${equipmentTypeLabel(row.equipment_type)}: *${row.equipment_name || '—'}*\n`;
@@ -144,6 +165,8 @@
   window.JEEquipmentSchedule = {
     EQUIPMENT_DAYS,
     DEFAULT_SLOT_DAY,
+    PERIOD_STORAGE,
+    PERIOD_OPTIONS,
     PERIOD_LABELS,
     EQUIPMENT_TYPES,
     toISODate,
@@ -153,6 +176,8 @@
     snapToWeekStart,
     formatShortDate,
     weekdayMatches,
+    normalizePeriodStorage,
+    displayPeriodLabel,
     compareSlots,
     slotsForWeek,
     generateWhatsAppEquipmentSchedule,

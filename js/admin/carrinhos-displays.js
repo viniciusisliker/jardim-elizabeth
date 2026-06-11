@@ -472,14 +472,35 @@
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
   }
 
+  function periodOptions() {
+    return helpers.PERIOD_OPTIONS || [
+      { value: 'Manha', label: 'Manhã' },
+      { value: 'Tarde', label: 'Tarde' }
+    ];
+  }
+
   function normalizePeriodLabel(value) {
-    const labels = helpers.PERIOD_LABELS || ['Manhã', 'Tarde'];
-    const raw = String(value ?? '').trim();
-    if (labels.includes(raw)) return raw;
-    const norm = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (norm.startsWith('manh')) return 'Manhã';
-    if (norm.startsWith('tard')) return 'Tarde';
-    return labels[0] || 'Manhã';
+    return helpers.normalizePeriodStorage
+      ? helpers.normalizePeriodStorage(value)
+      : (String(value ?? '').trim() || 'Manha');
+  }
+
+  function readPeriodFromSelect(el) {
+    if (!el) return '';
+    let raw = el.value;
+    if (!raw && el.selectedIndex >= 0 && el.options.length) {
+      raw = el.options[el.selectedIndex].value;
+    }
+    return normalizePeriodLabel(raw);
+  }
+
+  function applyPeriodSelectValue(selectEl, storageValue) {
+    if (!selectEl) return;
+    const period = normalizePeriodLabel(storageValue);
+    selectEl.value = period;
+    if (!selectEl.value && selectEl.options.length) {
+      selectEl.selectedIndex = 0;
+    }
   }
 
   function normalizeWeekdayLabel(value) {
@@ -490,7 +511,9 @@
 
   function formatSlotDbError(error) {
     const msg = String(error?.message || '');
-    if (msg.includes('period_label')) return 'Período inválido. Selecione Manhã ou Tarde.';
+    if (msg.includes('equipment_schedule_slots_period_label_check') || /period_label.*check/i.test(msg)) {
+      return 'Período inválido. Selecione Manhã ou Tarde.';
+    }
     if (msg.includes('equipment_schedule_week_start')) {
       return 'Linha temporária exige semana selecionada no cronograma.';
     }
@@ -504,8 +527,8 @@
     const dayOpts = helpers.EQUIPMENT_DAYS.map((d) =>
       `<option value="${escapeHtml(d)}" ${d === day ? 'selected' : ''}>${escapeHtml(d)}</option>`
     ).join('');
-    const periodOpts = helpers.PERIOD_LABELS.map((p) =>
-      `<option value="${escapeHtml(p)}" ${p === period ? 'selected' : ''}>${escapeHtml(p)}</option>`
+    const periodOpts = periodOptions().map((p) =>
+      `<option value="${escapeHtml(p.value)}" ${p.value === period ? 'selected' : ''}>${escapeHtml(p.label)}</option>`
     ).join('');
     return { dayOpts, periodOpts };
   }
@@ -2295,7 +2318,8 @@
 
   function syncSlotModalPreview() {
     const day = document.getElementById('eq-slot-day')?.value || '—';
-    const period = document.getElementById('eq-slot-period')?.value || '—';
+    const periodEl = document.getElementById('eq-slot-period');
+    const period = periodEl ? (helpers.displayPeriodLabel?.(readPeriodFromSelect(periodEl)) || readPeriodFromSelect(periodEl)) : '—';
     const preview = document.getElementById('eq-slot-modal-preview');
     if (preview) preview.textContent = `${day} · ${period}`;
   }
@@ -2305,7 +2329,10 @@
     const daySel = document.getElementById('eq-slot-day');
     const periodSel = document.getElementById('eq-slot-period');
     if (daySel) daySel.innerHTML = dayOpts;
-    if (periodSel) periodSel.innerHTML = periodOpts;
+    if (periodSel) {
+      periodSel.innerHTML = periodOpts;
+      applyPeriodSelectValue(periodSel, draft.period_label);
+    }
     const kindSel = document.getElementById('eq-slot-kind');
     const typeSel = document.getElementById('eq-slot-type');
     if (kindSel) kindSel.value = draft.slot_kind || 'temporary';
@@ -2481,7 +2508,7 @@
     const slotKind = document.getElementById(`${prefix}-kind`)?.value || 'temporary';
     const sortEl = document.getElementById(`${prefix}-sort`);
     const weekdayLabel = normalizeWeekdayLabel(document.getElementById(`${prefix}-day`)?.value);
-    const periodLabel = normalizePeriodLabel(document.getElementById(`${prefix}-period`)?.value);
+    const periodLabel = readPeriodFromSelect(document.getElementById(`${prefix}-period`));
     return {
       id: prefix === 'eq-inline' ? (inlineSlotDraft?.id || '') : '',
       weekday_label: weekdayLabel,
@@ -2599,7 +2626,7 @@
   function renderScheduleRow(row) {
     return `
       <tr class="eq-sched-tr">
-        <td data-eqsched-col="dayperiod"><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(row.period_label)}</td>
+        <td data-eqsched-col="dayperiod"><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(helpers.displayPeriodLabel?.(row.period_label) || row.period_label)}</td>
         <td data-eqsched-col="kind"><span class="eq-slot-kind eq-slot-kind--${row.slot_kind === 'fixed' ? 'fixed' : 'temp'}">${row.slot_kind === 'fixed' ? 'Fixo' : 'Temp.'}</span></td>
         <td data-eqsched-col="equipType"><span class="eq-type-pill${row.equipment_type === 'display' ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span></td>
         <td data-eqsched-col="publishers"${row.publisher_names ? '' : ' class="terr-sched-cell--muted"'}>${escapeHtml(row.publisher_names || '—')}</td>
