@@ -3350,6 +3350,11 @@
       }
     });
 
+    document.getElementById('eq-pub-name')?.addEventListener('input', (e) => {
+      const preview = document.getElementById('eq-pub-modal-preview');
+      if (preview) preview.textContent = e.target.value.trim() || 'Nome do publicador';
+    });
+
     document.getElementById('eq-form-publisher')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('eq-pub-id').value;
