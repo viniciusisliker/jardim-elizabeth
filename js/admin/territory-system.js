@@ -1113,7 +1113,9 @@
       if (e.target.closest('[data-go-tab]')) closePriorityModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && document.getElementById('terr-priority-modal')?.classList.contains('is-open')) {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('terr-map-lightbox')?.classList.contains('is-open')) return;
+      if (document.getElementById('terr-priority-modal')?.classList.contains('is-open')) {
         closePriorityModal();
       }
     });
@@ -1145,9 +1147,7 @@
       const days = H().daysSince(t.last_worked_at);
       return `
         <div class="terr-dash-row">
-          <span class="terr-dash-terr" title="${escapeHtml(H().territoryLabel(t))}">
-            <span class="terr-dash-terr-num">T${escapeHtml(t.num)}</span>${escapeHtml(t.display_name)}
-          </span>
+          <span class="terr-dash-terr-wrap">${catalogTerritoryCell(t)}</span>
           <span class="flex items-center gap-2 shrink-0">
             ${days !== null ? `<span class="text-[10px] text-on-surface-variant">${days}d</span>` : ''}
             ${priorityBadge(t)}
@@ -5084,7 +5084,14 @@
       if (e.target.id === 'terr-map-lightbox') closeTerritoryMapLightbox();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeTerritoryMapLightbox();
+      if (e.key === 'Escape' && document.getElementById('terr-map-lightbox')?.classList.contains('is-open')) {
+        closeTerritoryMapLightbox();
+      }
+    });
+    document.getElementById('semana-priority-list')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-terr-map]');
+      if (!btn) return;
+      openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
     });
     document.getElementById('panel-historico')?.addEventListener('click', (e) => {
       const delBtn = e.target.closest('[data-del-history]');
