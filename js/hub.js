@@ -14,7 +14,7 @@
     'js/territory-assignment-helpers.js?v=2026061054': 'JETerritoryAssignment',
     'js/admin/territory-system.js?v=2026061054': 'JEAdminTerritorios',
     'js/equipment-schedule-helpers.js?v=2026060965': 'JEEquipmentSchedule',
-    'js/admin/carrinhos-displays.js?v=2026061057': 'JEAdminCarrinhosDisplays'
+    'js/admin/carrinhos-displays.js?v=2026061058': 'JEAdminCarrinhosDisplays'
   };
 
   function scriptGlobalFor(src) {

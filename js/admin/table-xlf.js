@@ -6,10 +6,13 @@
   }
 
   function xlfAllSelected(map) {
-    return Object.values(map).every(Boolean);
+    if (!map || typeof map !== 'object') return true;
+    const vals = Object.values(map);
+    return vals.length === 0 || vals.every(Boolean);
   }
 
   function xlfSelectedKeys(map) {
+    if (!map || typeof map !== 'object') return [];
     return Object.entries(map).filter(([, on]) => on).map(([k]) => k);
   }
 
@@ -32,9 +35,10 @@
   }
 
   function xlfApplyMapFilter(list, map, valueFn) {
+    if (!map || typeof map !== 'object') return list;
     const total = Object.keys(map).length;
     const keys = xlfSelectedKeys(map);
-    if (keys.length >= total) return list;
+    if (!total || keys.length >= total) return list;
     if (!keys.length) return [];
     return list.filter((item) => keys.includes(String(valueFn(item))));
   }
@@ -133,21 +137,18 @@
 
   function xlfColumnHeader(sortAttr, sortState, filterState, config) {
     const { col, label, filterKey, options, wrap = 'th', extraClass = '' } = config;
-    const filterMap = filterState[filterKey];
-    const active = xlfIsActive(filterMap);
+    const filterMap = filterKey ? filterState[filterKey] : null;
+    const active = filterKey ? xlfIsActive(filterMap) : false;
     const sortActive = sortState.col === col;
     const sortIcon = sortActive ? (sortState.dir === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more';
-    const checks = (options || []).map((o) => `
+    const checks = filterKey && filterMap
+      ? (options || []).map((o) => `
       <label class="terr-xlf-check">
         <input type="checkbox" data-xlf-filter="${filterKey}" value="${escapeHtml(String(o.value))}" ${filterMap[o.value] ? 'checked' : ''}>
         <span>${escapeHtml(o.label)}</span>
-      </label>`).join('');
-    const inner = `
-      <div class="terr-xlf-head">
-        <button type="button" class="terr-xlf-sort terr-catalog-sort terr-hist-sort${sortActive ? ' terr-xlf-sort--active terr-catalog-sort--active terr-hist-sort--active' : ''}" data-${sortAttr}="${col}">
-          <span>${label}</span>
-          <span class="material-symbols-outlined terr-xlf-sort-icon terr-catalog-sort-icon terr-hist-sort-icon" aria-hidden="true">${sortIcon}</span>
-        </button>
+      </label>`).join('')
+      : '';
+    const filterUi = filterKey && filterMap ? `
         <div class="terr-xlf-filter">
           <button type="button" class="terr-xlf-filter-btn${active ? ' terr-xlf-filter-btn--active' : ''}" data-xlf-trigger="${filterKey}" aria-expanded="false" aria-haspopup="true" aria-label="Filtrar ${label}" title="Filtrar">
             <span class="material-symbols-outlined" aria-hidden="true">${active ? 'filter_alt' : 'filter_list'}</span>
@@ -163,7 +164,13 @@
               <button type="button" class="terr-xlf-clear" data-xlf-clear="${filterKey}">Limpar filtro</button>
             </div>
           </div>
-        </div>
+        </div>` : '';
+    const inner = `
+      <div class="terr-xlf-head">
+        <button type="button" class="terr-xlf-sort terr-catalog-sort terr-hist-sort${sortActive ? ' terr-xlf-sort--active terr-catalog-sort--active terr-hist-sort--active' : ''}" data-${sortAttr}="${col}">
+          <span>${label}</span>
+          <span class="material-symbols-outlined terr-xlf-sort-icon terr-catalog-sort-icon terr-hist-sort-icon" aria-hidden="true">${sortIcon}</span>
+        </button>${filterUi}
       </div>`;
     if (wrap === 'th') return `<th scope="col" class="${extraClass}" data-sched-col="${col}">${inner}</th>`;
     return `<span class="terr-xlf-head-cell ${extraClass}" data-sched-col="${col}">${inner}</span>`;

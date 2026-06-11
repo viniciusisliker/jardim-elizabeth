@@ -105,9 +105,9 @@
       scripts: [
         'js/week-input-helpers.js?v=2026060984',
         'js/equipment-schedule-helpers.js?v=2026060968',
-        'js/admin/table-xlf.js?v=2026060939',
+        'js/admin/table-xlf.js?v=2026061058',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/carrinhos-displays.js?v=2026061057'
+        'js/admin/carrinhos-displays.js?v=2026061058'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
@@ -200,7 +200,7 @@
       partial: 'hub/sections/configuracoes.html',
       styles: ['css/hub-sections/configuracoes.css?v=2026060961'],
       scripts: [
-        'js/admin/table-xlf.js?v=2026060939',
+        'js/admin/table-xlf.js?v=2026061058',
         'js/admin/configuracoes.js?v=2026060982'
       ],
       initKey: 'JEAdminConfiguracoes',
