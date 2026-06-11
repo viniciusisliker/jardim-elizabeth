@@ -1595,11 +1595,14 @@
     }
     if (document.getElementById('devolver-modal-wrap')) return;
 
+    const isDomingoPair = H().isDomingoPairContextAssignment(resolved, profiles);
     const today = H().toISODate(new Date());
     const terr = territories.find((item) => item.id === resolved.territory_id) || resolved.territories;
     const terrLabel = H().territoryLabel(terr);
     const person = devolverAssigneeLabel({ ...resolved, territories: terr });
     const assignedIso = resolved.assigned_at ? String(resolved.assigned_at).slice(0, 10) : '';
+    const modalTitle = isDomingoPair ? 'Devolver dupla de domingo' : 'Devolver território';
+    const modalKicker = isDomingoPair ? 'Devolução da dupla' : 'Devolução de território';
 
     const wrap = document.createElement('div');
     wrap.id = 'devolver-modal-wrap';
@@ -1610,8 +1613,8 @@
           <button type="button" data-cancel class="terr-catalog-modal__close" aria-label="Fechar">
             <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
-          <p class="terr-catalog-modal__kicker">Devolução de território</p>
-          <h3 id="devolver-modal-title">Devolver território</h3>
+          <p class="terr-catalog-modal__kicker">${escapeHtml(modalKicker)}</p>
+          <h3 id="devolver-modal-title">${escapeHtml(modalTitle)}</h3>
           <p class="terr-catalog-modal__subtitle">${escapeHtml(terrLabel)}</p>
         </div>
         <form id="devolver-modal-form">
@@ -2402,7 +2405,7 @@
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
       const returnBtn = assignment?.id
-        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().isDomingoPairContextAssignment(assignment, profiles) ? (H().domingoPairAssigneeLabel(assignment.territories?.num, assignment, profiles) || H().territoryLabel(assignment.territories)) : H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
         : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
@@ -5014,9 +5017,8 @@
       if (retBtn) {
         if (e.target.closest('[data-edit-schedule]') || e.target.closest('[data-del-schedule]')) return;
         const asn = activeAssignments.find((a) => a.id === retBtn.dataset.returnAssignment);
-        if (asn && !H().isDomingoPairContextAssignment(asn, profiles)) {
-          openDevolverModal(asn);
-        }
+        if (asn) openDevolverModal(asn);
+        else if (toast) showToast(toast, 'Designação não encontrada. Atualize a página.', true);
         return;
       }
       const revealBtn = e.target.closest('[data-sched-reveal-last-terr]');
