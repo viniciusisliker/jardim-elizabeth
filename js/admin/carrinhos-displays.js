@@ -17,7 +17,12 @@
     { value: 'display', label: 'Display' }
   ];
   const ITEM_UNDO_FIELDS = ['name', 'equipment_type', 'default_location', 'sort_order', 'notes'];
-  const LOC_UNDO_FIELDS = ['name', 'address', 'sort_order', 'notes'];
+  const LOC_UNDO_FIELDS = ['name', 'location_kind', 'address', 'sort_order', 'notes'];
+  const LOC_KIND_OPTIONS = [
+    { value: 'equipamento', label: 'Equipamento' },
+    { value: 'trabalho', label: 'Trabalho' },
+    { value: 'encontro', label: 'Encontro' }
+  ];
   const SLOT_UNDO_FIELDS = [
     'weekday_label', 'period_label', 'slot_kind', 'week_start', 'equipment_type',
     'equipment_name', 'location_name', 'publisher_names', 'sort_order', 'is_active'
@@ -64,6 +69,7 @@
   let locSearch = '';
   let locFilter = {
     name: {},
+    kind: Object.fromEntries(LOC_KIND_OPTIONS.map((o) => [o.value, true])),
     status: { active: true, inactive: true }
   };
   let locSort = { col: 'name', dir: 'asc' };
@@ -239,12 +245,13 @@
   const eqLocCols = createEqTableCols({
     columns: [
       { id: 'name', label: 'Nome' },
+      { id: 'kind', label: 'Tipo' },
       { id: 'address', label: 'Endereço' },
       { id: 'sort', label: 'Ordem' },
       { id: 'status', label: 'Status' },
       { id: 'actions', label: 'Ações', locked: true }
     ],
-    defaults: ['160px', '240px', '64px', '88px', '69px'],
+    defaults: ['160px', '96px', '220px', '64px', '88px', '69px'],
     storageKey: 'je-eq-loc-cols',
     tableSelector: '#eq-loc-scroll .eq-loc-table',
     colDataKey: 'loc',
@@ -493,17 +500,33 @@
     return catalogCache.equipmentByType[type] || [];
   }
 
-  function activeLocationsList() {
-    if (!catalogCache.locations) {
-      catalogCache.locations = locations
-        .filter((loc) => loc.is_active !== false)
-        .sort((a, b) => {
-          const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
-          if (sortDiff) return sortDiff;
-          return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
-        });
-    }
-    return catalogCache.locations;
+  function normalizeLocationKind(kind) {
+    return LOC_KIND_OPTIONS.some((o) => o.value === kind) ? kind : 'trabalho';
+  }
+
+  function locationKindLabel(kind) {
+    return LOC_KIND_OPTIONS.find((o) => o.value === normalizeLocationKind(kind))?.label || 'Trabalho';
+  }
+
+  function activeLocationsForKind(kind) {
+    const normalized = normalizeLocationKind(kind);
+    return locations
+      .filter((loc) => loc.is_active !== false && normalizeLocationKind(loc.location_kind) === normalized)
+      .sort((a, b) => {
+        const sortDiff = (a.sort_order || 0) - (b.sort_order || 0);
+        if (sortDiff) return sortDiff;
+        return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+      });
+  }
+
+  function locKindPill(row) {
+    const kind = normalizeLocationKind(row?.location_kind);
+    const classMap = {
+      equipamento: 'eq-loc-kind--equip',
+      trabalho: 'eq-loc-kind--work',
+      encontro: 'eq-loc-kind--meet'
+    };
+    return `<span class="eq-loc-kind ${classMap[kind] || ''}">${escapeHtml(locationKindLabel(kind))}</span>`;
   }
 
   function inlineEquipmentSelectOptions(type, selectedName) {
@@ -519,8 +542,8 @@
     return html;
   }
 
-  function inlineLocationSelectOptions(selectedName) {
-    const items = activeLocationsList();
+  function inlineLocationSelectOptions(selectedName, kind = 'trabalho') {
+    const items = activeLocationsForKind(kind);
     const known = new Set(items.map((loc) => loc.name));
     let html = '<option value="">Selecione…</option>';
     if (selectedName && !known.has(selectedName)) {
@@ -544,7 +567,7 @@
     }
     if (locSel) {
       const currentLoc = locSel.value;
-      locSel.innerHTML = inlineLocationSelectOptions(currentLoc);
+      locSel.innerHTML = inlineLocationSelectOptions(currentLoc, 'trabalho');
     }
   }
 
@@ -907,7 +930,7 @@
   function populateItemLocationSelect(selectedName) {
     const select = document.getElementById('eq-item-location');
     if (!select) return;
-    select.innerHTML = inlineLocationSelectOptions(selectedName || '');
+    select.innerHTML = inlineLocationSelectOptions(selectedName || '', 'equipamento');
   }
 
   function setItemModalType(type) {
@@ -1064,7 +1087,7 @@
   }
 
   function renderInlineItemEditor(draft) {
-    const locOpts = inlineLocationSelectOptions(draft.default_location);
+    const locOpts = inlineLocationSelectOptions(draft.default_location, 'equipamento');
     return `
       <tr class="eq-item-tr eq-item-tr--edit" id="eq-inline-item-form">
         <td data-item-col="name"><input id="eq-inline-item-name" type="text" class="eq-sched-inline-input" value="${escapeHtml(draft.name)}" placeholder="Nome…" autocomplete="off"/></td>
@@ -1167,7 +1190,7 @@
   async function fetchLocations() {
     const { data, error } = await client
       .from('equipment_locations')
-      .select('id, name, address, sort_order, is_active, notes')
+      .select('id, name, location_kind, address, sort_order, is_active, notes')
       .order('sort_order')
       .order('name');
     if (error) throw error;
@@ -1183,13 +1206,14 @@
 
   function syncLocFilterOptions() {
     if (!xlf) return false;
+    xlf.xlfEnsureKeys(locFilter.kind, LOC_KIND_OPTIONS.map((o) => o.value));
     xlf.xlfEnsureKeys(
       locFilter.name,
       [...new Set(locations.map((l) => l.name))].sort((a, b) =>
         a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
       )
     );
-    const sig = Object.keys(locFilter.name).join('\0');
+    const sig = [Object.keys(locFilter.name).join('\0'), Object.keys(locFilter.kind).join('\0')].join('|');
     const changed = sig !== locFilterSig;
     locFilterSig = sig;
     return changed;
@@ -1206,6 +1230,9 @@
           break;
         case 'address':
           cmp = String(a.address || '').localeCompare(String(b.address || ''), 'pt-BR', { sensitivity: 'base' });
+          break;
+        case 'kind':
+          cmp = locationKindLabel(a.location_kind).localeCompare(locationKindLabel(b.location_kind), 'pt-BR', { sensitivity: 'base' });
           break;
         case 'sort':
           cmp = (a.sort_order || 0) - (b.sort_order || 0);
@@ -1233,6 +1260,7 @@
     }
     if (!xlf) return list;
     list = xlf.xlfApplyMapFilter(list, locFilter.name, (l) => l.name);
+    list = xlf.xlfApplyMapFilter(list, locFilter.kind, (l) => normalizeLocationKind(l.location_kind));
     list = xlf.xlfApplyMapFilter(list, locFilter.status, (l) => (l.is_active !== false ? 'active' : 'inactive'));
     return getSortedLocations(list);
   }
@@ -1242,6 +1270,7 @@
     const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(locFilter.name));
     return `
       ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'name', label: 'Nome', filterKey: 'name', options: nameOpts, wrap: 'th', colDataKey: 'loc' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'kind', label: 'Tipo', filterKey: 'kind', options: LOC_KIND_OPTIONS, wrap: 'th', colDataKey: 'loc' })}
       ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'address', label: 'Endereço', wrap: 'th', colDataKey: 'loc' })}
       ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'sort', label: 'Ordem', wrap: 'th', colDataKey: 'loc' })}
       ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'th', colDataKey: 'loc' })}
@@ -1331,6 +1360,7 @@
               <span>${escapeHtml(row.name)}</span>
             </span>
           </td>
+          <td data-loc-col="kind">${locKindPill(row)}</td>
           <td data-loc-col="address" class="eq-loc-cell eq-loc-cell--address${row.address ? '' : ' terr-sched-cell--muted'}">${escapeHtml(row.address || '—')}</td>
           <td data-loc-col="sort" class="eq-loc-cell eq-loc-cell--sort">${escapeHtml(String(row.sort_order ?? 0))}</td>
           <td data-loc-col="status" class="eq-loc-cell eq-pub-status-cell">${statusHtml}</td>
@@ -1402,6 +1432,7 @@
             <table class="eq-loc-table eq-data-table terr-sched-table">
               <thead><tr>${xlf ? locHeaderRow() : `
                 <th scope="col" data-loc-col="name">Nome</th>
+                <th scope="col" data-loc-col="kind">Tipo</th>
                 <th scope="col" data-loc-col="address">Endereço</th>
                 <th scope="col" data-loc-col="sort">Ordem</th>
                 <th scope="col" data-loc-col="status">Status</th>
@@ -1433,11 +1464,25 @@
     if (preview) preview.textContent = name || 'Novo local';
   }
 
+  function syncLocModalHint() {
+    const hint = document.getElementById('eq-loc-modal-hint');
+    const kind = normalizeLocationKind(document.getElementById('eq-loc-kind')?.value);
+    const hints = {
+      equipamento: 'Disponível apenas na aba Equipamentos (local padrão).',
+      trabalho: 'Disponível apenas no Cronograma de carrinhos e displays.',
+      encontro: 'Cadastrado no catálogo; ainda sem uso nas outras abas.'
+    };
+    if (hint) hint.textContent = hints[kind] || hints.trabalho;
+  }
+
   function resetLocForm() {
     document.getElementById('eq-form-loc')?.reset();
     document.getElementById('eq-loc-id').value = '';
     document.getElementById('eq-loc-sort').value = '0';
+    const kindSel = document.getElementById('eq-loc-kind');
+    if (kindSel) kindSel.value = 'trabalho';
     syncLocModalPreview();
+    syncLocModalHint();
   }
 
   function openLocModal(row) {
@@ -1449,10 +1494,12 @@
     if (row) {
       document.getElementById('eq-loc-id').value = row.id;
       document.getElementById('eq-loc-name').value = row.name;
+      document.getElementById('eq-loc-kind').value = normalizeLocationKind(row.location_kind);
       document.getElementById('eq-loc-address').value = row.address || '';
       document.getElementById('eq-loc-sort').value = String(row.sort_order ?? 0);
       document.getElementById('eq-loc-notes').value = row.notes || '';
       syncLocModalPreview();
+      syncLocModalHint();
     }
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
@@ -1472,6 +1519,7 @@
     const id = document.getElementById('eq-loc-id').value;
     const payload = {
       name: document.getElementById('eq-loc-name').value.trim(),
+      location_kind: normalizeLocationKind(document.getElementById('eq-loc-kind').value),
       address: document.getElementById('eq-loc-address').value.trim() || null,
       sort_order: parseInt(document.getElementById('eq-loc-sort').value, 10) || 0,
       notes: document.getElementById('eq-loc-notes').value.trim() || null,
@@ -1499,7 +1547,7 @@
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...payload, is_active: true })
-        .select('id, name, address, sort_order, is_active, notes')
+        .select('id, name, location_kind, address, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -1528,6 +1576,7 @@
     return {
       id: row?.id || '',
       name: row?.name || '',
+      location_kind: normalizeLocationKind(row?.location_kind),
       address: row?.address || '',
       sort_order: row?.sort_order ?? 0,
       notes: row?.notes || ''
@@ -1574,6 +1623,7 @@
     return {
       id: inlineLocDraft?.id || '',
       name: document.getElementById('eq-inline-loc-name')?.value.trim() || '',
+      location_kind: inlineLocDraft?.location_kind || 'trabalho',
       address: inlineLocDraft?.address?.trim() || null,
       sort_order: parseInt(document.getElementById('eq-inline-loc-sort')?.value, 10) || 0,
       notes: document.getElementById('eq-inline-loc-notes')?.value.trim() || null,
@@ -1606,7 +1656,7 @@
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...data, is_active: true })
-        .select('id, name, address, sort_order, is_active, notes')
+        .select('id, name, location_kind, address, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -2184,7 +2234,7 @@
     const pubNames = parsePublisherNames(draft.publisher_names);
     const pubSummary = !pubNames.length ? 'Selecionar…' : (pubNames.length === 1 ? pubNames[0] : `${pubNames.length} pub.`);
     const equipOpts = inlineEquipmentSelectOptions(draft.equipment_type, draft.equipment_name);
-    const locOpts = inlineLocationSelectOptions(draft.location_name);
+    const locOpts = inlineLocationSelectOptions(draft.location_name, 'trabalho');
     return `
       <tr class="eq-sched-tr eq-sched-tr--edit" id="eq-inline-slot-form">
         <td data-eqsched-col="dayperiod" class="eq-sched-inline-cell eq-sched-inline-cell--day">
@@ -2829,6 +2879,7 @@
       if (e.target.id === 'eq-loc-modal') closeLocModal();
     });
     document.getElementById('eq-loc-name')?.addEventListener('input', syncLocModalPreview);
+    document.getElementById('eq-loc-kind')?.addEventListener('change', syncLocModalHint);
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-btn-whatsapp-volunteers')?.addEventListener('click', openVolunteerWhatsApp);
 

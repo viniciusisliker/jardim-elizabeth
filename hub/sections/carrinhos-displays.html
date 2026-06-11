@@ -230,6 +230,13 @@
             <label class="eq-modal-grid--full">Nome do local
               <input id="eq-loc-name" required class="eq-modal-input" placeholder="Ex.: Praça da Matriz, Estação Santo Amaro" autocomplete="off"/>
             </label>
+            <label class="eq-modal-grid--full">Tipo de local
+              <select id="eq-loc-kind" class="eq-modal-input" required title="Define onde o local aparece no sistema">
+                <option value="trabalho">Trabalho — Cronograma</option>
+                <option value="equipamento">Equipamento — local padrão</option>
+                <option value="encontro">Encontro — só no catálogo</option>
+              </select>
+            </label>
             <label class="eq-modal-grid--full">Endereço
               <input id="eq-loc-address" class="eq-modal-input" placeholder="Ex.: Av. Paulista, 1000 — Bela Vista" autocomplete="street-address"/>
             </label>
@@ -241,7 +248,7 @@
             </label>
           </div>
           <div class="eq-modal__foot eq-modal__foot--loc">
-            <p class="eq-loc-modal-hint">O local ficará disponível no cronograma e nos equipamentos.</p>
+            <p id="eq-loc-modal-hint" class="eq-loc-modal-hint">Disponível apenas no Cronograma de carrinhos e displays.</p>
             <div class="eq-modal__foot-actions">
               <button type="button" id="eq-loc-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
               <button type="submit" class="eq-modal-btn eq-modal-btn--primary eq-modal-btn--loc">
