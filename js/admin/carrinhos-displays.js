@@ -30,6 +30,7 @@
   const PUB_UNDO_FIELDS = ['publisher_name', 'can_carrinho', 'can_display', 'available_days', 'notes'];
 
   const UNDO_SCOPE = 'carrinhos-displays';
+  const LOCATION_OTHER_VALUE = '__other__';
 
   function undoApi() {
     return window.JEHubUndo;
@@ -544,17 +545,63 @@
     return html;
   }
 
-  function inlineLocationSelectOptions(selectedName, kind = 'trabalho') {
+  function inlineLocationSelectOptions(selectedName, kind = 'trabalho', { allowOther = false } = {}) {
     const items = activeLocationsForKind(kind);
     const known = new Set(items.map((loc) => loc.name));
     let html = '<option value="">Selecione…</option>';
-    if (selectedName && !known.has(selectedName)) {
+    if (selectedName && !known.has(selectedName) && selectedName !== LOCATION_OTHER_VALUE && !allowOther) {
       html += `<option value="${escapeHtml(selectedName)}" selected>${escapeHtml(selectedName)}</option>`;
     }
     html += items.map((loc) =>
       `<option value="${escapeHtml(loc.name)}" ${loc.name === selectedName ? 'selected' : ''}>${escapeHtml(loc.name)}</option>`
     ).join('');
+    if (allowOther) {
+      const otherSelected = selectedName === LOCATION_OTHER_VALUE;
+      html += `<option value="${LOCATION_OTHER_VALUE}" ${otherSelected ? 'selected' : ''}>Outro…</option>`;
+    }
     return html;
+  }
+
+  function isScheduleLocationPrefix(prefix) {
+    return prefix === 'eq-slot' || prefix === 'eq-inline';
+  }
+
+  function syncLocationOtherField(prefix) {
+    const locSel = document.getElementById(`${prefix}-location`);
+    const wrap = document.getElementById(`${prefix}-location-other-wrap`);
+    const otherInput = document.getElementById(`${prefix}-location-other`);
+    if (!locSel) return;
+    const isOther = locSel.value === LOCATION_OTHER_VALUE;
+    if (wrap) wrap.classList.toggle('hidden', !isOther);
+    if (otherInput) {
+      otherInput.classList.toggle('hidden', !isOther);
+      otherInput.required = isOther;
+      if (!isOther) otherInput.value = '';
+    }
+  }
+
+  function resolveLocationName(prefix) {
+    const locSel = document.getElementById(`${prefix}-location`);
+    if (!locSel) return '';
+    if (locSel.value === LOCATION_OTHER_VALUE) {
+      return document.getElementById(`${prefix}-location-other`)?.value.trim() || '';
+    }
+    return locSel.value.trim();
+  }
+
+  function setSlotLocationFields(prefix, locationName) {
+    const locSel = document.getElementById(`${prefix}-location`);
+    const otherInput = document.getElementById(`${prefix}-location-other`);
+    const allowOther = isScheduleLocationPrefix(prefix);
+    const known = new Set(activeLocationsForKind('trabalho').map((loc) => loc.name));
+    const isCustom = !!(locationName && !known.has(locationName));
+    if (locSel) {
+      const selectValue = isCustom ? LOCATION_OTHER_VALUE : (locationName || '');
+      locSel.innerHTML = inlineLocationSelectOptions(selectValue, 'trabalho', { allowOther });
+      locSel.value = selectValue;
+    }
+    if (otherInput) otherInput.value = isCustom ? locationName : '';
+    syncLocationOtherField(prefix);
   }
 
   function refreshCatalogSelects(prefix) {
@@ -569,7 +616,17 @@
     }
     if (locSel) {
       const currentLoc = locSel.value;
-      locSel.innerHTML = inlineLocationSelectOptions(currentLoc, 'trabalho');
+      const allowOther = isScheduleLocationPrefix(prefix);
+      const otherName = allowOther && currentLoc === LOCATION_OTHER_VALUE
+        ? document.getElementById(`${prefix}-location-other`)?.value.trim()
+        : '';
+      locSel.innerHTML = inlineLocationSelectOptions(currentLoc, 'trabalho', { allowOther });
+      if (currentLoc) locSel.value = currentLoc;
+      if (otherName) {
+        const otherInput = document.getElementById(`${prefix}-location-other`);
+        if (otherInput) otherInput.value = otherName;
+      }
+      syncLocationOtherField(prefix);
     }
   }
 
@@ -587,6 +644,7 @@
     if (!defaultLoc) return;
     if ([...locSel.options].some((opt) => opt.value === defaultLoc)) {
       locSel.value = defaultLoc;
+      syncLocationOtherField(prefix);
     }
   }
 
@@ -2223,9 +2281,8 @@
     if (kindSel) kindSel.value = draft.slot_kind || 'temporary';
     if (typeSel) typeSel.value = draft.equipment_type || 'carrinho';
     const equipSel = document.getElementById('eq-slot-equipment');
-    const locSel = document.getElementById('eq-slot-location');
     if (equipSel) equipSel.innerHTML = inlineEquipmentSelectOptions(draft.equipment_type, draft.equipment_name);
-    if (locSel) locSel.innerHTML = inlineLocationSelectOptions(draft.location_name, 'trabalho');
+    setSlotLocationFields('eq-slot', draft.location_name);
     const hidden = document.getElementById('eq-slot-publishers');
     if (hidden) hidden.value = draft.publisher_names || '';
     const search = document.getElementById('eq-slot-pub-search');
@@ -2238,6 +2295,9 @@
     document.getElementById('eq-form-slot')?.reset();
     document.getElementById('eq-slot-publishers').value = '';
     document.getElementById('eq-slot-pub-search').value = '';
+    const otherInput = document.getElementById('eq-slot-location-other');
+    if (otherInput) otherInput.value = '';
+    syncLocationOtherField('eq-slot');
   }
 
   function ensureSlotModalPortal() {
@@ -2335,7 +2395,13 @@
     const pubNames = parsePublisherNames(draft.publisher_names);
     const pubSummary = !pubNames.length ? 'Selecionar…' : (pubNames.length === 1 ? pubNames[0] : `${pubNames.length} pub.`);
     const equipOpts = inlineEquipmentSelectOptions(draft.equipment_type, draft.equipment_name);
-    const locOpts = inlineLocationSelectOptions(draft.location_name, 'trabalho');
+    const knownLocs = new Set(activeLocationsForKind('trabalho').map((loc) => loc.name));
+    const isCustomLoc = !!(draft.location_name && !knownLocs.has(draft.location_name));
+    const locOpts = inlineLocationSelectOptions(
+      isCustomLoc ? LOCATION_OTHER_VALUE : draft.location_name,
+      'trabalho',
+      { allowOther: true }
+    );
     return `
       <tr class="eq-sched-tr eq-sched-tr--edit" id="eq-inline-slot-form">
         <td data-eqsched-col="dayperiod" class="eq-sched-inline-cell eq-sched-inline-cell--day">
@@ -2364,8 +2430,9 @@
         <td data-eqsched-col="equipName">
           <select id="eq-inline-equipment" class="eq-sched-inline-input" title="Equipamento (aba Equipamentos)">${equipOpts}</select>
         </td>
-        <td data-eqsched-col="location">
+        <td data-eqsched-col="location" class="eq-sched-inline-cell eq-sched-inline-cell--location">
           <select id="eq-inline-location" class="eq-sched-inline-input" title="Local (aba Locais)">${locOpts}</select>
+          <input type="text" id="eq-inline-location-other" class="eq-sched-inline-input eq-sched-inline-input--other${isCustomLoc ? '' : ' hidden'}" value="${escapeHtml(isCustomLoc ? draft.location_name : '')}" placeholder="Outro local (só nesta linha)…" autocomplete="off"/>
         </td>
         <td data-eqsched-col="actions" class="terr-sched-actions-td">
           <span class="eq-row-actions eq-row-actions--icons">
@@ -2391,7 +2458,7 @@
       week_start: slotKind === 'temporary' ? currentWeek : null,
       equipment_type: document.getElementById(`${prefix}-type`)?.value,
       equipment_name: document.getElementById(`${prefix}-equipment`)?.value.trim() || '',
-      location_name: document.getElementById(`${prefix}-location`)?.value.trim() || '',
+      location_name: resolveLocationName(prefix),
       publisher_names: publisherNames,
       sort_order: sortEl ? (parseInt(sortEl.value, 10) || 0) : 0,
       is_active: true,
@@ -2409,7 +2476,9 @@
       return false;
     }
     if (!payload.equipment_name || !payload.location_name) {
-      showToast(toast, 'Selecione equipamento e local.', true);
+      const locSel = document.getElementById('eq-inline-location') || document.getElementById('eq-slot-location');
+      const needsOther = locSel?.value === LOCATION_OTHER_VALUE;
+      showToast(toast, needsOther ? 'Informe o nome do outro local.' : 'Selecione equipamento e local.', true);
       return false;
     }
 
@@ -2548,6 +2617,7 @@
     }
     body.innerHTML = bodyHtml;
     eqSchedCols.apply();
+    if (inlineSlotDraft) syncLocationOtherField('eq-inline');
 
     if (inlineSlotDraft?.mode === 'edit') {
       document.getElementById('eq-inline-day')?.focus();
@@ -2991,6 +3061,7 @@
       renderSlotPublisherPicker('eq-slot');
     });
     document.getElementById('eq-slot-equipment')?.addEventListener('change', () => applyEquipmentDefaultLocation('eq-slot'));
+    document.getElementById('eq-slot-location')?.addEventListener('change', () => syncLocationOtherField('eq-slot'));
     document.getElementById('eq-slot-pub-search')?.addEventListener('input', () => {
       clearTimeout(inlinePubSearchTimer);
       inlinePubSearchTimer = setTimeout(() => renderSlotPublisherPicker('eq-slot'), 120);
@@ -3023,6 +3094,10 @@
     document.getElementById('eq-loc-kind')?.addEventListener('change', syncLocModalHint);
     document.getElementById('eq-btn-whatsapp')?.addEventListener('click', copyWhatsApp);
     document.getElementById('eq-btn-whatsapp-volunteers')?.addEventListener('click', openVolunteerWhatsApp);
+
+    document.getElementById('eq-sched-list')?.addEventListener('change', (e) => {
+      if (e.target.id === 'eq-inline-location') syncLocationOtherField('eq-inline');
+    });
 
     document.getElementById('eq-sched-list')?.addEventListener('click', async (e) => {
       const pubToggle = e.target.closest('[data-eq-inline-pub-toggle]');

@@ -360,6 +360,8 @@ body.terr-col-resizing *{cursor:col-resize!important}
 .eq-slot-modal-hero h2{margin:0;font-size:1.0625rem;font-weight:800;line-height:1.2;color:#fff}
 .eq-slot-modal-hero__preview{margin:.375rem 0 0;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.92);line-height:1.35}
 .eq-modal__body--slot{padding:1rem 1.125rem 1.125rem;gap:1rem}
+.eq-sched-inline-cell--location{display:flex;flex-direction:column;gap:.25rem;min-width:9rem}
+.eq-sched-inline-input--other{margin-top:0}
 .eq-modal-grid--slot{grid-template-columns:1fr 1fr}
 @media(max-width:479px){.eq-modal-grid--slot{grid-template-columns:1fr}}
 .eq-slot-pub-picker--modal{margin-top:.25rem}
