@@ -302,6 +302,15 @@
     ) || null;
   }
 
+  function domingoPairNumForDirigenteName(name) {
+    const n = String(name || '').trim().toLowerCase();
+    if (!n) return null;
+    const pair = DOMINGO_FIXED_DIRIGENTES.find(
+      (p) => p.dirigente_name.trim().toLowerCase() === n
+    );
+    return pair ? normalizeTerritoryNum(pair.territory_num) : null;
+  }
+
   function domingoPairOptionValue(num) {
     return `pair:${normalizeTerritoryNum(num)}`;
   }
@@ -575,6 +584,7 @@
     primaryDirigenteFromPair,
     listDomingoPairs,
     domingoPairForTerritoryNum,
+    domingoPairNumForDirigenteName,
     normalizeTerritoryNum,
     domingoPairOptionValue,
     parseDomingoPairOptionValue,

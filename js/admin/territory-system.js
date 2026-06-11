@@ -628,9 +628,6 @@
       (a) => a.territory_id === territoryId && a.status === 'active'
     );
     if (existingOnTerritory?.id) {
-      if (H().isDomingoPairContextAssignment(existingOnTerritory, profiles)) {
-        throw new Error(`${H().territoryLabel(terr)} está reservado para dupla de domingo.`);
-      }
       if (existingOnTerritory.profile_id === profileId) {
         if (String(existingOnTerritory.assigned_at || '').slice(0, 10) !== assignedDate) {
           const { error } = await client
@@ -685,13 +682,12 @@
     await syncScheduleRowsForAssignment(profileId, territoryId);
   }
 
-  async function syncScheduleDomingoPairDesignation({ territoryId, assignedAt }) {
+  async function syncScheduleDomingoPairDesignation({ territoryId, assignedAt, pairNum }) {
     if (!client) throw new Error('Sem conexão com o Supabase.');
-    if (!territoryId) throw new Error('Selecione o território de dupla (T07, T12 ou T18).');
+    if (!pairNum) throw new Error('Selecione a dupla de domingo.');
+    if (!territoryId) throw new Error('Selecione o território.');
     const terr = territories.find((t) => t.id === territoryId);
-    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) {
-      throw new Error('Domingo exige território de dupla: T07, T12 ou T18.');
-    }
+    if (!terr) throw new Error('Território não encontrado.');
 
     await loadActiveAssignments();
     await repairOrphanTerritoryStatus(territoryId);
@@ -728,7 +724,7 @@
 
     await ensureProfiles();
     const profileId = H().resolveProfileIdForDomingoPair(
-      terr.num,
+      pairNum,
       territoryId,
       profiles,
       activeAssignments,
@@ -1161,6 +1157,17 @@
     bindDashLinks(document.getElementById('terr-priority-modal'));
   }
 
+  function activeDomingoAssignmentForPair(pair) {
+    if (!pair?.dirigente_name) return null;
+    const members = H().profilesInDomingoPair(pair.dirigente_name, profiles);
+    if (!members.length) return null;
+    return activeAssignments.find(
+      (a) => a.status === 'active'
+        && a.is_domingo_pair === true
+        && members.some((m) => m.id === a.profile_id)
+    ) || null;
+  }
+
   function parseDesignarAssignee(value) {
     const pairNum = H().parseDomingoPairOptionValue(value);
     if (pairNum) {
@@ -1189,15 +1196,14 @@
     const pairOpts = H().listDomingoPairs()
       .map((pair) => {
         const value = H().domingoPairOptionValue(pair.territory_num);
-        const territoryId = catalogPairTerritoryId(pair);
-        const existing = territoryId ? activeAssignmentForTerritoryId(territoryId) : null;
+        const existing = activeDomingoAssignmentForPair(pair);
         const selectable = !existing?.id && H().domingoPairSelectable(
           pair,
-          territoryId,
+          null,
           activeAssignments,
           profiles,
           null,
-          territoryId
+          null
         );
         const selected = selectedValue === value;
         const suffix = existing?.id ? ' (designado)' : (!selectable && !selected ? ' (indisponível)' : '');
@@ -1211,26 +1217,18 @@
       <optgroup label="Duplas de domingo">${pairOpts}</optgroup>`;
   }
 
-  function territoriesForDesignarSelect(assignee) {
-    if (assignee?.kind === 'domingo' && assignee.pair) {
-      const terr = territories.find(
-        (t) => normalizeTerritoryNum(t.num) === normalizeTerritoryNum(assignee.pair.territory_num)
-      );
-      return terr ? [terr] : [];
-    }
+  function territoriesForDesignarSelect() {
     return availableTerritoriesByNum();
   }
 
   function fillDesignarTerritorySelect(assignee, selectedTerritoryId) {
     const terrSel = document.getElementById('designar-territory');
     if (!terrSel) return;
-    const list = territoriesForDesignarSelect(assignee);
+    const list = territoriesForDesignarSelect();
     terrSel.innerHTML = `<option value="">Selecione o território</option>${list.map((t) =>
       `<option value="${t.id}"${selectedTerritoryId === t.id ? ' selected' : ''}>${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
     ).join('')}`;
-    if (assignee?.kind === 'domingo' && list.length === 1) {
-      terrSel.value = list[0].id;
-    } else if (selectedTerritoryId && list.some((t) => t.id === selectedTerritoryId)) {
+    if (selectedTerritoryId && list.some((t) => t.id === selectedTerritoryId)) {
       terrSel.value = selectedTerritoryId;
     }
   }
@@ -1367,7 +1365,7 @@
       <div class="terr-assign-toolbar !rounded-t-xl !rounded-b-none !mb-0">
         <div class="flex-1 min-w-[10rem]">
           <h2>Nova designação de campo</h2>
-          <p>Dirigente individual ou dupla de domingo (T07, T12, T18) e território.</p>
+          <p>Dirigente individual ou dupla de domingo e território.</p>
         </div>
       </div>
       <div class="terr-assign-stats !rounded-none !border-x !border-outline-variant/30">
@@ -1412,7 +1410,7 @@
               </div>
             </div>
             <div class="terr-assign-foot">
-              <p class="terr-assign-note">Duplas de domingo aparecem no seletor com a tag Dupla (T07, T12, T18).</p>
+              <p class="terr-assign-note">Duplas de domingo aparecem no seletor com a tag Dupla.</p>
               <button type="submit" class="terr-assign-submit">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 Confirmar designação
@@ -1497,20 +1495,18 @@
           showToast(toast, 'Selecione a dupla de domingo.', true);
           return;
         }
-        const pair = assignee.pair || H().domingoPairForTerritoryNum(assignee.pairNum);
-        const pairTerritoryId = catalogPairTerritoryId(pair);
-        if (!pairTerritoryId) {
-          showToast(toast, 'Território da dupla não encontrado.', true);
+        if (!territoryId) {
+          showToast(toast, 'Selecione o território.', true);
           return;
         }
-        if (territoryId && territoryId !== pairTerritoryId) {
-          showToast(toast, 'O território deve corresponder à dupla de domingo selecionada.', true);
-          return;
-        }
-        const terr = territories.find((t) => t.id === pairTerritoryId);
-        const undoEntry = buildAssignUndo(pairTerritoryId, terr?.observations ?? null);
+        const terr = territories.find((t) => t.id === territoryId);
+        const undoEntry = buildAssignUndo(territoryId, terr?.observations ?? null);
         try {
-          await syncScheduleDomingoPairDesignation({ territoryId: pairTerritoryId, assignedAt });
+          await syncScheduleDomingoPairDesignation({
+            territoryId,
+            assignedAt,
+            pairNum: assignee.pairNum
+          });
           pushUndo(undoEntry);
           showToast(toast, 'Dupla de domingo designada no Painel.');
           close();
@@ -1729,26 +1725,28 @@
   function scheduleDomingoPairAssignment(row) {
     if (!H().isSundayCronogramaDay(row?.weekday_label)) return null;
     const terrId = resolveScheduleTerritoryId(row);
-    if (!terrId) return null;
-    const terr = territories.find((t) => t.id === terrId);
-    if (!terr || !H().isDomingoPairTerritoryNum(terr.num)) return null;
 
-    const direct = activeAssignmentForTerritoryId(terrId);
-    if (direct?.id) return direct;
-
-    const normalized = scheduleTerritoryNum(row);
-    if (normalized) {
-      for (const a of activeAssignments) {
-        let aNum = normalizeTerritoryNum(a.territories?.num);
-        if (!aNum && a.territory_id) {
-          const t = territories.find((item) => item.id === a.territory_id);
-          aNum = normalizeTerritoryNum(t?.num);
-        }
-        if (aNum === normalized && H().isDomingoPairTerritoryNum(aNum)) return a;
-      }
+    if (terrId) {
+      const direct = activeAssignmentForTerritoryId(terrId);
+      if (direct?.id && H().isDomingoPairContextAssignment(direct, profiles)) return direct;
     }
 
-    return null;
+    const pairName = String(row?.dirigente_name || '').trim() || H().domingoDirigenteName(row);
+    if (!pairName) return null;
+    const members = H().profilesInDomingoPair(pairName, profiles);
+    if (!members.length) return null;
+
+    const matches = activeAssignments.filter(
+      (a) => a.status === 'active'
+        && H().isDomingoPairContextAssignment(a, profiles)
+        && members.some((m) => m.id === a.profile_id)
+    );
+    if (!matches.length) return null;
+    if (terrId) {
+      const onTerr = matches.find((a) => a.territory_id === terrId);
+      if (onTerr) return onTerr;
+    }
+    return matches[0];
   }
 
   /** Designação ativa individual da linha (com id — usada no verde e no Devolver). */
@@ -1872,12 +1870,13 @@
 
   function scheduleAssignmentTitle(assignment) {
     if (!assignment) return '';
-    const terr = assignment.territories
-      || territories.find((t) => t.id === assignment.territory_id);
-    const pairLabel = terr ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles) : null;
-    if (pairLabel) return pairLabel;
-    const pair = terr ? H().domingoPairForTerritoryNum(terr.num) : null;
-    if (pair && H().isDomingoPairTerritoryNum(terr?.num)) return pair.dirigente_name;
+    if (H().isDomingoPairContextAssignment(assignment, profiles)) {
+      for (const pair of H().listDomingoPairs()) {
+        if (H().profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
+          return pair.dirigente_name;
+        }
+      }
+    }
     const person = profileName(assignment.profiles);
     return person !== '—' ? person : 'Em campo';
   }
@@ -4637,7 +4636,7 @@
             <p class="terr-sched-modal__alert">
               Nos <strong>domingos</strong> o cronograma usa a <strong>dupla</strong>
               ${sundayPairName ? `(${escapeHtml(sundayPairName)})` : ''}.
-              Ao salvar, designa o território de dupla no Painel (T07, T12, T18).
+              Ao salvar, designa a dupla no território escolhido no Painel.
             </p>` : ''}
             <p class="terr-sched-modal__preview-label">Prévia da linha</p>
             <div class="terr-sched-modal__preview-wrap">
@@ -4765,7 +4764,7 @@
           || row?.dirigente_name
           || null;
         if (!dirigenteName) {
-          showToast(toast, 'Informe o nome da dupla ou selecione um território com par fixo.', true);
+          showToast(toast, 'Informe o nome da dupla de domingo.', true);
           return;
         }
       } else {
@@ -4810,8 +4809,14 @@
           let syncMessage = '';
           try {
             if (isSunday && territoryId) {
-              await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
-              designationNote = ' e designado no Painel';
+              const pairNum = H().domingoPairNumForDirigenteName(dirigenteName);
+              if (!pairNum) {
+                syncOk = false;
+                syncMessage = 'Linha salva, mas a dupla não foi reconhecida para designar no Painel.';
+              } else {
+                await syncScheduleDomingoPairDesignation({ territoryId, assignedAt, pairNum });
+                designationNote = ' e designado no Painel';
+              }
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
@@ -4860,8 +4865,14 @@
           let syncMessage = '';
           try {
             if (isSunday && territoryId) {
-              await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
-              designationNote = ' e designado no Painel';
+              const pairNum = H().domingoPairNumForDirigenteName(dirigenteName);
+              if (!pairNum) {
+                syncOk = false;
+                syncMessage = 'Linha salva, mas a dupla não foi reconhecida para designar no Painel.';
+              } else {
+                await syncScheduleDomingoPairDesignation({ territoryId, assignedAt, pairNum });
+                designationNote = ' e designado no Painel';
+              }
             } else if (profileId && territoryId) {
               await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
               designationNote = ' e designado no Painel';
