@@ -2696,6 +2696,11 @@
         icon: 'forum',
         items: [
           {
+            title: 'Enviar enquete semanal',
+            hint: 'Domingo · disponibilidade dos irmãos',
+            icon: 'poll'
+          },
+          {
             title: 'Enviar mensagem de voluntários do carrinho',
             hint: 'Recorrente · confirmar quem pode servir na semana',
             icon: 'campaign',
@@ -2708,11 +2713,6 @@
             icon: 'calendar_month',
             action: 'cronograma',
             actionLabel: 'Ir ao Cronograma'
-          },
-          {
-            title: 'Enviar enquete semanal',
-            hint: 'Domingo · disponibilidade dos irmãos',
-            icon: 'poll'
           }
         ]
       },
