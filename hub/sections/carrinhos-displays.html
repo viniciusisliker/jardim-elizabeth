@@ -341,12 +341,13 @@
           <input type="hidden" id="eq-pub-id" value=""/>
           <div class="eq-pub-modal-form">
             <div id="eq-pub-profile-wrap" class="eq-pub-field">
-              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Irmão(ã)</span>
-              <select id="eq-publisher-profile" required class="eq-modal-input"></select>
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Membro</span>
+              <select id="eq-publisher-profile" required class="eq-modal-input" title="Selecione quem incluir na lista de publicadores"></select>
             </div>
-            <div id="eq-pub-edit-name" class="hidden" aria-hidden="true">
-              <p id="eq-pub-edit-name-text"></p>
-            </div>
+            <label id="eq-pub-name-wrap" class="eq-pub-field hidden">
+              <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">badge</span>Nome exibido</span>
+              <input id="eq-pub-name" type="text" class="eq-modal-input" placeholder="Nome usado no cronograma" autocomplete="name" maxlength="120"/>
+            </label>
             <fieldset class="eq-pub-svc-pick">
               <legend>Serviços habilitados</legend>
               <div class="eq-pub-svc-pick__grid">

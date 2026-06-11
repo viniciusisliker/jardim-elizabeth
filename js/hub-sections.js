@@ -108,7 +108,7 @@
         'js/admin/table-xlf.js?v=2026061060',
         'js/territory-column-resize.js?v=2026061066',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/carrinhos-displays.js?v=2026061072'
+        'js/admin/carrinhos-displays.js?v=2026061073'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {

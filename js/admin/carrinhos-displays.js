@@ -351,7 +351,7 @@
 
   function enrichPublisherRow(row) {
     const parsed = parsePublisherNotes(row.notes);
-    row._pubName = row.profiles?.full_name || row.publisher_name || '—';
+    row._pubName = row.publisher_name || row.profiles?.full_name || '—';
     row._grupo = parsed.grupo;
     row._casa = parsed.casa;
     row._observacao = parsed.observacao;
@@ -1792,7 +1792,7 @@
   }
 
   function publisherName(row) {
-    return row._pubName || row.profiles?.full_name || row.publisher_name || '—';
+    return row._pubName || row.publisher_name || row.profiles?.full_name || '—';
   }
 
   function parsePublisherNames(str) {
@@ -2717,8 +2717,10 @@
     document.getElementById('eq-pub-casa').value = '';
     document.getElementById('eq-pub-observacao').value = '';
     document.getElementById('eq-pub-profile-wrap')?.classList.remove('hidden');
-    document.getElementById('eq-pub-edit-name')?.classList.add('hidden');
+    document.getElementById('eq-pub-name-wrap')?.classList.add('hidden');
+    document.getElementById('eq-pub-name').value = '';
     document.getElementById('eq-publisher-profile')?.setAttribute('required', '');
+    document.getElementById('eq-pub-name')?.removeAttribute('required');
     buildDayCheckboxes(document.getElementById('eq-pub-days'), 'eq-pub', helpers.EQUIPMENT_DAYS);
     const title = document.getElementById('eq-pub-modal-title');
     if (title) title.textContent = 'Adicionar publicador';
@@ -2738,8 +2740,12 @@
       updatePubSubmitLabel(true);
       document.getElementById('eq-pub-profile-wrap')?.classList.add('hidden');
       document.getElementById('eq-publisher-profile')?.removeAttribute('required');
-      const editNameText = document.getElementById('eq-pub-edit-name-text');
-      if (editNameText) editNameText.textContent = publisherName(row);
+      document.getElementById('eq-pub-name-wrap')?.classList.remove('hidden');
+      const nameInput = document.getElementById('eq-pub-name');
+      if (nameInput) {
+        nameInput.value = publisherName(row);
+        nameInput.setAttribute('required', '');
+      }
       document.getElementById('eq-pub-carrinho').checked = row.can_carrinho !== false;
       document.getElementById('eq-pub-display').checked = row.can_display !== false;
       buildDayCheckboxes(
@@ -2758,7 +2764,7 @@
 
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    if (row) document.getElementById('eq-pub-grupo')?.focus();
+    if (row) document.getElementById('eq-pub-name')?.focus();
     else document.getElementById('eq-publisher-profile')?.focus();
   }
 
@@ -3368,10 +3374,24 @@
       if (id) {
         const row = publishers.find((p) => p.id === id);
         if (!row) return;
-        if (row.profile_id) {
-          const profileRow = profiles.find((p) => p.id === row.profile_id)
-            || row.profiles;
-          if (profileRow?.full_name) payload.publisher_name = profileRow.full_name;
+        const displayName = document.getElementById('eq-pub-name')?.value.trim() || '';
+        if (displayName.length < 2 || displayName.length > 120) {
+          showToast(toast, 'Informe um nome entre 2 e 120 caracteres.', true);
+          return;
+        }
+        payload.publisher_name = displayName;
+        const currentProfile = await window.JEAuth?.getCurrentProfile?.();
+        if (row.profile_id && currentProfile && window.JEAuth?.isSuperUser?.(currentProfile.role)) {
+          const { error: profileNameErr } = await client.rpc('admin_update_profile_full_name', {
+            p_profile_id: row.profile_id,
+            p_full_name: displayName
+          });
+          if (profileNameErr) {
+            showToast(toast, profileNameErr.message, true);
+            return;
+          }
+          const profileRow = profiles.find((p) => p.id === row.profile_id) || row.profiles;
+          if (profileRow) profileRow.full_name = displayName;
         }
         const { error } = await client.from('equipment_publishers').update(payload).eq('id', id);
         if (error) showToast(toast, error.message, true);
