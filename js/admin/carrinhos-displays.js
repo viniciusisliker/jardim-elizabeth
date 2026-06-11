@@ -69,180 +69,253 @@
   let locSort = { col: 'name', dir: 'asc' };
   let locFilterSig = '';
 
-  const LOC_COLUMNS = [
-    { id: 'name', label: 'Nome' },
-    { id: 'address', label: 'Endereço' },
-    { id: 'sort', label: 'Ordem' },
-    { id: 'status', label: 'Status' },
-    { id: 'actions', label: 'Ações', locked: true }
-  ];
-  const LOC_COL_DEFAULTS = ['160px', '240px', '64px', '88px', '69px'];
-  const LOC_COL_STORAGE = 'je-eq-loc-cols';
+  function createEqTableCols(config) {
+    const {
+      columns, defaults, storageKey, tableSelector, colDataKey, resizeKey,
+      menuBtnId, menuId, emptyTdClass, boundFlag
+    } = config;
+    const lockedIds = new Set(columns.filter((c) => c.locked).map((c) => c.id));
+    const toggleAttr = `data-${colDataKey}-col-toggle`;
+    const closeAttr = `data-${colDataKey}-cols-close`;
+    const resetAttr = `data-${colDataKey}-cols-reset`;
 
-  function loadLocColVisibility() {
-    const base = Object.fromEntries(LOC_COLUMNS.map((c) => [c.id, true]));
-    try {
-      const raw = localStorage.getItem(LOC_COL_STORAGE);
-      if (!raw) return base;
-      const saved = JSON.parse(raw);
-      LOC_COLUMNS.forEach((c) => {
-        if (c.locked) base[c.id] = true;
-        else if (typeof saved[c.id] === 'boolean') base[c.id] = saved[c.id];
-      });
-    } catch {
-      /* ignore */
+    function loadVisibility() {
+      const base = Object.fromEntries(columns.map((c) => [c.id, true]));
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return base;
+        const saved = JSON.parse(raw);
+        columns.forEach((c) => {
+          if (c.locked) base[c.id] = true;
+          else if (typeof saved[c.id] === 'boolean') base[c.id] = saved[c.id];
+        });
+      } catch {
+        /* ignore */
+      }
+      return base;
     }
-    return base;
-  }
 
-  let locColVisibility = loadLocColVisibility();
+    let visibility = loadVisibility();
 
-  function saveLocColVisibility() {
-    try {
-      localStorage.setItem(LOC_COL_STORAGE, JSON.stringify(locColVisibility));
-    } catch {
-      /* ignore */
+    function saveVisibility() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(visibility));
+      } catch {
+        /* ignore */
+      }
     }
-  }
 
-  function isLocColVisible(id) {
-    if (id === 'actions') return true;
-    return locColVisibility[id] !== false;
-  }
+    function isColVisible(id) {
+      if (lockedIds.has(id)) return true;
+      return visibility[id] !== false;
+    }
 
-  function visibleLocColCount() {
-    return LOC_COLUMNS.filter((c) => isLocColVisible(c.id)).length;
-  }
+    function visibleColCount() {
+      return columns.filter((c) => isColVisible(c.id)).length;
+    }
 
-  function tagLocColgroup(table) {
-    const cols = table?.querySelectorAll('colgroup col');
-    if (!cols?.length) return;
-    LOC_COLUMNS.forEach((col, i) => {
-      if (cols[i]) cols[i].dataset.locCol = col.id;
-    });
-  }
+    function colVisible(cell) {
+      return cell && !cell.classList.contains('terr-sched-col--hidden');
+    }
 
-  function locColVisible(cell) {
-    return cell && !cell.classList.contains('terr-sched-col--hidden');
-  }
-
-  function applyLocColVisibility() {
-    const table = document.querySelector('#eq-loc-scroll .eq-loc-table');
-    if (!table) return;
-    LOC_COLUMNS.forEach((col) => {
-      const hidden = !isLocColVisible(col.id);
-      table.querySelectorAll(`[data-loc-col="${col.id}"]`).forEach((el) => {
-        el.classList.toggle('terr-sched-col--hidden', hidden);
-        if (hidden) el.setAttribute('aria-hidden', 'true');
-        else el.removeAttribute('aria-hidden');
+    function apply() {
+      const table = document.querySelector(tableSelector);
+      if (!table) return;
+      columns.forEach((col) => {
+        const hidden = !isColVisible(col.id);
+        table.querySelectorAll(`[data-${colDataKey}-col="${col.id}"]`).forEach((el) => {
+          el.classList.toggle('terr-sched-col--hidden', hidden);
+          if (hidden) el.setAttribute('aria-hidden', 'true');
+          else el.removeAttribute('aria-hidden');
+        });
       });
-    });
-    tagLocColgroup(table);
-    initEqLocColResize();
-    const emptyTd = table.querySelector('.eq-loc-empty-td');
-    if (emptyTd) emptyTd.colSpan = visibleLocColCount();
-  }
-
-  function renderLocColsMenu() {
-    const menu = document.getElementById('eq-loc-cols-menu');
-    if (!menu) return;
-    const checks = LOC_COLUMNS.filter((c) => !c.locked).map((col) => `
-      <label class="terr-xlf-check">
-        <input type="checkbox" data-loc-col-toggle="${col.id}" ${isLocColVisible(col.id) ? 'checked' : ''}>
-        <span>${escapeHtml(col.label)}</span>
-      </label>`).join('');
-    menu.innerHTML = `
-      <div class="terr-sched-cols-menu__head">
-        <p class="terr-xlf-menu-title">Colunas visíveis</p>
-        <button type="button" class="terr-sched-cols-menu__close" data-loc-cols-close aria-label="Fechar">
-          <span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      </div>
-      <div class="terr-xlf-checks">${checks}</div>
-      <div class="terr-xlf-menu-actions">
-        <button type="button" class="terr-xlf-clear" data-loc-cols-reset>Restaurar todas</button>
-      </div>`;
-  }
-
-  function closeLocColsMenu() {
-    const menu = document.getElementById('eq-loc-cols-menu');
-    const btn = document.getElementById('eq-btn-loc-cols');
-    menu?.classList.add('hidden');
-    btn?.setAttribute('aria-expanded', 'false');
-  }
-
-  function setupLocColsMenu() {
-    if (window.__JELocColsMenuBound) return;
-    window.__JELocColsMenuBound = true;
-    renderLocColsMenu();
-    const wrap = document.getElementById('eq-loc-cols-wrap');
-    const btn = document.getElementById('eq-btn-loc-cols');
-    const menu = document.getElementById('eq-loc-cols-menu');
-    if (!wrap || !btn || !menu) return;
-
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = menu.classList.contains('hidden');
-      document.querySelectorAll('.terr-sched-cols-menu').forEach((m) => m.classList.add('hidden'));
-      if (open) {
-        renderLocColsMenu();
-        menu.classList.remove('hidden');
-        btn.setAttribute('aria-expanded', 'true');
-      } else {
-        closeLocColsMenu();
+      initResize();
+      if (emptyTdClass) {
+        const emptyTd = table.querySelector(`.${emptyTdClass}`);
+        if (emptyTd) emptyTd.colSpan = visibleColCount();
       }
-    });
+    }
 
-    menu.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (e.target.closest('[data-loc-cols-close]')) {
-        closeLocColsMenu();
-        return;
-      }
-      const reset = e.target.closest('[data-loc-cols-reset]');
-      if (!reset) return;
-      locColVisibility = Object.fromEntries(LOC_COLUMNS.map((c) => [c.id, true]));
-      saveLocColVisibility();
-      renderLocColsMenu();
-      applyLocColVisibility();
-    });
+    function renderMenu() {
+      const menu = document.getElementById(menuId);
+      if (!menu) return;
+      const checks = columns.filter((c) => !c.locked).map((col) => `
+        <label class="terr-xlf-check">
+          <input type="checkbox" ${toggleAttr}="${col.id}" ${isColVisible(col.id) ? 'checked' : ''}>
+          <span>${escapeHtml(col.label)}</span>
+        </label>`).join('');
+      menu.innerHTML = `
+        <div class="terr-sched-cols-menu__head">
+          <p class="terr-xlf-menu-title">Colunas visíveis</p>
+          <button type="button" class="terr-sched-cols-menu__close" ${closeAttr} aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <div class="terr-xlf-checks">${checks}</div>
+        <div class="terr-xlf-menu-actions">
+          <button type="button" class="terr-xlf-clear" ${resetAttr}>Restaurar todas</button>
+        </div>`;
+    }
 
-    menu.addEventListener('change', (e) => {
-      const box = e.target.closest('[data-loc-col-toggle]');
-      if (!box) return;
-      const id = box.dataset.locColToggle;
-      if (!id || id === 'actions') return;
-      const nextVisible = box.checked;
-      const othersVisible = LOC_COLUMNS.filter((c) => !c.locked && c.id !== id && isLocColVisible(c.id)).length;
-      if (!nextVisible && othersVisible < 1) {
-        box.checked = true;
-        showToast(toast, 'Deixe pelo menos uma coluna visível.', true);
-        return;
-      }
-      locColVisibility[id] = nextVisible;
-      saveLocColVisibility();
-      applyLocColVisibility();
-    });
+    function closeMenu() {
+      document.getElementById(menuId)?.classList.add('hidden');
+      document.getElementById(menuBtnId)?.setAttribute('aria-expanded', 'false');
+    }
 
-    document.addEventListener('click', () => closeLocColsMenu());
-    document.addEventListener('scroll', (e) => {
-      if (!menu.classList.contains('hidden') && e.target instanceof Node && menu.contains(e.target)) return;
-      closeLocColsMenu();
-    }, true);
-    menu.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
-    window.addEventListener('resize', () => closeLocColsMenu());
+    function setupMenu() {
+      if (window[boundFlag]) return;
+      window[boundFlag] = true;
+      renderMenu();
+      const btn = document.getElementById(menuBtnId);
+      const menu = document.getElementById(menuId);
+      if (!btn || !menu) return;
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = menu.classList.contains('hidden');
+        document.querySelectorAll('.terr-sched-cols-menu').forEach((m) => m.classList.add('hidden'));
+        if (open) {
+          renderMenu();
+          menu.classList.remove('hidden');
+          btn.setAttribute('aria-expanded', 'true');
+        } else {
+          closeMenu();
+        }
+      });
+
+      menu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (e.target.closest(`[${closeAttr}]`)) {
+          closeMenu();
+          return;
+        }
+        if (!e.target.closest(`[${resetAttr}]`)) return;
+        visibility = Object.fromEntries(columns.map((c) => [c.id, true]));
+        saveVisibility();
+        renderMenu();
+        apply();
+      });
+
+      menu.addEventListener('change', (e) => {
+        const box = e.target.closest(`[${toggleAttr}]`);
+        if (!box) return;
+        const id = box.getAttribute(toggleAttr);
+        if (!id || lockedIds.has(id)) return;
+        const nextVisible = box.checked;
+        const othersVisible = columns.filter((c) => !c.locked && c.id !== id && isColVisible(c.id)).length;
+        if (!nextVisible && othersVisible < 1) {
+          box.checked = true;
+          showToast(toast, 'Deixe pelo menos uma coluna visível.', true);
+          return;
+        }
+        visibility[id] = nextVisible;
+        saveVisibility();
+        apply();
+      });
+
+      document.addEventListener('click', () => closeMenu());
+      document.addEventListener('scroll', (e) => {
+        if (!menu.classList.contains('hidden') && e.target instanceof Node && menu.contains(e.target)) return;
+        closeMenu();
+      }, true);
+      menu.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+      window.addEventListener('resize', () => closeMenu());
+    }
+
+    function initResize() {
+      const R = window.JETerrColumnResize;
+      if (!R) return;
+      R.mountTable({
+        key: resizeKey,
+        table: document.querySelector(tableSelector),
+        defaults,
+        isColVisible: colVisible
+      });
+    }
+
+    return { isColVisible, visibleColCount, apply, setupMenu, initResize };
   }
 
-  function initEqLocColResize() {
-    const R = window.JETerrColumnResize;
-    if (!R) return;
-    R.mountTable({
-      key: 'eq-loc-v1',
-      table: document.querySelector('#eq-loc-scroll .eq-loc-table'),
-      defaults: LOC_COL_DEFAULTS,
-      isColVisible: locColVisible
-    });
-  }
+  const eqLocCols = createEqTableCols({
+    columns: [
+      { id: 'name', label: 'Nome' },
+      { id: 'address', label: 'Endereço' },
+      { id: 'sort', label: 'Ordem' },
+      { id: 'status', label: 'Status' },
+      { id: 'actions', label: 'Ações', locked: true }
+    ],
+    defaults: ['160px', '240px', '64px', '88px', '69px'],
+    storageKey: 'je-eq-loc-cols',
+    tableSelector: '#eq-loc-scroll .eq-loc-table',
+    colDataKey: 'loc',
+    resizeKey: 'eq-loc-v1',
+    menuBtnId: 'eq-btn-loc-cols',
+    menuId: 'eq-loc-cols-menu',
+    emptyTdClass: 'eq-loc-empty-td',
+    boundFlag: '__JELocColsMenuBound'
+  });
+
+  const eqPubCols = createEqTableCols({
+    columns: [
+      { id: 'name', label: 'Irmão(ã)' },
+      { id: 'services', label: 'Serviços' },
+      { id: 'days', label: 'Dias' },
+      { id: 'grupo', label: 'Grupo' },
+      { id: 'casa', label: 'Casa' },
+      { id: 'status', label: 'Status' },
+      { id: 'actions', label: 'Ações', locked: true }
+    ],
+    defaults: ['180px', '108px', '132px', '100px', '100px', '80px', '69px'],
+    storageKey: 'je-eq-pub-cols',
+    tableSelector: '#eq-pub-scroll .eq-pub-table',
+    colDataKey: 'pub',
+    resizeKey: 'eq-pub-v1',
+    menuBtnId: 'eq-btn-pub-cols',
+    menuId: 'eq-pub-cols-menu',
+    emptyTdClass: 'eq-pub-empty-td',
+    boundFlag: '__JEPubColsMenuBound'
+  });
+
+  const eqItemCols = createEqTableCols({
+    columns: [
+      { id: 'name', label: 'Nome' },
+      { id: 'type', label: 'Tipo' },
+      { id: 'location', label: 'Local padrão' },
+      { id: 'sort', label: 'Ordem' },
+      { id: 'status', label: 'Status' },
+      { id: 'actions', label: 'Ações', locked: true }
+    ],
+    defaults: ['160px', '88px', '160px', '64px', '88px', '69px'],
+    storageKey: 'je-eq-item-cols',
+    tableSelector: '#eq-item-scroll .eq-item-table',
+    colDataKey: 'item',
+    resizeKey: 'eq-item-v1',
+    menuBtnId: 'eq-btn-item-cols',
+    menuId: 'eq-item-cols-menu',
+    emptyTdClass: 'eq-item-empty-td',
+    boundFlag: '__JEItemColsMenuBound'
+  });
+
+  const eqSchedCols = createEqTableCols({
+    columns: [
+      { id: 'dayperiod', label: 'Dia / período' },
+      { id: 'kind', label: 'Tipo' },
+      { id: 'equipType', label: 'Equip.' },
+      { id: 'publishers', label: 'Publicadores' },
+      { id: 'equipName', label: 'Nome' },
+      { id: 'location', label: 'Local' },
+      { id: 'actions', label: 'Ações', locked: true }
+    ],
+    defaults: ['140px', '72px', '72px', '148px', '120px', '120px', '69px'],
+    storageKey: 'je-eq-sched-cols',
+    tableSelector: '#eq-sched-scroll .eq-sched-table',
+    colDataKey: 'eqsched',
+    resizeKey: 'eq-sched-v1',
+    menuBtnId: 'eq-btn-sched-cols',
+    menuId: 'eq-sched-cols-menu',
+    emptyTdClass: 'eq-sched-empty-td',
+    boundFlag: '__JESchedEqColsMenuBound'
+  });
 
   let catalogCache = { equipmentByType: null, locations: null };
   let inlinePubSearchTimer = null;
@@ -624,16 +697,16 @@
     const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(itemFilter.name));
     const locationOpts = xlf.xlfOptionsFromKeys(Object.keys(itemFilter.location));
     return `
-      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'name', label: 'Nome', filterKey: 'name', options: nameOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'type', label: 'Tipo', filterKey: 'type', options: ITEM_TYPE_OPTIONS, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'location', label: 'Local padrão', filterKey: 'location', options: locationOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'sort', label: 'Ordem', wrap: 'span' })}
-      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
-      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'name', label: 'Nome', filterKey: 'name', options: nameOpts, wrap: 'th', colDataKey: 'item' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'type', label: 'Tipo', filterKey: 'type', options: ITEM_TYPE_OPTIONS, wrap: 'th', colDataKey: 'item' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'location', label: 'Local padrão', filterKey: 'location', options: locationOpts, wrap: 'th', colDataKey: 'item' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'sort', label: 'Ordem', wrap: 'th', colDataKey: 'item' })}
+      ${xlf.xlfColumnHeader('item-sort', itemSort, itemFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'th', colDataKey: 'item' })}
+      <th scope="col" class="terr-sched-actions-th" data-item-col="actions" aria-hidden="true"></th>`;
   }
 
   function bindItemFilters() {
-    const scroll = document.querySelector('#eq-item-list .eq-item-scroll');
+    const scroll = document.getElementById('eq-item-scroll');
     if (!scroll || !xlf) return;
     scroll.dataset.xlfScope = 'item';
     delete scroll.dataset.xlfBound;
@@ -653,13 +726,14 @@
     }
     const filtersChanged = syncItemFilterOptions();
     if (filtersChanged) {
-      const head = list.querySelector('.eq-item-row--head');
+      const head = document.querySelector('#eq-item-scroll .eq-item-table thead tr');
       if (head) head.innerHTML = itemHeaderRow();
-      const scroll = list.querySelector('.eq-item-scroll');
+      const scroll = document.getElementById('eq-item-scroll');
       if (scroll) {
         delete scroll.dataset.xlfBound;
         bindItemFilters();
       }
+      eqItemCols.initResize();
     }
     renderEquipmentTable({ updateUi: filtersChanged });
   }
@@ -688,8 +762,8 @@
 
     if (stats) updateItemStats();
     if (updateUi && xlf) {
-      xlf.xlfUpdateSortUI(list?.querySelector('.eq-item-scroll'), 'item-sort', itemSort);
-      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-item-scroll'), itemFilter);
+      xlf.xlfUpdateSortUI(document.getElementById('eq-item-scroll'), 'item-sort', itemSort);
+      xlf.xlfUpdateFilterUI(document.getElementById('eq-item-scroll'), itemFilter);
     }
     const filtered = getFilteredItems();
     const editingId = inlineItemDraft?.mode === 'edit' ? inlineItemDraft.id : '';
@@ -701,7 +775,7 @@
     if (displayRows.length) {
       bodyHtml += displayRows.map((row) => {
       const isActive = row.is_active !== false;
-      const inactiveClass = isActive ? '' : ' eq-item-row--inactive';
+      const inactiveClass = isActive ? '' : ' eq-item-tr--inactive';
       const statusHtml = isActive
         ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
         : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
@@ -710,28 +784,34 @@
       const toggleClass = isActive ? 'eq-pub-icon-btn eq-pub-icon-btn--off' : 'eq-pub-icon-btn';
 
       return `
-        <div class="eq-item-row${inactiveClass}" data-item-id="${row.id}" title="${escapeHtml(row.name)}">
-          <span class="eq-item-name">${escapeHtml(row.name)}</span>
-          <span>${itemTypePill(row)}</span>
-          <span class="eq-item-location">${escapeHtml(row.default_location || '—')}</span>
-          <span class="eq-item-sort">${escapeHtml(String(row.sort_order ?? 0))}</span>
-          <span class="eq-pub-status-cell">${statusHtml}</span>
-          <span class="eq-pub-actions">
-            <button type="button" class="eq-pub-icon-btn" data-eq-edit-item="${row.id}" title="Editar">
-              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-            </button>
-            <button type="button" class="${toggleClass}" data-eq-toggle-item="${row.id}" title="${toggleTitle}">
-              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
-            </button>
-          </span>
-        </div>`;
+        <tr class="eq-item-tr${inactiveClass}" data-item-id="${row.id}" title="${escapeHtml(row.name)}">
+          <td data-item-col="name" class="eq-item-cell eq-item-name">${escapeHtml(row.name)}</td>
+          <td data-item-col="type">${itemTypePill(row)}</td>
+          <td data-item-col="location" class="eq-item-location${row.default_location ? '' : ' terr-sched-cell--muted'}">${escapeHtml(row.default_location || '—')}</td>
+          <td data-item-col="sort" class="eq-item-sort">${escapeHtml(String(row.sort_order ?? 0))}</td>
+          <td data-item-col="status" class="eq-pub-status-cell">${statusHtml}</td>
+          <td data-item-col="actions" class="terr-sched-actions-td">
+            <span class="eq-pub-actions">
+              <button type="button" class="eq-pub-icon-btn" data-eq-edit-item="${row.id}" title="Editar">
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" class="${toggleClass}" data-eq-toggle-item="${row.id}" title="${toggleTitle}">
+                <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+              </button>
+            </span>
+          </td>
+        </tr>`;
       }).join('');
     } else if (!inlineItemDraft) {
       bodyHtml = `
-        <div class="eq-pub-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${equipmentItems.length ? 'Nenhum equipamento corresponde ao filtro.' : 'Nenhum equipamento cadastrado.'}</p>
-        </div>`;
+        <tr>
+          <td colspan="${eqItemCols.visibleColCount()}" class="eq-item-empty-td">
+            <div class="eq-pub-empty !border-0 !rounded-none">
+              <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+              <p class="text-sm">${equipmentItems.length ? 'Nenhum equipamento corresponde ao filtro.' : 'Nenhum equipamento cadastrado.'}</p>
+            </div>
+          </td>
+        </tr>`;
     }
 
     body.innerHTML = bodyHtml;
@@ -753,6 +833,7 @@
     if (inlineItemDraft) {
       document.getElementById('eq-inline-item-name')?.focus();
     }
+    eqItemCols.apply();
   }
 
   function renderEquipment() {
@@ -772,21 +853,25 @@
 
     if (!document.getElementById('eq-item-table-body')) {
       list.innerHTML = `
-        <div class="eq-item-scroll">
+        <div class="eq-item-scroll" id="eq-item-scroll">
           <div class="eq-item-panel">
-            <div class="eq-item-row eq-item-row--head">${xlf ? itemHeaderRow() : `
-              <span>Nome</span>
-              <span>Tipo</span>
-              <span>Local padrão</span>
-              <span>Ordem</span>
-              <span>Status</span>
-              <span></span>`}
-            </div>
-            <div id="eq-item-table-body"></div>
+            <table class="eq-item-table eq-data-table terr-sched-table">
+              <thead><tr>${xlf ? itemHeaderRow() : `
+                <th scope="col" data-item-col="name">Nome</th>
+                <th scope="col" data-item-col="type">Tipo</th>
+                <th scope="col" data-item-col="location">Local padrão</th>
+                <th scope="col" data-item-col="sort">Ordem</th>
+                <th scope="col" data-item-col="status">Status</th>
+                <th scope="col" class="terr-sched-actions-th" data-item-col="actions" aria-hidden="true"></th>`}
+              </tr></thead>
+              <tbody id="eq-item-table-body"></tbody>
+            </table>
             <p id="eq-item-table-foot" class="eq-pub-foot"></p>
           </div>
         </div>`;
       bindItemFilters();
+      eqItemCols.setupMenu();
+      eqItemCols.apply();
     }
 
     renderEquipmentTable({ updateUi: true });
@@ -981,24 +1066,26 @@
   function renderInlineItemEditor(draft) {
     const locOpts = inlineLocationSelectOptions(draft.default_location);
     return `
-      <div class="eq-item-row eq-item-row--edit" id="eq-inline-item-form">
-        <span><input id="eq-inline-item-name" type="text" class="eq-sched-inline-input" value="${escapeHtml(draft.name)}" placeholder="Nome…" autocomplete="off"/></span>
-        <span>
+      <tr class="eq-item-tr eq-item-tr--edit" id="eq-inline-item-form">
+        <td data-item-col="name"><input id="eq-inline-item-name" type="text" class="eq-sched-inline-input" value="${escapeHtml(draft.name)}" placeholder="Nome…" autocomplete="off"/></td>
+        <td data-item-col="type">
           <select id="eq-inline-item-type" class="eq-sched-inline-input" title="Tipo">
             <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
             <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
           </select>
-        </span>
-        <span><select id="eq-inline-item-location" class="eq-sched-inline-input" title="Local padrão">${locOpts}</select></span>
-        <span><input id="eq-inline-item-sort" type="number" class="eq-sched-inline-input eq-sched-inline-input--sort" value="${escapeHtml(String(draft.sort_order ?? 0))}" title="Ordem"/></span>
-        <span class="eq-inline-status-hint">${draft.mode === 'new' ? 'Novo' : '—'}</span>
-        <span class="eq-row-actions eq-row-actions--icons">
-          ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-item-delete title="Excluir"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
-          <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-item-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
-          <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-item-save title="Salvar"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
-        </span>
+        </td>
+        <td data-item-col="location"><select id="eq-inline-item-location" class="eq-sched-inline-input" title="Local padrão">${locOpts}</select></td>
+        <td data-item-col="sort"><input id="eq-inline-item-sort" type="number" class="eq-sched-inline-input eq-sched-inline-input--sort" value="${escapeHtml(String(draft.sort_order ?? 0))}" title="Ordem"/></td>
+        <td data-item-col="status" class="eq-inline-status-hint">${draft.mode === 'new' ? 'Novo' : '—'}</td>
+        <td data-item-col="actions" class="terr-sched-actions-td">
+          <span class="eq-row-actions eq-row-actions--icons">
+            ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-item-delete title="Excluir"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
+            <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-item-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+            <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-item-save title="Salvar"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+          </span>
+        </td>
         <input type="hidden" id="eq-inline-item-notes" value="${escapeHtml(draft.notes || '')}"/>
-      </div>`;
+      </tr>`;
   }
 
   function readInlineItemPayload() {
@@ -1189,7 +1276,7 @@
         delete scroll.dataset.xlfBound;
         bindLocFilters();
       }
-      initEqLocColResize();
+      eqLocCols.initResize();
     }
     renderLocationsTable({ updateUi: filtersChanged });
   }
@@ -1262,7 +1349,7 @@
     } else if (!inlineLocDraft) {
       bodyHtml = `
         <tr>
-          <td colspan="${visibleLocColCount()}" class="eq-loc-empty-td">
+          <td colspan="${eqLocCols.visibleColCount()}" class="eq-loc-empty-td">
             <div class="eq-pub-empty !border-0 !rounded-none">
               <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
               <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
@@ -1290,7 +1377,7 @@
     if (inlineLocDraft) {
       document.getElementById('eq-inline-loc-name')?.focus();
     }
-    applyLocColVisibility();
+    eqLocCols.apply();
   }
 
   function renderLocations() {
@@ -1312,7 +1399,7 @@
       list.innerHTML = `
         <div class="eq-loc-scroll" id="eq-loc-scroll">
           <div class="eq-loc-panel">
-            <table class="eq-loc-table terr-sched-table">
+            <table class="eq-loc-table eq-data-table terr-sched-table">
               <thead><tr>${xlf ? locHeaderRow() : `
                 <th scope="col" data-loc-col="name">Nome</th>
                 <th scope="col" data-loc-col="address">Endereço</th>
@@ -1326,8 +1413,8 @@
           </div>
         </div>`;
       bindLocFilters();
-      setupLocColsMenu();
-      applyLocColVisibility();
+      eqLocCols.setupMenu();
+      eqLocCols.apply();
     }
 
     renderLocationsTable({ updateUi: true });
@@ -1839,17 +1926,17 @@
     const casaOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.casa));
     const dayOpts = xlf.xlfOptionsFromKeys(Object.keys(pubFilter.days));
     return `
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'name', label: 'Irmão(ã)', filterKey: 'name', options: nameOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'services', label: 'Serviços', filterKey: 'services', options: PUB_SVC_OPTIONS, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'days', label: 'Dias', filterKey: 'days', options: dayOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'grupo', label: 'Grupo', filterKey: 'grupo', options: grupoOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'casa', label: 'Casa', filterKey: 'casa', options: casaOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
-      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'name', label: 'Irmão(ã)', filterKey: 'name', options: nameOpts, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'services', label: 'Serviços', filterKey: 'services', options: PUB_SVC_OPTIONS, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'days', label: 'Dias', filterKey: 'days', options: dayOpts, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'grupo', label: 'Grupo', filterKey: 'grupo', options: grupoOpts, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'casa', label: 'Casa', filterKey: 'casa', options: casaOpts, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'th', colDataKey: 'pub' })}
+      <th scope="col" class="terr-sched-actions-th" data-pub-col="actions" aria-hidden="true"></th>`;
   }
 
   function bindPubFilters() {
-    const scroll = document.querySelector('#eq-pub-list .eq-pub-scroll');
+    const scroll = document.getElementById('eq-pub-scroll');
     if (!scroll || !xlf) return;
     scroll.dataset.xlfScope = 'pub';
     delete scroll.dataset.xlfBound;
@@ -1869,13 +1956,14 @@
     }
     const filtersChanged = syncPubFilterOptions();
     if (filtersChanged) {
-      const head = list.querySelector('.eq-pub-row--head');
+      const head = document.querySelector('#eq-pub-scroll .eq-pub-table thead tr');
       if (head) head.innerHTML = pubHeaderRow();
-      const scroll = list.querySelector('.eq-pub-scroll');
+      const scroll = document.getElementById('eq-pub-scroll');
       if (scroll) {
         delete scroll.dataset.xlfBound;
         bindPubFilters();
       }
+      eqPubCols.initResize();
     }
     renderPublishersTable({ updateUi: filtersChanged });
   }
@@ -1904,18 +1992,23 @@
 
     if (stats) updatePublisherStats();
     if (updateUi && xlf) {
-      xlf.xlfUpdateSortUI(list?.querySelector('.eq-pub-scroll'), 'pub-sort', pubSort);
-      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-pub-scroll'), pubFilter);
+      xlf.xlfUpdateSortUI(document.getElementById('eq-pub-scroll'), 'pub-sort', pubSort);
+      xlf.xlfUpdateFilterUI(document.getElementById('eq-pub-scroll'), pubFilter);
     }
     const filtered = getFilteredPublishers();
 
     if (!filtered.length) {
       body.innerHTML = `
-        <div class="eq-pub-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${publishers.length ? 'Nenhum publicador corresponde ao filtro.' : 'Nenhum publicador cadastrado.'}</p>
-        </div>`;
+        <tr>
+          <td colspan="${eqPubCols.visibleColCount()}" class="eq-pub-empty-td">
+            <div class="eq-pub-empty !border-0 !rounded-none">
+              <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+              <p class="text-sm">${publishers.length ? 'Nenhum publicador corresponde ao filtro.' : 'Nenhum publicador cadastrado.'}</p>
+            </div>
+          </td>
+        </tr>`;
       if (foot) foot.textContent = '';
+      eqPubCols.apply();
       return;
     }
 
@@ -1924,7 +2017,7 @@
       const grupo = row._grupo || '';
       const casa = row._casa || '';
       const isActive = row.is_active !== false;
-      const inactiveClass = isActive ? '' : ' eq-pub-row--inactive';
+      const inactiveClass = isActive ? '' : ' eq-pub-tr--inactive';
       const statusHtml = isActive
         ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
         : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
@@ -1933,25 +2026,29 @@
       const toggleClass = isActive ? 'eq-pub-icon-btn eq-pub-icon-btn--off' : 'eq-pub-icon-btn';
 
       return `
-        <div class="eq-pub-row${inactiveClass}" data-pub-id="${row.id}" title="${escapeHtml(name)}">
-          <span class="eq-pub-name">
-            ${publisherAvatarHtml(row)}
-            <span>${escapeHtml(name)}</span>
-          </span>
-          <span class="eq-pub-services">${renderPublisherServicePills(row)}</span>
-          <span class="eq-pub-days" title="${escapeHtml((row.available_days || []).join(', '))}">${renderPublisherDayPills(row)}</span>
-          <span class="eq-pub-meta">${grupo ? `<strong>Grupo:</strong> ${escapeHtml(grupo)}` : '—'}</span>
-          <span class="eq-pub-meta">${casa ? `<strong>Casa:</strong> ${escapeHtml(casa)}` : '—'}</span>
-          <span class="eq-pub-status-cell">${statusHtml}</span>
-          <div class="eq-pub-actions">
-            <button type="button" class="eq-pub-icon-btn" data-eq-edit-pub="${row.id}" title="Editar">
-              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-            </button>
-            <button type="button" class="${toggleClass}" data-eq-toggle-pub="${row.id}" title="${toggleTitle}">
-              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
-            </button>
-          </div>
-        </div>`;
+        <tr class="eq-pub-tr${inactiveClass}" data-pub-id="${row.id}" title="${escapeHtml(name)}">
+          <td data-pub-col="name" class="eq-pub-cell">
+            <span class="eq-pub-name">
+              ${publisherAvatarHtml(row)}
+              <span>${escapeHtml(name)}</span>
+            </span>
+          </td>
+          <td data-pub-col="services" class="eq-pub-services">${renderPublisherServicePills(row)}</td>
+          <td data-pub-col="days" class="eq-pub-days" title="${escapeHtml((row.available_days || []).join(', '))}">${renderPublisherDayPills(row)}</td>
+          <td data-pub-col="grupo" class="eq-pub-meta${grupo ? '' : ' terr-sched-cell--muted'}">${grupo ? escapeHtml(grupo) : '—'}</td>
+          <td data-pub-col="casa" class="eq-pub-meta${casa ? '' : ' terr-sched-cell--muted'}">${casa ? escapeHtml(casa) : '—'}</td>
+          <td data-pub-col="status" class="eq-pub-status-cell">${statusHtml}</td>
+          <td data-pub-col="actions" class="terr-sched-actions-td">
+            <div class="eq-pub-actions">
+              <button type="button" class="eq-pub-icon-btn" data-eq-edit-pub="${row.id}" title="Editar">
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" class="${toggleClass}" data-eq-toggle-pub="${row.id}" title="${toggleTitle}">
+                <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+              </button>
+            </div>
+          </td>
+        </tr>`;
     }).join('');
 
     if (foot) {
@@ -1964,6 +2061,7 @@
       const suffix = filtered.length < publishers.length ? ` (${publishers.length} no total)` : '';
       foot.textContent = `Exibindo ${filtered.length} publicador${filtered.length === 1 ? '' : 'es'}${suffix}${filterNote}`;
     }
+    eqPubCols.apply();
   }
 
   function renderPublishers() {
@@ -1983,22 +2081,26 @@
 
     if (!document.getElementById('eq-pub-table-body')) {
       list.innerHTML = `
-        <div class="eq-pub-scroll">
+        <div class="eq-pub-scroll" id="eq-pub-scroll">
           <div class="eq-pub-panel">
-            <div class="eq-pub-row eq-pub-row--head">${xlf ? pubHeaderRow() : `
-              <span>Irmão(ã)</span>
-              <span>Serviços</span>
-              <span>Dias</span>
-              <span>Grupo</span>
-              <span>Casa</span>
-              <span>Status</span>
-              <span></span>`}
-            </div>
-            <div id="eq-pub-table-body"></div>
+            <table class="eq-pub-table eq-data-table terr-sched-table">
+              <thead><tr>${xlf ? pubHeaderRow() : `
+                <th scope="col" data-pub-col="name">Irmão(ã)</th>
+                <th scope="col" data-pub-col="services">Serviços</th>
+                <th scope="col" data-pub-col="days">Dias</th>
+                <th scope="col" data-pub-col="grupo">Grupo</th>
+                <th scope="col" data-pub-col="casa">Casa</th>
+                <th scope="col" data-pub-col="status">Status</th>
+                <th scope="col" class="terr-sched-actions-th" data-pub-col="actions" aria-hidden="true"></th>`}
+              </tr></thead>
+              <tbody id="eq-pub-table-body"></tbody>
+            </table>
             <p id="eq-pub-table-foot" class="eq-pub-foot"></p>
           </div>
         </div>`;
       bindPubFilters();
+      eqPubCols.setupMenu();
+      eqPubCols.apply();
     }
 
     renderPublishersTable({ updateUi: true });
@@ -2084,24 +2186,24 @@
     const equipOpts = inlineEquipmentSelectOptions(draft.equipment_type, draft.equipment_name);
     const locOpts = inlineLocationSelectOptions(draft.location_name);
     return `
-      <div class="eq-sched-row eq-sched-row--edit" id="eq-inline-slot-form">
-        <span class="eq-sched-inline-cell eq-sched-inline-cell--day">
+      <tr class="eq-sched-tr eq-sched-tr--edit" id="eq-inline-slot-form">
+        <td data-eqsched-col="dayperiod" class="eq-sched-inline-cell eq-sched-inline-cell--day">
           <select id="eq-inline-day" class="eq-sched-inline-input" title="Dia">${dayOpts}</select>
           <select id="eq-inline-period" class="eq-sched-inline-input eq-sched-inline-input--period" title="Período">${periodOpts}</select>
-        </span>
-        <span>
+        </td>
+        <td data-eqsched-col="kind">
           <select id="eq-inline-kind" class="eq-sched-inline-input" title="Tipo de linha">
             <option value="fixed" ${draft.slot_kind === 'fixed' ? 'selected' : ''}>Fixo</option>
             <option value="temporary" ${draft.slot_kind === 'temporary' ? 'selected' : ''}>Temp.</option>
           </select>
-        </span>
-        <span>
+        </td>
+        <td data-eqsched-col="equipType">
           <select id="eq-inline-type" class="eq-sched-inline-input" title="Equipamento">
             <option value="carrinho" ${draft.equipment_type === 'carrinho' ? 'selected' : ''}>Carrinho</option>
             <option value="display" ${draft.equipment_type === 'display' ? 'selected' : ''}>Display</option>
           </select>
-        </span>
-        <span class="eq-sched-inline-cell eq-sched-inline-cell--pubs">
+        </td>
+        <td data-eqsched-col="publishers" class="eq-sched-inline-cell eq-sched-inline-cell--pubs">
           <input type="hidden" id="eq-inline-publishers" value="${escapeHtml(draft.publisher_names)}"/>
           <button type="button" class="eq-sched-pub-btn${pubNames.length ? '' : ' eq-sched-pub-btn--empty'}" data-eq-inline-pub-toggle title="Selecionar publicadores">
             <span class="material-symbols-outlined" aria-hidden="true">group</span>
@@ -2116,20 +2218,22 @@
               <div id="eq-inline-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
             </div>
           </div>
-        </span>
-        <span>
+        </td>
+        <td data-eqsched-col="equipName">
           <select id="eq-inline-equipment" class="eq-sched-inline-input" title="Equipamento (aba Equipamentos)">${equipOpts}</select>
-        </span>
-        <span>
+        </td>
+        <td data-eqsched-col="location">
           <select id="eq-inline-location" class="eq-sched-inline-input" title="Local (aba Locais)">${locOpts}</select>
-        </span>
-        <span class="eq-row-actions eq-row-actions--icons">
-          ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-delete title="Excluir linha"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
-          <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
-          <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-save title="Salvar linha"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
-        </span>
+        </td>
+        <td data-eqsched-col="actions" class="terr-sched-actions-td">
+          <span class="eq-row-actions eq-row-actions--icons">
+            ${draft.mode === 'edit' ? '<button type="button" class="eq-row-btn eq-row-btn--danger" data-eq-inline-delete title="Excluir linha"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>' : ''}
+            <button type="button" class="eq-row-btn eq-row-btn--ghost" data-eq-inline-cancel title="Cancelar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+            <button type="button" class="eq-row-btn eq-row-btn--save" data-eq-inline-save title="Salvar linha"><span class="material-symbols-outlined" aria-hidden="true">check</span></button>
+          </span>
+        </td>
         <input type="hidden" id="eq-inline-sort" value="${escapeHtml(String(draft.sort_order ?? 0))}"/>
-      </div>`;
+      </tr>`;
   }
 
   function readInlineSlotPayload() {
@@ -2208,19 +2312,32 @@
     }
   }
 
+  function schedHeaderRow() {
+    return `
+      <th scope="col" data-eqsched-col="dayperiod">Dia / período</th>
+      <th scope="col" data-eqsched-col="kind">Tipo</th>
+      <th scope="col" data-eqsched-col="equipType">Equip.</th>
+      <th scope="col" data-eqsched-col="publishers">Publicadores</th>
+      <th scope="col" data-eqsched-col="equipName">Nome</th>
+      <th scope="col" data-eqsched-col="location">Local</th>
+      <th scope="col" class="terr-sched-actions-th" data-eqsched-col="actions" aria-hidden="true"></th>`;
+  }
+
   function renderScheduleRow(row) {
     return `
-      <div class="eq-sched-row">
-        <span><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(row.period_label)}</span>
-        <span><span class="eq-slot-kind eq-slot-kind--${row.slot_kind === 'fixed' ? 'fixed' : 'temp'}">${row.slot_kind === 'fixed' ? 'Fixo' : 'Temp.'}</span></span>
-        <span><span class="eq-type-pill${row.equipment_type === 'display' ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span></span>
-        <span>${escapeHtml(row.publisher_names || '—')}</span>
-        <span>${escapeHtml(row.equipment_name || '—')}</span>
-        <span>${escapeHtml(row.location_name || '—')}</span>
-        <span class="eq-row-actions">
-          <button type="button" class="eq-row-btn" data-eq-edit-slot="${row.id}">Editar</button>
-        </span>
-      </div>`;
+      <tr class="eq-sched-tr">
+        <td data-eqsched-col="dayperiod"><strong>${escapeHtml(row.weekday_label)}</strong> · ${escapeHtml(row.period_label)}</td>
+        <td data-eqsched-col="kind"><span class="eq-slot-kind eq-slot-kind--${row.slot_kind === 'fixed' ? 'fixed' : 'temp'}">${row.slot_kind === 'fixed' ? 'Fixo' : 'Temp.'}</span></td>
+        <td data-eqsched-col="equipType"><span class="eq-type-pill${row.equipment_type === 'display' ? ' eq-type-pill--display' : ''}">${escapeHtml(helpers.EQUIPMENT_TYPES[row.equipment_type] || row.equipment_type)}</span></td>
+        <td data-eqsched-col="publishers"${row.publisher_names ? '' : ' class="terr-sched-cell--muted"'}>${escapeHtml(row.publisher_names || '—')}</td>
+        <td data-eqsched-col="equipName"${row.equipment_name ? '' : ' class="terr-sched-cell--muted"'}>${escapeHtml(row.equipment_name || '—')}</td>
+        <td data-eqsched-col="location"${row.location_name ? '' : ' class="terr-sched-cell--muted"'}>${escapeHtml(row.location_name || '—')}</td>
+        <td data-eqsched-col="actions" class="terr-sched-actions-td">
+          <span class="eq-row-actions">
+            <button type="button" class="eq-row-btn" data-eq-edit-slot="${row.id}">Editar</button>
+          </span>
+        </td>
+      </tr>`;
   }
 
   function syncEqWeekInput() {
@@ -2238,18 +2355,37 @@
     const editingId = inlineSlotDraft?.mode === 'edit' ? inlineSlotDraft.id : '';
     const displayRows = editingId ? rows.filter((row) => row.id !== editingId) : rows;
 
-    list.innerHTML = `
-      <div class="eq-sched-card">
-        <div class="eq-sched-row eq-sched-row--head">
-          <span>Dia / período</span><span>Tipo</span><span>Equip.</span><span>Publicadores</span><span>Nome</span><span>Local</span><span></span>
-        </div>
-        ${inlineSlotDraft ? renderInlineSlotEditor(inlineSlotDraft) : ''}
-        ${displayRows.length ? displayRows.map(renderScheduleRow).join('') : ''}
-        ${!displayRows.length && !inlineSlotDraft ? `
-          <div class="eq-sched-empty">
-            Nenhuma linha para esta semana. Clique em <strong>Nova linha</strong> para começar.
-          </div>` : ''}
-      </div>`;
+    if (!document.getElementById('eq-sched-table-body')) {
+      list.innerHTML = `
+        <div class="eq-sched-scroll" id="eq-sched-scroll">
+          <div class="eq-sched-panel">
+            <table class="eq-sched-table eq-data-table terr-sched-table">
+              <thead><tr>${schedHeaderRow()}</tr></thead>
+              <tbody id="eq-sched-table-body"></tbody>
+            </table>
+          </div>
+        </div>`;
+      eqSchedCols.setupMenu();
+    }
+
+    const body = document.getElementById('eq-sched-table-body');
+    if (!body) return;
+
+    let bodyHtml = '';
+    if (inlineSlotDraft) bodyHtml += renderInlineSlotEditor(inlineSlotDraft);
+    if (displayRows.length) bodyHtml += displayRows.map(renderScheduleRow).join('');
+    else if (!inlineSlotDraft) {
+      bodyHtml = `
+        <tr>
+          <td colspan="${eqSchedCols.visibleColCount()}" class="eq-sched-empty-td">
+            <div class="eq-sched-empty">
+              Nenhuma linha para esta semana. Clique em <strong>Nova linha</strong> para começar.
+            </div>
+          </td>
+        </tr>`;
+    }
+    body.innerHTML = bodyHtml;
+    eqSchedCols.apply();
 
     if (inlineSlotDraft) {
       document.getElementById('eq-inline-day')?.focus();
