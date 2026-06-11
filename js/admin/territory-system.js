@@ -1161,12 +1161,35 @@
     bindDashLinks(document.getElementById('terr-priority-modal'));
   }
 
-  function designarModalPairOptions(selectedPairId) {
-    return H().listDomingoPairs()
+  function parseDesignarAssignee(value) {
+    const pairNum = H().parseDomingoPairOptionValue(value);
+    if (pairNum) {
+      return {
+        kind: 'domingo',
+        pairNum,
+        pair: H().domingoPairForTerritoryNum(pairNum)
+      };
+    }
+    if (value) return { kind: 'individual', profileId: value };
+    return { kind: null };
+  }
+
+  function designarDirigenteOptions(selectedValue) {
+    const busyProfileIds = H().profilesWithIndividualAssignment(activeAssignments, profiles);
+    const activeOverseers = overseers.filter((o) => o.is_active !== false);
+    const individualOpts = activeOverseers.length
+      ? activeOverseers.map((o) => {
+        const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
+        const disabled = busyProfileIds.has(o.profile_id) ? ' disabled' : '';
+        const selected = selectedValue === o.profile_id;
+        return `<option value="${o.profile_id}"${disabled}${selected ? ' selected' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
+      }).join('')
+      : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
+
+    const pairOpts = H().listDomingoPairs()
       .map((pair) => {
         const value = H().domingoPairOptionValue(pair.territory_num);
         const territoryId = catalogPairTerritoryId(pair);
-        const terr = territories.find((t) => t.id === territoryId);
         const existing = territoryId ? activeAssignmentForTerritoryId(territoryId) : null;
         const selectable = !existing?.id && H().domingoPairSelectable(
           pair,
@@ -1176,27 +1199,48 @@
           null,
           territoryId
         );
-        const selected = selectedPairId === value;
+        const selected = selectedValue === value;
         const suffix = existing?.id ? ' (designado)' : (!selectable && !selected ? ' (indisponível)' : '');
-        const label = terr
-          ? `${pair.dirigente_name} · ${territoryNumLabel(terr.num)} ${terr.display_name}`
-          : pair.dirigente_name;
-        return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(label)}${escapeHtml(suffix)}</option>`;
+        return `<option value="${escapeHtml(value)}"${selected ? ' selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)} · Dupla${escapeHtml(suffix)}</option>`;
       })
       .join('');
+
+    return `
+      <option value="">Selecione o dirigente</option>
+      <optgroup label="Dirigentes">${individualOpts}</optgroup>
+      <optgroup label="Duplas de domingo">${pairOpts}</optgroup>`;
   }
 
-  function syncDesignarModalUi() {
-    const kind = document.getElementById('designar-kind')?.value || 'individual';
-    const isDomingo = kind === 'domingo';
-    document.getElementById('designar-individual-fields')?.classList.toggle('hidden', isDomingo);
-    document.getElementById('designar-domingo-fields')?.classList.toggle('hidden', !isDomingo);
+  function territoriesForDesignarSelect(assignee) {
+    if (assignee?.kind === 'domingo' && assignee.pair) {
+      const terr = territories.find(
+        (t) => normalizeTerritoryNum(t.num) === normalizeTerritoryNum(assignee.pair.territory_num)
+      );
+      return terr ? [terr] : [];
+    }
+    return availableTerritoriesByNum();
+  }
+
+  function fillDesignarTerritorySelect(assignee, selectedTerritoryId) {
+    const terrSel = document.getElementById('designar-territory');
+    if (!terrSel) return;
+    const list = territoriesForDesignarSelect(assignee);
+    terrSel.innerHTML = `<option value="">Selecione o território</option>${list.map((t) =>
+      `<option value="${t.id}"${selectedTerritoryId === t.id ? ' selected' : ''}>${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
+    ).join('')}`;
+    if (assignee?.kind === 'domingo' && list.length === 1) {
+      terrSel.value = list[0].id;
+    } else if (selectedTerritoryId && list.some((t) => t.id === selectedTerritoryId)) {
+      terrSel.value = selectedTerritoryId;
+    }
+  }
+
+  function onDesignarAssigneeChange() {
     const profSel = document.getElementById('designar-profile');
     const terrSel = document.getElementById('designar-territory');
-    const pairSel = document.getElementById('designar-pair');
-    if (profSel) profSel.required = !isDomingo;
-    if (terrSel) terrSel.required = !isDomingo;
-    if (pairSel) pairSel.required = isDomingo;
+    const assignee = parseDesignarAssignee(profSel?.value);
+    const keepTerritoryId = terrSel?.value || '';
+    fillDesignarTerritorySelect(assignee, keepTerritoryId);
     updateDesignarPreview();
   }
 
@@ -1204,59 +1248,13 @@
     const previewEl = document.getElementById('designar-preview');
     if (!previewEl) return;
 
-    const kind = document.getElementById('designar-kind')?.value || 'individual';
-    const profileId = document.getElementById('designar-profile')?.value;
+    const assigneeVal = document.getElementById('designar-profile')?.value;
+    const assignee = parseDesignarAssignee(assigneeVal);
     const territoryId = document.getElementById('designar-territory')?.value;
-    const pairValue = document.getElementById('designar-pair')?.value;
     const dateVal = document.getElementById('designar-date')?.value;
+    const isDomingo = assignee.kind === 'domingo';
 
-    if (kind === 'domingo') {
-      const pairNum = H().parseDomingoPairOptionValue(pairValue);
-      const pair = pairNum ? H().domingoPairForTerritoryNum(pairNum) : null;
-      const terr = pairNum
-        ? territories.find((t) => normalizeTerritoryNum(t.num) === pairNum)
-        : null;
-      if (!pairValue && !dateVal) {
-        previewEl.innerHTML = `
-          <div class="terr-assign-preview__empty">
-            <span class="material-symbols-outlined" aria-hidden="true">groups</span>
-            <p>Selecione a dupla de domingo (T07, T12 ou T18) e a data.</p>
-          </div>`;
-        return;
-      }
-      const rows = [
-        `<div class="terr-assign-preview__row">
-          <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
-          <div>
-            <p class="terr-assign-preview__label">Dupla</p>
-            <p class="terr-assign-preview__value">${pair ? escapeHtml(pair.dirigente_name) : 'Selecione…'}</p>
-          </div>
-        </div>`,
-        `<div class="terr-assign-preview__row">
-          <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
-          <div>
-            <p class="terr-assign-preview__label">Território</p>
-            <p class="terr-assign-preview__value">${terr ? escapeHtml(H().territoryLabel(terr)) : '—'}</p>
-          </div>
-        </div>`,
-        `<div class="terr-assign-preview__row">
-          <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">event</span></span>
-          <div>
-            <p class="terr-assign-preview__label">Data</p>
-            <p class="terr-assign-preview__value">${dateVal ? escapeHtml(H().formatDisplayDate(dateVal)) : 'Selecione…'}</p>
-          </div>
-        </div>`
-      ];
-      const ready = pairValue && dateVal;
-      previewEl.innerHTML = rows.join('') + (ready ? `
-        <div class="terr-assign-preview__foot">
-          <span class="material-symbols-outlined" aria-hidden="true">weekend</span>
-          Designação de dupla de domingo no Painel (não bloqueia território individual).
-        </div>` : '');
-      return;
-    }
-
-    if (!profileId && !territoryId && !dateVal) {
+    if (!assigneeVal && !territoryId && !dateVal) {
       previewEl.innerHTML = `
         <div class="terr-assign-preview__empty">
           <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
@@ -1265,17 +1263,21 @@
       return;
     }
 
-    const profile = profiles.find((p) => p.id === profileId);
+    const profile = assignee.kind === 'individual'
+      ? profiles.find((p) => p.id === assignee.profileId)
+      : null;
     const territory = territories.find((t) => t.id === territoryId);
     const priority = territory ? H().computePriority(territory) : null;
     const rows = [];
 
     rows.push(`
       <div class="terr-assign-preview__row">
-        <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">person</span></span>
+        <span class="terr-assign-preview__icon"><span class="material-symbols-outlined" aria-hidden="true">${isDomingo ? 'groups' : 'person'}</span></span>
         <div>
-          <p class="terr-assign-preview__label">Dirigente</p>
-          <p class="terr-assign-preview__value">${profile ? escapeHtml(profileName(profile)) : 'Selecione…'}</p>
+          <p class="terr-assign-preview__label">${isDomingo ? 'Dupla' : 'Dirigente'}</p>
+          <p class="terr-assign-preview__value">${isDomingo
+    ? escapeHtml(assignee.pair?.dirigente_name || 'Selecione…')
+    : (profile ? escapeHtml(profileName(profile)) : 'Selecione…')}</p>
         </div>
       </div>`);
 
@@ -1298,11 +1300,13 @@
         </div>
       </div>`);
 
-    const ready = profileId && territoryId && dateVal;
+    const ready = assigneeVal && territoryId && dateVal;
     previewEl.innerHTML = rows.join('') + (ready ? `
       <div class="terr-assign-preview__foot">
-        <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
-        O dirigente verá esta designação no Hub após confirmar.
+        <span class="material-symbols-outlined" aria-hidden="true">${isDomingo ? 'weekend' : 'notifications_active'}</span>
+        ${isDomingo
+    ? 'Designação de dupla de domingo no Painel (não bloqueia território individual).'
+    : 'O dirigente verá esta designação no Hub após confirmar.'}
       </div>` : '');
   }
 
@@ -1315,33 +1319,17 @@
       .map((p) => `<option value="${p.id}">${escapeHtml(profileName(p))}</option>`).join('')}`;
   }
 
-  function fillDesignarSelects() {
+  function fillDesignarSelects(selectedAssignee = '', selectedTerritoryId = '') {
     const profSel = document.getElementById('designar-profile');
-    const terrSel = document.getElementById('designar-territory');
     const dateEl = document.getElementById('designar-date');
-    if (!profSel || !terrSel || !dateEl) return;
+    if (!profSel || !dateEl) return;
     const busyProfileIds = H().profilesWithIndividualAssignment(activeAssignments, profiles);
     const activeOverseers = overseers.filter((o) => o.is_active !== false);
     const freeOverseers = activeOverseers.filter((o) => !busyProfileIds.has(o.profile_id));
     const avail = availableTerritoriesByNum();
 
-    const overseerOpts = activeOverseers.length
-      ? activeOverseers.map((o) => {
-          const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-          const disabled = busyProfileIds.has(o.profile_id) ? ' disabled' : '';
-          return `<option value="${o.profile_id}"${disabled}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
-        }).join('')
-      : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
-    profSel.innerHTML = `<option value="">Selecione o dirigente</option>${overseerOpts}`;
-
-    terrSel.innerHTML = `<option value="">Selecione o território</option>${avail.map((t) =>
-      `<option value="${t.id}">${escapeHtml(territoryNumLabel(t.num))} — ${escapeHtml(t.display_name)}</option>`
-    ).join('')}`;
-
-    const pairSel = document.getElementById('designar-pair');
-    if (pairSel) {
-      pairSel.innerHTML = `<option value="">Selecione a dupla de domingo</option>${designarModalPairOptions('')}`;
-    }
+    profSel.innerHTML = designarDirigenteOptions(selectedAssignee);
+    fillDesignarTerritorySelect(parseDesignarAssignee(selectedAssignee), selectedTerritoryId);
 
     dateEl.value = H().toISODate(new Date());
 
@@ -1371,7 +1359,7 @@
       }
     }
 
-    syncDesignarModalUi();
+    onDesignarAssigneeChange();
   }
 
   function designarModalMarkup() {
@@ -1379,7 +1367,7 @@
       <div class="terr-assign-toolbar !rounded-t-xl !rounded-b-none !mb-0">
         <div class="flex-1 min-w-[10rem]">
           <h2>Nova designação de campo</h2>
-          <p>Individual (1 território) ou dupla de domingo (T07, T12, T18)</p>
+          <p>Dirigente individual ou dupla de domingo (T07, T12, T18) e território.</p>
         </div>
       </div>
       <div class="terr-assign-stats !rounded-none !border-x !border-outline-variant/30">
@@ -1404,37 +1392,18 @@
           </div>
           <form id="form-designar">
             <div class="terr-assign-form">
-              <div class="terr-assign-field terr-assign-field--full">
-                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">category</span>Tipo</span>
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
                 <div class="terr-assign-input-wrap">
-                  <span class="material-symbols-outlined" aria-hidden="true">category</span>
-                  <select id="designar-kind" class="terr-assign-input">
-                    <option value="individual">Designação individual</option>
-                    <option value="domingo">Dupla de domingo</option>
-                  </select>
+                  <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                  <select id="designar-profile" required class="terr-assign-input"></select>
                 </div>
               </div>
-              <div id="designar-individual-fields" class="contents">
-                <div class="terr-assign-field">
-                  <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">person</span>Dirigente</span>
-                  <div class="terr-assign-input-wrap">
-                    <span class="material-symbols-outlined" aria-hidden="true">person</span>
-                    <select id="designar-profile" required class="terr-assign-input"></select>
-                  </div>
-                </div>
-                <div class="terr-assign-field">
-                  <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
-                  <div class="terr-assign-input-wrap">
-                    <span class="material-symbols-outlined" aria-hidden="true">map</span>
-                    <select id="designar-territory" required class="terr-assign-input"></select>
-                  </div>
-                </div>
-              </div>
-              <div id="designar-domingo-fields" class="terr-assign-field terr-assign-field--full hidden">
-                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Dupla de domingo</span>
+              <div class="terr-assign-field">
+                <span class="terr-assign-field__label"><span class="material-symbols-outlined" aria-hidden="true">map</span>Território</span>
                 <div class="terr-assign-input-wrap">
-                  <span class="material-symbols-outlined" aria-hidden="true">groups</span>
-                  <select id="designar-pair" class="terr-assign-input"></select>
+                  <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                  <select id="designar-territory" required class="terr-assign-input"></select>
                 </div>
               </div>
               <div class="terr-assign-field terr-assign-field--full">
@@ -1443,7 +1412,7 @@
               </div>
             </div>
             <div class="terr-assign-foot">
-              <p class="terr-assign-note">Duplas: Denison e Arnaldo (T07), Marcelo Freire e Edvan (T12), Marcelo Almeida e João (T18).</p>
+              <p class="terr-assign-note">Duplas de domingo aparecem no seletor com a tag Dupla (T07, T12, T18).</p>
               <button type="submit" class="terr-assign-submit">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 Confirmar designação
@@ -1505,47 +1474,43 @@
     wrap.querySelector('[data-close-designar]').addEventListener('click', close);
     wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
 
-    fillDesignarSelects();
-    if (preset.kind) document.getElementById('designar-kind').value = preset.kind;
-    if (preset.profileId) document.getElementById('designar-profile').value = preset.profileId;
-    if (preset.territoryId) document.getElementById('designar-territory').value = preset.territoryId;
-    if (preset.pairId) {
-      document.getElementById('designar-kind').value = 'domingo';
-      const pairSel = document.getElementById('designar-pair');
-      if (pairSel) pairSel.innerHTML = `<option value="">Selecione a dupla de domingo</option>${designarModalPairOptions(preset.pairId)}`;
-      pairSel.value = preset.pairId;
-    }
+    const presetAssignee = preset.pairId || preset.profileId || '';
+    fillDesignarSelects(presetAssignee, preset.territoryId || '');
     if (preset.date) document.getElementById('designar-date').value = preset.date;
-    syncDesignarModalUi();
+    onDesignarAssigneeChange();
 
-    document.getElementById('designar-kind')?.addEventListener('change', syncDesignarModalUi);
-    ['designar-profile', 'designar-territory', 'designar-pair', 'designar-date'].forEach((id) => {
+    document.getElementById('designar-profile')?.addEventListener('change', onDesignarAssigneeChange);
+    ['designar-territory', 'designar-date'].forEach((id) => {
       document.getElementById(id)?.addEventListener('change', updateDesignarPreview);
       document.getElementById(id)?.addEventListener('input', updateDesignarPreview);
     });
 
     wrap.querySelector('#form-designar').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const kind = document.getElementById('designar-kind')?.value || 'individual';
       const assignedAt = document.getElementById('designar-date').value;
+      const assigneeVal = document.getElementById('designar-profile').value;
+      const assignee = parseDesignarAssignee(assigneeVal);
+      const territoryId = document.getElementById('designar-territory').value;
 
-      if (kind === 'domingo') {
-        const pairValue = document.getElementById('designar-pair')?.value;
-        const pairNum = H().parseDomingoPairOptionValue(pairValue);
-        if (!pairNum) {
+      if (assignee.kind === 'domingo') {
+        if (!assignee.pairNum) {
           showToast(toast, 'Selecione a dupla de domingo.', true);
           return;
         }
-        const pair = H().domingoPairForTerritoryNum(pairNum);
-        const territoryId = catalogPairTerritoryId(pair);
-        if (!territoryId) {
+        const pair = assignee.pair || H().domingoPairForTerritoryNum(assignee.pairNum);
+        const pairTerritoryId = catalogPairTerritoryId(pair);
+        if (!pairTerritoryId) {
           showToast(toast, 'Território da dupla não encontrado.', true);
           return;
         }
-        const terr = territories.find((t) => t.id === territoryId);
-        const undoEntry = buildAssignUndo(territoryId, terr?.observations ?? null);
+        if (territoryId && territoryId !== pairTerritoryId) {
+          showToast(toast, 'O território deve corresponder à dupla de domingo selecionada.', true);
+          return;
+        }
+        const terr = territories.find((t) => t.id === pairTerritoryId);
+        const undoEntry = buildAssignUndo(pairTerritoryId, terr?.observations ?? null);
         try {
-          await syncScheduleDomingoPairDesignation({ territoryId, assignedAt });
+          await syncScheduleDomingoPairDesignation({ territoryId: pairTerritoryId, assignedAt });
           pushUndo(undoEntry);
           showToast(toast, 'Dupla de domingo designada no Painel.');
           close();
@@ -1556,10 +1521,13 @@
         return;
       }
 
-      const territoryId = document.getElementById('designar-territory').value;
       const terr = territories.find((item) => item.id === territoryId);
       const undoEntry = buildAssignUndo(territoryId, terr?.observations ?? null);
-      const profileId = document.getElementById('designar-profile').value;
+      const profileId = assignee.profileId || assigneeVal;
+      if (!profileId || !territoryId) {
+        showToast(toast, 'Selecione o dirigente e o território.', true);
+        return;
+      }
       try {
         await syncScheduleFieldDesignation({ profileId, territoryId, assignedAt });
         pushUndo(undoEntry);
