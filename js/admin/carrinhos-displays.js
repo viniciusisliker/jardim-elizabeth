@@ -174,7 +174,10 @@
       tabsRendered.locais = true;
       return;
     }
-    if (tab === 'checklist') tabsRendered.checklist = true;
+    if (tab === 'checklist') {
+      renderChecklist();
+      tabsRendered.checklist = true;
+    }
   }
 
   function setupTabs() {
@@ -1482,6 +1485,7 @@
       if (document.getElementById('eq-loc-table-body')) refreshLocationsView();
       else renderLocations();
     }
+    if (tabsRendered.checklist) renderChecklist();
   }
 
   function parsePublisherNotes(notes) {
@@ -2182,6 +2186,255 @@
     }
   }
 
+  const EQ_CHECKLIST_STORAGE = 'je-eq-checklist-';
+  const WEEKLY_CHECKLIST = {
+    sections: [
+      {
+        id: 'comms',
+        label: 'Comunicação',
+        icon: 'forum',
+        items: [
+          {
+            title: 'Enviar mensagem de voluntários do carrinho',
+            hint: 'Recorrente · confirmar quem pode servir na semana',
+            icon: 'campaign',
+            action: 'volunteers',
+            actionLabel: 'WhatsApp · Voluntários'
+          },
+          {
+            title: 'Enviar cronograma dos Carrinhos e do Display',
+            hint: 'Segunda e Terça · slots fixos de carrinho/display',
+            icon: 'calendar_month',
+            action: 'cronograma',
+            actionLabel: 'Ir ao Cronograma'
+          },
+          {
+            title: 'Enviar enquete semanal',
+            hint: 'Terça a domingo · disponibilidade dos irmãos',
+            icon: 'poll'
+          }
+        ]
+      },
+      {
+        id: 'territories',
+        label: 'Territórios',
+        icon: 'map',
+        items: [
+          {
+            title: 'Devolver os territórios',
+            hint: 'Capturar dados da enquete do WhatsApp',
+            icon: 'undo',
+            action: 'territorios',
+            actionLabel: 'Abrir Territórios'
+          },
+          {
+            title: 'Analisar disponibilidade',
+            hint: 'Cruzar enquete com publicadores habilitados e territórios livres',
+            icon: 'analytics',
+            action: 'publicadores',
+            actionLabel: 'Ver Publicadores'
+          }
+        ]
+      },
+      {
+        id: 'schedule',
+        label: 'Cronograma',
+        icon: 'event_available',
+        items: [
+          {
+            title: 'Montar cronograma e copiar mensagem',
+            hint: 'Use Cronograma → WhatsApp para gerar o texto da semana',
+            icon: 'content_copy',
+            action: 'whatsapp',
+            actionLabel: 'Copiar mensagem'
+          }
+        ]
+      }
+    ]
+  };
+
+  function checklistStorageKey() {
+    return `${EQ_CHECKLIST_STORAGE}${currentWeek || 'default'}`;
+  }
+
+  function checklistWeekLabel() {
+    if (!currentWeek) return '';
+    try {
+      const d = new Date(`${currentWeek}T12:00:00`);
+      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+    } catch {
+      return currentWeek;
+    }
+  }
+
+  function readEqChecklistState() {
+    try {
+      const raw = localStorage.getItem(checklistStorageKey());
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeEqChecklistState(state) {
+    localStorage.setItem(checklistStorageKey(), JSON.stringify(state));
+  }
+
+  function eqChecklistItems() {
+    return WEEKLY_CHECKLIST.sections.flatMap((section) => section.items);
+  }
+
+  function eqChecklistProgress() {
+    const state = readEqChecklistState();
+    const items = eqChecklistItems();
+    const done = items.filter((_, idx) => state[idx]).length;
+    return { done, total: items.length };
+  }
+
+  function switchEqTab(tabId) {
+    document.querySelector(`[data-eq-tab="${tabId}"]`)?.click();
+  }
+
+  function runChecklistAction(action) {
+    switch (action) {
+      case 'volunteers':
+        openVolunteerWhatsApp();
+        break;
+      case 'cronograma':
+        switchEqTab('cronograma');
+        break;
+      case 'publicadores':
+        switchEqTab('publicadores');
+        break;
+      case 'territorios':
+        window.JEHubRouter?.navigateTo('territorios');
+        break;
+      case 'whatsapp':
+        switchEqTab('cronograma');
+        setTimeout(() => copyWhatsApp(), 150);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function updateEqChecklistProgress(root) {
+    const progress = root.querySelector('.eq-checklist__progress');
+    const bar = root.querySelector('.eq-checklist__bar-fill');
+    const card = root.querySelector('.eq-checklist-card');
+    const { done, total } = eqChecklistProgress();
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    if (progress) {
+      progress.textContent = `${done} de ${total} concluído${done === 1 ? '' : 's'}`;
+    }
+    if (bar) bar.style.width = `${pct}%`;
+    const barWrap = root.querySelector('.eq-checklist__bar');
+    if (barWrap) barWrap.setAttribute('aria-valuenow', String(pct));
+    card?.classList.toggle('eq-checklist-card--done', total > 0 && done === total);
+  }
+
+  function renderEqChecklistSections(state) {
+    let idx = 0;
+    return WEEKLY_CHECKLIST.sections.map((section) => {
+      const itemsHtml = section.items.map((item) => {
+        const currentIdx = idx;
+        idx += 1;
+        const checked = !!state[currentIdx];
+        const actionBtn = item.action
+          ? `<button type="button" class="eq-check-item__action" data-eq-check-action="${escapeHtml(item.action)}">${escapeHtml(item.actionLabel || 'Abrir')}</button>`
+          : '';
+        return `
+          <li class="eq-check-item-wrap">
+            <label class="eq-check-item${checked ? ' eq-check-item--done' : ''}">
+              <input type="checkbox" data-eq-check-idx="${currentIdx}" ${checked ? 'checked' : ''}/>
+              <span class="eq-check-item__box" aria-hidden="true">
+                <span class="material-symbols-outlined" aria-hidden="true">check</span>
+              </span>
+              <span class="eq-check-item__body">
+                <span class="eq-check-item__title-row">
+                  <span class="material-symbols-outlined eq-check-item__icon" aria-hidden="true">${escapeHtml(item.icon || 'check_circle')}</span>
+                  <span class="eq-check-item__title">${escapeHtml(item.title)}</span>
+                </span>
+                <span class="eq-check-item__hint">${escapeHtml(item.hint || '')}</span>
+              </span>
+            </label>
+            ${actionBtn}
+          </li>`;
+      }).join('');
+      return `
+        <div class="eq-checklist__section">
+          <h3 class="eq-checklist__section-title">
+            <span class="material-symbols-outlined" aria-hidden="true">${escapeHtml(section.icon)}</span>
+            ${escapeHtml(section.label)}
+          </h3>
+          <ul class="eq-checklist__list">${itemsHtml}</ul>
+        </div>`;
+    }).join('');
+  }
+
+  function renderChecklist() {
+    const root = document.getElementById('eq-checklist-root');
+    if (!root) return;
+    const state = readEqChecklistState();
+    const weekLabel = checklistWeekLabel();
+    root.innerHTML = `
+      <article class="eq-checklist-card">
+        <div class="eq-checklist__head">
+          <div class="eq-checklist__title-row">
+            <span class="eq-checklist__icon" aria-hidden="true">
+              <span class="material-symbols-outlined">checklist</span>
+            </span>
+            <div class="eq-checklist__title-wrap">
+              <h2>Checklist semanal</h2>
+              <p class="eq-checklist-intro">Fluxo de referência — substitui o Todoist para o cronograma pronto no WhatsApp.${weekLabel ? ` <span class="eq-checklist__week">Semana de ${escapeHtml(weekLabel)}</span>` : ''}</p>
+              <p class="eq-checklist__progress">—</p>
+            </div>
+            <button type="button" class="eq-checklist__reset" data-eq-reset-checklist title="Limpar marcações desta semana">
+              <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
+            </button>
+          </div>
+          <div class="eq-checklist__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span class="eq-checklist__bar-fill"></span>
+          </div>
+        </div>
+        <div class="eq-checklist__body">${renderEqChecklistSections(state)}</div>
+      </article>`;
+    updateEqChecklistProgress(root);
+  }
+
+  function bindChecklistEvents() {
+    const root = document.getElementById('eq-checklist-root');
+    if (!root || root.dataset.bound === '1') return;
+    root.dataset.bound = '1';
+
+    root.addEventListener('change', (e) => {
+      const input = e.target;
+      if (!(input instanceof HTMLInputElement) || input.dataset.eqCheckIdx == null) return;
+      const idx = Number(input.dataset.eqCheckIdx);
+      const state = readEqChecklistState();
+      state[idx] = input.checked;
+      writeEqChecklistState(state);
+      input.closest('.eq-check-item')?.classList.toggle('eq-check-item--done', input.checked);
+      updateEqChecklistProgress(root);
+    });
+
+    root.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('[data-eq-reset-checklist]');
+      if (resetBtn) {
+        if (!confirm('Limpar as marcações do checklist desta semana?')) return;
+        localStorage.removeItem(checklistStorageKey());
+        renderChecklist();
+        showToast(toast, 'Checklist da semana limpo.');
+        return;
+      }
+      const actionBtn = e.target.closest('[data-eq-check-action]');
+      if (actionBtn) {
+        e.preventDefault();
+        runChecklistAction(actionBtn.dataset.eqCheckAction);
+      }
+    });
+  }
+
   async function init() {
     if (window.__JEAdminCarrinhosDisplaysInit) {
       syncActiveEqTab();
@@ -2210,7 +2463,10 @@
       inlineSlotDraft = null;
       renderSchedule();
       document.getElementById('eq-whatsapp-wrap')?.classList.add('hidden');
+      if (tabsRendered.checklist) renderChecklist();
     });
+
+    bindChecklistEvents();
 
     document.getElementById('eq-btn-new-slot')?.addEventListener('click', () => startNewSlotInline());
     document.getElementById('eq-btn-add-publisher')?.addEventListener('click', () => openPublisherModal(null));
