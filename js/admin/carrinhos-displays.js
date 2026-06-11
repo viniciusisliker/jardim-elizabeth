@@ -114,24 +114,63 @@
     indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
   }
 
+  function renderEquipmentSafe() {
+    const list = document.getElementById('eq-item-list');
+    if (!list) return;
+    try {
+      renderEquipment();
+    } catch (err) {
+      console.error('Equipamentos:', err);
+      updateItemStats();
+      list.innerHTML = `
+        <div class="eq-pub-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <p class="text-sm font-semibold text-primary">Não foi possível exibir os equipamentos</p>
+          <p class="text-xs mt-1">Recarregue a página com <strong>Ctrl+F5</strong>.</p>
+        </div>`;
+    }
+  }
+
+  function renderLocationsSafe() {
+    const list = document.getElementById('eq-loc-list');
+    if (!list) return;
+    try {
+      renderLocations();
+    } catch (err) {
+      console.error('Locais:', err);
+      updateLocStats();
+      list.innerHTML = `
+        <div class="eq-pub-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <p class="text-sm font-semibold text-primary">Não foi possível exibir os locais</p>
+          <p class="text-xs mt-1">Recarregue a página com <strong>Ctrl+F5</strong>.</p>
+        </div>`;
+    }
+  }
+
+  function syncActiveEqTab() {
+    const activeTab = document.querySelector('[data-eq-tab].active')?.dataset.eqTab;
+    if (activeTab) ensureEqTabReady(activeTab);
+  }
+
   function ensureEqTabReady(tab) {
     if (tab === 'cronograma') {
-      if (!tabsRendered.cronograma) renderSchedule();
+      renderSchedule();
       tabsRendered.cronograma = true;
       return;
     }
     if (tab === 'publicadores') {
-      if (!tabsRendered.publicadores) renderPublishers();
+      renderPublishers();
       tabsRendered.publicadores = true;
       return;
     }
     if (tab === 'equipamentos') {
-      if (!tabsRendered.equipamentos) renderEquipment();
+      renderEquipmentSafe();
       tabsRendered.equipamentos = true;
       return;
     }
     if (tab === 'locais') {
-      if (!tabsRendered.locais) renderLocations();
+      renderLocationsSafe();
       tabsRendered.locais = true;
       return;
     }
@@ -426,11 +465,11 @@
     const list = document.getElementById('eq-item-list');
     if (!list) return;
     if (!equipmentItems.length && !inlineItemDraft) {
-      renderEquipment();
+      renderEquipmentSafe();
       return;
     }
     if (!document.getElementById('eq-item-table-body')) {
-      renderEquipment();
+      renderEquipmentSafe();
       return;
     }
     const filtersChanged = syncItemFilterOptions();
@@ -728,7 +767,6 @@
     } catch (err) {
       console.warn('Recarregar equipamentos:', err);
     }
-    tabsRendered.equipamentos = true;
     refreshEquipmentView();
   }
 
@@ -843,7 +881,6 @@
     } catch (err) {
       console.warn('Recarregar equipamentos:', err);
     }
-    tabsRendered.equipamentos = true;
     refreshEquipmentView();
   }
 
@@ -952,11 +989,11 @@
     const list = document.getElementById('eq-loc-list');
     if (!list) return;
     if (!locations.length && !inlineLocDraft) {
-      renderLocations();
+      renderLocationsSafe();
       return;
     }
     if (!document.getElementById('eq-loc-table-body')) {
-      renderLocations();
+      renderLocationsSafe();
       return;
     }
     const filtersChanged = syncLocFilterOptions();
@@ -1195,7 +1232,6 @@
     } catch (err) {
       console.warn('Recarregar locais:', err);
     }
-    tabsRendered.locais = true;
     refreshLocationsView();
   }
 
@@ -1301,7 +1337,6 @@
     } catch (err) {
       console.warn('Recarregar locais:', err);
     }
-    tabsRendered.locais = true;
     refreshLocationsView();
   }
 
@@ -2148,7 +2183,10 @@
   }
 
   async function init() {
-    if (window.__JEAdminCarrinhosDisplaysInit) return true;
+    if (window.__JEAdminCarrinhosDisplaysInit) {
+      syncActiveEqTab();
+      return true;
+    }
 
     const profile = await guardPermission('agendamentos');
     if (!profile) return false;
@@ -2478,14 +2516,14 @@
 
     try {
       await Promise.all([fetchPublishers(), fetchSlots(), fetchEquipment(), fetchLocations()]);
-      renderSchedule();
       tabsRendered = {
-        cronograma: true,
+        cronograma: false,
         publicadores: false,
         equipamentos: false,
         locais: false,
         checklist: false
       };
+      syncActiveEqTab();
     } catch (err) {
       console.error('Carrinhos e Displays:', err);
       const msg = String(err?.message || err);
@@ -2502,4 +2540,10 @@
   }
 
   window.JEAdminCarrinhosDisplays = { init };
+
+  window.addEventListener('hub:section', (e) => {
+    if (e.detail?.section !== 'carrinhos-displays') return;
+    if (!window.__JEAdminCarrinhosDisplaysInit) return;
+    syncActiveEqTab();
+  });
 })();
