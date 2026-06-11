@@ -1,5 +1,6 @@
 (function () {
   const H = window.JETerritoryAssignment;
+  let mapLightboxReady = false;
 
   function escapeHtml(text) {
     return String(text ?? '')
@@ -9,9 +10,91 @@
       .replace(/"/g, '&quot;');
   }
 
-  function mapLink(t) {
-    const slug = t?.slug || t?.display_name || '';
-    return slug ? `territorios.html#${encodeURIComponent(slug)}` : 'territorios.html';
+  function territoryTitle(t) {
+    return `T${t.num} · ${t.display_name || 'Território'}`;
+  }
+
+  function territoryPageUrl(t) {
+    const num = String(t?.num ?? '').replace(/^0+/, '') || '';
+    return num ? `territorios.html#t${encodeURIComponent(num)}` : 'territorios.html';
+  }
+
+  function renderMapLink(mapUrl, title) {
+    if (!mapUrl) return '';
+    return `
+      <button type="button" class="hub-terr-link" data-hub-terr-map="${escapeHtml(mapUrl)}" data-hub-terr-title="${escapeHtml(title)}">
+        Ver mapa
+        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+      </button>`;
+  }
+
+  function renderMapThumb(mapUrl, title) {
+    if (!mapUrl) return '';
+    return `
+      <button type="button" class="hub-terr-map" data-hub-terr-map="${escapeHtml(mapUrl)}" data-hub-terr-title="${escapeHtml(title)}" aria-label="Ver mapa · ${escapeHtml(title)}">
+        <img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/>
+      </button>`;
+  }
+
+  function openHubTerritoryMapLightbox(title, mapUrl) {
+    const box = document.getElementById('hub-terr-map-lightbox');
+    const img = document.getElementById('hub-terr-map-lightbox-img');
+    const titleEl = document.getElementById('hub-terr-map-lightbox-title');
+    const body = box?.querySelector('.hub-terr-map-lightbox__body');
+    if (!box || !img || !mapUrl) return;
+    titleEl.textContent = title || 'Território';
+    img.classList.remove('hidden');
+    img.src = mapUrl;
+    img.alt = title || 'Mapa do território';
+    body?.querySelector('.hub-terr-map-lightbox__fallback')?.remove();
+    img.onerror = () => {
+      img.classList.add('hidden');
+      if (body && !body.querySelector('.hub-terr-map-lightbox__fallback')) {
+        const msg = document.createElement('p');
+        msg.className = 'hub-terr-map-lightbox__fallback';
+        msg.textContent = 'Mapa não encontrado.';
+        body.appendChild(msg);
+      }
+    };
+    box.classList.add('is-open');
+    box.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeHubTerritoryMapLightbox() {
+    const box = document.getElementById('hub-terr-map-lightbox');
+    const img = document.getElementById('hub-terr-map-lightbox-img');
+    if (!box) return;
+    box.classList.remove('is-open');
+    box.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (img) {
+      img.onload = null;
+      img.onerror = null;
+      img.src = '';
+      img.alt = '';
+      img.classList.remove('hidden');
+    }
+    box.querySelector('.hub-terr-map-lightbox__fallback')?.remove();
+  }
+
+  function setupHubTerritoryMapLightbox() {
+    if (mapLightboxReady) return;
+    mapLightboxReady = true;
+    document.getElementById('hub-terr-map-lightbox-close')?.addEventListener('click', closeHubTerritoryMapLightbox);
+    document.getElementById('hub-terr-map-lightbox')?.addEventListener('click', (e) => {
+      if (e.target.id === 'hub-terr-map-lightbox') closeHubTerritoryMapLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('hub-terr-map-lightbox')?.classList.contains('is-open')) {
+        closeHubTerritoryMapLightbox();
+      }
+    });
+    document.getElementById('hub-territory-assignment-content')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-hub-terr-map]');
+      if (!btn) return;
+      openHubTerritoryMapLightbox(btn.dataset.hubTerrTitle, btn.dataset.hubTerrMap);
+    });
   }
 
   function matchesDirigente(row, profileId, profileName) {
@@ -68,7 +151,7 @@
 
   function renderMergedCard(fieldAssignment, scheduleRows) {
     const t = fieldAssignment.territories || scheduleRows[0]?.territories || {};
-    const url = mapLink(t);
+    const title = territoryTitle(t);
     const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     const dayLabels = scheduleRows.map((r) => r.weekday_label).filter(Boolean);
     const kicker =
@@ -84,49 +167,38 @@
       <article class="hub-terr-card hub-terr-card--merged">
         <div class="hub-terr-card-main">
           <p class="hub-terr-kicker">${escapeHtml(kicker)}</p>
-          <h2 class="hub-terr-title">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name || 'Território')}</h2>
+          <h2 class="hub-terr-title">${escapeHtml(title)}</h2>
           <div class="hub-terr-details">
-            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>Designado em ${escapeHtml(H.formatDisplayDate(fieldAssignment.assigned_at))}</p>
             ${buildScheduleMeta(scheduleRows)}
           </div>
           ${notesBlocks}
-          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-link">
-            Ver mapa
-            <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
-          </a>
+          ${renderMapLink(mapUrl, title)}
         </div>
-        ${mapUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-map"><img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/></a>` : ''}
+        ${renderMapThumb(mapUrl, title)}
       </article>`;
   }
 
   function renderFieldCard(a) {
     const t = a.territories || {};
-    const url = mapLink(t);
+    const title = territoryTitle(t);
     const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     return `
       <article class="hub-terr-card hub-terr-card--field">
         <div class="hub-terr-card-main">
           <p class="hub-terr-kicker">Seu território de campo</p>
-          <h2 class="hub-terr-title">T${escapeHtml(t.num)} · ${escapeHtml(t.display_name || 'Território')}</h2>
-          <div class="hub-terr-details">
-            <p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>Designado em ${escapeHtml(H.formatDisplayDate(a.assigned_at))}</p>
-          </div>
-          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-link">
-            Ver mapa do território
-            <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
-          </a>
+          <h2 class="hub-terr-title">${escapeHtml(title)}</h2>
+          ${renderMapLink(mapUrl, title) || `<a href="${escapeHtml(territoryPageUrl(t))}" class="hub-terr-link">Ver território <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>`}
         </div>
-        ${mapUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-map"><img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/></a>` : ''}
+        ${renderMapThumb(mapUrl, title)}
       </article>`;
   }
 
   function renderScheduleCard(row) {
     const t = row.territories || {};
-    const url = mapLink(t);
-    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     const title = t.num
-      ? `T${t.num} · ${t.display_name || 'Território'}`
+      ? territoryTitle(t)
       : (row.territory_code || 'Cronograma da semana');
+    const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
     const timeLine = row.schedule_times
       ? `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${escapeHtml(row.schedule_times)}</p>`
       : '';
@@ -136,6 +208,7 @@
     const notesLine = row.observations
       ? `<p class="hub-terr-notes">${escapeHtml(row.observations)}</p>`
       : '';
+    const mapTitle = t.num ? territoryTitle(t) : title;
 
     return `
       <article class="hub-terr-card hub-terr-card--schedule">
@@ -149,9 +222,9 @@
             ${meetLine}
           </div>
           ${notesLine}
-          ${t.num ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-link">Ver mapa <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>` : ''}
+          ${t.num ? renderMapLink(mapUrl, mapTitle) : ''}
         </div>
-        ${t.num && mapUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="hub-terr-map"><img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/></a>` : ''}
+        ${t.num && mapUrl ? renderMapThumb(mapUrl, mapTitle) : ''}
       </article>`;
   }
 
@@ -159,6 +232,8 @@
     const section = document.getElementById('hub-territory-assignment');
     const content = document.getElementById('hub-territory-assignment-content');
     if (!section || !content || !client || !profile?.id || !H) return;
+
+    setupHubTerritoryMapLightbox();
 
     const profileId = profile.id;
     const profileName = profile.full_name || '';

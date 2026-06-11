@@ -354,7 +354,27 @@
       if (e.key === 'Escape' && lightbox?.classList.contains('is-open')) closeLightbox();
     });
 
+    function openTerritoryFromHash() {
+      const hash = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
+      if (!hash.startsWith('t')) return;
+      const num = hash.slice(1).replace(/^0+/, '') || '0';
+      const card = cards().find((c) => {
+        const cardNum = (c.dataset.num || '').replace(/^0+/, '') || '0';
+        return cardNum === num;
+      });
+      if (!card || card.classList.contains('is-hidden')) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const btn = card.querySelector('[data-je-map-open]');
+      const img = btn?.querySelector('img');
+      const title = card.querySelector('.je-ter-card-title')?.textContent || 'Território';
+      if (img?.src) {
+        window.setTimeout(() => openLightbox(img, title), 350);
+      }
+    }
+
     applySearch();
+    openTerritoryFromHash();
+    window.addEventListener('hashchange', openTerritoryFromHash);
     window.JETerritoriesRefresh = applySearch;
   }
 
