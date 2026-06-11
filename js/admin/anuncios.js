@@ -2,8 +2,15 @@
   const { guardAnnouncements, getClient, showToast, escapeHtml, adminToastEl } = window.JEAdmin;
   const Dates = window.JEAnnouncementDates;
   const Schemas = window.JEAnnouncementSchemas;
-  const Pdf = window.JEAnnouncementPdf;
   const Export = window.JEAnnouncementExport;
+
+  function pdfApi() {
+    const api = window.JEAnnouncementPdf;
+    if (!api?.blockToPdfBlob) {
+      throw new Error('Módulo de PDF não carregou. Recarregue a página (Ctrl+F5).');
+    }
+    return api;
+  }
   const Sync = window.JEWeekendDiscursosSync;
 
   let board = null;
@@ -710,7 +717,7 @@
       const pdfEntries = block === 'weekend'
         ? Sync.mergeWeekendEntries(entries, receiveSpeechesByDate)
         : entries;
-      const blob = await Pdf.blockToPdfBlob(block, board, pdfEntries);
+      const blob = await pdfApi().blockToPdfBlob(block, board, pdfEntries);
 
       if (entries.some((e) => String(e.id).startsWith('local-'))) {
         await persistEntries(true);

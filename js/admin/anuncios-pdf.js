@@ -1,10 +1,19 @@
 (function () {
-  const { formatDisplayDate } = window.JEAnnouncementDates;
-  const {
-    SECTION_TITLES,
-    WEEKEND_FIELDS,
-    WEEKEND_GROUPS
-  } = window.JEAnnouncementSchemas;
+  function formatDisplayDate(iso) {
+    return window.JEAnnouncementDates?.formatDisplayDate(iso) || String(iso || '').slice(0, 10);
+  }
+
+  function sectionTitles() {
+    return window.JEAnnouncementSchemas?.SECTION_TITLES || {};
+  }
+
+  function weekendFields() {
+    return window.JEAnnouncementSchemas?.WEEKEND_FIELDS || [];
+  }
+
+  function weekendGroups() {
+    return window.JEAnnouncementSchemas?.WEEKEND_GROUPS || {};
+  }
 
   const MIDWEEK_THEME = {
     tesouros: { color: '#4A7190', bg: '#EEF3F8', title: 'Tesouros da Palavra de Deus' },
@@ -233,7 +242,7 @@
     sheets.forEach((sheetEntries, sheetIdx) => {
       if (sheetIdx > 0) content.push({ text: '', pageBreak: 'before' });
       if (sheetIdx === 0) {
-        content.push(pmCover(SECTION_TITLES.mecanicas, `${month} — Jardim Elizabeth`));
+        content.push(pmCover(sectionTitles().mecanicas, `${month} — Jardim Elizabeth`));
       }
       sheetEntries.forEach((e) => {
         content.push(pmMecanicasCard(e, cardIndex, list.length));
@@ -413,7 +422,7 @@
   function buildMidweekDoc(board, entries) {
     const list = entries.filter((e) => e.block === 'midweek').sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     const content = [
-      pmCover(SECTION_TITLES.midweek, `${board.reference_label || ''} — Jardim Elizabeth`),
+      pmCover(sectionTitles().midweek, `${board.reference_label || ''} — Jardim Elizabeth`),
       ...list.map((e) => pmMidweekMeeting(e))
     ];
     return baseDoc(content);
@@ -426,8 +435,8 @@
 
     const order = ['territorio', 'discurso', 'sentinela', 'sala_b', 'especial'];
     const sections = order.map((gid) => {
-      const meta = WEEKEND_GROUPS[gid];
-      const groupFields = WEEKEND_FIELDS.filter((f) => f.group === gid);
+      const meta = weekendGroups()[gid];
+      const groupFields = weekendFields().filter((f) => f.group === gid);
       const lines = groupFields
         .filter((f) => hasValue(d[f.key]))
         .map((f) => ({
@@ -480,7 +489,7 @@
     const right = cards.slice(mid);
 
     const content = [
-      pmCover(SECTION_TITLES.weekend, `${board.reference_label || ''} — Jardim Elizabeth`)
+      pmCover(sectionTitles().weekend, `${board.reference_label || ''} — Jardim Elizabeth`)
     ];
 
     if (right.length) {

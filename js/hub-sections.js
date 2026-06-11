@@ -43,8 +43,8 @@
         'js/admin/weekend-discursos-sync.js?v=2026060527',
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
-        'js/admin/anuncios-pdf.js?v=2026060526',
-        'js/admin/anuncios.js?v=2026060977'
+        'js/admin/anuncios-pdf.js?v=2026061051',
+        'js/admin/anuncios.js?v=2026061051'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
