@@ -398,3 +398,81 @@
         </form>
       </div>
     </div>
+
+    <div id="eq-slot-modal" class="eq-modal eq-modal--slot" aria-hidden="true">
+      <div class="eq-modal__panel eq-modal__panel--slot" role="dialog" aria-labelledby="eq-slot-modal-title">
+        <div class="eq-slot-modal-hero">
+          <button type="button" id="eq-slot-modal-close" class="eq-slot-modal-close" aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+          <div class="eq-slot-modal-hero__visual" aria-hidden="true">
+            <span class="material-symbols-outlined eq-slot-modal-hero__icon">calendar_month</span>
+          </div>
+          <div class="eq-slot-modal-hero__text">
+            <p class="eq-slot-modal-hero__kicker">Cronograma semanal</p>
+            <h2 id="eq-slot-modal-title">Nova linha</h2>
+            <p id="eq-slot-modal-preview" class="eq-slot-modal-hero__preview">Terça · Manhã</p>
+          </div>
+        </div>
+        <form id="eq-form-slot" class="eq-modal__body eq-modal__body--slot">
+          <div class="eq-modal-grid eq-modal-grid--slot">
+            <label>Dia
+              <select id="eq-slot-day" class="eq-modal-input" required></select>
+            </label>
+            <label>Período
+              <select id="eq-slot-period" class="eq-modal-input" required></select>
+            </label>
+            <label>Tipo de linha
+              <select id="eq-slot-kind" class="eq-modal-input">
+                <option value="temporary">Temporária (esta semana)</option>
+                <option value="fixed">Fixa (toda semana)</option>
+              </select>
+            </label>
+            <label>Equipamento
+              <select id="eq-slot-type" class="eq-modal-input">
+                <option value="carrinho">Carrinho</option>
+                <option value="display">Display</option>
+              </select>
+            </label>
+            <label class="eq-modal-grid--full">Nome do equipamento
+              <select id="eq-slot-equipment" class="eq-modal-input" required></select>
+            </label>
+            <label class="eq-modal-grid--full">Local
+              <select id="eq-slot-location" class="eq-modal-input" required></select>
+            </label>
+          </div>
+          <div class="eq-slot-pub-field">
+            <span class="eq-pub-field__label"><span class="material-symbols-outlined" aria-hidden="true">groups</span>Publicadores</span>
+            <input type="hidden" id="eq-slot-publishers" value=""/>
+            <div class="eq-slot-pub-picker eq-slot-pub-picker--modal">
+              <div class="eq-slot-pub-picker__toolbar">
+                <input id="eq-slot-pub-search" type="search" class="eq-modal-input" placeholder="Buscar publicador…" autocomplete="off"/>
+                <span class="eq-slot-pub-picker__hint" id="eq-slot-pub-hint">—</span>
+              </div>
+              <div id="eq-slot-pub-list" class="eq-slot-pub-picker__list eq-slot-pub-picker__list--modal" role="group" aria-label="Publicadores aptos"></div>
+              <p id="eq-slot-pub-summary" class="eq-slot-pub-picker__summary eq-slot-pub-picker__summary--empty">Selecione ao menos um publicador.</p>
+            </div>
+          </div>
+          <div class="eq-modal__foot eq-modal__foot--slot">
+            <p class="eq-slot-modal-hint">Linhas temporárias valem só para a semana selecionada no cronograma.</p>
+            <div class="eq-modal__foot-actions">
+              <button type="button" id="eq-slot-cancel" class="eq-modal-btn eq-modal-btn--ghost">Cancelar</button>
+              <button type="submit" class="eq-modal-btn eq-modal-btn--primary eq-modal-btn--slot">
+                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                Adicionar linha
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="eq-sched-pub-pop hidden" id="eq-inline-pub-pop" role="dialog" aria-label="Publicadores" aria-hidden="true">
+      <div class="eq-slot-pub-picker eq-slot-pub-picker--pop">
+        <div class="eq-slot-pub-picker__toolbar">
+          <input id="eq-inline-pub-search" type="search" class="eq-sched-inline-input" placeholder="Buscar…" autocomplete="off"/>
+          <span class="eq-slot-pub-picker__hint" id="eq-inline-pub-hint">—</span>
+        </div>
+        <div id="eq-inline-pub-list" class="eq-slot-pub-picker__list" role="group" aria-label="Publicadores aptos"></div>
+      </div>
+    </div>
