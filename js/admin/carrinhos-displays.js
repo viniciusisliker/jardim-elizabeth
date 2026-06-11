@@ -269,14 +269,15 @@
       { id: 'days', label: 'Dias' },
       { id: 'grupo', label: 'Grupo' },
       { id: 'casa', label: 'Casa' },
+      { id: 'obs', label: 'Observação' },
       { id: 'status', label: 'Status' },
       { id: 'actions', label: 'Ações', locked: true }
     ],
-    defaults: ['180px', '108px', '132px', '100px', '100px', '80px', '69px'],
-    storageKey: 'je-eq-pub-cols',
+    defaults: ['180px', '108px', '132px', '100px', '88px', '140px', '80px', '69px'],
+    storageKey: 'je-eq-pub-cols-v2',
     tableSelector: '#eq-pub-scroll .eq-pub-table',
     colDataKey: 'pub',
-    resizeKey: 'eq-pub-v1',
+    resizeKey: 'eq-pub-v2',
     menuBtnId: 'eq-btn-pub-cols',
     menuId: 'eq-pub-cols-menu',
     emptyTdClass: 'eq-pub-empty-td',
@@ -352,6 +353,7 @@
     row._pubName = row.profiles?.full_name || row.publisher_name || '—';
     row._grupo = parsed.grupo;
     row._casa = parsed.casa;
+    row._observacao = parsed.observacao;
     return row;
   }
 
@@ -1827,19 +1829,22 @@
   }
 
   function parsePublisherNotes(notes) {
-    if (!notes) return { grupo: '', casa: '' };
+    if (!notes) return { grupo: '', casa: '', observacao: '' };
     const grupoMatch = notes.match(/Grupo:\s*([^·]+)/i);
-    const casaMatch = notes.match(/Casa:\s*(.+)$/i);
+    const casaMatch = notes.match(/Casa:\s*([^·]+)/i);
+    const obsMatch = notes.match(/Obs:\s*(.+)$/i);
     return {
       grupo: grupoMatch ? grupoMatch[1].trim() : '',
-      casa: casaMatch ? casaMatch[1].trim() : ''
+      casa: casaMatch ? casaMatch[1].trim() : '',
+      observacao: obsMatch ? obsMatch[1].trim() : ''
     };
   }
 
-  function formatPublisherNotes(grupo, casa) {
+  function formatPublisherNotes(grupo, casa, observacao) {
     const parts = [];
     if (grupo) parts.push(`Grupo: ${grupo}`);
     if (casa) parts.push(`Casa: ${casa}`);
+    if (observacao) parts.push(`Obs: ${observacao}`);
     return parts.length ? parts.join(' · ') : null;
   }
 
@@ -1938,6 +1943,9 @@
         case 'casa':
           cmp = (a._casa || '').localeCompare(b._casa || '', 'pt-BR', { sensitivity: 'base' });
           break;
+        case 'obs':
+          cmp = (a._observacao || '').localeCompare(b._observacao || '', 'pt-BR', { sensitivity: 'base' });
+          break;
         case 'status':
           cmp = Number(a.is_active !== false) - Number(b.is_active !== false);
           break;
@@ -1956,7 +1964,8 @@
         const name = publisherName(row).toLowerCase();
         const grupo = (row._grupo || '').toLowerCase();
         const casa = (row._casa || '').toLowerCase();
-        return name.includes(q) || grupo.includes(q) || casa.includes(q);
+        const obs = (row._observacao || '').toLowerCase();
+        return name.includes(q) || grupo.includes(q) || casa.includes(q) || obs.includes(q);
       });
     }
     if (!xlf) return list;
@@ -1981,6 +1990,7 @@
       ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'days', label: 'Dias', filterKey: 'days', options: dayOpts, wrap: 'th', colDataKey: 'pub' })}
       ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'grupo', label: 'Grupo', filterKey: 'grupo', options: grupoOpts, wrap: 'th', colDataKey: 'pub' })}
       ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'casa', label: 'Casa', filterKey: 'casa', options: casaOpts, wrap: 'th', colDataKey: 'pub' })}
+      ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'obs', label: 'Observação', wrap: 'th', colDataKey: 'pub' })}
       ${xlf.xlfColumnHeader('pub-sort', pubSort, pubFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'th', colDataKey: 'pub' })}
       <th scope="col" class="terr-sched-actions-th" data-pub-col="actions" aria-hidden="true"></th>`;
   }
@@ -2066,6 +2076,7 @@
       const name = publisherName(row);
       const grupo = row._grupo || '';
       const casa = row._casa || '';
+      const observacao = row._observacao || '';
       const isActive = row.is_active !== false;
       const inactiveClass = isActive ? '' : ' eq-pub-tr--inactive';
       const statusHtml = isActive
@@ -2087,6 +2098,7 @@
           <td data-pub-col="days" class="eq-pub-days" title="${escapeHtml((row.available_days || []).join(', '))}">${renderPublisherDayPills(row)}</td>
           <td data-pub-col="grupo" class="eq-pub-meta${grupo ? '' : ' terr-sched-cell--muted'}">${grupo ? escapeHtml(grupo) : '—'}</td>
           <td data-pub-col="casa" class="eq-pub-meta${casa ? '' : ' terr-sched-cell--muted'}">${casa ? escapeHtml(casa) : '—'}</td>
+          <td data-pub-col="obs" class="eq-pub-obs${observacao ? '' : ' terr-sched-cell--muted'}" title="${escapeHtml(observacao)}">${observacao ? escapeHtml(observacao) : '—'}</td>
           <td data-pub-col="status" class="eq-pub-status-cell">${statusHtml}</td>
           <td data-pub-col="actions" class="terr-sched-actions-td">
             <div class="eq-pub-actions">
@@ -2140,6 +2152,7 @@
                 <th scope="col" data-pub-col="days">Dias</th>
                 <th scope="col" data-pub-col="grupo">Grupo</th>
                 <th scope="col" data-pub-col="casa">Casa</th>
+                <th scope="col" data-pub-col="obs">Observação</th>
                 <th scope="col" data-pub-col="status">Status</th>
                 <th scope="col" class="terr-sched-actions-th" data-pub-col="actions" aria-hidden="true"></th>`}
               </tr></thead>
@@ -2491,6 +2504,7 @@
     if (display) display.checked = true;
     document.getElementById('eq-pub-grupo').value = '';
     document.getElementById('eq-pub-casa').value = '';
+    document.getElementById('eq-pub-observacao').value = '';
     document.getElementById('eq-pub-profile-wrap')?.classList.remove('hidden');
     document.getElementById('eq-pub-edit-name')?.classList.add('hidden');
     document.getElementById('eq-publisher-profile')?.setAttribute('required', '');
@@ -2524,6 +2538,7 @@
       );
       document.getElementById('eq-pub-grupo').value = row._grupo || '';
       document.getElementById('eq-pub-casa').value = row._casa || '';
+      document.getElementById('eq-pub-observacao').value = row._observacao || '';
       syncPubModalPreview(row);
     } else {
       await loadProfiles();
@@ -3098,11 +3113,12 @@
 
       const grupo = document.getElementById('eq-pub-grupo').value.trim();
       const casa = document.getElementById('eq-pub-casa').value.trim();
+      const observacao = document.getElementById('eq-pub-observacao').value.trim();
       const payload = {
         can_carrinho: document.getElementById('eq-pub-carrinho').checked,
         can_display: document.getElementById('eq-pub-display').checked,
         available_days: availableDays,
-        notes: formatPublisherNotes(grupo, casa),
+        notes: formatPublisherNotes(grupo, casa, observacao),
         updated_at: new Date().toISOString()
       };
 

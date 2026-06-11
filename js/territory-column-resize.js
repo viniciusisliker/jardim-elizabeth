@@ -77,14 +77,21 @@
 
   function applyTable(table, widthsPx, isColVisible) {
     if (!table || !widthsPx?.length) return;
+    const headCellsList = table.querySelector('thead tr') ? [...table.querySelector('thead tr').children] : [];
+    const count = headCellsList.length;
+    if (!count) return;
+
+    const widths = widthsPx.slice(0, count);
+    const padDefault = widths[widths.length - 1] || widthsPx[widthsPx.length - 1] || 72;
+    while (widths.length < count) widths.push(padDefault);
+
     table.style.tableLayout = 'fixed';
     table.style.width = '100%';
-    const colgroup = ensureColgroup(table, widthsPx.length);
-    const headCellsList = table.querySelector('thead tr') ? [...table.querySelector('thead tr').children] : [];
+    const colgroup = ensureColgroup(table, count);
     [...colgroup.children].forEach((col, i) => {
       const cell = headCellsList[i];
       const visible = !isColVisible || isColVisible(cell, i);
-      const w = widthsPx[i] || 0;
+      const w = widths[i] || 0;
       col.style.width = visible && w > 0 ? toPx(w) : '0px';
     });
   }

@@ -101,14 +101,14 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026061064'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=2026061066'],
       scripts: [
         'js/week-input-helpers.js?v=2026060984',
         'js/equipment-schedule-helpers.js?v=2026060968',
         'js/admin/table-xlf.js?v=2026061060',
-        'js/territory-column-resize.js?v=2026061014',
+        'js/territory-column-resize.js?v=2026061066',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/carrinhos-displays.js?v=2026061064'
+        'js/admin/carrinhos-displays.js?v=2026061066'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
