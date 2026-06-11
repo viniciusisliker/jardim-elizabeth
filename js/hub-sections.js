@@ -107,7 +107,7 @@
         'js/equipment-schedule-helpers.js?v=2026060968',
         'js/admin/table-xlf.js?v=2026060939',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/carrinhos-displays.js?v=2026061012'
+        'js/admin/carrinhos-displays.js?v=2026061055'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {

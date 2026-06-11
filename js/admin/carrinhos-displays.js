@@ -12,6 +12,10 @@
     { value: 'active', label: 'Ativo' },
     { value: 'inactive', label: 'Inativo' }
   ];
+  const ITEM_TYPE_OPTIONS = [
+    { value: 'carrinho', label: 'Carrinho' },
+    { value: 'display', label: 'Display' }
+  ];
   const ITEM_UNDO_FIELDS = ['name', 'equipment_type', 'default_location', 'sort_order', 'notes'];
   const LOC_UNDO_FIELDS = ['name', 'sort_order', 'notes'];
   const SLOT_UNDO_FIELDS = [
@@ -695,11 +699,14 @@
         return;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_items', id, beforeRow, 'Equipamento', ITEM_UNDO_FIELDS);
+      const idx = equipmentItems.findIndex((item) => item.id === id);
+      if (idx >= 0) equipmentItems[idx] = { ...equipmentItems[idx], ...payload };
+      invalidateCatalogCache();
     } else {
       const { data: inserted, error } = await client
         .from('equipment_items')
         .insert({ ...payload, is_active: true })
-        .select('id')
+        .select('id, name, equipment_type, default_location, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_items_name_type_unique')
@@ -707,12 +714,22 @@
           : error.message, true);
         return;
       }
-      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
+      if (inserted?.id) {
+        undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
+        equipmentItems.push(inserted);
+        invalidateCatalogCache();
+      }
     }
 
     showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
     closeItemModal();
-    await loadEquipment();
+    try {
+      await fetchEquipment();
+    } catch (err) {
+      console.warn('Recarregar equipamentos:', err);
+    }
+    tabsRendered.equipamentos = true;
+    refreshEquipmentView();
   }
 
   function defaultItemDraft(item) {
@@ -797,11 +814,14 @@
         return;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_items', id, beforeRow, 'Equipamento', ITEM_UNDO_FIELDS);
+      const idx = equipmentItems.findIndex((item) => item.id === id);
+      if (idx >= 0) equipmentItems[idx] = { ...equipmentItems[idx], ...data };
+      invalidateCatalogCache();
     } else {
       const { data: inserted, error } = await client
         .from('equipment_items')
         .insert({ ...data, is_active: true })
-        .select('id')
+        .select('id, name, equipment_type, default_location, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_items_name_type_unique')
@@ -809,12 +829,22 @@
           : error.message, true);
         return;
       }
-      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
+      if (inserted?.id) {
+        undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
+        equipmentItems.push(inserted);
+        invalidateCatalogCache();
+      }
     }
 
     showToast(toast, id ? 'Equipamento atualizado.' : 'Equipamento adicionado.');
     inlineItemDraft = null;
-    await loadEquipment();
+    try {
+      await fetchEquipment();
+    } catch (err) {
+      console.warn('Recarregar equipamentos:', err);
+    }
+    tabsRendered.equipamentos = true;
+    refreshEquipmentView();
   }
 
   async function deleteInlineItem() {
@@ -1136,11 +1166,14 @@
         return;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_locations', id, beforeRow, 'Local', LOC_UNDO_FIELDS);
+      const idx = locations.findIndex((item) => item.id === id);
+      if (idx >= 0) locations[idx] = { ...locations[idx], ...payload };
+      invalidateCatalogCache();
     } else {
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...payload, is_active: true })
-        .select('id')
+        .select('id, name, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -1148,12 +1181,22 @@
           : error.message, true);
         return;
       }
-      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
+      if (inserted?.id) {
+        undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
+        locations.push(inserted);
+        invalidateCatalogCache();
+      }
     }
 
     showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
     closeLocModal();
-    await loadLocations();
+    try {
+      await fetchLocations();
+    } catch (err) {
+      console.warn('Recarregar locais:', err);
+    }
+    tabsRendered.locais = true;
+    refreshLocationsView();
   }
 
   function defaultLocDraft(row) {
@@ -1229,11 +1272,14 @@
         return;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_locations', id, beforeRow, 'Local', LOC_UNDO_FIELDS);
+      const idx = locations.findIndex((item) => item.id === id);
+      if (idx >= 0) locations[idx] = { ...locations[idx], ...data };
+      invalidateCatalogCache();
     } else {
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...data, is_active: true })
-        .select('id')
+        .select('id, name, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -1241,12 +1287,22 @@
           : error.message, true);
         return;
       }
-      if (inserted?.id) undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
+      if (inserted?.id) {
+        undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
+        locations.push(inserted);
+        invalidateCatalogCache();
+      }
     }
 
     showToast(toast, id ? 'Local atualizado.' : 'Local adicionado.');
     inlineLocDraft = null;
-    await loadLocations();
+    try {
+      await fetchLocations();
+    } catch (err) {
+      console.warn('Recarregar locais:', err);
+    }
+    tabsRendered.locais = true;
+    refreshLocationsView();
   }
 
   async function deleteInlineLoc() {
