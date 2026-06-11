@@ -206,6 +206,7 @@
   let activeAssignments = [];
   let weekTemplate = [];
   let history = [];
+  const lastTerritoryByProfileCache = new Map();
   let meetingSpots = [];
   let currentWeek = '';
   let histFilter = { q: '', date: {}, day: {}, dirigente: {}, territorio: {}, eventType: {} };
@@ -860,6 +861,7 @@
       .limit(250);
     if (error) throw error;
     history = data || [];
+    lastTerritoryByProfileCache.clear();
   }
 
   async function loadMeetingSpots() {
@@ -898,8 +900,8 @@
       }
     }
     if (tab === 'semana') {
-      loads.push(loadWeekTemplate(), loadMeetingSpots());
-      labels.push('schedule', 'spots');
+      loads.push(loadWeekTemplate(), loadMeetingSpots(), loadHistory());
+      labels.push('schedule', 'spots', 'history');
     }
     if (tab === 'historico') {
       loads.push(loadHistory());
@@ -2096,23 +2098,60 @@
     return H().resolveTerritoryMapUrl(terr?.map_image_url ?? asn?.territories?.map_image_url, num);
   }
 
-  function scheduleTerritoryCell(row, assignment) {
-    const ctx = resolveScheduleDisplayContext(row);
-    const terr = ctx.terr;
-    const assignmentResolved = assignment || ctx.assignment;
-    const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
-    const terrNum = terr?.num ?? scheduleTerritoryNum(row);
-    const terrText = terr?.display_name || label;
-    const mapUrl = scheduleTerritoryMapUrl(row, assignmentResolved);
-    const isDesignated = !!assignmentResolved?.id;
-    const assignedClass = isDesignated ? ' terr-sched-cell--assigned' : '';
-    const title = isDesignated
-      ? `Designado · ${scheduleAssignmentTitle(assignmentResolved)}`
-      : (row.observations || label);
+  function profileActiveIndividualAssignment(profileId) {
+    if (!profileId) return null;
+    return activeAssignments.find(
+      (a) => a.profile_id === profileId
+        && a.status === 'active'
+        && isScheduleIndividualAssignment(a)
+    ) || null;
+  }
 
+  function historyEntryMatchesProfile(entry, profileId, profileName) {
+    if (!entry) return false;
+    if (profileId && entry.profile_id === profileId) return true;
+    if (!profileName) return false;
+    const entryName = historyDirigente(entry);
+    if (!entryName || entryName === '—') return false;
+    return entryName.localeCompare(profileName, 'pt-BR', { sensitivity: 'base' }) === 0;
+  }
+
+  function lastTerritoryWorkedByProfile(profileId, rowFallback) {
+    if (!profileId) return null;
+    if (lastTerritoryByProfileCache.has(profileId)) {
+      return lastTerritoryByProfileCache.get(profileId);
+    }
+
+    const profileName = profiles.find((p) => p.id === profileId)?.full_name
+      || scheduleDirigente(rowFallback);
+    const entry = history.find(
+      (h) => historyEntryMatchesProfile(h, profileId, profileName)
+        && (h.territory_id || h.territories || h.metadata?.territory_num)
+    );
+    if (entry) {
+      const terr = resolveHistoryTerritory(entry);
+      if (terr) {
+        const result = { terr, eventDate: entry.event_date };
+        lastTerritoryByProfileCache.set(profileId, result);
+        return result;
+      }
+    }
+
+    const fromRow = resolveScheduleTerritory(rowFallback);
+    if (fromRow) {
+      const result = { terr: fromRow, eventDate: null };
+      lastTerritoryByProfileCache.set(profileId, result);
+      return result;
+    }
+
+    lastTerritoryByProfileCache.set(profileId, null);
+    return null;
+  }
+
+  function scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title) {
     const inner = `
       ${terrNum != null && terrNum !== '' ? `<span class="terr-hist-terr-num">T${escapeHtml(String(terrNum))}</span>` : ''}
-      <span class="terr-hist-terr-name">${escapeHtml(terrText)}</span>
+      <span class="terr-hist-terr-name">${escapeHtml(terr?.display_name || label)}</span>
       ${mapUrl ? '<span class="material-symbols-outlined terr-hist-terr-map-icon" aria-hidden="true">map</span>' : ''}`;
 
     if (!mapUrl) {
@@ -2124,6 +2163,81 @@
         data-terr-map="${escapeHtml(mapUrl)}"
         data-terr-title="${escapeHtml(label)}"
         title="Ver mapa · ${escapeHtml(title)}">${inner}</button>`;
+  }
+
+  function scheduleTerritoryCell(row, assignment) {
+    if (H().isSundayCronogramaDay(row?.weekday_label)) {
+      const ctx = resolveScheduleDisplayContext(row);
+      const terr = ctx.terr;
+      const assignmentResolved = assignment || ctx.assignment;
+      const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
+      const terrNum = terr?.num ?? scheduleTerritoryNum(row);
+      const mapUrl = scheduleTerritoryMapUrl(row, assignmentResolved);
+      const isDesignated = !!assignmentResolved?.id;
+      const assignedClass = isDesignated ? ' terr-sched-cell--assigned' : '';
+      const title = isDesignated
+        ? `Designado · ${scheduleAssignmentTitle(assignmentResolved)}`
+        : (row.observations || label);
+      return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title);
+    }
+
+    if (row.announcement_special) {
+      return '<span class="terr-sched-cell--muted">Evento especial — sem território</span>';
+    }
+
+    const profileId = resolveScheduleProfileId(row);
+    const activeOnProfile = profileActiveIndividualAssignment(profileId);
+    const ctx = resolveScheduleDisplayContext(row);
+    const assignmentResolved = assignment || ctx.assignment;
+
+    if (activeOnProfile) {
+      const terr = activeOnProfile.territories
+        || (activeOnProfile.territory_id && territories.find((t) => t.id === activeOnProfile.territory_id))
+        || ctx.terr;
+      const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
+      const terrNum = terr?.num ?? scheduleTerritoryNum(row);
+      const mapUrl = terr
+        ? H().resolveTerritoryMapUrl(terr.map_image_url, terrNum)
+        : scheduleTerritoryMapUrl(row, activeOnProfile);
+      const assignedClass = ' terr-sched-cell--assigned';
+      const title = `Designado · ${scheduleAssignmentTitle(activeOnProfile)}`;
+      return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title);
+    }
+
+    if (profileId || (scheduleDirigente(row) && scheduleDirigente(row) !== '—')) {
+      const last = lastTerritoryWorkedByProfile(profileId, row);
+      const dateHint = last?.eventDate
+        ? ` · ${H().formatShortDate(String(last.eventDate).slice(0, 10))}`
+        : '';
+      const lastHtml = last
+        ? scheduleTerritoryInnerHtml(
+          last.terr,
+          H().territoryLabel(last.terr),
+          last.terr.num,
+          H().resolveTerritoryMapUrl(last.terr.map_image_url, last.terr.num),
+          '',
+          `Último território${dateHint}`
+        )
+        : '<span class="terr-sched-cell--muted">Nenhum registro encontrado</span>';
+
+      return `
+        <div class="terr-sched-terr-empty" data-sched-reveal-wrap>
+          <button type="button" class="terr-sched-no-terr-btn" data-sched-reveal-last-terr aria-expanded="false" title="Clique para ver o último território trabalhado">
+            Sem Territórios
+          </button>
+          <div class="terr-sched-last-terr" hidden>${lastHtml}</div>
+        </div>`;
+    }
+
+    const terr = ctx.terr;
+    const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
+    const terrNum = terr?.num ?? scheduleTerritoryNum(row);
+    const mapUrl = scheduleTerritoryMapUrl(row, assignmentResolved);
+    const assignedClass = assignmentResolved?.id ? ' terr-sched-cell--assigned' : '';
+    const title = assignmentResolved?.id
+      ? `Designado · ${scheduleAssignmentTitle(assignmentResolved)}`
+      : (row.observations || label);
+    return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, assignedClass, title);
   }
 
   function scheduleSuggestion(row) {
@@ -4902,6 +5016,17 @@
         const asn = activeAssignments.find((a) => a.id === retBtn.dataset.returnAssignment);
         if (asn && !H().isDomingoPairContextAssignment(asn, profiles)) {
           openDevolverModal(asn);
+        }
+        return;
+      }
+      const revealBtn = e.target.closest('[data-sched-reveal-last-terr]');
+      if (revealBtn) {
+        const expanded = revealBtn.getAttribute('aria-expanded') === 'true';
+        const panel = revealBtn.nextElementSibling;
+        const next = !expanded;
+        revealBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+        if (panel?.classList.contains('terr-sched-last-terr')) {
+          panel.hidden = !next;
         }
         return;
       }
