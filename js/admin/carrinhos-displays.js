@@ -17,7 +17,7 @@
     { value: 'display', label: 'Display' }
   ];
   const ITEM_UNDO_FIELDS = ['name', 'equipment_type', 'default_location', 'sort_order', 'notes'];
-  const LOC_UNDO_FIELDS = ['name', 'sort_order', 'notes'];
+  const LOC_UNDO_FIELDS = ['name', 'address', 'sort_order', 'notes'];
   const SLOT_UNDO_FIELDS = [
     'weekday_label', 'period_label', 'slot_kind', 'week_start', 'equipment_type',
     'equipment_name', 'location_name', 'publisher_names', 'sort_order', 'is_active'
@@ -68,6 +68,182 @@
   };
   let locSort = { col: 'name', dir: 'asc' };
   let locFilterSig = '';
+
+  const LOC_COLUMNS = [
+    { id: 'name', label: 'Nome' },
+    { id: 'address', label: 'Endereço' },
+    { id: 'sort', label: 'Ordem' },
+    { id: 'status', label: 'Status' },
+    { id: 'actions', label: 'Ações', locked: true }
+  ];
+  const LOC_COL_DEFAULTS = ['160px', '240px', '64px', '88px', '69px'];
+  const LOC_COL_STORAGE = 'je-eq-loc-cols';
+
+  function loadLocColVisibility() {
+    const base = Object.fromEntries(LOC_COLUMNS.map((c) => [c.id, true]));
+    try {
+      const raw = localStorage.getItem(LOC_COL_STORAGE);
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      LOC_COLUMNS.forEach((c) => {
+        if (c.locked) base[c.id] = true;
+        else if (typeof saved[c.id] === 'boolean') base[c.id] = saved[c.id];
+      });
+    } catch {
+      /* ignore */
+    }
+    return base;
+  }
+
+  let locColVisibility = loadLocColVisibility();
+
+  function saveLocColVisibility() {
+    try {
+      localStorage.setItem(LOC_COL_STORAGE, JSON.stringify(locColVisibility));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function isLocColVisible(id) {
+    if (id === 'actions') return true;
+    return locColVisibility[id] !== false;
+  }
+
+  function visibleLocColCount() {
+    return LOC_COLUMNS.filter((c) => isLocColVisible(c.id)).length;
+  }
+
+  function tagLocColgroup(table) {
+    const cols = table?.querySelectorAll('colgroup col');
+    if (!cols?.length) return;
+    LOC_COLUMNS.forEach((col, i) => {
+      if (cols[i]) cols[i].dataset.locCol = col.id;
+    });
+  }
+
+  function locColVisible(cell) {
+    return cell && !cell.classList.contains('terr-sched-col--hidden');
+  }
+
+  function applyLocColVisibility() {
+    const table = document.querySelector('#eq-loc-scroll .eq-loc-table');
+    if (!table) return;
+    LOC_COLUMNS.forEach((col) => {
+      const hidden = !isLocColVisible(col.id);
+      table.querySelectorAll(`[data-loc-col="${col.id}"]`).forEach((el) => {
+        el.classList.toggle('terr-sched-col--hidden', hidden);
+        if (hidden) el.setAttribute('aria-hidden', 'true');
+        else el.removeAttribute('aria-hidden');
+      });
+    });
+    tagLocColgroup(table);
+    initEqLocColResize();
+    const emptyTd = table.querySelector('.eq-loc-empty-td');
+    if (emptyTd) emptyTd.colSpan = visibleLocColCount();
+  }
+
+  function renderLocColsMenu() {
+    const menu = document.getElementById('eq-loc-cols-menu');
+    if (!menu) return;
+    const checks = LOC_COLUMNS.filter((c) => !c.locked).map((col) => `
+      <label class="terr-xlf-check">
+        <input type="checkbox" data-loc-col-toggle="${col.id}" ${isLocColVisible(col.id) ? 'checked' : ''}>
+        <span>${escapeHtml(col.label)}</span>
+      </label>`).join('');
+    menu.innerHTML = `
+      <div class="terr-sched-cols-menu__head">
+        <p class="terr-xlf-menu-title">Colunas visíveis</p>
+        <button type="button" class="terr-sched-cols-menu__close" data-loc-cols-close aria-label="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div class="terr-xlf-checks">${checks}</div>
+      <div class="terr-xlf-menu-actions">
+        <button type="button" class="terr-xlf-clear" data-loc-cols-reset>Restaurar todas</button>
+      </div>`;
+  }
+
+  function closeLocColsMenu() {
+    const menu = document.getElementById('eq-loc-cols-menu');
+    const btn = document.getElementById('eq-btn-loc-cols');
+    menu?.classList.add('hidden');
+    btn?.setAttribute('aria-expanded', 'false');
+  }
+
+  function setupLocColsMenu() {
+    if (window.__JELocColsMenuBound) return;
+    window.__JELocColsMenuBound = true;
+    renderLocColsMenu();
+    const wrap = document.getElementById('eq-loc-cols-wrap');
+    const btn = document.getElementById('eq-btn-loc-cols');
+    const menu = document.getElementById('eq-loc-cols-menu');
+    if (!wrap || !btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = menu.classList.contains('hidden');
+      document.querySelectorAll('.terr-sched-cols-menu').forEach((m) => m.classList.add('hidden'));
+      if (open) {
+        renderLocColsMenu();
+        menu.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeLocColsMenu();
+      }
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (e.target.closest('[data-loc-cols-close]')) {
+        closeLocColsMenu();
+        return;
+      }
+      const reset = e.target.closest('[data-loc-cols-reset]');
+      if (!reset) return;
+      locColVisibility = Object.fromEntries(LOC_COLUMNS.map((c) => [c.id, true]));
+      saveLocColVisibility();
+      renderLocColsMenu();
+      applyLocColVisibility();
+    });
+
+    menu.addEventListener('change', (e) => {
+      const box = e.target.closest('[data-loc-col-toggle]');
+      if (!box) return;
+      const id = box.dataset.locColToggle;
+      if (!id || id === 'actions') return;
+      const nextVisible = box.checked;
+      const othersVisible = LOC_COLUMNS.filter((c) => !c.locked && c.id !== id && isLocColVisible(c.id)).length;
+      if (!nextVisible && othersVisible < 1) {
+        box.checked = true;
+        showToast(toast, 'Deixe pelo menos uma coluna visível.', true);
+        return;
+      }
+      locColVisibility[id] = nextVisible;
+      saveLocColVisibility();
+      applyLocColVisibility();
+    });
+
+    document.addEventListener('click', () => closeLocColsMenu());
+    document.addEventListener('scroll', (e) => {
+      if (!menu.classList.contains('hidden') && e.target instanceof Node && menu.contains(e.target)) return;
+      closeLocColsMenu();
+    }, true);
+    menu.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+    window.addEventListener('resize', () => closeLocColsMenu());
+  }
+
+  function initEqLocColResize() {
+    const R = window.JETerrColumnResize;
+    if (!R) return;
+    R.mountTable({
+      key: 'eq-loc-v1',
+      table: document.querySelector('#eq-loc-scroll .eq-loc-table'),
+      defaults: LOC_COL_DEFAULTS,
+      isColVisible: locColVisible
+    });
+  }
+
   let catalogCache = { equipmentByType: null, locations: null };
   let inlinePubSearchTimer = null;
   let tabsRendered = {
@@ -904,7 +1080,7 @@
   async function fetchLocations() {
     const { data, error } = await client
       .from('equipment_locations')
-      .select('id, name, sort_order, is_active, notes')
+      .select('id, name, address, sort_order, is_active, notes')
       .order('sort_order')
       .order('name');
     if (error) throw error;
@@ -941,6 +1117,9 @@
         case 'name':
           cmp = a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
           break;
+        case 'address':
+          cmp = String(a.address || '').localeCompare(String(b.address || ''), 'pt-BR', { sensitivity: 'base' });
+          break;
         case 'sort':
           cmp = (a.sort_order || 0) - (b.sort_order || 0);
           break;
@@ -961,6 +1140,7 @@
     if (q) {
       list = list.filter((row) =>
         row.name.toLowerCase().includes(q)
+        || (row.address || '').toLowerCase().includes(q)
         || (row.notes || '').toLowerCase().includes(q)
       );
     }
@@ -974,14 +1154,15 @@
     syncLocFilterOptions();
     const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(locFilter.name));
     return `
-      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'name', label: 'Local', filterKey: 'name', options: nameOpts, wrap: 'span' })}
-      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'sort', label: 'Ordem', wrap: 'span' })}
-      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'span' })}
-      <span class="terr-xlf-head-cell terr-xlf-head-cell--actions" aria-hidden="true"></span>`;
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'name', label: 'Nome', filterKey: 'name', options: nameOpts, wrap: 'th', colDataKey: 'loc' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'address', label: 'Endereço', wrap: 'th', colDataKey: 'loc' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'sort', label: 'Ordem', wrap: 'th', colDataKey: 'loc' })}
+      ${xlf.xlfColumnHeader('loc-sort', locSort, locFilter, { col: 'status', label: 'Status', filterKey: 'status', options: PUB_STATUS_OPTIONS, wrap: 'th', colDataKey: 'loc' })}
+      <th scope="col" class="terr-sched-actions-th" data-loc-col="actions" aria-hidden="true"></th>`;
   }
 
   function bindLocFilters() {
-    const scroll = document.querySelector('#eq-loc-list .eq-loc-scroll');
+    const scroll = document.getElementById('eq-loc-scroll');
     if (!scroll || !xlf) return;
     scroll.dataset.xlfScope = 'loc';
     delete scroll.dataset.xlfBound;
@@ -1001,13 +1182,14 @@
     }
     const filtersChanged = syncLocFilterOptions();
     if (filtersChanged) {
-      const head = list.querySelector('.eq-loc-row--head');
+      const head = document.querySelector('#eq-loc-scroll .eq-loc-table thead tr');
       if (head) head.innerHTML = locHeaderRow();
-      const scroll = list.querySelector('.eq-loc-scroll');
+      const scroll = document.getElementById('eq-loc-scroll');
       if (scroll) {
         delete scroll.dataset.xlfBound;
         bindLocFilters();
       }
+      initEqLocColResize();
     }
     renderLocationsTable({ updateUi: filtersChanged });
   }
@@ -1032,8 +1214,8 @@
 
     if (stats) updateLocStats();
     if (updateUi && xlf) {
-      xlf.xlfUpdateSortUI(list?.querySelector('.eq-loc-scroll'), 'loc-sort', locSort);
-      xlf.xlfUpdateFilterUI(list?.querySelector('.eq-loc-scroll'), locFilter);
+      xlf.xlfUpdateSortUI(document.getElementById('eq-loc-scroll'), 'loc-sort', locSort);
+      xlf.xlfUpdateFilterUI(document.getElementById('eq-loc-scroll'), locFilter);
     }
     const filtered = getFilteredLocations();
     const editingId = inlineLocDraft?.mode === 'edit' ? inlineLocDraft.id : '';
@@ -1045,7 +1227,7 @@
     if (displayRows.length) {
       bodyHtml += displayRows.map((row) => {
       const isActive = row.is_active !== false;
-      const inactiveClass = isActive ? '' : ' eq-loc-row--inactive';
+      const inactiveClass = isActive ? '' : ' eq-loc-tr--inactive';
       const statusHtml = isActive
         ? '<span class="eq-pub-status eq-pub-status--active">Ativo</span>'
         : '<span class="eq-pub-status eq-pub-status--inactive">Inativo</span>';
@@ -1055,29 +1237,38 @@
       const notesHint = row.notes ? ` · ${row.notes}` : '';
 
       return `
-        <div class="eq-loc-row${inactiveClass}" data-loc-id="${row.id}" title="${escapeHtml(row.name + notesHint)}">
-          <span class="eq-loc-name">
-            <span class="material-symbols-outlined eq-loc-pin" aria-hidden="true">location_on</span>
-            <span>${escapeHtml(row.name)}</span>
-          </span>
-          <span class="eq-loc-sort">${escapeHtml(String(row.sort_order ?? 0))}</span>
-          <span class="eq-pub-status-cell">${statusHtml}</span>
-          <span class="eq-pub-actions">
-            <button type="button" class="eq-pub-icon-btn" data-eq-edit-loc="${row.id}" title="Editar">
-              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-            </button>
-            <button type="button" class="${toggleClass}" data-eq-toggle-loc="${row.id}" title="${toggleTitle}">
-              <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
-            </button>
-          </span>
-        </div>`;
+        <tr class="eq-loc-tr${inactiveClass}" data-loc-id="${row.id}" title="${escapeHtml(row.name + notesHint)}">
+          <td data-loc-col="name" class="eq-loc-cell eq-loc-cell--name">
+            <span class="eq-loc-name">
+              <span class="material-symbols-outlined eq-loc-pin" aria-hidden="true">location_on</span>
+              <span>${escapeHtml(row.name)}</span>
+            </span>
+          </td>
+          <td data-loc-col="address" class="eq-loc-cell eq-loc-cell--address${row.address ? '' : ' terr-sched-cell--muted'}">${escapeHtml(row.address || '—')}</td>
+          <td data-loc-col="sort" class="eq-loc-cell eq-loc-cell--sort">${escapeHtml(String(row.sort_order ?? 0))}</td>
+          <td data-loc-col="status" class="eq-loc-cell eq-pub-status-cell">${statusHtml}</td>
+          <td data-loc-col="actions" class="terr-sched-actions-td">
+            <span class="eq-pub-actions">
+              <button type="button" class="eq-pub-icon-btn" data-eq-edit-loc="${row.id}" title="Editar">
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" class="${toggleClass}" data-eq-toggle-loc="${row.id}" title="${toggleTitle}">
+                <span class="material-symbols-outlined" aria-hidden="true">${toggleIcon}</span>
+              </button>
+            </span>
+          </td>
+        </tr>`;
       }).join('');
     } else if (!inlineLocDraft) {
       bodyHtml = `
-        <div class="eq-pub-empty !border-0 !rounded-none">
-          <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
-          <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
-        </div>`;
+        <tr>
+          <td colspan="${visibleLocColCount()}" class="eq-loc-empty-td">
+            <div class="eq-pub-empty !border-0 !rounded-none">
+              <span class="material-symbols-outlined" aria-hidden="true">search_off</span>
+              <p class="text-sm">${locations.length ? 'Nenhum local corresponde ao filtro.' : 'Nenhum local cadastrado.'}</p>
+            </div>
+          </td>
+        </tr>`;
     }
 
     body.innerHTML = bodyHtml;
@@ -1099,6 +1290,7 @@
     if (inlineLocDraft) {
       document.getElementById('eq-inline-loc-name')?.focus();
     }
+    applyLocColVisibility();
   }
 
   function renderLocations() {
@@ -1118,19 +1310,24 @@
 
     if (!document.getElementById('eq-loc-table-body')) {
       list.innerHTML = `
-        <div class="eq-loc-scroll">
+        <div class="eq-loc-scroll" id="eq-loc-scroll">
           <div class="eq-loc-panel">
-            <div class="eq-loc-row eq-loc-row--head">${xlf ? locHeaderRow() : `
-              <span>Local</span>
-              <span>Ordem</span>
-              <span>Status</span>
-              <span></span>`}
-            </div>
-            <div id="eq-loc-table-body"></div>
+            <table class="eq-loc-table terr-sched-table">
+              <thead><tr>${xlf ? locHeaderRow() : `
+                <th scope="col" data-loc-col="name">Nome</th>
+                <th scope="col" data-loc-col="address">Endereço</th>
+                <th scope="col" data-loc-col="sort">Ordem</th>
+                <th scope="col" data-loc-col="status">Status</th>
+                <th scope="col" class="terr-sched-actions-th" data-loc-col="actions" aria-hidden="true"></th>`}
+              </tr></thead>
+              <tbody id="eq-loc-table-body"></tbody>
+            </table>
             <p id="eq-loc-table-foot" class="eq-pub-foot"></p>
           </div>
         </div>`;
       bindLocFilters();
+      setupLocColsMenu();
+      applyLocColVisibility();
     }
 
     renderLocationsTable({ updateUi: true });
@@ -1165,6 +1362,7 @@
     if (row) {
       document.getElementById('eq-loc-id').value = row.id;
       document.getElementById('eq-loc-name').value = row.name;
+      document.getElementById('eq-loc-address').value = row.address || '';
       document.getElementById('eq-loc-sort').value = String(row.sort_order ?? 0);
       document.getElementById('eq-loc-notes').value = row.notes || '';
       syncLocModalPreview();
@@ -1187,6 +1385,7 @@
     const id = document.getElementById('eq-loc-id').value;
     const payload = {
       name: document.getElementById('eq-loc-name').value.trim(),
+      address: document.getElementById('eq-loc-address').value.trim() || null,
       sort_order: parseInt(document.getElementById('eq-loc-sort').value, 10) || 0,
       notes: document.getElementById('eq-loc-notes').value.trim() || null,
       updated_at: new Date().toISOString()
@@ -1213,7 +1412,7 @@
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...payload, is_active: true })
-        .select('id, name, sort_order, is_active, notes')
+        .select('id, name, address, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -1242,6 +1441,7 @@
     return {
       id: row?.id || '',
       name: row?.name || '',
+      address: row?.address || '',
       sort_order: row?.sort_order ?? 0,
       notes: row?.notes || ''
     };
@@ -1287,6 +1487,7 @@
     return {
       id: inlineLocDraft?.id || '',
       name: document.getElementById('eq-inline-loc-name')?.value.trim() || '',
+      address: inlineLocDraft?.address?.trim() || null,
       sort_order: parseInt(document.getElementById('eq-inline-loc-sort')?.value, 10) || 0,
       notes: document.getElementById('eq-inline-loc-notes')?.value.trim() || null,
       updated_at: new Date().toISOString()
@@ -1318,7 +1519,7 @@
       const { data: inserted, error } = await client
         .from('equipment_locations')
         .insert({ ...data, is_active: true })
-        .select('id, name, sort_order, is_active, notes')
+        .select('id, name, address, sort_order, is_active, notes')
         .single();
       if (error) {
         showToast(toast, error.message.includes('equipment_locations_name_unique')
@@ -2210,7 +2411,7 @@
           },
           {
             title: 'Enviar enquete semanal',
-            hint: 'Terça a domingo · disponibilidade dos irmãos',
+            hint: 'Domingo · disponibilidade dos irmãos',
             icon: 'poll'
           }
         ]
@@ -2345,20 +2546,22 @@
           : '';
         return `
           <li class="eq-check-item-wrap">
-            <label class="eq-check-item${checked ? ' eq-check-item--done' : ''}">
-              <input type="checkbox" data-eq-check-idx="${currentIdx}" ${checked ? 'checked' : ''}/>
-              <span class="eq-check-item__box" aria-hidden="true">
-                <span class="material-symbols-outlined" aria-hidden="true">check</span>
-              </span>
-              <span class="eq-check-item__body">
-                <span class="eq-check-item__title-row">
-                  <span class="material-symbols-outlined eq-check-item__icon" aria-hidden="true">${escapeHtml(item.icon || 'check_circle')}</span>
-                  <span class="eq-check-item__title">${escapeHtml(item.title)}</span>
+            <div class="eq-check-item${checked ? ' eq-check-item--done' : ''}">
+              <label class="eq-check-item__check">
+                <input type="checkbox" data-eq-check-idx="${currentIdx}" ${checked ? 'checked' : ''}/>
+                <span class="eq-check-item__box" aria-hidden="true">
+                  <span class="material-symbols-outlined" aria-hidden="true">check</span>
                 </span>
-                <span class="eq-check-item__hint">${escapeHtml(item.hint || '')}</span>
-              </span>
-            </label>
-            ${actionBtn}
+                <span class="eq-check-item__body">
+                  <span class="eq-check-item__title-row">
+                    <span class="material-symbols-outlined eq-check-item__icon" aria-hidden="true">${escapeHtml(item.icon || 'check_circle')}</span>
+                    <span class="eq-check-item__title">${escapeHtml(item.title)}</span>
+                  </span>
+                  <span class="eq-check-item__hint">${escapeHtml(item.hint || '')}</span>
+                </span>
+              </label>
+              ${actionBtn}
+            </div>
           </li>`;
       }).join('');
       return `
@@ -2430,6 +2633,7 @@
       const actionBtn = e.target.closest('[data-eq-check-action]');
       if (actionBtn) {
         e.preventDefault();
+        e.stopPropagation();
         runChecklistAction(actionBtn.dataset.eqCheckAction);
       }
     });
@@ -2623,7 +2827,7 @@
     document.getElementById('eq-panel-locais')?.addEventListener('click', async (e) => {
       const editBtn = e.target.closest('[data-eq-edit-loc]');
       if (editBtn) {
-        startEditLocInline(locations.find((l) => l.id === editBtn.dataset.eqEditLoc));
+        openLocModal(locations.find((l) => l.id === editBtn.dataset.eqEditLoc));
         return;
       }
       const toggleBtn = e.target.closest('[data-eq-toggle-loc]');

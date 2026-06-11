@@ -148,6 +148,12 @@
           <p>Praças, estações e pontos fixos · referência para equipamentos e cronograma</p>
         </div>
         <span class="eq-pub-count shrink-0" id="eq-loc-count">— cadastrados</span>
+        <div class="terr-sched-cols-wrap" id="eq-loc-cols-wrap">
+          <button type="button" id="eq-btn-loc-cols" class="eq-sched-toolbar-btn eq-sched-toolbar-btn--ghost" aria-expanded="false" aria-haspopup="true" title="Mostrar ou ocultar colunas">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">view_column</span>Colunas
+          </button>
+          <div id="eq-loc-cols-menu" class="terr-sched-cols-menu hidden" role="dialog" aria-label="Colunas dos locais"></div>
+        </div>
         <button type="button" id="eq-btn-add-loc" class="eq-sched-toolbar-btn eq-sched-toolbar-btn--accent">
           <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>
           Adicionar local
@@ -167,7 +173,7 @@
 
       <div class="eq-pub-search-wrap">
         <span class="material-symbols-outlined eq-pub-search-icon" aria-hidden="true">search</span>
-        <input id="eq-loc-search" type="search" class="eq-pub-search" placeholder="Buscar por nome ou observação…" autocomplete="off"/>
+        <input id="eq-loc-search" type="search" class="eq-pub-search" placeholder="Buscar por nome, endereço ou observação…" autocomplete="off"/>
       </div>
 
       <div id="eq-loc-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
@@ -205,6 +211,9 @@
           <div class="eq-modal-grid eq-modal-grid--loc">
             <label class="eq-modal-grid--full">Nome do local
               <input id="eq-loc-name" required class="eq-modal-input" placeholder="Ex.: Praça da Matriz, Estação Santo Amaro" autocomplete="off"/>
+            </label>
+            <label class="eq-modal-grid--full">Endereço
+              <input id="eq-loc-address" class="eq-modal-input" placeholder="Ex.: Av. Paulista, 1000 — Bela Vista" autocomplete="street-address"/>
             </label>
             <label>Ordem no catálogo
               <input id="eq-loc-sort" type="number" value="0" min="0" class="eq-modal-input" title="Menor número aparece primeiro"/>

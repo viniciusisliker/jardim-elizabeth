@@ -136,7 +136,7 @@
   }
 
   function xlfColumnHeader(sortAttr, sortState, filterState, config) {
-    const { col, label, filterKey, options, wrap = 'th', extraClass = '' } = config;
+    const { col, label, filterKey, options, wrap = 'th', extraClass = '', colDataKey = 'sched' } = config;
     const filterMap = filterKey ? filterState[filterKey] : null;
     const active = filterKey ? xlfIsActive(filterMap) : false;
     const sortActive = sortState.col === col;
@@ -172,8 +172,8 @@
           <span class="material-symbols-outlined terr-xlf-sort-icon terr-catalog-sort-icon terr-hist-sort-icon" aria-hidden="true">${sortIcon}</span>
         </button>${filterUi}
       </div>`;
-    if (wrap === 'th') return `<th scope="col" class="${extraClass}" data-sched-col="${col}">${inner}</th>`;
-    return `<span class="terr-xlf-head-cell ${extraClass}" data-sched-col="${col}">${inner}</span>`;
+    if (wrap === 'th') return `<th scope="col" class="${extraClass}" data-${colDataKey}-col="${col}">${inner}</th>`;
+    return `<span class="terr-xlf-head-cell ${extraClass}" data-${colDataKey}-col="${col}">${inner}</span>`;
   }
 
   function bindXlfPanel(root, sortAttr, filterState, sortState, onRefresh) {
