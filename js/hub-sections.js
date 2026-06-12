@@ -63,11 +63,11 @@
       partial: 'hub/sections/discursos.html',
       styles: [
         'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/discursos.css?v=2026060980'
+        'css/hub-sections/discursos.css?v=2026061315'
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
-        'js/admin/discursos-publicos.js?v=2026060980'
+        'js/admin/discursos-publicos.js?v=2026061315'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {

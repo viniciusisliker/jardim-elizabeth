@@ -36,21 +36,17 @@
       </div>
 
       <div id="dp-stats" class="dp-stats" aria-live="polite"></div>
-      <div id="dp-timeline" class="dp-timeline" role="tablist" aria-label="Linha do tempo do mês"></div>
 
-      <details class="dp-add-menu" id="dp-add-menu">
-        <summary class="dp-add-menu-toggle">
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
-          Adicionar linha
-        </summary>
-        <div class="dp-toolbar-actions">
-          <button type="button" id="dp-btn-regen-saturdays" class="dp-mini-btn"><span class="material-symbols-outlined" aria-hidden="true">refresh</span>Regenerar sábados</button>
-          <button type="button" id="dp-btn-add-speech" class="dp-mini-btn">+ Discurso</button>
-          <button type="button" id="dp-btn-add-convention" class="dp-mini-btn">+ Congresso</button>
-          <button type="button" id="dp-btn-add-special" class="dp-mini-btn">+ Visita SC</button>
-          <button type="button" id="dp-btn-add-note" class="dp-mini-btn">+ Nota</button>
+      <div class="dp-editor-tools">
+        <div id="dp-timeline" class="dp-timeline" role="tablist" aria-label="Linha do tempo do mês"></div>
+        <div class="dp-toolbar-actions" aria-label="Ações do arranjo">
+          <button type="button" id="dp-btn-regen-saturdays" class="dp-mini-btn" title="Regenerar sábados"><span class="material-symbols-outlined" aria-hidden="true">refresh</span><span class="dp-mini-btn__text">Sábados</span></button>
+          <button type="button" id="dp-btn-add-speech" class="dp-mini-btn" title="Adicionar discurso">+ Discurso</button>
+          <button type="button" id="dp-btn-add-convention" class="dp-mini-btn" title="Adicionar congresso">+ Congresso</button>
+          <button type="button" id="dp-btn-add-special" class="dp-mini-btn" title="Adicionar visita SC">+ Visita SC</button>
+          <button type="button" id="dp-btn-add-note" class="dp-mini-btn" title="Adicionar nota">+ Nota</button>
         </div>
-      </details>
+      </div>
 
       <div class="dp-workspace">
         <nav id="dp-nav" class="dp-nav" aria-label="Entradas do mês"></nav>

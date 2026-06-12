@@ -555,13 +555,6 @@
     showToast(toastEl, 'Arranjo salvo. Orador e tema aparecem no Quadro — Final de Semana.');
   }
 
-  function syncAddMenuLayout() {
-    const menu = $('dp-add-menu');
-    if (!menu) return;
-    if (window.matchMedia('(min-width: 1024px)').matches) menu.setAttribute('open', '');
-    else menu.removeAttribute('open');
-  }
-
   async function init() {
     if (window.__JEAdminDiscursosInit) return true;
     const profile = await guardPermission('public_speeches');
@@ -596,9 +589,6 @@
       if (e.key === 'ArrowLeft') selectEntry(activeTab, selection[activeTab] - 1);
       if (e.key === 'ArrowRight') selectEntry(activeTab, selection[activeTab] + 1);
     });
-
-    syncAddMenuLayout();
-    window.addEventListener('resize', syncAddMenuLayout, { passive: true });
 
     await loadBoard({ silent: true });
     return true;
