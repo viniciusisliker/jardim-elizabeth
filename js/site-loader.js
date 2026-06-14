@@ -980,10 +980,38 @@
     ensureMaterialSymbolsLoaded();
   }
 
+  function loadScriptOnce(src) {
+    if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Script ${src}`));
+      document.body.appendChild(script);
+    });
+  }
+
+  function ensurePwaAssets() {
+    if (document.body?.classList.contains('hub-page')) return;
+    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026062412`;
+    if (!document.querySelector(`link[href="${cssHref}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = cssHref;
+      document.head.appendChild(link);
+    }
+    Promise.all([
+      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026062412`),
+      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026062412`)
+    ]).catch((err) => console.warn('PWA assets:', err));
+  }
+
   async function boot() {
     ensureFavicon();
     ensureMaterialSymbols();
     materialSymbolsReady();
+    ensurePwaAssets();
 
     loadComponent(`${assetBase}/components/header.html`, 'header', () => {
       highlightActiveNav();

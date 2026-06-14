@@ -2,8 +2,15 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-06-09',
+    version: '2026-06-24',
     items: [
+      {
+        date: '24 jun 2026',
+        tag: 'Hub',
+        icon: 'notifications',
+        title: 'Notificações e app no celular',
+        body: 'Sino no Hub para avisos da equipe. Instale o site na tela inicial pelo botão Baixar app — no celular aparece um banner de sugestão.'
+      },
       {
         date: '9 jun 2026',
         tag: 'Meu Perfil',

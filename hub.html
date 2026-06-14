@@ -43,6 +43,8 @@
     }
   </script>
 
+  <link href="css/hub-notifications.css?v=2026062412" rel="stylesheet"/>
+  <link href="css/je-pwa-install.css?v=2026062412" rel="stylesheet"/>
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     .hub-ev-action{display:inline-flex;align-items:center;padding:0.375rem 0.625rem;border-radius:0.375rem;border:1px solid #c3c6d0;background:#fff;font-size:0.6875rem;font-weight:700;line-height:1;cursor:pointer;transition:all .15s}
@@ -439,7 +441,14 @@
               <span id="hub-changelog-badge" class="hub-changelog-badge hidden">Novo</span>
             </button>
           </div>
-          <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 shrink-0 w-full lg:w-auto">
+            <div class="hub-hero-tools">
+              <div id="hub-notifications-root"></div>
+              <button type="button" class="hub-hero-tool-btn hidden" data-install-trigger aria-label="Baixar app" title="Baixar app">
+                <span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>
+              </button>
+            </div>
+            <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
             <button type="button" id="hub-user-chip-btn" class="hub-user-chip-btn" data-hub-tab="perfil" title="Meu perfil">
               <span id="hub-user-avatar" class="hub-user-avatar" aria-hidden="true"></span>
               <span class="hub-user-text">
@@ -449,11 +458,14 @@
               </span>
             </button>
           </div>
+          </div>
         </div>
       </div>
     </section>
 
     <div class="max-w-7xl mx-auto px-6 je-page-shell pb-12 hub-main flex-1 w-full">
+      <div id="je-pwa-update-slot"></div>
+      <div id="hub-install-banner-slot"></div>
       <p id="hub-admin-toast" class="hidden text-sm mb-4"></p>
 
       <div id="hub-view-home" class="hub-view">
@@ -794,7 +806,7 @@
   <script src="js/je-dialog.js?v=2026060301"></script>
   <script src="js/hub-sections.js?v=2026060973"></script>
   <script src="js/hub-events.js?v=2026060929"></script>
-  <script src="js/hub-changelog.js?v=2026060922"></script>
+  <script src="js/hub-changelog.js?v=2026062412"></script>
   <script src="js/week-input-helpers.js?v=2026060984"></script>
   <script src="js/territory-assignment-helpers.js?v=2026061054"></script>
   <div id="hub-terr-map-lightbox" class="hub-terr-map-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="hub-terr-map-lightbox-title">
@@ -812,6 +824,10 @@
   </div>
   <script src="js/hub-territory-assignment.js?v=2026061019"></script>
   <script src="js/admin-core.js?v=2026060902"></script>
-  <script src="js/hub.js?v=2026061051"></script>
+  <script src="js/hub-notifications.js?v=2026062412"></script>
+  <script src="js/hub-notifications-ui.js?v=2026062412"></script>
+  <script src="js/je-pwa-install.js?v=2026062412"></script>
+  <script src="js/je-pwa-update.js?v=2026062412"></script>
+  <script src="js/hub.js?v=2026062412"></script>
 </body>
 </html>

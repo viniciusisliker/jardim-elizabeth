@@ -327,6 +327,13 @@
     }
 
     window.dispatchEvent(new CustomEvent('hub:section', { detail: { section: targetId } }));
+    if (targetId === 'configuracoes' && currentProfile && hubClient) {
+      window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
+      window.JEPwaInstall?.bindTriggers?.();
+    }
+    if (targetId === 'perfil') {
+      window.JEPwaInstall?.bindTriggers?.();
+    }
 
     if (!loadedSections.has(targetId)) {
       initSectionModule(section).catch((err) => {
@@ -361,6 +368,10 @@
     document.body.classList.remove('hub-auth-pending');
 
     hubClient = await window.JEAuth.getClient();
+    window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
+    window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id);
+    window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
+
     const fromHash = sectionByHash(location.hash);
     await navigateTo(fromHash?.id || 'home', { replaceHash: false });
     prefetchAllowedSections(currentProfile);
@@ -385,6 +396,10 @@
         const fromHash = sectionByHash(location.hash);
         await navigateTo(fromHash?.id || 'home', { replaceHash: false });
         prefetchAllowedSections(cached);
+        window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
+        hubClient = await window.JEAuth.getClient();
+        window.JEHubNotificationsUi?.initBell?.(hubClient, cached.id);
+        window.JEHubNotificationsUi?.initSendForm?.(hubClient, cached);
 
         guardHubAccess()
           .then(async (access) => {
@@ -393,6 +408,7 @@
             renderHubUser(currentProfile);
             applyHubModuleVisibility(currentProfile);
             hubClient = await window.JEAuth.getClient();
+            window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
           })
           .catch((err) => console.warn('Hub auth refresh:', err));
         return;
