@@ -12,6 +12,38 @@
   const HUB_RECENT_KEY = 'je-hub-recent-sections';
   const HUB_RECENT_MAX = 4;
 
+  function releaseAuthPending() {
+    document.body.classList.remove('hub-auth-pending');
+  }
+
+  function showBootError(message) {
+    releaseAuthPending();
+    let el = document.getElementById('hub-boot-error');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'hub-boot-error';
+      el.className = 'hub-boot-error';
+      const host = document.querySelector('.hub-main') || document.querySelector('main');
+      if (host) host.prepend(el);
+    }
+    el.innerHTML =
+      `<p class="hub-boot-error__text">${String(message || 'Erro ao carregar o Hub.').replace(/</g, '&lt;')}</p>` +
+      '<div class="hub-boot-error__actions">' +
+      '<button type="button" class="hub-boot-error__btn" id="hub-boot-retry">Tentar novamente</button>' +
+      '<a class="hub-boot-error__link" href="index.html">Ir para o site</a>' +
+      '</div>';
+    el.hidden = false;
+    document.getElementById('hub-boot-retry')?.addEventListener('click', () => window.location.reload(), { once: true });
+  }
+
+  function safeHubInit(fn) {
+    try {
+      fn?.();
+    } catch (err) {
+      console.warn('Hub init partial:', err);
+    }
+  }
+
   function recordRecentSection(sectionId) {
     if (!sectionId || sectionId === 'home') return;
     try {
@@ -109,9 +141,9 @@
     return hubClient;
   }
 
-  async function guardHubAccess() {
+  async function guardHubAccess({ redirect = true } = {}) {
     if (!window.JEAuth?.hasLocalSession?.()) {
-      window.location.replace('index.html');
+      if (redirect) window.location.replace('index.html');
       return null;
     }
 
@@ -122,18 +154,18 @@
       session = await window.JEAuth.getSession();
     }
     if (!session) {
-      window.location.href = 'index.html';
+      if (redirect) window.location.href = 'index.html';
       return null;
     }
 
     const profile = await window.JEAuth.getCurrentProfile();
     if (!profile) {
-      window.location.href = 'index.html';
+      if (redirect) window.location.href = 'index.html';
       return null;
     }
 
     if (!window.JEAuth.canAccessHub(profile) && !hubAllowsProfileOnly()) {
-      window.location.href = 'index.html';
+      if (redirect) window.location.href = 'index.html';
       return null;
     }
 
@@ -440,30 +472,44 @@
 
   async function finishHubBoot(access) {
     currentProfile = access.profile;
+    releaseAuthPending();
     renderHubUser(currentProfile);
     setupHubRouter();
     applyHubModuleVisibility(currentProfile);
-    window.JEHubChangelog?.init();
-    document.body.classList.remove('hub-auth-pending');
+    safeHubInit(() => window.JEHubChangelog?.init());
+    initHubHomeTools();
 
     hubClient = await window.JEAuth.getClient();
-    window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
-    window.JEPwaInstall?.bindTriggers?.();
-    initHubHomeTools();
-    window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id);
-    window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
+    safeHubInit(() => window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' }));
+    safeHubInit(() => window.JEPwaInstall?.bindTriggers?.());
+    safeHubInit(() => window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id));
+    safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile));
 
     const fromHash = sectionByHash(location.hash);
     await navigateTo(fromHash?.id || 'home', { replaceHash: false });
     prefetchAllowedSections(currentProfile);
   }
 
+  async function bootHubServices(profile) {
+    hubClient = await window.JEAuth.getClient();
+    safeHubInit(() => window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' }));
+    safeHubInit(() => window.JEPwaInstall?.bindTriggers?.());
+    safeHubInit(() => window.JEHubNotificationsUi?.initBell?.(hubClient, profile.id));
+    safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, profile));
+    prefetchAllowedSections(profile);
+  }
+
   async function initHub() {
+    const bootError = document.getElementById('hub-boot-error');
+    if (bootError) bootError.hidden = true;
+
     try {
       if (!window.JEAuth?.hasLocalSession?.()) {
         window.location.replace('index.html');
         return;
       }
+
+      releaseAuthPending();
 
       const cached = window.JEAuth.getCachedProfile?.();
       if (cached && (window.JEAuth.canAccessHub(cached) || hubAllowsProfileOnly())) {
@@ -471,37 +517,59 @@
         renderHubUser(cached);
         setupHubRouter();
         applyHubModuleVisibility(cached);
-        window.JEHubChangelog?.init();
-        document.body.classList.remove('hub-auth-pending');
+        initHubHomeTools();
+        safeHubInit(() => window.JEHubChangelog?.init());
 
         const fromHash = sectionByHash(location.hash);
         await navigateTo(fromHash?.id || 'home', { replaceHash: false });
-        prefetchAllowedSections(cached);
-        window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
-        window.JEPwaInstall?.bindTriggers?.();
-        hubClient = await window.JEAuth.getClient();
-        window.JEHubNotificationsUi?.initBell?.(hubClient, cached.id);
-        window.JEHubNotificationsUi?.initSendForm?.(hubClient, cached);
 
-        guardHubAccess()
+        guardHubAccess({ redirect: false })
           .then(async (access) => {
-            if (!access) return;
+            if (!access) {
+              showBootError('Sessão expirada ou sem permissão. Faça login novamente.');
+              window.setTimeout(() => { window.location.href = 'index.html'; }, 3500);
+              return;
+            }
             currentProfile = access.profile;
             renderHubUser(currentProfile);
             applyHubModuleVisibility(currentProfile);
-            hubClient = await window.JEAuth.getClient();
-            window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
+            await bootHubServices(access.profile);
+            safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile));
           })
-          .catch((err) => console.warn('Hub auth refresh:', err));
+          .catch((err) => {
+            console.warn('Hub auth refresh:', err);
+            showBootError('Não foi possível validar seu acesso. Verifique a conexão.');
+          });
         return;
       }
 
-      const access = await guardHubAccess();
-      if (!access) return;
+      let access;
+      try {
+        access = await Promise.race([
+          guardHubAccess({ redirect: false }),
+          new Promise((_, reject) => {
+            window.setTimeout(() => reject(new Error('auth_timeout')), 15000);
+          })
+        ]);
+      } catch (err) {
+        showBootError(
+          err?.message === 'auth_timeout'
+            ? 'Demorou para conectar. Verifique a internet e tente novamente.'
+            : 'Erro ao validar acesso.'
+        );
+        return;
+      }
+
+      if (!access) {
+        window.location.href = 'index.html';
+        return;
+      }
+
       await finishHubBoot(access);
     } catch (err) {
       console.warn('Hub init:', err);
-      window.location.href = 'index.html';
+      releaseAuthPending();
+      showBootError('Erro ao iniciar o Hub. Recarregue a página.');
     }
   }
 

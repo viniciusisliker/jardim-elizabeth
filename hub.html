@@ -432,6 +432,19 @@
     body.hub-auth-pending #footer { visibility: hidden; }
     body.hub-auth-pending #header { visibility: hidden; }
     body.hub-auth-pending { background: #0f3462; }
+    .hub-boot-error{
+      margin:0 1.5rem 1rem;padding:1rem 1.125rem;border-radius:.75rem;
+      border:1px solid rgba(186,26,26,.25);background:#fff5f5;color:#7f1d1d
+    }
+    .hub-boot-error[hidden]{display:none!important}
+    .hub-boot-error__text{margin:0 0 .75rem;font-size:.875rem;line-height:1.45}
+    .hub-boot-error__actions{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+    .hub-boot-error__btn{
+      min-height:2.25rem;padding:.35rem .85rem;border-radius:9999px;border:none;
+      background:#0f3462;color:#fff;font-size:.72rem;font-weight:800;cursor:pointer
+    }
+    .hub-boot-error__link{font-size:.8125rem;font-weight:700;color:#3b5e97;text-decoration:none}
+    .hub-boot-error__link:hover{text-decoration:underline}
   </style>
 </head>
 
@@ -833,7 +846,7 @@
 
   <script src="js/config.js"></script>
   <script src="js/access-permissions.js"></script>
-  <script src="js/auth.js?v=2026060982"></script>
+  <script src="js/auth.js?v=2026061515"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js?v=2026060801"></script>
@@ -864,6 +877,6 @@
   <script src="js/je-pwa-install.js?v=2026061514"></script>
   <script src="js/je-pwa-update.js?v=2026061514"></script>
   <script src="js/je-push.js?v=2026061514"></script>
-  <script src="js/hub.js?v=2026061514"></script>
+  <script src="js/hub.js?v=2026061515"></script>
 </body>
 </html>

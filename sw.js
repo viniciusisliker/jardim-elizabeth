@@ -1,9 +1,10 @@
 /* Jardim Elizabeth — PWA: cache leve + push + atualização */
 
-const CACHE = 'je-shell-v1';
+const CACHE = 'je-shell-v2';
 const SHELL = [
   '/',
   '/index.html',
+  '/hub',
   '/hub.html',
   '/site.webmanifest',
   '/img/favicon.png',

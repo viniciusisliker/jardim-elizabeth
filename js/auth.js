@@ -146,19 +146,27 @@
   async function ensureSupabaseLoaded() {
     if (window.supabase) return;
     if (!supabaseLoadPromise) {
-      supabaseLoadPromise = new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${SUPABASE_CDN}"]`);
-        if (existing) {
-          existing.addEventListener('load', () => resolve(), { once: true });
-          existing.addEventListener('error', () => reject(new Error('Supabase CDN')), { once: true });
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = SUPABASE_CDN;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Supabase CDN'));
-        document.head.appendChild(script);
+      supabaseLoadPromise = Promise.race([
+        new Promise((resolve, reject) => {
+          const existing = document.querySelector(`script[src="${SUPABASE_CDN}"]`);
+          if (existing) {
+            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('error', () => reject(new Error('Supabase CDN')), { once: true });
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = SUPABASE_CDN;
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Supabase CDN'));
+          document.head.appendChild(script);
+        }),
+        new Promise((_, reject) => {
+          window.setTimeout(() => reject(new Error('Supabase CDN timeout')), 12000);
+        })
+      ]).catch((err) => {
+        supabaseLoadPromise = null;
+        throw err;
       });
     }
     await supabaseLoadPromise;
