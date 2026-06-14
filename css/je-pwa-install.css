@@ -78,3 +78,16 @@ button.je-mobile-nav-item{
 }
 .je-mobile-nav-item--install .je-mobile-nav-icon{background:#0f3462;color:#fff}
 .je-mobile-nav-item--install .je-mobile-nav-chevron{color:#3b5e97}
+
+.je-install-intro{
+  position:fixed;left:50%;bottom:max(1rem,env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:1100;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;max-width:min(100%,22rem);
+  padding:.75rem .85rem;border-radius:.875rem;border:1px solid rgba(59,94,151,.25);
+  background:#fff;box-shadow:0 12px 40px rgba(15,52,98,.18)
+}
+.je-install-intro__text{margin:0;font-size:.78rem;line-height:1.45;color:#43474f;flex:1 1 10rem}
+.je-install-intro__action{
+  min-height:2rem;padding:.35rem .7rem;border-radius:9999px;border:none;background:#0f3462;color:#fff;
+  font-size:.65rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer
+}
+.je-install-intro__close{width:1.75rem;height:1.75rem;padding:0;border:none;background:transparent;color:#43474f;font-size:1.1rem;cursor:pointer}

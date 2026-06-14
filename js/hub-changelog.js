@@ -2,8 +2,15 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-06-24',
+    version: '2026-06-15',
     items: [
+      {
+        date: '15 jun 2026',
+        tag: 'Hub',
+        icon: 'share',
+        title: 'Compartilhar app e melhorias',
+        body: 'Após instalar, o botão vira Compartilhar app (como no Nexus). Busca de módulos, recentes, push no celular, cache offline leve e link Google Maps nos territórios.'
+      },
       {
         date: '24 jun 2026',
         tag: 'Hub',

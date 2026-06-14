@@ -25,6 +25,11 @@
 .hub-notif__item-body{margin:0;font-size:.8rem;line-height:1.45;color:#43474f;white-space:pre-wrap;word-break:break-word}
 .hub-notif__item-meta{margin-top:.35rem;font-size:.62rem;letter-spacing:.04em;color:#3b5e97}
 
+.hub-notif__push{padding:.75rem 1rem;border-bottom:1px solid #eef0f4;background:#f8fbff}
+.hub-notif__push-text{margin:0 0 .5rem;font-size:.78rem;line-height:1.45;color:#43474f}
+.hub-notif__push-btn{min-height:2rem;padding:.35rem .75rem;border-radius:9999px;border:1px solid rgba(59,94,151,.3);background:#fff;color:#0f3462;font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.hub-notif__push-btn:disabled{opacity:.65;cursor:default}
+
 .hub-notif-send{margin-top:1rem}
 .hub-notif-send__form{display:grid;gap:.875rem}
 .hub-notif-send__dest{border:1px solid #e2e6ef;border-radius:.75rem;padding:.75rem;display:grid;gap:.5rem}

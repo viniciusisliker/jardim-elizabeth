@@ -994,7 +994,7 @@
 
   function ensurePwaAssets() {
     if (document.body?.classList.contains('hub-page')) return;
-    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026062413`;
+    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026061514`;
     if (!document.querySelector(`link[href="${cssHref}"]`)) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -1002,8 +1002,9 @@
       document.head.appendChild(link);
     }
     Promise.all([
-      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026062413`),
-      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026062413`)
+      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026061514`),
+      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026061514`),
+      loadScriptOnce(`${assetBase}/js/je-push.js?v=2026061514`)
     ]).catch((err) => console.warn('PWA assets:', err));
   }
 

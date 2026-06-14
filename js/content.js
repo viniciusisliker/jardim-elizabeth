@@ -372,6 +372,22 @@
       }
     }
 
+    function ensureMapsLinks() {
+      cards().forEach((card) => {
+        if (card.querySelector('.je-ter-maps-link')) return;
+        const title = card.querySelector('.je-ter-card-title')?.textContent?.trim() || 'Território';
+        const q = encodeURIComponent(`${title}, Jardim Elizabeth, São Paulo, SP`);
+        const link = document.createElement('a');
+        link.className = 'je-ter-maps-link';
+        link.href = `https://www.google.com/maps/search/?api=1&query=${q}`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">map</span><span>Google Maps</span>';
+        card.appendChild(link);
+      });
+    }
+
+    ensureMapsLinks();
     applySearch();
     openTerritoryFromHash();
     window.addEventListener('hashchange', openTerritoryFromHash);

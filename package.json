@@ -10,5 +10,9 @@
     "db:import-spreadsheet": "python scripts/import-territory-spreadsheet.py && supabase db query --linked -f supabase/manual/seed_from_spreadsheet.sql",
     "db:import-equipment-publishers": "python scripts/import-equipment-publishers.py && supabase db query --linked -f supabase/migrations/20260609350000_equipment_publishers_name.sql && supabase db query --linked -f supabase/manual/seed_equipment_publishers.sql",
     "icons:build": "python scripts/process-icon.py && powershell -ExecutionPolicy Bypass -File scripts/generate-favicons.ps1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "web-push": "^3.6.7"
   }
 }

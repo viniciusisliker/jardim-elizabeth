@@ -34,6 +34,10 @@
             <span class="hub-notif__title">Notificações</span>
             <button type="button" class="hub-notif__mark-all" id="hub-notif-mark-all" disabled>Marcar todas</button>
           </div>
+          <div class="hub-notif__push">
+            <p class="hub-notif__push-text">Receba avisos mesmo com o Hub fechado.</p>
+            <button type="button" class="hub-notif__push-btn" id="hub-notif-push-btn">Ativar no celular</button>
+          </div>
           <p class="hub-notif__error hidden" id="hub-notif-error" role="alert"></p>
           <div class="hub-notif__list" id="hub-notif-list"></div>
         </div>
@@ -177,6 +181,34 @@
     }
 
     refreshBadge();
+
+    const pushBtn = document.getElementById('hub-notif-push-btn');
+    async function syncPushBtn() {
+      if (!pushBtn || !window.JEPush) return;
+      const on = await window.JEPush.isSubscribed().catch(() => false);
+      pushBtn.textContent = on ? 'Avisos push ativos' : 'Ativar no celular';
+      pushBtn.disabled = on;
+    }
+
+    pushBtn?.addEventListener('click', async () => {
+      if (!window.JEPush) return;
+      pushBtn.disabled = true;
+      pushBtn.textContent = 'Ativando…';
+      try {
+        await window.JEPush.subscribe(client);
+        pushBtn.textContent = 'Avisos push ativos';
+      } catch (err) {
+        pushBtn.disabled = false;
+        pushBtn.textContent = 'Ativar no celular';
+        if (errEl) {
+          errEl.textContent = err?.message || 'Não foi possível ativar push.';
+          errEl.classList.remove('hidden');
+        }
+      }
+    });
+
+    syncPushBtn();
+
     return () => {
       if (channel) client.removeChannel(channel);
     };
@@ -267,6 +299,7 @@
       try {
         const count = await api().send(client, title, body, recipientId);
         setFeedback(true, dest === 'usuario' ? 'Notificação enviada.' : `Notificação enviada para ${count} membro(s).`);
+        await window.JEPush?.dispatchAfterSend?.(client, { title, body, recipientId });
         document.getElementById('hub-notif-title').value = '';
         document.getElementById('hub-notif-body').value = '';
       } catch (err) {

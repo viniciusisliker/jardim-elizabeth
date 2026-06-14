@@ -43,8 +43,8 @@
     }
   </script>
 
-  <link href="css/hub-notifications.css?v=2026062412" rel="stylesheet"/>
-  <link href="css/je-pwa-install.css?v=2026062413" rel="stylesheet"/>
+  <link href="css/hub-notifications.css?v=2026061514" rel="stylesheet"/>
+  <link href="css/je-pwa-install.css?v=2026061514" rel="stylesheet"/>
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     .hub-ev-action{display:inline-flex;align-items:center;padding:0.375rem 0.625rem;border-radius:0.375rem;border:1px solid #c3c6d0;background:#fff;font-size:0.6875rem;font-weight:700;line-height:1;cursor:pointer;transition:all .15s}
@@ -224,6 +224,30 @@
     }
     @media(min-width:768px){.hub-home-intro{padding:1.125rem 1.75rem}}
     .hub-home-intro p{font-size:0.8125rem;color:#43474f;line-height:1.5;max-width:42rem}
+    .hub-home-tools{display:flex;flex-direction:column;gap:0.75rem;padding:0 1.5rem 1rem}
+    @media(min-width:768px){.hub-home-tools{padding:0 1.75rem 1.125rem}}
+    .hub-module-search-wrap{position:relative;max-width:28rem}
+    .hub-module-search{
+      width:100%;min-height:2.75rem;padding:0.625rem 2.5rem 0.625rem 2.75rem;border-radius:0.75rem;
+      border:1px solid #e2e6ef;background:#fff;font-size:0.875rem;color:#0f3462
+    }
+    .hub-module-search:focus{outline:2px solid rgba(59,94,151,.35);outline-offset:1px}
+    .hub-module-search-icon{
+      position:absolute;left:0.85rem;top:50%;transform:translateY(-50%);
+      font-size:1.125rem!important;color:#3b5e97;pointer-events:none
+    }
+    .hub-recent-modules.hidden{display:none}
+    .hub-recent-modules__label{
+      margin:0 0 0.5rem;font-size:0.625rem;font-weight:800;letter-spacing:0.12em;
+      text-transform:uppercase;color:#3b5e97
+    }
+    .hub-recent-modules__list{display:flex;flex-wrap:wrap;gap:0.5rem}
+    .hub-recent-chip{
+      min-height:2rem;padding:0.35rem 0.75rem;border-radius:9999px;border:1px solid #dbeafe;
+      background:#eff6ff;color:#0f3462;font-size:0.72rem;font-weight:700;cursor:pointer
+    }
+    .hub-recent-chip:hover{border-color:#3b5e97;background:#dbeafe}
+    .hub-module-card.is-filtered-out,.hub-module-group.is-filtered-out{display:none!important}
 
     .hub-ev-form{background:linear-gradient(180deg,#f5f8fc 0%,#fff 12%);padding:1.25rem 1.5rem}
     @media(min-width:768px){.hub-ev-form{padding:1.5rem 1.75rem}}
@@ -445,8 +469,8 @@
             <div class="hub-hero-tools">
               <div id="hub-notifications-root"></div>
               <button type="button" class="hub-hero-install-btn" data-install-trigger aria-label="Baixar app" title="Instalar o site na tela inicial ou área de trabalho">
-                <span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>
-                <span>Baixar app</span>
+                <span class="material-symbols-outlined je-install-trigger-icon" aria-hidden="true">install_mobile</span>
+                <span class="je-install-trigger-label">Baixar app</span>
               </button>
             </div>
             <div class="hub-user-chip px-5 py-4 text-sm shrink-0 min-w-[12rem]">
@@ -476,6 +500,16 @@
         <div class="hub-modules-panel">
           <div class="hub-home-intro">
             <p>Selecione um módulo abaixo.</p>
+          </div>
+          <div class="hub-home-tools">
+            <div class="hub-module-search-wrap">
+              <span class="material-symbols-outlined hub-module-search-icon" aria-hidden="true">search</span>
+              <input id="hub-module-search" class="hub-module-search" type="search" placeholder="Buscar módulo…" autocomplete="off" aria-label="Buscar módulo do Hub"/>
+            </div>
+            <div id="hub-recent-modules" class="hub-recent-modules hidden" aria-label="Acessados recentemente">
+              <p class="hub-recent-modules__label">Recentes</p>
+              <div class="hub-recent-modules__list"></div>
+            </div>
           </div>
 
           <section class="hub-module-group">
@@ -825,10 +859,11 @@
   </div>
   <script src="js/hub-territory-assignment.js?v=2026061019"></script>
   <script src="js/admin-core.js?v=2026060902"></script>
-  <script src="js/hub-notifications.js?v=2026062412"></script>
-  <script src="js/hub-notifications-ui.js?v=2026062412"></script>
-  <script src="js/je-pwa-install.js?v=2026062413"></script>
-  <script src="js/je-pwa-update.js?v=2026062413"></script>
-  <script src="js/hub.js?v=2026062413"></script>
+  <script src="js/hub-notifications.js?v=2026061514"></script>
+  <script src="js/hub-notifications-ui.js?v=2026061514"></script>
+  <script src="js/je-pwa-install.js?v=2026061514"></script>
+  <script src="js/je-pwa-update.js?v=2026061514"></script>
+  <script src="js/je-push.js?v=2026061514"></script>
+  <script src="js/hub.js?v=2026061514"></script>
 </body>
 </html>

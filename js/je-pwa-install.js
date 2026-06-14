@@ -1,10 +1,13 @@
 (function () {
   const DISMISS_KEY = 'je-pwa-install-dismissed';
+  const INSTALLED_KEY = 'je-pwa-installed';
+  const INTRO_KEY = 'je-pwa-install-intro-seen';
   const DISMISS_DAYS = 14;
 
   const BRAND = {
     name: 'Jardim Elizabeth',
     shortSub: 'Congregação · site oficial',
+    shareText: 'Site oficial da Congregação Jardim Elizabeth — agenda, territórios e avisos.',
     icon: 'img/favicon.png'
   };
 
@@ -24,6 +27,21 @@
       window.matchMedia('(display-mode: fullscreen)').matches ||
       window.navigator.standalone === true
     );
+  }
+
+  function markInstalled() {
+    try {
+      localStorage.setItem(INSTALLED_KEY, '1');
+    } catch { /* ignore */ }
+  }
+
+  function hasInstalledApp() {
+    if (isStandalone()) return true;
+    try {
+      return localStorage.getItem(INSTALLED_KEY) === '1';
+    } catch {
+      return false;
+    }
   }
 
   function isIos() {
@@ -55,15 +73,59 @@
     } catch { /* ignore */ }
   }
 
+  function getShareUrl() {
+    const base = document.body?.dataset?.assetBase || '';
+    const origin = window.location.origin.replace(/\/$/, '');
+    if (base && base !== '.' && base !== './') {
+      try {
+        return new URL(base.replace(/^\.\//, ''), origin + '/').href.replace(/\/$/, '') + '/';
+      } catch { /* fall through */ }
+    }
+    return origin + '/';
+  }
+
   function getModalMode() {
-    if (isStandalone()) return 'installed';
+    if (hasInstalledApp()) return 'share';
     if (deferredPrompt) return 'native';
     if (isIos()) return 'ios';
     if (isAndroid()) return 'android';
     return 'desktop';
   }
 
-  function stepsHtml(mode) {
+  async function shareApp() {
+    const url = getShareUrl();
+    const shareData = {
+      title: BRAND.name,
+      text: BRAND.shareText,
+      url
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return 'shared';
+      } catch (err) {
+        if (err && err.name === 'AbortError') return 'cancelled';
+      }
+    }
+
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        return 'copied';
+      } catch { /* ignore */ }
+    }
+
+    return 'failed';
+  }
+
+  function stepsHtml(mode, shareFeedback) {
+    if (mode === 'share') {
+      return (
+        '<p class="je-install-modal__hint">O site já está na sua tela inicial ou área de trabalho. Envie o link para outros publicadores instalarem também.</p>' +
+        (shareFeedback ? `<p class="je-install-modal__ok">${shareFeedback}</p>` : '')
+      );
+    }
     if (mode === 'ios') {
       return (
         '<ol class="je-install-modal__steps">' +
@@ -94,9 +156,6 @@
         '</ol>'
       );
     }
-    if (mode === 'installed') {
-      return '<p class="je-install-modal__ok">Você já pode abrir pelo ícone na home ou na área de trabalho.</p>';
-    }
     return '<p class="je-install-modal__hint">Use Chrome, Edge ou Safari para instalar o site.</p>';
   }
 
@@ -112,6 +171,10 @@
   }
 
   function openModal() {
+    renderModal();
+  }
+
+  function renderModal(shareFeedback) {
     const existing = document.getElementById('je-install-modal');
     if (existing) existing.remove();
 
@@ -124,24 +187,30 @@
       '<div class="je-install-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="je-install-title">' +
       '<div class="je-install-modal__head">' +
       '<div><h2 id="je-install-title" class="je-install-modal__title">' +
-      (mode === 'installed' ? 'App instalado' : 'Baixar o app') +
+      (mode === 'share' ? 'Compartilhar o app' : 'Baixar o app') +
       '</h2>' +
-      `<p class="je-install-modal__sub">Instale o site ${BRAND.name} — acesso rápido como app nativo.</p></div>` +
+      '<p class="je-install-modal__sub">' +
+      (mode === 'share'
+        ? 'Indique o site da congregação para outros publicadores.'
+        : `Instale o site ${BRAND.name} — acesso rápido como app nativo.`) +
+      '</p></div>' +
       '<button type="button" class="je-install-modal__close" data-install-close aria-label="Fechar">' +
       '<span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>' +
       '<div class="je-install-modal__preview">' +
       `<img src="${asset(BRAND.icon)}" alt="" width="48" height="48" />` +
       `<div><p class="je-install-modal__app">${BRAND.name}</p><p class="je-install-modal__meta">${BRAND.shortSub}</p></div></div>` +
-      stepsHtml(mode) +
+      stepsHtml(mode, shareFeedback) +
       '<div class="je-install-modal__actions">' +
       (mode === 'native'
         ? '<button type="button" class="je-install-modal__primary" id="je-install-confirm">Instalar app</button>'
-        : mode === 'ios' || mode === 'android' || mode === 'desktop'
-          ? '<button type="button" class="je-install-modal__primary" data-install-close>Entendi</button>'
-          : '') +
-      (mode !== 'installed'
+        : mode === 'share'
+          ? '<button type="button" class="je-install-modal__primary" id="je-install-share">Compartilhar</button>'
+          : mode === 'ios' || mode === 'android' || mode === 'desktop'
+            ? '<button type="button" class="je-install-modal__primary" data-install-close>Entendi</button>'
+            : '') +
+      (mode !== 'share'
         ? '<button type="button" class="je-install-modal__ghost" data-install-close>Agora não</button>'
-        : '') +
+        : '<button type="button" class="je-install-modal__ghost" data-install-close>Fechar</button>') +
       '</div></div>';
 
     document.body.appendChild(overlay);
@@ -157,8 +226,34 @@
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') deferredPrompt = null;
+          if (choice.outcome === 'accepted') {
+            deferredPrompt = null;
+            markInstalled();
+          }
           closeModal();
+          updateInstallButtons();
+        });
+      });
+    }
+
+    const shareBtn = document.getElementById('je-install-share');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => {
+        shareBtn.disabled = true;
+        shareBtn.textContent = 'Compartilhando…';
+        shareApp().then((outcome) => {
+          if (outcome === 'shared') {
+            closeModal();
+            return;
+          }
+          shareBtn.disabled = false;
+          shareBtn.textContent = 'Compartilhar';
+          if (outcome === 'copied') {
+            renderModal('Link copiado para a área de transferência.');
+            return;
+          }
+          if (outcome === 'cancelled') return;
+          renderModal('Não foi possível compartilhar. Copie o link manualmente.');
         });
       });
     }
@@ -167,7 +262,7 @@
   }
 
   function injectBanner(slotSelector) {
-    if (isStandalone() || !isMobile() || isBannerDismissed()) return;
+    if (hasInstalledApp() || !isMobile() || isBannerDismissed()) return;
     const slot = typeof slotSelector === 'string' ? document.querySelector(slotSelector) : slotSelector;
     const host = slot || document.querySelector('main');
     if (!host || host.querySelector('.je-install-banner')) return;
@@ -191,12 +286,55 @@
     });
   }
 
-  function syncInstallVisibility() {
-    const hide = isStandalone();
+  function injectIntroHint() {
+    if (hasInstalledApp()) return;
+    try {
+      if (localStorage.getItem(INTRO_KEY) === '1') return;
+    } catch { return; }
+
+    if (!document.querySelector('[data-install-trigger]')) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'je-install-intro';
+    toast.innerHTML =
+      '<p class="je-install-intro__text">Instale o site como app — toque em <strong>Baixar app</strong> no menu.</p>' +
+      '<button type="button" class="je-install-intro__action" data-install-trigger>Ver como</button>' +
+      '<button type="button" class="je-install-intro__close" aria-label="Fechar">×</button>';
+
+    document.body.appendChild(toast);
+
+    const dismiss = () => {
+      toast.remove();
+      try { localStorage.setItem(INTRO_KEY, '1'); } catch { /* ignore */ }
+    };
+
+    toast.querySelector('.je-install-intro__close')?.addEventListener('click', dismiss);
+    toast.querySelector('.je-install-intro__action')?.addEventListener('click', () => {
+      dismiss();
+      openModal();
+    });
+
+    window.setTimeout(dismiss, 12000);
+  }
+
+  function updateInstallButtons() {
+    const installed = hasInstalledApp();
+    const label = installed ? 'Compartilhar app' : 'Baixar app';
+
     document.querySelectorAll('[data-install-trigger]').forEach((btn) => {
-      btn.classList.toggle('je-install-trigger--hidden', hide);
-      btn.toggleAttribute('hidden', hide);
-      btn.setAttribute('aria-hidden', hide ? 'true' : 'false');
+      btn.hidden = false;
+      btn.classList.remove('je-install-trigger--hidden');
+      btn.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+
+      btn.querySelectorAll('.je-install-trigger-icon').forEach((icon) => {
+        icon.textContent = installed ? 'share' : 'install_mobile';
+      });
+
+      btn.querySelectorAll('.je-install-trigger-label').forEach((el) => {
+        el.textContent = label;
+      });
     });
   }
 
@@ -209,12 +347,12 @@
         openModal();
       });
     });
-    syncInstallVisibility();
+    updateInstallButtons();
   }
 
   function registerSw() {
     if (!('serviceWorker' in navigator)) return;
-    if (/localhost|127\.0\.0\.1/.test(location.hostname)) return;
+
     let swUrl = '/sw.js';
     const manifest = document.querySelector('link[rel="manifest"]');
     if (manifest?.href) {
@@ -222,6 +360,7 @@
         swUrl = new URL('sw.js', manifest.href).href;
       } catch { /* keep default */ }
     }
+
     void navigator.serviceWorker.register(swUrl).then((reg) => {
       swRegistration = reg;
       window.dispatchEvent(new CustomEvent('je-pwa-registered', { detail: { registration: reg } }));
@@ -232,26 +371,30 @@
     registerSw();
     injectBanner(options.bannerSlot || null);
     bindTriggers();
+    window.setTimeout(injectIntroHint, 800);
 
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
       deferredPrompt = event;
-      bindTriggers();
+      updateInstallButtons();
     });
 
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
+      markInstalled();
       document.querySelector('.je-install-banner')?.remove();
-      bindTriggers();
+      updateInstallButtons();
     });
   }
 
   window.JEPwaInstall = {
     init,
     open: openModal,
+    share: shareApp,
     isStandalone,
+    hasInstalledApp,
     bindTriggers,
-    syncInstallVisibility,
+    updateInstallButtons,
     getRegistration: () => swRegistration
   };
 

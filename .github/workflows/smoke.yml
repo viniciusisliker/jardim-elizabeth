@@ -1,0 +1,45 @@
+name: smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check critical assets exist
+        run: |
+          test -f hub.html
+          test -f sw.js
+          test -f js/je-pwa-install.js
+          test -f js/je-push.js
+          test -f js/hub.js
+          test -f site.webmanifest
+          test -f api/push/dispatch.js
+
+      - name: Start dev server
+        run: npm run dev &
+        env:
+          PORT: 3000
+
+      - name: Wait for server
+        run: npx --yes wait-on http://127.0.0.1:3000 --timeout 30000
+
+      - name: HTTP smoke checks
+        run: |
+          curl -fsS http://127.0.0.1:3000/ | grep -qi 'Jardim Elizabeth'
+          curl -fsS http://127.0.0.1:3000/hub.html | grep -qi 'Hub Administrativo'
+          curl -fsS http://127.0.0.1:3000/sw.js | grep -qi 'service worker'
+          curl -fsS http://127.0.0.1:3000/js/je-pwa-install.js | grep -qi 'shareApp'

@@ -9,6 +9,71 @@
   let agendaDataReady = false;
   let homeExtrasReady = false;
 
+  const HUB_RECENT_KEY = 'je-hub-recent-sections';
+  const HUB_RECENT_MAX = 4;
+
+  function recordRecentSection(sectionId) {
+    if (!sectionId || sectionId === 'home') return;
+    try {
+      const raw = localStorage.getItem(HUB_RECENT_KEY);
+      let list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+      list = list.filter((id) => id !== sectionId);
+      list.unshift(sectionId);
+      localStorage.setItem(HUB_RECENT_KEY, JSON.stringify(list.slice(0, HUB_RECENT_MAX)));
+    } catch { /* ignore */ }
+  }
+
+  function renderRecentModules() {
+    const root = document.getElementById('hub-recent-modules');
+    if (!root) return;
+    const listEl = root.querySelector('.hub-recent-modules__list');
+    if (!listEl) return;
+
+    let list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(HUB_RECENT_KEY) || '[]');
+    } catch { list = []; }
+    if (!Array.isArray(list)) list = [];
+
+    const chips = list
+      .map((id) => SECTIONS[id])
+      .filter(Boolean)
+      .map((section) => {
+        const title = section.hero?.title || section.id;
+        return `<button type="button" class="hub-recent-chip" data-hub-tab="${section.id}">${title}</button>`;
+      });
+
+    if (!chips.length) {
+      root.classList.add('hidden');
+      listEl.innerHTML = '';
+      return;
+    }
+
+    root.classList.remove('hidden');
+    listEl.innerHTML = chips.join('');
+  }
+
+  function initHubHomeTools() {
+    renderRecentModules();
+
+    const search = document.getElementById('hub-module-search');
+    if (!search || search.dataset.bound === '1') return;
+    search.dataset.bound = '1';
+
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      document.querySelectorAll('.hub-module-card').forEach((card) => {
+        const text = (card.textContent || '').toLowerCase();
+        card.classList.toggle('is-filtered-out', !!q && !text.includes(q));
+      });
+      document.querySelectorAll('.hub-module-group').forEach((group) => {
+        const visible = group.querySelectorAll('.hub-module-card:not(.is-filtered-out)').length;
+        group.classList.toggle('is-filtered-out', !!q && visible === 0);
+      });
+    });
+  }
+
   const SCRIPT_GLOBALS = {
     'js/admin-core.js?v=2026060902': 'JEAdmin',
     'js/territory-assignment-helpers.js?v=2026061054': 'JETerritoryAssignment',
@@ -325,7 +390,11 @@
 
     showViews(targetId);
     updateHero(section);
-    if (targetId === 'home') ensureHomeExtras().catch((err) => console.warn('Hub home extras:', err));
+    if (targetId !== 'home') recordRecentSection(targetId);
+    if (targetId === 'home') {
+      initHubHomeTools();
+      ensureHomeExtras().catch((err) => console.warn('Hub home extras:', err));
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (replaceHash) {
@@ -380,6 +449,7 @@
     hubClient = await window.JEAuth.getClient();
     window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
     window.JEPwaInstall?.bindTriggers?.();
+    initHubHomeTools();
     window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id);
     window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
 
