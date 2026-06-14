@@ -67,14 +67,34 @@
   }
 
   async function init() {
-    if (window.__JEAdminConfigInit) return;
+    if (window.__JEAdminConfigInit) return true;
     window.__JEAdminConfigInit = true;
-    const profile = await guardPermission('settings');
-    if (!profile) return;
-    const currentProfileId = profile.id;
 
-    const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+    const profile = window.JEHubRouter?.getProfile?.() || await window.JEAuth.getCurrentProfile();
+    const canSettings = profile && window.JEAuth.hasPermission(profile, 'settings');
+    const canNotify = profile && window.JEHubNotifications?.canSend?.(profile);
+    if (!profile || (!canSettings && !canNotify)) {
+      if (window.JEAdmin?.authDeny) window.JEAdmin.authDeny();
+      else window.location.href = 'index.html';
+      return false;
+    }
+
+    const notifyOnly = canNotify && !canSettings;
     const client = await getClient();
+    const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
+
+    if (notifyOnly) {
+      document.querySelector('.cfg-stats')?.classList.add('hidden');
+      document.querySelector('.cfg-note')?.classList.add('hidden');
+      document.getElementById('cfg-designations-section')?.classList.add('hidden');
+      document.getElementById('cfg-members-section')?.classList.add('hidden');
+      document.querySelector('.cfg-foot')?.classList.add('hidden');
+      window.JEHubNotificationsUi?.initSendForm?.(client, profile);
+      window.JEPwaInstall?.bindTriggers?.();
+      return true;
+    }
+
+    const currentProfileId = profile.id;
     const isSuper = window.JEAuth.isSuperUser(profile.role);
     const xlf = window.JETableXlf;
     let members = [];
@@ -848,6 +868,8 @@
 
     await reloadCatalog();
     await reloadMembers();
+    window.JEHubNotificationsUi?.initSendForm?.(client, profile);
+    return true;
   }
 
   window.JEAdminConfiguracoes = { init };

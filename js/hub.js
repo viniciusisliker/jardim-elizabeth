@@ -78,7 +78,11 @@
   function applyHubModuleVisibility(profile) {
     document.querySelectorAll('[data-hub-requires-permission]').forEach((el) => {
       const perm = el.dataset.hubRequiresPermission;
-      el.classList.toggle('hidden', !window.JEAuth.hasPermission(profile, perm));
+      let allowed = window.JEAuth.hasPermission(profile, perm);
+      if (!allowed && perm === 'settings' && window.JEHubNotifications?.canSend?.(profile)) {
+        allowed = true;
+      }
+      el.classList.toggle('hidden', !allowed);
     });
 
     document.querySelectorAll('.hub-module-group').forEach((group) => {
@@ -300,9 +304,15 @@
     const section = SECTIONS[sectionId] || SECTIONS.home;
     const targetId = section.id;
 
-    if (section.permission && currentProfile && !window.JEAuth.hasPermission(currentProfile, section.permission)) {
-      window.JEToast?.show('Você não tem permissão para acessar esta área.', { error: true });
-      if (targetId !== 'home') return navigateTo('home', { replaceHash: true });
+    if (section.permission && currentProfile) {
+      let allowed = window.JEAuth.hasPermission(currentProfile, section.permission);
+      if (!allowed && section.id === 'configuracoes' && window.JEHubNotifications?.canSend?.(currentProfile)) {
+        allowed = true;
+      }
+      if (!allowed) {
+        window.JEToast?.show('Você não tem permissão para acessar esta área.', { error: true });
+        if (targetId !== 'home') return navigateTo('home', { replaceHash: true });
+      }
     }
 
     try {
@@ -369,6 +379,7 @@
 
     hubClient = await window.JEAuth.getClient();
     window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
+    window.JEPwaInstall?.bindTriggers?.();
     window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id);
     window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
 
@@ -397,6 +408,7 @@
         await navigateTo(fromHash?.id || 'home', { replaceHash: false });
         prefetchAllowedSections(cached);
         window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' });
+        window.JEPwaInstall?.bindTriggers?.();
         hubClient = await window.JEAuth.getClient();
         window.JEHubNotificationsUi?.initBell?.(hubClient, cached.id);
         window.JEHubNotificationsUi?.initSendForm?.(hubClient, cached);

@@ -202,7 +202,7 @@
       styles: ['css/hub-sections/configuracoes.css?v=2026061065'],
       scripts: [
         'js/admin/table-xlf.js?v=2026061058',
-        'js/admin/configuracoes.js?v=2026061065'
+        'js/admin/configuracoes.js?v=2026062413'
       ],
       initKey: 'JEAdminConfiguracoes',
       hero: {
