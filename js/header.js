@@ -452,5 +452,7 @@
     }
 
     window.addEventListener('je:profile-updated', onProfileUpdated);
+
+    window.JEPwaInstall?.bindTriggers?.();
   };
 })();

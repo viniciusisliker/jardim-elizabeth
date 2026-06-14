@@ -57,10 +57,10 @@
 
   function getModalMode() {
     if (isStandalone()) return 'installed';
-    if (isIos()) return 'ios';
     if (deferredPrompt) return 'native';
+    if (isIos()) return 'ios';
     if (isAndroid()) return 'android';
-    return 'unavailable';
+    return 'desktop';
   }
 
   function stepsHtml(mode) {
@@ -85,10 +85,19 @@
     if (mode === 'native') {
       return '<p class="je-install-modal__hint">Toque em instalar — o app vai para sua tela inicial em segundos.</p>';
     }
-    if (mode === 'installed') {
-      return '<p class="je-install-modal__ok">Você já pode abrir pelo ícone na home.</p>';
+    if (mode === 'desktop') {
+      return (
+        '<ol class="je-install-modal__steps">' +
+        '<li><span class="je-install-modal__num">1</span><span>No <strong>Chrome</strong> ou <strong>Edge</strong>, procure o ícone de instalar (⊕ ou monitor) na barra de endereço</span></li>' +
+        '<li><span class="je-install-modal__num">2</span><span>Ou abra o menu (⋮) e escolha <strong>Instalar Jardim Elizabeth</strong> / <strong>Instalar aplicativo</strong></span></li>' +
+        '<li><span class="je-install-modal__num">3</span><span>Confirme — o site abre como app na sua área de trabalho ou menu Iniciar</span></li>' +
+        '</ol>'
+      );
     }
-    return '<p class="je-install-modal__hint">Abra no Chrome (Android) ou Safari (iPhone) para instalar o site.</p>';
+    if (mode === 'installed') {
+      return '<p class="je-install-modal__ok">Você já pode abrir pelo ícone na home ou na área de trabalho.</p>';
+    }
+    return '<p class="je-install-modal__hint">Use Chrome, Edge ou Safari para instalar o site.</p>';
   }
 
   function closeModal() {
@@ -127,7 +136,7 @@
       '<div class="je-install-modal__actions">' +
       (mode === 'native'
         ? '<button type="button" class="je-install-modal__primary" id="je-install-confirm">Instalar app</button>'
-        : mode === 'ios' || mode === 'android'
+        : mode === 'ios' || mode === 'android' || mode === 'desktop'
           ? '<button type="button" class="je-install-modal__primary" data-install-close>Entendi</button>'
           : '') +
       (mode !== 'installed'
@@ -182,14 +191,25 @@
     });
   }
 
+  function syncInstallVisibility() {
+    const hide = isStandalone();
+    document.querySelectorAll('[data-install-trigger]').forEach((btn) => {
+      btn.classList.toggle('je-install-trigger--hidden', hide);
+      btn.toggleAttribute('hidden', hide);
+      btn.setAttribute('aria-hidden', hide ? 'true' : 'false');
+    });
+  }
+
   function bindTriggers() {
     document.querySelectorAll('[data-install-trigger]').forEach((btn) => {
       if (btn.dataset.installBound === '1') return;
       btn.dataset.installBound = '1';
-      btn.addEventListener('click', openModal);
-      if (isStandalone()) btn.classList.add('hidden');
-      else btn.classList.remove('hidden');
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal();
+      });
     });
+    syncInstallVisibility();
   }
 
   function registerSw() {
@@ -231,6 +251,7 @@
     open: openModal,
     isStandalone,
     bindTriggers,
+    syncInstallVisibility,
     getRegistration: () => swRegistration
   };
 

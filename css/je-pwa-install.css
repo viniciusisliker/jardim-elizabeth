@@ -39,3 +39,42 @@ body.je-install-open{overflow:hidden}
 .je-pwa-update__ghost{min-height:2.25rem;padding:.35rem .75rem;border-radius:9999px;border:1px solid #e2e6ef;background:#fff;color:#43474f;font-size:.75rem;font-weight:600;cursor:pointer}
 
 .perf-install{margin-top:.75rem}
+
+.je-install-trigger--hidden{display:none!important}
+
+.hub-hero-install-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  min-height:2.5rem;padding:.45rem .95rem;border-radius:9999px;
+  border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;
+  font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,transform .15s
+}
+.hub-hero-install-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(200,169,110,.5);transform:translateY(-1px)}
+.hub-hero-install-btn .material-symbols-outlined{font-size:1.15rem;line-height:1}
+
+.je-site-install-btn{
+  width:auto;min-width:2.5rem;padding:0 .75rem 0 .625rem;gap:.35rem;
+  border-color:rgba(59,94,151,.25);background:linear-gradient(135deg,#fff 0%,#f5f8fc 100%);
+  color:#0f3462;font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase
+}
+.je-site-install-btn:hover{border-color:#3b5e97;background:#eff6ff}
+.je-site-install-btn__label{display:none}
+@media(min-width:1024px){
+  .je-site-install-btn__label{display:inline}
+}
+@media(max-width:1023px){
+  .je-site-actions .je-site-install-btn{display:none}
+}
+
+button.je-mobile-nav-item{
+  width:100%;font-family:inherit;text-align:left;cursor:pointer;
+  appearance:none;-webkit-appearance:none
+}
+.je-mobile-nav-item--install{
+  margin-bottom:.75rem;
+  background:linear-gradient(135deg,#eff6ff 0%,#fff 100%);
+  border-color:rgba(59,94,151,.35)
+}
+.je-mobile-nav-item--install .je-mobile-nav-icon{background:#0f3462;color:#fff}
+.je-mobile-nav-item--install .je-mobile-nav-chevron{color:#3b5e97}
