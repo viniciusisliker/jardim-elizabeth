@@ -117,6 +117,22 @@
     return null;
   }
 
+  function buildFieldMeta(a) {
+    const parts = [];
+    if (a.assigned_at) {
+      parts.push(
+        `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span>Designado em ${escapeHtml(H.formatDisplayDate(a.assigned_at))}</p>`
+      );
+    }
+    const t = a.territories || {};
+    if (t.last_worked_at) {
+      parts.push(
+        `<p class="hub-terr-meta"><span class="material-symbols-outlined" aria-hidden="true">history</span>Último trabalho em ${escapeHtml(H.formatDisplayDate(t.last_worked_at))}</p>`
+      );
+    }
+    return parts.join('');
+  }
+
   function buildScheduleMeta(scheduleRows) {
     if (!scheduleRows.length) return '';
     const sameWeek = scheduleRows.every((r) => r.week_start === scheduleRows[0].week_start);
@@ -162,6 +178,8 @@
       .filter((r) => r.observations)
       .map((r) => `<p class="hub-terr-notes">${escapeHtml(r.observations)}</p>`)
       .join('');
+    const scheduleMeta = buildScheduleMeta(scheduleRows);
+    const fieldMeta = buildFieldMeta(fieldAssignment);
 
     return `
       <article class="hub-terr-card hub-terr-card--merged">
@@ -169,7 +187,8 @@
           <p class="hub-terr-kicker">${escapeHtml(kicker)}</p>
           <h2 class="hub-terr-title">${escapeHtml(title)}</h2>
           <div class="hub-terr-details">
-            ${buildScheduleMeta(scheduleRows)}
+            ${scheduleMeta || fieldMeta}
+            ${scheduleMeta && fieldMeta ? fieldMeta : ''}
           </div>
           ${notesBlocks}
           ${renderMapLink(mapUrl, title)}
@@ -182,11 +201,13 @@
     const t = a.territories || {};
     const title = territoryTitle(t);
     const mapUrl = H.resolveTerritoryMapUrl(t.map_image_url, t.num) || '';
+    const fieldMeta = buildFieldMeta(a);
     return `
       <article class="hub-terr-card hub-terr-card--field">
         <div class="hub-terr-card-main">
           <p class="hub-terr-kicker">Seu território de campo</p>
           <h2 class="hub-terr-title">${escapeHtml(title)}</h2>
+          ${fieldMeta ? `<div class="hub-terr-details">${fieldMeta}</div>` : ''}
           ${renderMapLink(mapUrl, title) || `<a href="${escapeHtml(territoryPageUrl(t))}" class="hub-terr-link">Ver território <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>`}
         </div>
         ${renderMapThumb(mapUrl, title)}
@@ -246,7 +267,7 @@
       .from('territory_active_assignments')
       .select(`
         id, assigned_at,
-        territories ( id, num, display_name, map_image_url, slug )
+        territories ( id, num, display_name, map_image_url, slug, last_worked_at )
       `)
       .eq('profile_id', profileId)
       .eq('status', 'active')
@@ -256,6 +277,7 @@
 
     const fieldRow = fieldRows?.[0] || null;
     let scheduleRows = [];
+    let scheduleRowsAllWeek = [];
 
     const { data: templateRows, error: schedErr } = await client
       .from('territory_week_schedule')
@@ -269,7 +291,7 @@
     if (schedErr) console.warn('Hub schedule:', schedErr.message);
     else {
       const weekendByDate = await H.fetchWeekendAnnouncements(client, monday);
-      scheduleRows = (templateRows || [])
+      scheduleRowsAllWeek = (templateRows || [])
         .map((row) => H.applyWeekendDirigente(row, monday, weekendByDate, []))
         .map((row) => H.applyDomingoFixedDirigentes([row])[0])
         .filter((row) => matchesDirigente(row, profileId, profileName))
@@ -277,12 +299,15 @@
           const workDate = H.dateForWeekdayInWeek(monday, row.weekday_label);
           return { ...row, week_start: monday, work_date: workDate };
         })
-        .filter((row) => row.work_date && row.work_date >= today);
+        .filter((row) => row.work_date);
+      scheduleRows = scheduleRowsAllWeek.filter((row) => row.work_date >= today);
     }
 
     if (fieldRow) {
       const fieldKey = territoryKeyFromRow(fieldRow);
-      const matchingSchedules = scheduleRows.filter((row) => territoryKeyFromRow(row) === fieldKey);
+      const matchingSchedules = scheduleRowsAllWeek.filter(
+        (row) => territoryKeyFromRow(row) === fieldKey
+      );
       if (matchingSchedules.length) {
         matchingSchedules.forEach((row) => mergedScheduleIds.add(row.id));
         cards.push(renderMergedCard(fieldRow, matchingSchedules));
