@@ -8,7 +8,7 @@
     name: 'Jardim Elizabeth',
     shortSub: 'Congregação · site oficial',
     shareText: 'Site oficial da Congregação Jardim Elizabeth — agenda, territórios e avisos.',
-    icon: 'img/favicon.png'
+    icon: 'img/icon.png'
   };
 
   let deferredPrompt = null;
