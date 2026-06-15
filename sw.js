@@ -1,6 +1,6 @@
 /* Jardim Elizabeth — PWA: cache leve + push + atualização */
 
-const CACHE = 'je-shell-v2';
+const CACHE = 'je-shell-v3';
 const SHELL = [
   '/',
   '/index.html',
@@ -92,17 +92,26 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    (async () => {
+      const cached = await caches.match(req);
+      try {
+        const res = await fetch(req);
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
+        }
+        return res;
+      } catch {
+        if (cached) return cached;
+        if (req.mode === 'navigate') {
+          const fallback = (await caches.match('/')) || (await caches.match('/index.html'));
+          if (fallback) return fallback;
+        }
+        return new Response('Sem conexão. Tente novamente.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      }
+    })()
   );
 });
