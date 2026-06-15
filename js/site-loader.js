@@ -1018,6 +1018,7 @@
       highlightActiveNav();
       if (window.initSiteHeader) window.initSiteHeader();
       window.JEPwaInstall?.bindTriggers?.();
+      window.JETheme?.bindToggles?.();
     });
 
     loadComponent(`${assetBase}/components/footer.html`, 'footer', () => {
