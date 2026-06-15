@@ -760,7 +760,7 @@
       .je-site-brand-mark { width: 2.25rem; height: 2.25rem; }
       #mobile-menu-btn,
       #profile-btn,
-      .je-site-icon-btn { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
+      .je-site-icon-btn:not(.je-site-install-btn) { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; }
       #hub-nav-btn.is-auth-visible { display: flex !important; }
       #profile-dropdown { max-width: min(18rem, calc(100vw - 2rem)); }
       #profile-dropdown-content a,
@@ -994,7 +994,7 @@
 
   function ensurePwaAssets() {
     if (document.body?.classList.contains('hub-page')) return;
-    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026061514`;
+    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026061515`;
     if (!document.querySelector(`link[href="${cssHref}"]`)) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
