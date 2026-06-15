@@ -1,3 +1,70 @@
+/* Design tokens (light + dark variables) */
+:root {
+  --je-primary: #0f3462;
+  --je-on-primary: #ffffff;
+  --je-primary-container: #2b4b7a;
+  --je-on-primary-container: #9dbcf2;
+  --je-primary-fixed: #d6e3ff;
+  --je-on-primary-fixed: #001b3d;
+  --je-secondary: #3b5e97;
+  --je-secondary-fixed: #d6e3ff;
+  --je-secondary-fixed-dim: #aac7ff;
+  --je-secondary-container: #9cbffe;
+  --je-background: #fbf9f8;
+  --je-surface: #fbf9f8;
+  --je-surface-bright: #fbf9f8;
+  --je-on-background: #1b1c1c;
+  --je-on-surface: #1b1c1c;
+  --je-on-surface-variant: #43474f;
+  --je-outline: #747780;
+  --je-outline-variant: #c3c6d0;
+  --je-surface-container: #f0eded;
+  --je-surface-container-low: #f5f3f3;
+  --je-surface-container-high: #eae8e7;
+  --je-surface-container-highest: #e4e2e2;
+  --je-surface-container-lowest: #ffffff;
+  --je-inverse-on-surface: #f2f0f0;
+  --je-error: #ba1a1a;
+  --je-card: #ffffff;
+  --je-card-border: #e2e6ef;
+  --je-muted-border: #e8ecf2;
+  --je-accent-gold: #c8a96e;
+  --je-input-bg: #fafafa;
+}
+html.dark {
+  color-scheme: dark;
+  --je-primary: #9dbcf2;
+  --je-on-primary: #0a1628;
+  --je-primary-container: #2b4b7a;
+  --je-on-primary-container: #d6e3ff;
+  --je-primary-fixed: #1a3050;
+  --je-on-primary-fixed: #d6e3ff;
+  --je-secondary: #8eb0e8;
+  --je-secondary-fixed: #2a3f5c;
+  --je-secondary-fixed-dim: #5a7aaa;
+  --je-secondary-container: #2b4b7a;
+  --je-background: #12141c;
+  --je-surface: #12141c;
+  --je-surface-bright: #1a1d28;
+  --je-on-background: #e8eaef;
+  --je-on-surface: #e8eaef;
+  --je-on-surface-variant: #b4b9c5;
+  --je-outline: #5a6278;
+  --je-outline-variant: #3a4054;
+  --je-surface-container: #252836;
+  --je-surface-container-low: #1a1d28;
+  --je-surface-container-high: #2a2f40;
+  --je-surface-container-highest: #2f3548;
+  --je-surface-container-lowest: #1e2130;
+  --je-inverse-on-surface: #e8eaef;
+  --je-error: #f87171;
+  --je-card: #1e2130;
+  --je-card-border: #3a4054;
+  --je-muted-border: #3a4054;
+  --je-accent-gold: #d4b87a;
+  --je-input-bg: #252836;
+}
+
 /* From Uiverse.io by Galahhad - Source: https://youtu.be/S6T6hrc8cQo - Tags: switch, light&dark, bounce animation */
 .theme-switch {
   --toggle-size: 30px;
@@ -228,41 +295,3 @@
 @media(max-width:1023px){.je-site-actions .theme-switch.je-site-theme-switch{display:none}}
 @media(min-width:1024px){.je-mobile-theme-row{display:none!important}}
 
-html.dark{color-scheme:dark}
-html.dark body{background-color:#12141c;color:#e8eaef}
-html.dark .bg-background,html.dark .bg-surface{background-color:#12141c!important}
-html.dark .bg-surface-container-low{background-color:#1a1d28!important}
-html.dark .bg-surface-container-lowest,html.dark .bg-white{background-color:#1e2130!important}
-html.dark .bg-surface-container,html.dark .bg-surface-container-high{background-color:#252836!important}
-html.dark .text-on-background,html.dark .text-on-surface{color:#e8eaef!important}
-html.dark .text-on-surface-variant{color:#b4b9c5!important}
-html.dark .text-primary{color:#9dbcf2!important}
-html.dark .border-outline-variant,html.dark .border-outline{border-color:#3a4054!important}
-html.dark .je-site-header{background:rgba(18,20,28,.94)!important;border-bottom-color:rgba(255,255,255,.06)!important;box-shadow:0 4px 24px rgba(0,0,0,.35)!important}
-html.dark #header:has(+ main > section[class*="-hero"]:first-child) .je-site-header{background:#12141c!important}
-html.dark .je-site-brand-name{color:#e8eaef!important}
-html.dark .je-site-nav{background:rgba(30,33,48,.92)!important;border-color:rgba(255,255,255,.08)!important;box-shadow:0 8px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06)!important}
-html.dark .je-site-nav-link{color:#b4b9c5!important}
-html.dark .je-site-nav-link:hover{color:#e8eaef!important;background:rgba(255,255,255,.06)!important}
-html.dark .je-site-icon-btn{background:#1e2130!important;border-color:#3a4054!important;color:#c8d4ef!important}
-html.dark .je-site-icon-btn:hover{background:#252836!important;border-color:#5a6a8a!important}
-html.dark .je-site-install-btn{background:linear-gradient(135deg,#1e2130 0%,#252836 100%)!important;color:#c8d4ef!important}
-html.dark .je-mobile-menu-panel{background:#12141c!important}
-html.dark .je-mobile-nav-item{background:#1a1d28!important;border-color:#3a4054!important;color:#e8eaef!important}
-html.dark .je-mobile-theme-row{background:linear-gradient(135deg,#1a1d28 0%,#1e2130 100%)!important;border-color:#3a4054!important}
-html.dark .je-mobile-theme-label{color:#c8d4ef!important}
-html.dark .je-footer-info{background:linear-gradient(165deg,#12141c 0%,#1a1d28 48%,#151820 100%)!important}
-html.dark .je-footer-headline,html.dark .je-footer-kicker{color:#c8d4ef!important}
-html.dark .je-footer-link{color:#b4b9c5!important}
-html.dark .je-footer-bar{background:#0e1018!important;border-top-color:#3a4054!important;color:#b4b9c5!important}
-html.dark .hub-home-intro{background:linear-gradient(180deg,#1a1d28 0%,#12141c 100%)!important;border-bottom-color:#3a4054!important}
-html.dark .hub-home-intro p{color:#b4b9c5!important}
-html.dark .hub-module-search-wrap{background:#1e2130!important;border-color:#3a4054!important}
-html.dark .hub-module-search{color:#e8eaef!important}
-html.dark .hub-module-card{background:#1e2130!important;border-color:#3a4054!important}
-html.dark .hub-module-card:hover{border-color:#5a6a8a!important;background:#252836!important}
-html.dark .hub-module-title{color:#e8eaef!important}
-html.dark .hub-module-desc{color:#b4b9c5!important}
-html.dark .hub-recent-chip{background:#252836!important;border-color:#3a4054!important;color:#c8d4ef!important}
-html.dark #profile-dropdown{background:#1e2130!important;border-color:#3a4054!important}
-html.dark #profile-dropdown-content{color:#b4b9c5!important}

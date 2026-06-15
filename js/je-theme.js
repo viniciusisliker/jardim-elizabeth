@@ -50,7 +50,17 @@
     syncCheckboxes(getTheme() === 'dark');
   }
 
+  function ensureDarkStylesheet() {
+    const href = 'css/je-theme-dark.css?v=2026061518';
+    if (document.querySelector(`link[href*="${href.split('?')[0]}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
   function init() {
+    ensureDarkStylesheet();
     applyTheme(getTheme());
     bindToggles();
   }

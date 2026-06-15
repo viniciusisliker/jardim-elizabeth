@@ -4,8 +4,8 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="js/je-theme-boot.js"></script>
-  <link href="css/je-theme.css?v=2026061517" rel="stylesheet"/>
-  <script src="js/je-theme.js" defer></script>
+  <link href="css/je-theme.css?v=2026061518" rel="stylesheet"/>
+  <script src="js/je-theme.js?v=2026061518" defer></script>
 
 <title>Carrinhos – Agendamentos | Jardim Elizabeth</title>
 
@@ -28,12 +28,12 @@ gtag('config', 'G-PGXCZF9S9W');
       theme: {
         extend: {
           colors: {
-            "secondary": "#3b5e97",
-            "primary": "#0f3462",
-            "background": "#fbf9f8",
-            "on-surface-variant": "#43474f",
-            "outline-variant": "#c3c6d0",
-            "on-background": "#1b1c1c",
+            "secondary": "var(--je-secondary)",
+            "primary": "var(--je-primary)",
+            "background": "var(--je-background)",
+            "on-surface-variant": "var(--je-on-surface-variant)",
+            "outline-variant": "var(--je-outline-variant)",
+            "on-background": "var(--je-on-background)",
           },
           fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
           borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
@@ -185,6 +185,7 @@ gtag('config', 'G-PGXCZF9S9W');
       .je-eq-cal-frame { padding: 0.5rem; overflow: hidden; border-radius: 0.875rem; }
     }
   </style>
+  <link href="css/je-theme-dark.css?v=2026061518" rel="stylesheet"/>
 </head>
 
 <body class="bg-background text-on-background" style="font-family:'Inter',sans-serif;">

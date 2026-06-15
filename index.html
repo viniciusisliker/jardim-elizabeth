@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <script src="js/je-theme-boot.js"></script>
-  <link href="css/je-theme.css?v=2026061517" rel="stylesheet"/>
-  <script src="js/je-theme.js" defer></script>
+  <link href="css/je-theme.css?v=2026061518" rel="stylesheet"/>
+  <script src="js/je-theme.js?v=2026061518" defer></script>
 
 <title>Jardim Elizabeth – Congregação</title>
   <meta name="description" content="Site oficial da Congregação Jardim Elizabeth — agenda, territórios, anúncios e avisos.">
@@ -43,27 +43,27 @@
       theme: {
         extend: {
           colors: {
-            "primary-container": "#2b4b7a",
-            "on-primary-container": "#9dbcf2",
-            "on-primary": "#ffffff",
-            "surface-container": "#f0eded",
-            "secondary": "#3b5e97",
-            "secondary-fixed": "#d6e3ff",
-            "error": "#ba1a1a",
-            "primary": "#0f3462",
-            "background": "#fbf9f8",
-            "on-surface-variant": "#43474f",
-            "outline-variant": "#c3c6d0",
-            "on-background": "#1b1c1c",
-            "surface-container-low": "#f5f3f3",
-            "on-surface": "#1b1c1c",
-            "outline": "#747780",
-            "surface-container-high": "#eae8e7",
-            "surface": "#fbf9f8",
-            "surface-container-lowest": "#ffffff",
-            "secondary-container": "#9cbffe",
-            "primary-fixed": "#d6e3ff",
-            "on-primary-fixed": "#001b3d",
+            "primary-container": "var(--je-primary-container)",
+            "on-primary-container": "var(--je-on-primary-container)",
+            "on-primary": "var(--je-on-primary)",
+            "surface-container": "var(--je-surface-container)",
+            "secondary": "var(--je-secondary)",
+            "secondary-fixed": "var(--je-secondary-fixed)",
+            "error": "var(--je-error)",
+            "primary": "var(--je-primary)",
+            "background": "var(--je-background)",
+            "on-surface-variant": "var(--je-on-surface-variant)",
+            "outline-variant": "var(--je-outline-variant)",
+            "on-background": "var(--je-on-background)",
+            "surface-container-low": "var(--je-surface-container-low)",
+            "on-surface": "var(--je-on-surface)",
+            "outline": "var(--je-outline)",
+            "surface-container-high": "var(--je-surface-container-high)",
+            "surface": "var(--je-surface)",
+            "surface-container-lowest": "var(--je-surface-container-lowest)",
+            "secondary-container": "var(--je-secondary-container)",
+            "primary-fixed": "var(--je-primary-fixed)",
+            "on-primary-fixed": "var(--je-on-primary-fixed)",
           },
           fontFamily: {
             "headline": ["Inter"],
@@ -730,6 +730,7 @@
       .je-home-news-item:nth-child(n+4) { display: none; }
     }
   </style>
+  <link href="css/je-theme-dark.css?v=2026061518" rel="stylesheet"/>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">

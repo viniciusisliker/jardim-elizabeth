@@ -4,8 +4,8 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="js/je-theme-boot.js"></script>
-  <link href="css/je-theme.css?v=2026061517" rel="stylesheet"/>
-  <script src="js/je-theme.js" defer></script>
+  <link href="css/je-theme.css?v=2026061518" rel="stylesheet"/>
+  <script src="js/je-theme.js?v=2026061518" defer></script>
 
 <title>Hub Administrativo – Jardim Elizabeth</title>
 
@@ -27,19 +27,19 @@
       theme: {
         extend: {
           colors: {
-            "primary-container": "#2b4b7a",
-            "on-primary-container": "#9dbcf2",
-            "secondary": "#3b5e97",
-            "primary": "#0f3462",
+            "primary-container": "var(--je-primary-container)",
+            "on-primary-container": "var(--je-on-primary-container)",
+            "secondary": "var(--je-secondary)",
+            "primary": "var(--je-primary)",
             "accent": "#984806",
             "accent-gold": "#c8a96e",
-            "background": "#fbf9f8",
-            "on-surface-variant": "#43474f",
-            "outline-variant": "#c3c6d0",
-            "on-background": "#1b1c1c",
-            "surface-container-low": "#f5f3f3",
-            "surface-container-lowest": "#ffffff",
-            "error": "#ba1a1a",
+            "background": "var(--je-background)",
+            "on-surface-variant": "var(--je-on-surface-variant)",
+            "outline-variant": "var(--je-outline-variant)",
+            "on-background": "var(--je-on-background)",
+            "surface-container-low": "var(--je-surface-container-low)",
+            "surface-container-lowest": "var(--je-surface-container-lowest)",
+            "error": "var(--je-error)",
           },
           fontFamily: { "body": ["Inter"] },
         },
@@ -459,6 +459,7 @@
     .hub-boot-error__link{font-size:.8125rem;font-weight:700;color:#3b5e97;text-decoration:none}
     .hub-boot-error__link:hover{text-decoration:underline}
   </style>
+  <link href="css/je-theme-dark.css?v=2026061518" rel="stylesheet"/>
 </head>
 
 <body class="hub-page bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
