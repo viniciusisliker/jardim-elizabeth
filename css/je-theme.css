@@ -282,7 +282,7 @@ html.dark {
 }
 
 .theme-switch.je-site-theme-switch{
-  --toggle-size:13px;
+  --toggle-size:11px;
   display:inline-flex;align-items:center;flex-shrink:0;line-height:0;vertical-align:middle
 }
 .je-mobile-theme-row{
@@ -291,7 +291,7 @@ html.dark {
   border:1px solid #e2e6ef;background:linear-gradient(135deg,#f5f8fc 0%,#fff 100%)
 }
 .je-mobile-theme-label{font-size:.8125rem;font-weight:700;color:#0f3462}
-.theme-switch.je-mobile-theme-switch{--toggle-size:16px}
+.theme-switch.je-mobile-theme-switch{--toggle-size:13px}
 @media(max-width:1023px){.je-site-actions .theme-switch.je-site-theme-switch{display:none}}
 @media(min-width:1024px){.je-mobile-theme-row{display:none!important}}
 
