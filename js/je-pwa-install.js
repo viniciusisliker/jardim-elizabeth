@@ -35,6 +35,30 @@
     } catch { /* ignore */ }
   }
 
+  function clearInstalledMark() {
+    try {
+      localStorage.removeItem(INSTALLED_KEY);
+    } catch { /* ignore */ }
+  }
+
+  async function reconcileInstallState() {
+    if (isStandalone()) {
+      markInstalled();
+      return;
+    }
+
+    if (typeof navigator.getInstalledRelatedApps !== 'function') return;
+
+    try {
+      const apps = await navigator.getInstalledRelatedApps();
+      if (apps?.length) {
+        markInstalled();
+      } else {
+        clearInstalledMark();
+      }
+    } catch { /* keep existing state */ }
+  }
+
   function hasInstalledApp() {
     if (isStandalone()) return true;
     try {
@@ -262,7 +286,7 @@
   }
 
   function injectBanner(slotSelector) {
-    if (hasInstalledApp() || !isMobile() || isBannerDismissed()) return;
+    if (hasInstalledApp() || !isMobile() || isBannerDismissed()) return null;
     const slot = typeof slotSelector === 'string' ? document.querySelector(slotSelector) : slotSelector;
     const host = slot || document.querySelector('main');
     if (!host || host.querySelector('.je-install-banner')) return;
@@ -369,12 +393,18 @@
 
   function init(options = {}) {
     registerSw();
-    injectBanner(options.bannerSlot || null);
+    void reconcileInstallState().then(() => {
+      updateInstallButtons();
+      if (!hasInstalledApp() && isMobile() && !isBannerDismissed()) {
+        injectBanner(options.bannerSlot || null);
+      }
+    });
     bindTriggers();
     window.setTimeout(injectIntroHint, 800);
 
     window.addEventListener('beforeinstallprompt', (event) => {
       event.preventDefault();
+      clearInstalledMark();
       deferredPrompt = event;
       updateInstallButtons();
     });
