@@ -756,6 +756,10 @@
     }
 
     await Promise.all([loadActiveAssignments(), loadTerritories()]);
+    const pair = H().domingoPairForTerritoryNum(pairNum);
+    if (pair?.dirigente_name) {
+      await syncScheduleRowsForDomingoPair(pair.dirigente_name, territoryId);
+    }
   }
 
   function availableTerritories() {
@@ -1864,6 +1868,41 @@
     await loadWeekTemplate();
   }
 
+  async function syncScheduleRowsForDomingoPair(pairName, territoryId) {
+    if (!client || !pairName || !territoryId) return;
+    const pairNum = H().domingoPairNumForDirigenteName(pairName);
+    if (!pairNum) return;
+    const terr = territories.find((t) => t.id === territoryId);
+    if (!terr) return;
+    const territoryCode = scheduleTerritoryCodeFromTerr(terr);
+    const rows = weekTemplate.filter((row) => {
+      if (!H().isSundayCronogramaDay(row.weekday_label)) return false;
+      const rowPair = String(row.dirigente_name || '').trim();
+      if (!rowPair) return false;
+      return H().domingoPairNumForDirigenteName(rowPair) === pairNum;
+    });
+    const updates = rows.filter(
+      (row) => row.territory_id !== territoryId || row.territory_code !== territoryCode
+    );
+    if (!updates.length) return;
+    const results = await Promise.allSettled(
+      updates.map((row) => client.from('territory_week_schedule').update({
+        territory_id: territoryId,
+        territory_code: territoryCode,
+        profile_id: null
+      }).eq('id', row.id))
+    );
+    const failed = results.find((r) => r.status === 'rejected' || r.value?.error);
+    if (failed) {
+      const msg = failed.status === 'rejected'
+        ? failed.reason?.message
+        : failed.value?.error?.message;
+      console.warn('Sync cronograma (dupla domingo):', msg);
+      return;
+    }
+    await loadWeekTemplate();
+  }
+
   function findAssignmentForScheduleRow(row) {
     return scheduleRowAssignment(row);
   }
@@ -1957,16 +1996,31 @@
     const dirty = weekTemplate.filter((row) => {
       if (!H().isSundayCronogramaDay(row.weekday_label)) return false;
       if (row.profile_id) return true;
+      const stored = String(row.dirigente_name || '').trim();
+      if (stored && H().isKnownDomingoPairName(stored)) return false;
       const expected = H().domingoDirigenteName(row)
-        || H().domingoPairNameForSchedule(row.weekday_label, row.territory_id, row.territory_code, territoriesById)
-        || String(row.dirigente_name || '').trim();
+        || H().domingoPairNameForSchedule(
+          row.weekday_label,
+          row.territory_id,
+          row.territory_code,
+          territoriesById,
+          stored
+        )
+        || stored;
       return expected && row.dirigente_name !== expected;
     });
     if (!dirty.length) return;
     for (const row of dirty) {
+      const stored = String(row.dirigente_name || '').trim();
       const pairName = H().domingoDirigenteName(row)
-        || H().domingoPairNameForSchedule(row.weekday_label, row.territory_id, row.territory_code, territoriesById)
-        || String(row.dirigente_name || '').trim();
+        || H().domingoPairNameForSchedule(
+          row.weekday_label,
+          row.territory_id,
+          row.territory_code,
+          territoriesById,
+          stored
+        )
+        || stored;
       const { error } = await client.from('territory_week_schedule').update({
         profile_id: null,
         dirigente_name: pairName || row.dirigente_name
@@ -4168,7 +4222,15 @@
           if (terrErr) throw terrErr;
         }
       }
-      if (!isDomingoPair) await syncScheduleRowsForAssignment(profileId, t.id);
+      if (!isDomingoPair) {
+        await syncScheduleRowsForAssignment(profileId, t.id);
+      } else {
+        const pairNum = H().parseDomingoPairOptionValue(fd.get('pair_id'));
+        const pair = H().domingoPairForTerritoryNum(pairNum);
+        if (pair?.dirigente_name) {
+          await syncScheduleRowsForDomingoPair(pair.dirigente_name, t.id);
+        }
+      }
       return;
     }
 
@@ -4521,7 +4583,13 @@
     if (H().isSundayCronogramaDay(weekday)) {
       const territoryId = fd.get('territory_id') || ctx.row?.territory_id || null;
       const territoriesById = Object.fromEntries(territories.map((t) => [t.id, t]));
-      dirigenteName = H().domingoPairNameForSchedule(weekday, territoryId, ctx.row?.territory_code, territoriesById)
+      dirigenteName = H().domingoPairNameForSchedule(
+        weekday,
+        territoryId,
+        ctx.row?.territory_code,
+        territoriesById,
+        fd.get('dirigente_name')?.trim() || ctx.row?.dirigente_name
+      )
         || fd.get('dirigente_name')?.trim()
         || ctx.row?.dirigente_name
         || '—';
@@ -4759,7 +4827,13 @@
       let dirigenteName = null;
       if (isSunday) {
         profileId = null;
-        dirigenteName = H().domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById)
+        dirigenteName = H().domingoPairNameForSchedule(
+          weekdayLabel,
+          territoryId,
+          territoryCode,
+          territoriesById,
+          fd.get('dirigente_name')?.trim() || row?.dirigente_name
+        )
           || fd.get('dirigente_name')?.trim()
           || row?.dirigente_name
           || null;

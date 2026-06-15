@@ -267,10 +267,16 @@
     );
   }
 
+  function isKnownDomingoPairName(name) {
+    return domingoPairNumForDirigenteName(name) != null;
+  }
+
   function domingoDirigenteName(row) {
     if (!isSundayCronogramaDay(row?.weekday_label)) return '';
+    const stored = String(row.dirigente_name || '').trim();
+    if (stored && isKnownDomingoPairName(stored)) return stored;
     const idx = domingoFixedIndex(row);
-    if (idx < 0) return String(row.dirigente_name || '').trim();
+    if (idx < 0) return stored;
     return DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name;
   }
 
@@ -335,8 +341,16 @@
   }
 
   function domingoPairAssigneeLabel(territoryNum, assignment, profiles) {
+    if (!assignment?.profile_id) return null;
+    if (assignment.is_domingo_pair === true) {
+      for (const pair of DOMINGO_FIXED_DIRIGENTES) {
+        if (profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
+          return pair.dirigente_name;
+        }
+      }
+    }
     const pair = domingoPairForTerritoryNum(territoryNum);
-    if (!pair || !assignment?.profile_id) return null;
+    if (!pair) return null;
     if (profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
       return pair.dirigente_name;
     }
@@ -416,15 +430,15 @@
     return free?.id || null;
   }
 
-  function domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById) {
+  function domingoPairNameForSchedule(weekdayLabel, territoryId, territoryCode, territoriesById, existingName) {
     if (!isSundayCronogramaDay(weekdayLabel)) return '';
+    const stored = String(existingName || '').trim();
+    if (stored && isKnownDomingoPairName(stored)) return stored;
     const fakeRow = { weekday_label: weekdayLabel, territory_id: territoryId, territory_code: territoryCode };
     if (territoriesById && territoryId && territoriesById[territoryId]) {
       fakeRow.territories = territoriesById[territoryId];
     }
-    const fixed = domingoDirigenteName(fakeRow);
-    if (fixed) return fixed;
-    return '';
+    return domingoDirigenteName(fakeRow);
   }
 
   function applyDomingoFixedDirigentes(rows) {
@@ -432,9 +446,11 @@
 
     const patched = rows.map((row) => {
       if (!isSundayCronogramaDay(row.weekday_label)) return row;
+      const stored = String(row.dirigente_name || '').trim();
+      const knownPair = stored && isKnownDomingoPairName(stored);
       const idx = domingoFixedIndex(row);
-      const fixedName = idx >= 0 ? DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name : '';
-      const pairName = fixedName || String(row.dirigente_name || '').trim();
+      const fixedName = !knownPair && idx >= 0 ? DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name : '';
+      const pairName = knownPair ? stored : (fixedName || stored);
       return {
         ...row,
         dirigente_name: pairName || row.dirigente_name,
@@ -585,6 +601,7 @@
     listDomingoPairs,
     domingoPairForTerritoryNum,
     domingoPairNumForDirigenteName,
+    isKnownDomingoPairName,
     normalizeTerritoryNum,
     domingoPairOptionValue,
     parseDomingoPairOptionValue,
