@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const headBlock = `  <script src="js/je-theme-boot.js"></script>
-  <link href="css/je-theme.css?v=2026061516" rel="stylesheet"/>
+  <link href="css/je-theme.css?v=2026061517" rel="stylesheet"/>
   <script src="js/je-theme.js" defer></script>
 `;
 

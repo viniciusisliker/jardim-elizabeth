@@ -57,7 +57,19 @@
 }
 
 .theme-switch__checkbox {
-  display: none;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  pointer-events: none !important;
 }
 
 .theme-switch__circle-container {
@@ -202,16 +214,18 @@
   transform: translateY(-50%);
 }
 
-.je-site-theme-switch{display:flex;align-items:center;flex-shrink:0}
-.je-site-theme-switch .theme-switch{--toggle-size:20px}
+.theme-switch.je-site-theme-switch{
+  --toggle-size:16px;
+  display:inline-flex;align-items:center;flex-shrink:0;line-height:0;vertical-align:middle
+}
 .je-mobile-theme-row{
   display:flex;align-items:center;justify-content:space-between;gap:.75rem;
   padding:.75rem 1rem;margin-bottom:.5rem;border-radius:.875rem;
   border:1px solid #e2e6ef;background:linear-gradient(135deg,#f5f8fc 0%,#fff 100%)
 }
 .je-mobile-theme-label{font-size:.8125rem;font-weight:700;color:#0f3462}
-.je-mobile-theme-switch .theme-switch{--toggle-size:22px}
-@media(max-width:1023px){.je-site-actions .je-site-theme-switch{display:none}}
+.theme-switch.je-mobile-theme-switch{--toggle-size:20px}
+@media(max-width:1023px){.je-site-actions .theme-switch.je-site-theme-switch{display:none}}
 @media(min-width:1024px){.je-mobile-theme-row{display:none!important}}
 
 html.dark{color-scheme:dark}
