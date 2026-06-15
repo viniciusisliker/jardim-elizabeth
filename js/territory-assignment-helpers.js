@@ -340,15 +340,53 @@
     return profilesInDomingoPair(pairName, profiles).some((p) => p.id === profileId);
   }
 
-  function domingoPairAssigneeLabel(territoryNum, assignment, profiles) {
+  function pairNameFromSundaySchedule(territoryId, weekTemplate) {
+    if (!territoryId || !weekTemplate?.length) return null;
+    for (const row of weekTemplate) {
+      if (!isSundayCronogramaDay(row.weekday_label)) continue;
+      if (row.territory_id !== territoryId) continue;
+      const name = String(row.dirigente_name || '').trim();
+      if (name && isKnownDomingoPairName(name)) return name;
+    }
+    return null;
+  }
+
+  function domingoPairAssigneeLabel(territoryNum, assignment, profiles, options) {
     if (!assignment?.profile_id) return null;
+    const territoryId = options?.territoryId || null;
+    const weekTemplate = options?.weekTemplate || null;
+    const scheduledPair = pairNameFromSundaySchedule(territoryId, weekTemplate);
+
+    if (scheduledPair) {
+      if (assignment.is_domingo_pair === true) return scheduledPair;
+      if (profileInDomingoPair(assignment.profile_id, scheduledPair, profiles)) {
+        return scheduledPair;
+      }
+      const personName = assignment.profiles?.full_name || assignment.profiles?.username;
+      if (personName) {
+        const primary = primaryDirigenteFromPair(scheduledPair);
+        const personNorm = normalizeName(personName);
+        const primaryNorm = normalizeName(primary);
+        const primaryFirst = primaryNorm.split(/\s+/)[0];
+        if (
+          personNorm === primaryNorm
+          || personNorm.startsWith(`${primaryFirst} `)
+          || primaryNorm.startsWith(`${personNorm.split(/\s+/)[0]} `)
+        ) {
+          return scheduledPair;
+        }
+      }
+    }
+
     if (assignment.is_domingo_pair === true) {
       for (const pair of DOMINGO_FIXED_DIRIGENTES) {
         if (profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
           return pair.dirigente_name;
         }
       }
+      if (scheduledPair) return scheduledPair;
     }
+
     const pair = domingoPairForTerritoryNum(territoryNum);
     if (!pair) return null;
     if (profileInDomingoPair(assignment.profile_id, pair.dirigente_name, profiles)) {
@@ -368,9 +406,13 @@
     return null;
   }
 
-  function isDomingoPairContextAssignment(assignment, profiles) {
+  function isDomingoPairContextAssignment(assignment, profiles, options) {
     if (!assignment?.profile_id) return false;
     if (assignment.is_domingo_pair === true) return true;
+    const scheduledPair = pairNameFromSundaySchedule(options?.territoryId, options?.weekTemplate);
+    if (scheduledPair && profileInDomingoPair(assignment.profile_id, scheduledPair, profiles)) {
+      return true;
+    }
     const num = assignmentTerritoryNum(assignment);
     if (!num) return false;
     const pair = domingoPairForTerritoryNum(num);
@@ -608,6 +650,7 @@
     profilesInDomingoPair,
     profileInDomingoPair,
     domingoPairAssigneeLabel,
+    pairNameFromSundaySchedule,
     isDomingoPairTerritoryNum,
     isDomingoPairContextAssignment,
     assignmentBlocksIndividualDesignation,

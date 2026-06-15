@@ -876,8 +876,13 @@
   }
 
   async function reloadCore() {
-    const results = await Promise.allSettled([loadTerritories(), loadActiveAssignments()]);
-    const labels = ['territories', 'active'];
+    const loads = [loadTerritories(), loadActiveAssignments(), loadWeekTemplate()];
+    const labels = ['territories', 'active', 'schedule'];
+    if (!profiles.length) {
+      loads.push(loadProfiles());
+      labels.push('profiles');
+    }
+    const results = await Promise.allSettled(loads);
     const errors = results
       .map((r, i) => (r.status === 'rejected' ? `${labels[i]}: ${r.reason?.message || r.reason}` : null))
       .filter(Boolean);
@@ -911,6 +916,16 @@
       if (!overseers.length) {
         loads.push(loadOverseers());
         labels.push('overseers');
+      }
+    }
+    if (tab === 'painel' || tab === 'semana') {
+      if (!weekTemplate.length) {
+        loads.push(loadWeekTemplate());
+        labels.push('schedule');
+      }
+      if (!profiles.length) {
+        loads.push(loadProfiles());
+        labels.push('profiles');
       }
     }
     if (tab === 'designar') {
@@ -990,9 +1005,17 @@
   async function reloadForRefresh() {
     const loads = [loadTerritories(), loadActiveAssignments()];
     const labels = ['territories', 'active'];
+    if (tabsRendered.semana || tabsRendered.painel) {
+      loads.push(loadWeekTemplate());
+      labels.push('schedule');
+    }
     if (tabsRendered.semana) {
-      loads.push(loadWeekTemplate(), loadMeetingSpots());
-      labels.push('schedule', 'spots');
+      loads.push(loadMeetingSpots());
+      labels.push('spots');
+    }
+    if (tabsRendered.painel && !profiles.length) {
+      loads.push(loadProfiles());
+      labels.push('profiles');
     }
     if (tabsRendered.historico) {
       loads.push(loadHistory());
@@ -1551,7 +1574,9 @@
   function devolverAssigneeLabel(assignment) {
     const terr = assignment.territories
       || territories.find((t) => t.id === assignment.territory_id);
-    const pairLabel = terr ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles) : null;
+    const pairLabel = terr
+      ? H().domingoPairAssigneeLabel(terr.num, assignment, profiles, assigneeLabelContext(terr.id))
+      : null;
     return pairLabel || profileName(assignment.profiles);
   }
 
@@ -1901,6 +1926,36 @@
       return;
     }
     await loadWeekTemplate();
+  }
+
+  async function reconcileDomingoPairFlags() {
+    if (!client || !weekTemplate.length) return;
+    let changed = false;
+    for (const a of activeAssignments) {
+      if (a.is_domingo_pair) continue;
+      const scheduledPair = H().pairNameFromSundaySchedule(a.territory_id, weekTemplate);
+      if (!scheduledPair) continue;
+      if (profiles.length && !H().profileInDomingoPair(a.profile_id, scheduledPair, profiles)) {
+        const personName = a.profiles?.full_name;
+        const primary = H().primaryDirigenteFromPair(scheduledPair);
+        if (!personName || !H().normalizeName(personName).startsWith(H().normalizeName(primary).split(/\s+/)[0])) {
+          continue;
+        }
+      }
+      const { error } = await client
+        .from('territory_active_assignments')
+        .update({ is_domingo_pair: true })
+        .eq('id', a.id);
+      if (error) {
+        console.warn('Dupla domingo (reconciliar):', error.message);
+        continue;
+      }
+      a.is_domingo_pair = true;
+      changed = true;
+    }
+    if (changed) {
+      assignmentByTerritoryId = new Map(activeAssignments.map((item) => [item.territory_id, item]));
+    }
   }
 
   function findAssignmentForScheduleRow(row) {
@@ -2475,7 +2530,7 @@
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
       const returnBtn = assignment?.id
-        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().isDomingoPairContextAssignment(assignment, profiles) ? (H().domingoPairAssigneeLabel(assignment.territories?.num, assignment, profiles) || H().territoryLabel(assignment.territories)) : H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().isDomingoPairContextAssignment(assignment, profiles, assigneeLabelContext(assignment.territory_id)) ? (H().domingoPairAssigneeLabel(assignment.territories?.num, assignment, profiles, assigneeLabelContext(assignment.territory_id)) || H().territoryLabel(assignment.territories)) : H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
         : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
@@ -2791,10 +2846,14 @@
     return catalogCoverageCellFromMeta(catalogCoverageMeta(t));
   }
 
+  function assigneeLabelContext(territoryId) {
+    return { territoryId: territoryId || null, weekTemplate };
+  }
+
   function catalogAssignee(t) {
     const active = assignmentByTerritoryId.get(t.id);
     if (!active) return '—';
-    const pairLabel = H().domingoPairAssigneeLabel(t.num, active, profiles);
+    const pairLabel = H().domingoPairAssigneeLabel(t.num, active, profiles, assigneeLabelContext(t.id));
     return pairLabel || profileName(active.profiles);
   }
 
@@ -2814,7 +2873,12 @@
       return profileName(p) || '—';
     }
     if (assignment) {
-      const pairLabel = H().domingoPairAssigneeLabel(t?.num, assignment, profiles);
+      const pairLabel = H().domingoPairAssigneeLabel(
+        t?.num,
+        assignment,
+        profiles,
+        assigneeLabelContext(t?.id || assignment.territory_id)
+      );
       return pairLabel || profileName(assignment.profiles);
     }
     return '—';
@@ -2822,6 +2886,18 @@
 
   function catalogModalSelectedDesignee(t, assignment) {
     const currentId = assignment?.profile_id || '';
+    if (assignment?.is_domingo_pair) {
+      for (const pair of H().listDomingoPairs()) {
+        if (H().profileInDomingoPair(currentId, pair.dirigente_name, profiles)) {
+          return { pairId: H().domingoPairOptionValue(pair.territory_num), profileId: '' };
+        }
+      }
+    }
+    const scheduledPair = H().pairNameFromSundaySchedule(t?.id, weekTemplate);
+    if (scheduledPair && H().profileInDomingoPair(currentId, scheduledPair, profiles)) {
+      const pairNum = H().domingoPairNumForDirigenteName(scheduledPair);
+      if (pairNum) return { pairId: H().domingoPairOptionValue(pairNum), profileId: '' };
+    }
     const terrPair = H().domingoPairForTerritoryNum(t?.num);
     if (terrPair && assignment && H().profileInDomingoPair(currentId, terrPair.dirigente_name, profiles)) {
       return { pairId: H().domingoPairOptionValue(t.num), profileId: '' };
@@ -4422,6 +4498,7 @@
   async function refresh() {
     try {
       await reloadForRefresh();
+      await reconcileDomingoPairFlags();
       if (tabsRendered.semana) {
         try {
           weekendByDate = await H().fetchWeekendAnnouncements(client, currentWeek);
@@ -5319,6 +5396,7 @@
       });
 
       await reloadCore();
+      await reconcileDomingoPairFlags();
       renderCatalogo();
       renderPriorityList();
       tabsRendered = { painel: true, semana: false, historico: false, dirigentes: false };
