@@ -2,8 +2,8 @@
   "name": "Jardim Elizabeth",
   "short_name": "Jardim Elizabeth",
   "description": "Site oficial da Congregação Jardim Elizabeth",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "icons": [
     {
       "src": "img/favicon-32.png",

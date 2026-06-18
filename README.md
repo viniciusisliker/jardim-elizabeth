@@ -9,7 +9,10 @@ O site é publicado automaticamente na Vercel ao fazer **push na branch `main`**
 | Ambiente | URL | Gatilho |
 |----------|-----|---------|
 | **Produção** | [jardimelizabeth.vercel.app](https://jardimelizabeth.vercel.app) | Push em `main` |
+| **GitHub Pages** | [viniciusisliker.github.io/jardim-elizabeth/](https://viniciusisliker.github.io/jardim-elizabeth/) | Branch `main` (espelho) |
 | **Preview** | URL única por commit/PR | Push em outras branches ou PR |
+
+Use **jardimelizabeth.vercel.app** como link oficial para a congregação. Evite compartilhar só `viniciusisliker.github.io` (sem `/jardim-elizabeth/`).
 
 Configuração no repositório: `vercel.json` (site estático, sem build).
 

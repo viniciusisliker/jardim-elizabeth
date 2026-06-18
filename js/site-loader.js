@@ -1002,13 +1002,16 @@
       document.head.appendChild(link);
     }
     Promise.all([
-      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026061514`),
-      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026061514`),
-      loadScriptOnce(`${assetBase}/js/je-push.js?v=2026061514`)
+      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026061719`),
+      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026061719`),
+      loadScriptOnce(`${assetBase}/js/je-push.js?v=2026061719`)
     ]).catch((err) => console.warn('PWA assets:', err));
   }
 
   async function boot() {
+    if (document.body) {
+      document.body.dataset.assetBase = assetBase;
+    }
     ensureFavicon();
     ensureMaterialSymbols();
     materialSymbolsReady();

@@ -1,15 +1,29 @@
 /* Jardim Elizabeth — PWA: cache leve + push + atualização */
 
-const CACHE = 'je-shell-v3';
+const CACHE = 'je-shell-v4';
+
+function swBasePath() {
+  return new URL(self.location.href).pathname.replace(/\/sw\.js$/i, '');
+}
+
+function appPath(relative) {
+  const base = swBasePath();
+  const rel = relative === '/' ? '' : String(relative || '').replace(/^\/+/, '');
+  if (!base) return rel ? `/${rel}` : '/';
+  if (!rel) return `${base}/`;
+  return `${base}/${rel}`.replace(/\/+/g, '/');
+}
+
 const SHELL = [
-  '/',
-  '/index.html',
-  '/hub',
-  '/hub.html',
-  '/site.webmanifest',
-  '/img/favicon.png',
-  '/img/icon.png'
+  appPath('/'),
+  appPath('index.html'),
+  appPath('hub.html'),
+  appPath('site.webmanifest'),
+  appPath('img/favicon.png'),
+  appPath('img/icon.png')
 ];
+
+const IMG_ROOT = appPath('img/');
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -42,9 +56,9 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'Jardim Elizabeth';
   const options = {
     body: payload.body || '',
-    icon: '/img/favicon.png',
-    badge: '/img/favicon.png',
-    data: { url: payload.url || '/hub.html' },
+    icon: appPath('img/favicon.png'),
+    badge: appPath('img/favicon.png'),
+    data: { url: payload.url || appPath('hub.html') },
     tag: payload.tag || 'je-hub-notification'
   };
 
@@ -53,7 +67,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = event.notification.data?.url || '/hub.html';
+  const target = event.notification.data?.url || appPath('hub.html');
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
@@ -83,7 +97,7 @@ self.addEventListener('fetch', (event) => {
     SHELL.includes(url.pathname) ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js') ||
-    url.pathname.startsWith('/img/')
+    url.pathname.startsWith(IMG_ROOT)
   );
 
   if (!isShell) {
@@ -104,7 +118,7 @@ self.addEventListener('fetch', (event) => {
       } catch {
         if (cached) return cached;
         if (req.mode === 'navigate') {
-          const fallback = (await caches.match('/')) || (await caches.match('/index.html'));
+          const fallback = (await caches.match(appPath('/'))) || (await caches.match(appPath('index.html')));
           if (fallback) return fallback;
         }
         return new Response('Sem conexão. Tente novamente.', {

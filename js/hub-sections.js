@@ -199,10 +199,10 @@
       permission: 'settings',
       viewId: 'hub-view-configuracoes',
       partial: 'hub/sections/configuracoes.html',
-      styles: ['css/hub-sections/configuracoes.css?v=2026061065'],
+      styles: ['css/hub-sections/configuracoes.css?v=2026061719'],
       scripts: [
         'js/admin/table-xlf.js?v=2026061058',
-        'js/admin/configuracoes.js?v=2026062413'
+        'js/admin/configuracoes.js?v=2026061719'
       ],
       initKey: 'JEAdminConfiguracoes',
       hero: {

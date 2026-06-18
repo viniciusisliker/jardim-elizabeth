@@ -14,11 +14,41 @@
   let deferredPrompt = null;
   let swRegistration = null;
 
+  function getSiteRootUrl() {
+    const manifest = document.querySelector('link[rel="manifest"]');
+    if (manifest?.href) {
+      try {
+        return new URL('./', manifest.href).href;
+      } catch { /* fall through */ }
+    }
+    try {
+      const path = window.location.pathname;
+      const dir = path.endsWith('/') ? path : path.replace(/[^/]+$/, '');
+      return new URL(dir || '/', window.location.origin).href;
+    } catch {
+      return `${window.location.origin}/`;
+    }
+  }
+
   function asset(path) {
-    const base = document.body?.dataset?.assetBase || '';
     if (!path) return path;
-    if (/^https?:\/\//.test(path) || path.startsWith('/')) return path;
-    return `${base}${path}`;
+    if (/^https?:\/\//.test(path)) return path;
+    if (path.startsWith('/')) {
+      try {
+        return new URL(path.replace(/^\//, ''), getSiteRootUrl()).href;
+      } catch {
+        return path;
+      }
+    }
+    const relBase = document.body?.dataset?.assetBase;
+    if (relBase && relBase !== '.' && relBase !== './') {
+      return `${relBase}/${path}`.replace(/\/{2,}/g, '/');
+    }
+    try {
+      return new URL(path, getSiteRootUrl()).href;
+    } catch {
+      return path;
+    }
   }
 
   function isStandalone() {
@@ -98,14 +128,7 @@
   }
 
   function getShareUrl() {
-    const base = document.body?.dataset?.assetBase || '';
-    const origin = window.location.origin.replace(/\/$/, '');
-    if (base && base !== '.' && base !== './') {
-      try {
-        return new URL(base.replace(/^\.\//, ''), origin + '/').href.replace(/\/$/, '') + '/';
-      } catch { /* fall through */ }
-    }
-    return origin + '/';
+    return getSiteRootUrl();
   }
 
   function getModalMode() {
@@ -377,12 +400,19 @@
   function registerSw() {
     if (!('serviceWorker' in navigator)) return;
 
-    let swUrl = '/sw.js';
+    let swUrl;
     const manifest = document.querySelector('link[rel="manifest"]');
     if (manifest?.href) {
       try {
         swUrl = new URL('sw.js', manifest.href).href;
-      } catch { /* keep default */ }
+      } catch { /* ignore */ }
+    }
+    if (!swUrl) {
+      try {
+        swUrl = new URL('sw.js', getSiteRootUrl()).href;
+      } catch {
+        swUrl = `${window.location.origin}/sw.js`;
+      }
     }
 
     void navigator.serviceWorker.register(swUrl).then((reg) => {
@@ -425,7 +455,8 @@
     hasInstalledApp,
     bindTriggers,
     updateInstallButtons,
-    getRegistration: () => swRegistration
+    getRegistration: () => swRegistration,
+    getSiteRootUrl
   };
 
   if (document.body && !document.body.classList.contains('hub-page')) {

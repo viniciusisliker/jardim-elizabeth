@@ -20,41 +20,85 @@
       <span id="cfg-role-note">Carregando permissões…</span>
     </div>
 
-    <section id="cfg-designations-section" class="hidden">
-      <div class="cfg-section-head">
-        <div>
-          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>Designações de acesso</p>
-          <p class="cfg-section-desc">Funções com permissões de módulo — atribua aos membros abaixo.</p>
-        </div>
-        <button type="button" id="cfg-add-designation" class="cfg-btn cfg-btn--primary">
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
-          Nova designação
-        </button>
-      </div>
-      <div id="designations-catalog" class="cfg-des-list"></div>
-    </section>
+    <div class="cfg-action-grid">
+      <button type="button" id="cfg-open-designations" class="cfg-action-card cfg-action-card--des hidden" aria-haspopup="dialog" aria-controls="cfg-modal-designations">
+        <span class="cfg-action-card__icon" aria-hidden="true"><span class="material-symbols-outlined">workspace_premium</span></span>
+        <span class="cfg-action-card__body">
+          <span class="cfg-action-card__title">Designações de acesso</span>
+          <span class="cfg-action-card__meta" id="cfg-action-des-meta">Funções e permissões de módulo</span>
+        </span>
+        <span class="material-symbols-outlined cfg-action-card__chevron" aria-hidden="true">chevron_right</span>
+      </button>
+      <button type="button" id="cfg-open-members" class="cfg-action-card cfg-action-card--members" aria-haspopup="dialog" aria-controls="cfg-modal-members">
+        <span class="cfg-action-card__icon" aria-hidden="true"><span class="material-symbols-outlined">group</span></span>
+        <span class="cfg-action-card__body">
+          <span class="cfg-action-card__title">Membros da equipe</span>
+          <span class="cfg-action-card__meta" id="cfg-action-members-meta">Cargo, usuário, e-mail e acesso</span>
+        </span>
+        <span class="material-symbols-outlined cfg-action-card__chevron" aria-hidden="true">chevron_right</span>
+      </button>
+    </div>
 
-    <section id="cfg-members-section">
-      <div class="cfg-section-head">
-        <div>
-          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">group</span>Membros da equipe</p>
-          <p class="cfg-section-desc">Cargo, usuário, e-mail, foto, designação e acesso.</p>
+    <div id="cfg-modal-designations" class="cfg-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cfg-modal-designations-title" aria-hidden="true">
+      <button type="button" class="cfg-modal__backdrop" data-cfg-modal-close aria-label="Fechar"></button>
+      <div class="cfg-modal__panel">
+        <header class="cfg-modal__head">
+          <div class="cfg-modal__head-text">
+            <h2 class="cfg-modal__title" id="cfg-modal-designations-title">
+              <span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+              Designações de acesso
+            </h2>
+            <p class="cfg-modal__subtitle">Funções com permissões de módulo — atribua aos membros.</p>
+          </div>
+          <button type="button" class="cfg-modal__close" data-cfg-modal-close aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </header>
+        <div class="cfg-modal__body">
+          <div class="cfg-modal__toolbar">
+            <button type="button" id="cfg-add-designation" class="cfg-btn cfg-btn--primary">
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+              Nova designação
+            </button>
+          </div>
+          <div id="designations-catalog" class="cfg-des-list"></div>
         </div>
-        <label class="cfg-search-wrap">
-          <span class="material-symbols-outlined" aria-hidden="true">search</span>
-          <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar…" autocomplete="off"/>
-        </label>
       </div>
+    </div>
 
-      <div class="cfg-card">
-        <div class="cfg-members-scroll">
-          <div class="cfg-members-panel">
-            <div class="cfg-member-row cfg-member-row--head" id="cfg-members-head"></div>
-            <div id="members-table"></div>
+    <div id="cfg-modal-members" class="cfg-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cfg-modal-members-title" aria-hidden="true">
+      <button type="button" class="cfg-modal__backdrop" data-cfg-modal-close aria-label="Fechar"></button>
+      <div class="cfg-modal__panel cfg-modal__panel--wide">
+        <header class="cfg-modal__head">
+          <div class="cfg-modal__head-text">
+            <h2 class="cfg-modal__title" id="cfg-modal-members-title">
+              <span class="material-symbols-outlined" aria-hidden="true">group</span>
+              Membros da equipe
+            </h2>
+            <p class="cfg-modal__subtitle">Cargo, usuário, e-mail, foto, designação e acesso.</p>
+          </div>
+          <button type="button" class="cfg-modal__close" data-cfg-modal-close aria-label="Fechar">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </header>
+        <div class="cfg-modal__body cfg-modal__body--flush">
+          <div class="cfg-modal__toolbar cfg-modal__toolbar--search">
+            <label class="cfg-search-wrap cfg-search-wrap--modal">
+              <span class="material-symbols-outlined" aria-hidden="true">search</span>
+              <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar membro…" autocomplete="off"/>
+            </label>
+          </div>
+          <div class="cfg-card cfg-card--in-modal">
+            <div class="cfg-members-scroll">
+              <div class="cfg-members-panel">
+                <div class="cfg-member-row cfg-member-row--head" id="cfg-members-head"></div>
+                <div id="members-table"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <div id="hub-notif-send-root" class="hidden"></div>
 

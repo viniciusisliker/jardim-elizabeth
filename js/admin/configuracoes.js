@@ -86,8 +86,7 @@
     if (notifyOnly) {
       document.querySelector('.cfg-stats')?.classList.add('hidden');
       document.querySelector('.cfg-note')?.classList.add('hidden');
-      document.getElementById('cfg-designations-section')?.classList.add('hidden');
-      document.getElementById('cfg-members-section')?.classList.add('hidden');
+      document.querySelector('.cfg-action-grid')?.classList.add('hidden');
       document.querySelector('.cfg-foot')?.classList.add('hidden');
       window.JEHubNotificationsUi?.initSendForm?.(client, profile);
       window.JEPwaInstall?.bindTriggers?.();
@@ -111,14 +110,59 @@
       access: {}
     };
     let memberFilterSig = '';
+    let openCfgModalId = null;
 
     document.getElementById('cfg-role-note').textContent = isSuper
       ? 'Como SuperUser, você gerencia designações, cargos, usuários, e-mails, fotos e atribuições da equipe.'
       : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.';
 
     if (isSuper) {
-      document.getElementById('cfg-designations-section').classList.remove('hidden');
+      document.getElementById('cfg-open-designations')?.classList.remove('hidden');
       document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--super');
+    }
+
+    function closeCfgModal() {
+      if (!openCfgModalId) return;
+      const modal = document.getElementById(openCfgModalId);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+      document.body.classList.remove('cfg-modal-open');
+      openCfgModalId = null;
+    }
+
+    function openCfgModal(modalId, { focusSelector } = {}) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      closeCfgModal();
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('cfg-modal-open');
+      openCfgModalId = modalId;
+      window.setTimeout(() => {
+        if (focusSelector) modal.querySelector(focusSelector)?.focus();
+        else modal.querySelector('.cfg-modal__close')?.focus();
+      }, 50);
+    }
+
+    function setupCfgModals() {
+      document.getElementById('cfg-open-designations')?.addEventListener('click', () => {
+        openCfgModal('cfg-modal-designations');
+      });
+
+      document.getElementById('cfg-open-members')?.addEventListener('click', () => {
+        openCfgModal('cfg-modal-members', { focusSelector: '#cfg-member-search' });
+        bindMemberFilters();
+      });
+
+      document.querySelectorAll('[data-cfg-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeCfgModal);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && openCfgModalId) closeCfgModal();
+      });
     }
 
     function updateStats() {
@@ -127,9 +171,17 @@
       const statMembers = document.getElementById('cfg-stat-members');
       const statDes = document.getElementById('cfg-stat-designations');
       const statAdmins = document.getElementById('cfg-stat-admins');
+      const metaDes = document.getElementById('cfg-action-des-meta');
+      const metaMembers = document.getElementById('cfg-action-members-meta');
       if (statMembers) statMembers.textContent = String(members.length);
       if (statDes) statDes.textContent = String(activeDes);
       if (statAdmins) statAdmins.textContent = String(adminCount);
+      if (metaDes) {
+        metaDes.textContent = activeDes === 1 ? '1 designação ativa' : `${activeDes} designações ativas`;
+      }
+      if (metaMembers) {
+        metaMembers.textContent = members.length === 1 ? '1 membro cadastrado' : `${members.length} membros cadastrados`;
+      }
     }
 
     function memberRoleLabel(m) {
@@ -862,9 +914,12 @@
       else {
         expandedDesignationId = created?.id || null;
         showToast(toast, 'Designação criada. Ajuste as permissões e salve.');
+        openCfgModal('cfg-modal-designations');
         await reloadCatalog();
       }
     });
+
+    setupCfgModals();
 
     await reloadCatalog();
     await reloadMembers();
