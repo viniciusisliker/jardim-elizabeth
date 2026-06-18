@@ -300,13 +300,17 @@ html.dark .je-ter-card {
 html.dark .je-ter-card-num { color: var(--je-secondary) !important; }
 html.dark .je-ter-card-title { color: var(--je-on-surface) !important; }
 html.dark .je-ter-map-thumb { background: #252836 !important; border-color: var(--je-card-border) !important; }
-html.dark .je-ter-extra {
+html.dark .je-ter-icon-btn {
   background: #252836 !important;
   border-color: var(--je-card-border) !important;
+  color: var(--je-secondary) !important;
 }
-html.dark .je-ter-extra-label { color: var(--je-secondary) !important; }
+html.dark .je-ter-info-panel { background: var(--je-surface) !important; }
+html.dark .je-ter-info-title { color: var(--je-on-surface) !important; }
+html.dark .je-ter-info-close { background: #252836 !important; color: var(--je-secondary) !important; }
 html.dark .je-ter-extra-list { color: var(--je-on-surface-variant) !important; }
 html.dark .je-ter-extra-notes { color: var(--je-on-surface-variant) !important; }
+html.dark .je-ter-info-maps { color: var(--je-secondary) !important; }
 
 /* Agendamentos / displays / donativos cards */
 html.dark .je-sch-card,

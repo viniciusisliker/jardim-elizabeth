@@ -265,40 +265,112 @@ gtag('config', 'G-PGXCZF9S9W');
     }
     .je-ter-map-thumb:hover .je-ter-map-overlay,
     .je-ter-map-thumb:focus-visible .je-ter-map-overlay { opacity: 1; }
-    .je-ter-extra {
-      margin-top: .875rem;
-      padding: .75rem .875rem;
-      border-radius: .75rem;
-      background: #f5f8fc;
-      border: 1px solid rgba(15,52,98,.08);
+    .je-ter-card-actions {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .75rem;
     }
-    .je-ter-extra-label {
-      margin: 0 0 .5rem;
-      font-size: .6875rem;
-      font-weight: 800;
-      letter-spacing: .04em;
-      text-transform: uppercase;
+    .je-ter-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.375rem;
+      height: 2.375rem;
+      border-radius: .75rem;
+      border: 1px solid rgba(15,52,98,.1);
+      background: #f5f8fc;
       color: #3b5e97;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s, transform .15s;
+    }
+    .je-ter-icon-btn .material-symbols-outlined { font-size: 1.125rem; }
+    .je-ter-icon-btn:hover,
+    .je-ter-icon-btn:focus-visible {
+      background: #eef3fa;
+      border-color: rgba(15,52,98,.18);
+      color: #0f3462;
+      transform: translateY(-1px);
+    }
+    .je-ter-info-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(10,40,71,.55);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s, visibility .2s;
+    }
+    .je-ter-info-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .je-ter-info-panel {
+      width: min(100%, 24rem);
+      max-height: min(80vh, 28rem);
+      overflow: auto;
+      border-radius: 1rem;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(15,52,98,.18);
+    }
+    .je-ter-info-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: 1rem 1rem .75rem;
+      border-bottom: 1px solid rgba(15,52,98,.08);
+    }
+    .je-ter-info-title {
+      margin: 0;
+      font-size: .9375rem;
+      font-weight: 800;
+      color: #0f3462;
+    }
+    .je-ter-info-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: none;
+      border-radius: .625rem;
+      background: #f5f8fc;
+      color: #3b5e97;
+      cursor: pointer;
+    }
+    .je-ter-info-body {
+      padding: .875rem 1rem 1rem;
     }
     .je-ter-extra-list {
       margin: 0;
       padding-left: 1.125rem;
-      font-size: .75rem;
+      font-size: .8125rem;
       line-height: 1.45;
       color: #4b5563;
     }
-    .je-ter-extra-list li + li { margin-top: .2rem; }
+    .je-ter-extra-list li + li { margin-top: .25rem; }
     .je-ter-extra-notes {
-      margin: .5rem 0 0;
-      font-size: .6875rem;
+      margin: .625rem 0 0;
+      font-size: .75rem;
       color: #747780;
     }
-    .je-ter-maps-link{
-      display:inline-flex;align-items:center;gap:.35rem;margin-top:.75rem;
-      font-size:.75rem;font-weight:700;color:#3b5e97;text-decoration:none
+    .je-ter-info-maps {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      margin-top: .875rem;
+      font-size: .75rem;
+      font-weight: 700;
+      color: #3b5e97;
+      text-decoration: none;
     }
-    .je-ter-maps-link .material-symbols-outlined{font-size:1rem}
-    .je-ter-maps-link:hover{text-decoration:underline;color:#0f3462}
+    .je-ter-info-maps:hover { text-decoration: underline; color: #0f3462; }
     .je-ter-map-overlay .material-symbols-outlined { font-size: 1.5rem; }
 
     .je-ter-empty {
@@ -836,14 +908,26 @@ gtag('config', 'G-PGXCZF9S9W');
     </div>
   </div>
 
+  <div id="je-ter-info-modal" class="je-ter-info-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="je-ter-info-title">
+    <div class="je-ter-info-panel">
+      <div class="je-ter-info-head">
+        <h3 id="je-ter-info-title" class="je-ter-info-title">Informações adicionais</h3>
+        <button type="button" id="je-ter-info-close" class="je-ter-info-close" aria-label="Fechar">
+          <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        </button>
+      </div>
+      <div id="je-ter-info-body" class="je-ter-info-body"></div>
+    </div>
+  </div>
+
   <div id="footer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
-  <script src="js/territory-streets.js?v=2026061720"></script>
-  <script src="js/content.js?v=2026061720"></script>
+  <script src="js/territory-streets.js?v=2026061721"></script>
+  <script src="js/content.js?v=2026061721"></script>
 
 </body>
 </html>

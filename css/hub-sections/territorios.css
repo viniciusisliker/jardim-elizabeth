@@ -612,7 +612,10 @@
     .terr-catalog-modal-input--status{font-weight:700;font-size:.75rem}
     .terr-catalog-modal-input--date{max-width:11rem}
     .terr-catalog-modal__cov-hint{margin:.25rem 0 0;font-size:.625rem;color:#9ca3af;line-height:1.35}
-    .terr-catalog-modal-field--streets{padding:.625rem .75rem;border-radius:.625rem;background:#f5f8fc;border:1px solid #e8edf5}
+    .terr-catalog-modal__info-btn{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border:1px solid #e2e6ef;border-radius:.625rem;background:#fff;color:#3b5e97;cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s,color .15s}
+    .terr-catalog-modal__info-btn .material-symbols-outlined{font-size:1.0625rem}
+    .terr-catalog-modal__info-btn:hover,.terr-catalog-modal__info-btn--active{background:#eef3fa;border-color:#c7d4ea;color:#0f3462}
+    .terr-catalog-modal__street-panel{margin-bottom:.75rem;padding:.625rem .75rem;border-radius:.625rem;background:#f5f8fc;border:1px solid #e8edf5}
     .terr-catalog-modal__street-list{margin:0;padding-left:1rem;font-size:.75rem;line-height:1.45;color:#4b5563}
     .terr-catalog-modal__street-list li+li{margin-top:.15rem}
     .terr-catalog-modal__street-notes{margin:.375rem 0 0;font-size:.625rem;color:#9ca3af}

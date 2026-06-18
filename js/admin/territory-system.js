@@ -4343,7 +4343,16 @@
     if (error) throw error;
   }
 
-  function catalogStreetInfoBlock(t) {
+  function catalogStreetInfoIcon(t) {
+    const api = window.JETerritoryStreets;
+    if (!api?.byNum(t?.num)?.streets?.length) return '';
+    return `
+      <button type="button" class="terr-catalog-modal__info-btn" data-terr-street-toggle aria-expanded="false" aria-label="Informações adicionais" title="Informações adicionais">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+      </button>`;
+  }
+
+  function catalogStreetInfoPanel(t) {
     const api = window.JETerritoryStreets;
     const entry = api?.byNum(t?.num);
     if (!entry?.streets?.length) return '';
@@ -4358,8 +4367,7 @@
       : '';
 
     return `
-      <div class="terr-catalog-modal-field terr-catalog-modal-field--streets">
-        <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">info</span>Informações adicionais</span>
+      <div class="terr-catalog-modal__street-panel hidden" data-terr-street-panel>
         <ul class="terr-catalog-modal__street-list">${items}</ul>
         ${notes}
         ${mapsLink}
@@ -4415,7 +4423,9 @@
                 <span class="terr-catalog-modal__context-name">${escapeHtml(H().territoryLabel(t))}</span>
                 ${catalogTypeCell(t)}
               </div>
+              ${catalogStreetInfoIcon(t)}
             </div>
+            ${catalogStreetInfoPanel(t)}
             <p class="terr-catalog-modal__section-label">Prévia da linha</p>
             <div id="catalog-modal-live-row" class="terr-catalog-modal__live-wrap"></div>
             <div class="terr-catalog-modal__edit-grid">
@@ -4446,7 +4456,6 @@
                 <p id="catalog-modal-cov-hint" class="terr-catalog-modal__cov-hint">${isDesignado ? 'Define quando o território entrou em campo.' : 'Dias sem cobertura são calculados a partir desta data.'}</p>
               </div>
             </div>
-            ${catalogStreetInfoBlock(t)}
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
               <textarea name="observations" rows="2" class="terr-catalog-modal-input terr-catalog-modal-input--area">${escapeHtml(t.observations || '')}</textarea>
@@ -4492,6 +4501,16 @@
 
     wrap.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', close));
     wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+
+    wrap.querySelector('[data-terr-street-toggle]')?.addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const panel = wrap.querySelector('[data-terr-street-panel]');
+      if (!panel) return;
+      const willOpen = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      btn.classList.toggle('terr-catalog-modal__info-btn--active', willOpen);
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

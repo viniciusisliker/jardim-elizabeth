@@ -280,6 +280,10 @@
     const lightboxImg = document.getElementById('je-ter-lightbox-img');
     const lightboxTitle = document.getElementById('je-ter-lightbox-title');
     const lightboxClose = document.getElementById('je-ter-lightbox-close');
+    const infoModal = document.getElementById('je-ter-info-modal');
+    const infoTitle = document.getElementById('je-ter-info-title');
+    const infoBody = document.getElementById('je-ter-info-body');
+    const infoClose = document.getElementById('je-ter-info-close');
 
     function cards() {
       return [...grid.querySelectorAll('.territory-card')];
@@ -337,10 +341,17 @@
       if (!lightbox) return;
       lightbox.classList.remove('is-open');
       lightbox.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+      if (!infoModal?.classList.contains('is-open')) document.body.style.overflow = '';
     }
 
     grid.addEventListener('click', (e) => {
+      const infoBtn = e.target.closest('[data-je-ter-info]');
+      if (infoBtn) {
+        const card = infoBtn.closest('.territory-card');
+        if (card) openInfoModal(card);
+        return;
+      }
+
       const btn = e.target.closest('[data-je-map-open]');
       if (!btn) return;
       const card = btn.closest('.territory-card');
@@ -351,8 +362,11 @@
 
     lightboxClose?.addEventListener('click', closeLightbox);
     lightbox?.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    infoClose?.addEventListener('click', closeInfoModal);
+    infoModal?.addEventListener('click', (e) => { if (e.target === infoModal) closeInfoModal(); });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && lightbox?.classList.contains('is-open')) closeLightbox();
+      if (e.key === 'Escape' && infoModal?.classList.contains('is-open')) closeInfoModal();
     });
 
     function openTerritoryFromHash() {
@@ -373,6 +387,35 @@
       }
     }
 
+    function closeInfoModal() {
+      if (!infoModal) return;
+      infoModal.classList.remove('is-open');
+      infoModal.setAttribute('aria-hidden', 'true');
+      if (!lightbox?.classList.contains('is-open')) document.body.style.overflow = '';
+    }
+
+    function openInfoModal(card) {
+      const streetsApi = window.JETerritoryStreets;
+      if (!infoModal || !infoBody || !streetsApi) return;
+      const num = card?.dataset.num || '';
+      const entry = streetsApi.byNum(num);
+      if (!entry) return;
+
+      const title = card.querySelector('.je-ter-card-title')?.textContent?.trim() || 'Território';
+      if (infoTitle) infoTitle.textContent = title;
+
+      const href = streetsApi.mapsUrl(num);
+      const mapsLink = href
+        ? `<a href="${href}" target="_blank" rel="noopener noreferrer" class="je-ter-info-maps"><span class="material-symbols-outlined" aria-hidden="true">map</span>Google Maps</a>`
+        : '';
+
+      infoBody.innerHTML = `${streetsApi.formatExtraHtml(num)}${mapsLink}`;
+      infoModal.classList.add('is-open');
+      infoModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      infoClose?.focus();
+    }
+
     function ensureTerritoryExtras() {
       const streetsApi = window.JETerritoryStreets;
       if (!streetsApi) return;
@@ -383,34 +426,24 @@
         if (!entry) return;
 
         card.dataset.streets = streetsApi.streetsText(num);
+        card.querySelector('.je-ter-extra')?.remove();
+        card.querySelector('.je-ter-maps-link')?.remove();
 
-        let extra = card.querySelector('.je-ter-extra');
-        if (!extra) {
-          extra = document.createElement('div');
-          extra.className = 'je-ter-extra';
-          const mapBtn = card.querySelector('.je-ter-map-thumb');
-          if (mapBtn?.nextSibling) card.insertBefore(extra, mapBtn.nextSibling);
-          else card.appendChild(extra);
+        let actions = card.querySelector('.je-ter-card-actions');
+        if (!actions) {
+          actions = document.createElement('div');
+          actions.className = 'je-ter-card-actions';
+          card.querySelector('.je-ter-map-thumb')?.insertAdjacentElement('afterend', actions);
         }
 
-        extra.innerHTML = `
-          <p class="je-ter-extra-label">Informações adicionais</p>
-          ${streetsApi.formatExtraHtml(num)}`;
-
-        let link = card.querySelector('.je-ter-maps-link');
         const href = streetsApi.mapsUrl(num);
-        if (!href) return;
-
-        if (!link) {
-          link = document.createElement('a');
-          link.className = 'je-ter-maps-link';
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">map</span><span>Google Maps</span>';
-          card.appendChild(link);
-        }
-        link.href = href;
-        link.title = `Abrir ${entry.mapsQuery} no Google Maps`;
+        actions.innerHTML = `
+          <button type="button" class="je-ter-icon-btn" data-je-ter-info aria-label="Informações adicionais" title="Informações adicionais">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+          </button>
+          ${href ? `<a class="je-ter-icon-btn" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="Google Maps" title="Abrir no Google Maps">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>
+          </a>` : ''}`;
       });
     }
 
