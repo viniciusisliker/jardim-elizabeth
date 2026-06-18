@@ -2,8 +2,15 @@
   const STORAGE_KEY = 'je_hub_changelog_seen';
 
   const CHANGELOG = {
-    version: '2026-06-15',
+    version: '2026-06-17',
     items: [
+      {
+        date: '17 jun 2026',
+        tag: 'Territórios',
+        icon: 'map',
+        title: 'Ruas e Google Maps por território',
+        body: 'Cada território mostra as ruas do mapa em Informações adicionais. O link do Google Maps aponta para a quadra correta, não mais para o bairro genérico.'
+      },
       {
         date: '15 jun 2026',
         tag: 'Hub',

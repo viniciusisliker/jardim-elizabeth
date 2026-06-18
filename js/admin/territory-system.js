@@ -4343,6 +4343,29 @@
     if (error) throw error;
   }
 
+  function catalogStreetInfoBlock(t) {
+    const api = window.JETerritoryStreets;
+    const entry = api?.byNum(t?.num);
+    if (!entry?.streets?.length) return '';
+
+    const items = entry.streets.map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+    const notes = entry.notes
+      ? `<p class="terr-catalog-modal__street-notes">${escapeHtml(entry.notes)}</p>`
+      : '';
+    const href = api.mapsUrl(t.num);
+    const mapsLink = href
+      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="terr-catalog-modal__maps-link"><span class="material-symbols-outlined" aria-hidden="true">map</span>Google Maps</a>`
+      : '';
+
+    return `
+      <div class="terr-catalog-modal-field terr-catalog-modal-field--streets">
+        <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">info</span>Informações adicionais</span>
+        <ul class="terr-catalog-modal__street-list">${items}</ul>
+        ${notes}
+        ${mapsLink}
+      </div>`;
+  }
+
   function openCatalogRowModal(t) {
     if (!t) return;
     if (document.getElementById('catalog-row-modal-wrap')) return;
@@ -4423,6 +4446,7 @@
                 <p id="catalog-modal-cov-hint" class="terr-catalog-modal__cov-hint">${isDesignado ? 'Define quando o território entrou em campo.' : 'Dias sem cobertura são calculados a partir desta data.'}</p>
               </div>
             </div>
+            ${catalogStreetInfoBlock(t)}
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
               <textarea name="observations" rows="2" class="terr-catalog-modal-input terr-catalog-modal-input--area">${escapeHtml(t.observations || '')}</textarea>

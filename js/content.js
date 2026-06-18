@@ -305,7 +305,8 @@
         const nome = (card.dataset.nome || '').toLowerCase();
         const num = (card.dataset.num || '').toLowerCase();
         const title = (card.querySelector('.je-ter-card-title')?.textContent || '').toLowerCase();
-        const show = !query || nome.includes(query) || num.includes(query) || title.includes(query);
+        const extra = (card.dataset.streets || '').toLowerCase();
+        const show = !query || nome.includes(query) || num.includes(query) || title.includes(query) || extra.includes(query);
         card.classList.toggle('is-hidden', !show);
         if (show) visible += 1;
       });
@@ -372,22 +373,48 @@
       }
     }
 
-    function ensureMapsLinks() {
+    function ensureTerritoryExtras() {
+      const streetsApi = window.JETerritoryStreets;
+      if (!streetsApi) return;
+
       cards().forEach((card) => {
-        if (card.querySelector('.je-ter-maps-link')) return;
-        const title = card.querySelector('.je-ter-card-title')?.textContent?.trim() || 'Território';
-        const q = encodeURIComponent(`${title}, Jardim Elizabeth, São Paulo, SP`);
-        const link = document.createElement('a');
-        link.className = 'je-ter-maps-link';
-        link.href = `https://www.google.com/maps/search/?api=1&query=${q}`;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">map</span><span>Google Maps</span>';
-        card.appendChild(link);
+        const num = card.dataset.num || '';
+        const entry = streetsApi.byNum(num);
+        if (!entry) return;
+
+        card.dataset.streets = streetsApi.streetsText(num);
+
+        let extra = card.querySelector('.je-ter-extra');
+        if (!extra) {
+          extra = document.createElement('div');
+          extra.className = 'je-ter-extra';
+          const mapBtn = card.querySelector('.je-ter-map-thumb');
+          if (mapBtn?.nextSibling) card.insertBefore(extra, mapBtn.nextSibling);
+          else card.appendChild(extra);
+        }
+
+        extra.innerHTML = `
+          <p class="je-ter-extra-label">Informações adicionais</p>
+          ${streetsApi.formatExtraHtml(num)}`;
+
+        let link = card.querySelector('.je-ter-maps-link');
+        const href = streetsApi.mapsUrl(num);
+        if (!href) return;
+
+        if (!link) {
+          link = document.createElement('a');
+          link.className = 'je-ter-maps-link';
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">map</span><span>Google Maps</span>';
+          card.appendChild(link);
+        }
+        link.href = href;
+        link.title = `Abrir ${entry.mapsQuery} no Google Maps`;
       });
     }
 
-    ensureMapsLinks();
+    ensureTerritoryExtras();
     applySearch();
     openTerritoryFromHash();
     window.addEventListener('hashchange', openTerritoryFromHash);

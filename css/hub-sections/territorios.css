@@ -612,6 +612,13 @@
     .terr-catalog-modal-input--status{font-weight:700;font-size:.75rem}
     .terr-catalog-modal-input--date{max-width:11rem}
     .terr-catalog-modal__cov-hint{margin:.25rem 0 0;font-size:.625rem;color:#9ca3af;line-height:1.35}
+    .terr-catalog-modal-field--streets{padding:.625rem .75rem;border-radius:.625rem;background:#f5f8fc;border:1px solid #e8edf5}
+    .terr-catalog-modal__street-list{margin:0;padding-left:1rem;font-size:.75rem;line-height:1.45;color:#4b5563}
+    .terr-catalog-modal__street-list li+li{margin-top:.15rem}
+    .terr-catalog-modal__street-notes{margin:.375rem 0 0;font-size:.625rem;color:#9ca3af}
+    .terr-catalog-modal__maps-link{display:inline-flex;align-items:center;gap:.25rem;margin-top:.5rem;font-size:.6875rem;font-weight:700;color:#3b5e97;text-decoration:none}
+    .terr-catalog-modal__maps-link .material-symbols-outlined{font-size:.9375rem}
+    .terr-catalog-modal__maps-link:hover{text-decoration:underline;color:#0f3462}
     .terr-catalog-modal-field{display:flex;flex-direction:column;gap:.3125rem;min-width:0}
     .terr-catalog-modal-field__label{display:inline-flex;align-items:center;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
     .terr-catalog-modal-field__label .material-symbols-outlined{font-size:.875rem;color:#3b5e97}
