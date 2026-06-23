@@ -102,6 +102,20 @@
     return norm.startsWith(target);
   }
 
+  /** Último dia de campo (terça–domingo) em ou antes da data de referência. */
+  function lastTerritoryWorkDate(ref = new Date()) {
+    const cursor = parseISODate(toISODate(ref));
+    if (!cursor) return toISODate(ref);
+    for (let i = 0; i < 8; i++) {
+      const iso = toISODate(cursor);
+      if (CRONOGRAMA_DAYS.some((day) => weekdayMatchesCronograma(day, iso))) {
+        return iso;
+      }
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return toISODate(ref);
+  }
+
   function formatWeekRange(weekStartIso) {
     const start = parseISODate(weekStartIso);
     if (!start) return '';
@@ -630,6 +644,7 @@
     formatTime,
     weekdayLabelFromDate,
     weekdayMatchesCronograma,
+    lastTerritoryWorkDate,
     dateForWeekdayInWeek,
     normalizeName,
     resolveProfileByName,

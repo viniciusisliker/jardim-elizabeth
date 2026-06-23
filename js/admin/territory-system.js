@@ -1589,7 +1589,8 @@
     if (document.getElementById('devolver-modal-wrap')) return;
 
     const isDomingoPair = H().isDomingoPairContextAssignment(resolved, profiles);
-    const today = H().toISODate(new Date());
+    const defaultWorkDate = H().lastTerritoryWorkDate(new Date());
+    const defaultWorkHint = `${H().formatDisplayDate(defaultWorkDate)} (${H().formatWeekday(defaultWorkDate).toLowerCase()})`;
     const terr = territories.find((item) => item.id === resolved.territory_id) || resolved.territories;
     const terrLabel = H().territoryLabel(terr);
     const person = devolverAssigneeLabel({ ...resolved, territories: terr });
@@ -1621,8 +1622,8 @@
             </div>
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da devolução</span>
-              <input name="work_date" type="date" required value="${escapeHtml(today)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
-              <p class="terr-catalog-modal__cov-hint">Último dia em que o território foi trabalhado. Padrão: hoje.</p>
+              <input name="work_date" type="date" required value="${escapeHtml(defaultWorkDate)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
+              <p class="terr-catalog-modal__cov-hint">Último dia em que o território foi trabalhado. Padrão: ${escapeHtml(defaultWorkHint)}.</p>
             </label>
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>
@@ -1655,7 +1656,7 @@
       const submitBtn = e.target.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
       const fd = new FormData(e.target);
-      const workDate = fd.get('work_date') || today;
+      const workDate = fd.get('work_date') || defaultWorkDate;
       const undoEntry = buildReturnUndo(terr, resolved);
       try {
         const { error } = await client.rpc('return_territory_field', {
