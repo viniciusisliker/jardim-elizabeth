@@ -402,3 +402,625 @@ html.dark .je-install-banner {
   background: linear-gradient(135deg, #1a2438 0%, #1e2130 100%) !important;
   border-color: var(--je-card-border) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dark mode — extensão global (hub, notificações, tabelas, editores)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hub header (página interna com hero) */
+html.dark body:not(.hub-auth-pending) #header .je-site-header {
+  background: var(--je-background) !important;
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark body:not(.hub-auth-pending) #header .je-site-nav {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Variáveis de grade nas views do hub */
+html.dark #hub-view-territorios {
+  --terr-grid-line: rgba(255, 255, 255, 0.08);
+  --terr-grid-line-head: rgba(255, 255, 255, 0.12);
+  --terr-grid-row: var(--je-card-border);
+}
+html.dark #hub-view-carrinhos-displays {
+  --eq-grid-line: rgba(255, 255, 255, 0.08);
+  --eq-grid-line-head: rgba(255, 255, 255, 0.12);
+  --eq-grid-row: var(--je-card-border);
+}
+html.dark #hub-view-audio-video { --av-grid-row: var(--je-card-border); }
+
+/* Botão desfazer + navegação em pílulas */
+html.dark .hub-undo-btn {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-primary-container) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .hub-undo-btn:not(:disabled):hover {
+  background: var(--je-surface-container) !important;
+  border-color: #5a6a8a !important;
+}
+html.dark .terr-nav,
+html.dark .eq-nav,
+html.dark .av-nav,
+html.dark .qa-board-nav {
+  background: rgba(30, 33, 48, 0.92) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+html.dark .terr-tab:not(.active),
+html.dark .eq-tab:not(.active),
+html.dark .av-tab:not(.active),
+html.dark .qa-board-nav-link:not(.is-active) {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-tab:not(.active):hover,
+html.dark .eq-tab:not(.active):hover,
+html.dark .av-tab:not(.active):hover {
+  color: var(--je-on-surface) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Cards e estatísticas (hub) */
+html.dark .terr-stat,
+html.dark .terr-catalog-stat,
+html.dark .eq-pub-stat,
+html.dark .cfg-stat,
+html.dark .dp-stat,
+html.dark .av-stat,
+html.dark .perf-card,
+html.dark .board-card,
+html.dark .av-card,
+html.dark .av-checklist,
+html.dark .av-notes-card,
+html.dark .eq-checklist-card,
+html.dark .cfg-card,
+html.dark .cfg-des-card,
+html.dark .cfg-action-card,
+html.dark .eq-item-type-card,
+html.dark .hub-modules-panel {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .terr-stat-val,
+html.dark .terr-catalog-stat__val,
+html.dark .eq-pub-stat__val,
+html.dark .cfg-stat__val,
+html.dark .av-stat__label,
+html.dark .perf-info-name,
+html.dark .board-card-title,
+html.dark .hub-module-title {
+  color: var(--je-on-surface) !important;
+}
+html.dark .terr-catalog-stat__label,
+html.dark .cfg-stat__label,
+html.dark .av-stat__hint,
+html.dark .cfg-note,
+html.dark .cfg-section-title,
+html.dark .board-card-meta,
+html.dark .hub-module-desc,
+html.dark .hub-module-group-title {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-module-group { border-color: var(--je-card-border) !important; }
+html.dark .hub-home-intro p { color: var(--je-on-surface-variant) !important; }
+
+/* Tabelas e listas com scroll */
+html.dark .terr-sched-scroll,
+html.dark .terr-catalog-scroll,
+html.dark .terr-hist-scroll,
+html.dark .terr-over-scroll,
+html.dark .terr-spot-scroll,
+html.dark .terr-return-scroll,
+html.dark .eq-sched-scroll,
+html.dark .eq-pub-scroll,
+html.dark .eq-item-scroll,
+html.dark .cfg-members-scroll {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .terr-sched-table thead th,
+html.dark .terr-catalog-table thead th,
+html.dark .terr-hist-table thead th,
+html.dark .eq-data-table thead th,
+html.dark .eq-sched-table thead th,
+html.dark .cfg-member-row--head {
+  background: var(--je-surface-container-low) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-catalog-table tbody tr:hover,
+html.dark .terr-sched-row:hover,
+html.dark .terr-hist-row:hover,
+html.dark .eq-sched-tr:hover,
+html.dark .cfg-member-row:hover {
+  background: var(--je-surface-container-low) !important;
+}
+html.dark .terr-sched-cell,
+html.dark .terr-catalog-cell,
+html.dark .terr-hist-cell,
+html.dark .eq-sched-cell,
+html.dark .cfg-member-name {
+  color: var(--je-on-surface) !important;
+}
+html.dark .terr-sched-cell--muted,
+html.dark .terr-catalog-cell--muted,
+html.dark .terr-hist-cell--muted,
+html.dark .eq-sched-cell--muted,
+html.dark .cfg-member-user,
+html.dark .cfg-member-email {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-empty,
+html.dark .terr-whatsapp-box,
+html.dark .eq-whatsapp-box,
+html.dark .eq-sched-empty,
+html.dark .eq-pub-empty,
+html.dark .eq-pub-foot {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+
+/* Filtros coluna (terr-xlf) */
+html.dark .terr-xlf-sort { color: var(--je-on-surface-variant) !important; }
+html.dark .terr-xlf-sort:hover,
+html.dark .terr-xlf-sort--active { color: var(--je-primary) !important; }
+html.dark .terr-xlf-menu {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+}
+html.dark .terr-xlf-menu-title,
+html.dark .terr-xlf-check { color: var(--je-on-surface) !important; }
+html.dark .terr-xlf-check:hover { background: var(--je-surface-container-low) !important; }
+html.dark .terr-xlf-filter-btn {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-xlf-filter-btn:hover,
+html.dark .terr-xlf-filter-btn--active {
+  background: var(--je-surface-container) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .terr-xlf-clear { color: var(--je-secondary) !important; }
+
+/* Modais hub (corpo claro; hero azul permanece) */
+html.dark .terr-priority-modal__panel,
+html.dark .terr-catalog-modal__panel,
+html.dark .eq-modal__panel,
+html.dark .cfg-modal__panel {
+  background: var(--je-card) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45) !important;
+}
+html.dark .terr-priority-modal__head {
+  background: linear-gradient(135deg, #3b1515 0%, var(--je-card) 100%) !important;
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .terr-priority-modal__foot,
+html.dark .terr-catalog-modal__foot,
+html.dark .eq-modal__head,
+html.dark .eq-modal__body,
+html.dark .eq-modal__foot,
+html.dark .cfg-modal__toolbar,
+html.dark .cfg-modal__body {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .terr-catalog-modal__context,
+html.dark .terr-catalog-modal__live-wrap,
+html.dark .terr-catalog-modal-field--streets,
+html.dark .terr-catalog-modal__street-panel {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .terr-catalog-modal__context-name,
+html.dark .eq-modal__head h2,
+html.dark .cfg-modal__title,
+html.dark .terr-priority-modal__sub {
+  color: var(--je-on-surface) !important;
+}
+html.dark .terr-catalog-modal__section-label,
+html.dark .terr-catalog-modal-field__label,
+html.dark .terr-catalog-modal__cov-hint,
+html.dark .terr-catalog-modal__street-list,
+html.dark .terr-catalog-modal__street-notes {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-catalog-modal-input,
+html.dark .eq-modal-input,
+html.dark .cfg-field input,
+html.dark .cfg-field select,
+html.dark .cfg-search-wrap input,
+html.dark .terr-sched-modal-input,
+html.dark .eq-sched-inline-input {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .terr-catalog-modal__close,
+html.dark .eq-modal__close,
+html.dark .cfg-modal__close {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark .eq-modal__close,
+html.dark .cfg-modal__close { color: var(--je-on-surface-variant) !important; }
+html.dark .terr-catalog-modal-btn--ghost,
+html.dark .eq-modal-btn--ghost,
+html.dark .cfg-modal-btn--ghost,
+html.dark .perf-btn--ghost {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .terr-catalog-type--mid { background: #1e2a40 !important; color: var(--je-secondary) !important; }
+html.dark .terr-catalog-type--weekend { background: #2a2038 !important; color: #c4b5fd !important; }
+
+/* Notificações */
+html.dark .hub-notif__panel {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+}
+html.dark .hub-notif__head,
+html.dark .hub-notif__item,
+html.dark .hub-notif__push,
+html.dark .hub-notif__error {
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-notif__title,
+html.dark .hub-notif__item-title { color: var(--je-on-surface) !important; }
+html.dark .hub-notif__item--unread { background: #1a2438 !important; }
+html.dark .hub-notif__item:hover { background: var(--je-surface-container-low) !important; }
+html.dark .hub-notif__empty,
+html.dark .hub-notif__item-body,
+html.dark .hub-notif__item-time,
+html.dark .hub-notif__push-text,
+html.dark .hub-pwa-card__lead,
+html.dark .hub-pwa-card__hint,
+html.dark .hub-pwa-card__status {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-notif__mark-all,
+html.dark .hub-notif__item-meta,
+html.dark .hub-notif-send__dest legend,
+html.dark .hub-notif-send__field > span {
+  color: var(--je-secondary) !important;
+}
+html.dark .hub-notif-send__dest,
+html.dark .hub-notif-send__radio { color: var(--je-on-surface) !important; }
+html.dark .hub-notif__push {
+  background: var(--je-surface-container-low) !important;
+}
+html.dark .hub-notif__push-btn {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+
+/* Hub — agenda / eventos (inline hub.html) */
+html.dark .hub-ev-list-head {
+  background: var(--je-surface-container-low) !important;
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-list-count { color: var(--je-on-surface-variant) !important; }
+html.dark .hub-ev-row {
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-row:hover { background: var(--je-surface-container-low) !important; }
+html.dark .hub-ev-row-date-num,
+html.dark .hub-ev-row-title,
+html.dark .hub-ev-field label,
+html.dark .hub-ev-toggle strong {
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-ev-row-date-lbl,
+html.dark .hub-ev-row-meta,
+html.dark .hub-ev-field .hub-ev-hint,
+html.dark .hub-ev-preview-label,
+html.dark .hub-ev-toggle span,
+html.dark .hub-ev-btn-ghost {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-ev-action {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-ev-action:hover {
+  background: var(--je-surface-container) !important;
+  border-color: var(--je-secondary) !important;
+}
+html.dark .hub-ev-action--edit { color: var(--je-secondary) !important; }
+html.dark .hub-ev-action--del:hover {
+  background: #3b1515 !important;
+  border-color: var(--je-error) !important;
+}
+html.dark .hub-ev-tag--highlight {
+  color: var(--je-primary) !important;
+  background: #1a2438 !important;
+  border-color: rgba(157, 188, 242, 0.25) !important;
+}
+html.dark .hub-ev-toggle:has(input:checked) {
+  background: #1a2438 !important;
+  border-color: var(--je-secondary) !important;
+}
+html.dark .hub-ev-cat:checked + .hub-ev-cat-pill {
+  background: var(--je-primary-container) !important;
+  border-color: var(--je-primary) !important;
+  color: var(--je-on-primary-container) !important;
+}
+html.dark .hub-ev-form {
+  background: linear-gradient(180deg, var(--je-surface-container-low) 0%, var(--je-card) 12%) !important;
+}
+html.dark #hub-event-modal .hub-ev-form { background: var(--je-card) !important; }
+html.dark .hub-ev-section {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-section-title { color: var(--je-secondary) !important; }
+html.dark .hub-ev-input {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-ev-input:focus {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-primary) !important;
+}
+html.dark .hub-ev-preview-card {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .hub-changelog-item { border-bottom-color: var(--je-card-border) !important; }
+html.dark .hub-changelog-item-icon {
+  background: linear-gradient(135deg, #1a2438, #252836) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .hub-changelog-tag {
+  background: var(--je-surface-container) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-recent-chip:hover {
+  background: #1a2438 !important;
+  border-color: var(--je-secondary) !important;
+}
+
+/* Editores de documento (anúncios / discursos) */
+html.dark .qa-doc-panel,
+html.dark .dp-doc-panel,
+html.dark .qa-table-block,
+html.dark .qa-section,
+html.dark .qa-limpeza-wrap,
+html.dark .dp-preview-card,
+html.dark .dp-preview-sheet,
+html.dark .dp-more-fields,
+html.dark .board-month-toolbar {
+  background: var(--je-card) !important;
+  border-color: var(--je-outline-variant) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .qa-doc-body,
+html.dark .dp-doc-body,
+html.dark .qa-subsection,
+html.dark .dp-preview-row dt,
+html.dark .entry-nav-btn.is-filled:not(.is-active),
+html.dark .dp-timeline-chip.is-filled:not(.is-active),
+html.dark .dp-nav-btn.is-filled:not(.is-active) {
+  background: var(--je-surface-container-low) !important;
+}
+html.dark .qa-section-body,
+html.dark .qa-section-title {
+  background: var(--je-card) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .qa-section-title {
+  background: var(--je-surface-container) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .entry-nav-btn,
+html.dark .dp-nav-btn,
+html.dark .dp-timeline-chip,
+html.dark .dp-mini-btn,
+html.dark .tab-util-btn,
+html.dark .board-filter-btn,
+html.dark .board-action-btn,
+html.dark #dp-board-month,
+html.dark #board-month {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .entry-nav-btn:hover,
+html.dark .dp-nav-btn:hover,
+html.dark .tab-util-btn:hover { background: var(--je-surface-container-low) !important; }
+html.dark .qa-field-control,
+html.dark .dp-field input,
+html.dark .dp-field textarea,
+html.dark .dp-field select,
+html.dark .qa-table-row input,
+html.dark .qa-table-row select,
+html.dark .dp-char-pill {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .dp-empty-state {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-doc-footer,
+html.dark .qa-doc-footer,
+html.dark .dp-doc-footer {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-doc-nav-btn,
+html.dark .qa-doc-nav-prev,
+html.dark .qa-doc-nav-next {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+
+/* Áudio e vídeo */
+html.dark .av-card__head,
+html.dark .av-checklist__head {
+  background: var(--je-surface-container-low) !important;
+  border-bottom-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .av-list,
+html.dark .av-check-item,
+html.dark .av-checklist__section-title,
+html.dark .av-checklist-summary,
+html.dark .av-hint,
+html.dark .av-field > span {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .av-list strong,
+html.dark .av-checklist__head h3 { color: var(--je-on-surface) !important; }
+html.dark .av-check-item:hover { background: var(--je-surface-container-low) !important; }
+html.dark .av-check-item__box {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+}
+html.dark .av-check-item--done .av-check-item__text {
+  color: var(--je-outline) !important;
+}
+html.dark .av-field textarea {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+
+/* Perfil */
+html.dark .perf-card__head,
+html.dark .perf-foot {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .perf-info-row { border-color: var(--je-card-border) !important; }
+html.dark .perf-field label { color: var(--je-on-surface-variant) !important; }
+
+/* Carrinhos — edição inline e pickers */
+html.dark .eq-sched-tr--edit { background: var(--je-surface-container-low) !important; }
+html.dark .eq-sched-pub-btn,
+html.dark .eq-slot-pub-picker--pop {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .eq-pub-edit-name,
+html.dark .eq-pub-search { color: var(--je-on-surface) !important; }
+
+/* PWA — complementos */
+html.dark .je-install-modal__close,
+html.dark .je-install-modal__ghost,
+html.dark .je-pwa-update__ghost {
+  background: var(--je-surface-container-lowest) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-install-modal__num { background: #1a2438 !important; color: var(--je-primary) !important; }
+html.dark .je-pwa-update__card {
+  background: linear-gradient(135deg, #2a2418 0%, var(--je-card) 100%) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-install-banner__title { color: var(--je-on-surface) !important; }
+html.dark .je-install-banner__sub { color: var(--je-on-surface-variant) !important; }
+
+/* Territórios públicos — complementos */
+html.dark .je-ter-guide {
+  background: linear-gradient(135deg, #1a1d28 0%, var(--je-card) 100%) !important;
+  border-color: rgba(212, 184, 122, 0.25) !important;
+}
+html.dark .je-ter-guide-head h2,
+html.dark .je-ter-guide-item h4 { color: var(--je-on-surface) !important; }
+html.dark .je-ter-guide-head p,
+html.dark .je-ter-guide-item p { color: var(--je-on-surface-variant) !important; }
+html.dark .je-ter-guide-item {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-ter-lightbox-panel { background: var(--je-card) !important; }
+html.dark .je-ter-lightbox-head {
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .je-ter-lightbox-title { color: var(--je-on-surface) !important; }
+html.dark .je-ter-lightbox-close {
+  background: var(--je-surface-container-low) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-ter-info-head { border-bottom-color: var(--je-card-border) !important; }
+html.dark .je-ter-empty {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-ter-filters__clear:hover {
+  background: var(--je-surface-container) !important;
+  color: var(--je-on-surface) !important;
+}
+
+/* Footer — mapas e horários (site-loader) */
+html.dark .je-footer-map-btn {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .je-footer-map-btn:hover {
+  background: var(--je-surface-container) !important;
+  border-color: var(--je-secondary) !important;
+}
+html.dark .je-footer-schedule,
+html.dark .je-footer-schedule-item {
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-footer-schedule strong { color: var(--je-on-surface) !important; }
+
+/* Utilitários Tailwind frequentes com cor fixa */
+html.dark .text-gray-500,
+html.dark .text-gray-600,
+html.dark .text-gray-700 { color: var(--je-on-surface-variant) !important; }
+html.dark .text-gray-900,
+html.dark .text-gray-800 { color: var(--je-on-surface) !important; }
+html.dark .bg-gray-50,
+html.dark .bg-gray-100 { background-color: var(--je-surface-container-low) !important; }
+html.dark .bg-gray-200 { background-color: var(--je-surface-container) !important; }
+html.dark .border-gray-200,
+html.dark .border-gray-300 { border-color: var(--je-card-border) !important; }
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--je-card-border) !important;
+}
+
+/* Inputs genéricos não cobertos antes */
+html.dark .eq-modal-input,
+html.dark .cfg-modal-input,
+html.dark .perf-field input,
+html.dark .hub-notif-send__field input,
+html.dark .hub-notif-send__field textarea,
+html.dark .hub-notif-send__field select,
+html.dark .board-gcal-btn,
+html.dark .cfg-des-perm-grid label {
+  background-color: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+
+/* Feedback estados */
+html.dark .hub-notif-send__feedback--ok {
+  background: #0d2818 !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(110, 231, 183, 0.2) !important;
+}
+html.dark .hub-notif-send__feedback--err {
+  background: #3b1515 !important;
+  color: var(--je-error) !important;
+  border-color: rgba(248, 113, 113, 0.2) !important;
+}
+
