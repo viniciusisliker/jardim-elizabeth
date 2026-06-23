@@ -1589,9 +1589,14 @@
     if (document.getElementById('devolver-modal-wrap')) return;
 
     const isDomingoPair = H().isDomingoPairContextAssignment(resolved, profiles);
-    const defaultWorkDate = H().lastTerritoryWorkDate(new Date());
-    const defaultWorkHint = `${H().formatDisplayDate(defaultWorkDate)} (${H().formatWeekday(defaultWorkDate).toLowerCase()})`;
     const terr = territories.find((item) => item.id === resolved.territory_id) || resolved.territories;
+    const schedDay = H().scheduleWeekdayForTerritory(terr, weekTemplate)
+      || (isDomingoPair ? 'Domingo' : null);
+    const defaultWorkDate = H().defaultTerritoryReturnDate(terr, weekTemplate, {
+      isDomingoPair,
+      ref: new Date()
+    });
+    const defaultWorkHint = H().formatDisplayDate(defaultWorkDate);
     const terrLabel = H().territoryLabel(terr);
     const person = devolverAssigneeLabel({ ...resolved, territories: terr });
     const assignedIso = resolved.assigned_at ? String(resolved.assigned_at).slice(0, 10) : '';
@@ -1623,7 +1628,7 @@
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">event</span>Data da devolução</span>
               <input name="work_date" type="date" required value="${escapeHtml(defaultWorkDate)}" class="terr-catalog-modal-input terr-catalog-modal-input--date"/>
-              <p class="terr-catalog-modal__cov-hint">Último dia em que o território foi trabalhado. Padrão: ${escapeHtml(defaultWorkHint)}.</p>
+              <p class="terr-catalog-modal__cov-hint">Último dia em que o território foi trabalhado.${schedDay ? ` Padrão: última ${escapeHtml(schedDay.toLowerCase())} (${escapeHtml(defaultWorkHint)}).` : ` Padrão: ${escapeHtml(defaultWorkHint)}.`}</p>
             </label>
             <label class="terr-catalog-modal-field">
               <span class="terr-catalog-modal-field__label"><span class="material-symbols-outlined" aria-hidden="true">notes</span>Observações</span>

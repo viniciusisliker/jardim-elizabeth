@@ -116,6 +116,38 @@
     return toISODate(ref);
   }
 
+  /** Última ocorrência do dia do cronograma (ex.: Terça → última terça-feira). */
+  function lastDateForCronogramaDay(weekdayLabel, ref = new Date()) {
+    if (!weekdayLabel) return lastTerritoryWorkDate(ref);
+    const cursor = parseISODate(toISODate(ref));
+    if (!cursor) return toISODate(ref);
+    for (let i = 0; i < 8; i++) {
+      const iso = toISODate(cursor);
+      if (weekdayMatchesCronograma(weekdayLabel, iso)) return iso;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return lastTerritoryWorkDate(ref);
+  }
+
+  function scheduleWeekdayForTerritory(territory, weekTemplate) {
+    if (!territory || !weekTemplate?.length) return null;
+    const num = normalizeTerritoryNum(territory.num);
+    const row = weekTemplate.find((r) => {
+      if (r.territory_id && r.territory_id === territory.id) return true;
+      if (!num) return false;
+      const code = String(r.territory_code || '').replace(/\D/g, '');
+      return code && (code.padStart(2, '0') === num || code === String(Number(num)));
+    });
+    return row?.weekday_label || null;
+  }
+
+  function defaultTerritoryReturnDate(territory, weekTemplate, options = {}) {
+    const { isDomingoPair = false, ref = new Date() } = options;
+    const schedDay = scheduleWeekdayForTerritory(territory, weekTemplate)
+      || (isDomingoPair ? 'Domingo' : null);
+    return schedDay ? lastDateForCronogramaDay(schedDay, ref) : lastTerritoryWorkDate(ref);
+  }
+
   function formatWeekRange(weekStartIso) {
     const start = parseISODate(weekStartIso);
     if (!start) return '';
@@ -645,6 +677,9 @@
     weekdayLabelFromDate,
     weekdayMatchesCronograma,
     lastTerritoryWorkDate,
+    lastDateForCronogramaDay,
+    scheduleWeekdayForTerritory,
+    defaultTerritoryReturnDate,
     dateForWeekdayInWeek,
     normalizeName,
     resolveProfileByName,
