@@ -1833,8 +1833,14 @@
     return scheduleActiveAssignment(row);
   }
 
+  /** Designação que pode ser devolvida nesta linha (alinhada à coluna Território). */
   function scheduleReturnAssignment(row) {
-    return scheduleActiveAssignment(row);
+    if (H().isSundayCronogramaDay(row?.weekday_label)) {
+      const pair = scheduleDomingoPairAssignment(row);
+      return pair?.id ? pair : null;
+    }
+    const onProfile = profileActiveIndividualAssignment(resolveScheduleProfileId(row));
+    return onProfile?.id ? onProfile : null;
   }
 
   function assignmentForScheduleProfile(row) {
@@ -2529,14 +2535,15 @@
       const tone = scheduleDayTone(r.weekday_label);
       const dirigenteHtml = scheduleDirigenteHtml(r);
       const assignment = scheduleRowAssignment(r);
+      const returnAssignment = scheduleReturnAssignment(r);
       const territorioHtml = scheduleTerritoryCell(r, assignment);
       const sugg = scheduleSuggestion(r);
       const hasSugg = r.suggestion || r.suggestion_note;
       const satHint = r.announcement_sat_date && H().isSaturdayCronogramaDay(r.weekday_label)
         ? ` · ${H().formatDisplayDate(r.announcement_sat_date)}`
         : '';
-      const returnBtn = assignment?.id
-        ? `<button type="button" data-return-assignment="${assignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().isDomingoPairContextAssignment(assignment, profiles, assigneeLabelContext(assignment.territory_id)) ? (H().domingoPairAssigneeLabel(assignment.territories?.num, assignment, profiles, assigneeLabelContext(assignment.territory_id)) || H().territoryLabel(assignment.territories)) : H().territoryLabel(assignment.territories))}" aria-label="Devolver território">
+      const returnBtn = returnAssignment?.id
+        ? `<button type="button" data-return-assignment="${returnAssignment.id}" class="terr-sched-icon-btn terr-sched-icon-btn--return terr-sched-action--return" title="Devolver ${escapeHtml(H().isDomingoPairContextAssignment(returnAssignment, profiles, assigneeLabelContext(returnAssignment.territory_id)) ? (H().domingoPairAssigneeLabel(returnAssignment.territories?.num, returnAssignment, profiles, assigneeLabelContext(returnAssignment.territory_id)) || H().territoryLabel(returnAssignment.territories)) : H().territoryLabel(returnAssignment.territories))}" aria-label="Devolver território">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
           </button>`
         : '<span class="terr-sched-icon-btn terr-sched-icon-btn--slot terr-sched-action--return" aria-hidden="true"></span>';
