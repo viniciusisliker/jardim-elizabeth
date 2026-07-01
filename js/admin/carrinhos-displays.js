@@ -36,6 +36,10 @@
     return window.JEHubUndo;
   }
 
+  async function logEqChange(eventType, action, details, metadata = {}) {
+    await window.JEEqHistory?.log?.(eventType, action, details, metadata);
+  }
+
   let toast;
   let client;
   let currentWeek;
@@ -333,7 +337,8 @@
     publicadores: false,
     equipamentos: false,
     locais: false,
-    checklist: false
+    checklist: false,
+    historico: false
   };
 
   function debounce(fn, wait) {
@@ -436,6 +441,15 @@
     if (tab === 'checklist') {
       renderChecklist();
       tabsRendered.checklist = true;
+      return;
+    }
+    if (tab === 'historico') {
+      window.JEEqHistory?.ensureReady?.().then(() => {
+        tabsRendered.historico = true;
+      }).catch((err) => {
+        console.error('Histórico:', err);
+        if (toast) showToast(toast, err.message || 'Erro ao carregar histórico.', true);
+      });
     }
   }
 
@@ -1147,6 +1161,7 @@
       const idx = equipmentItems.findIndex((item) => item.id === id);
       if (idx >= 0) equipmentItems[idx] = { ...equipmentItems[idx], ...payload };
       invalidateCatalogCache();
+      await logEqChange('equipamento', 'edicao', `Equipamento editado: ${payload.name}`, { entity_id: id, entity_name: payload.name });
     } else {
       const { data: inserted, error } = await client
         .from('equipment_items')
@@ -1163,6 +1178,7 @@
         undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
         equipmentItems.push(inserted);
         invalidateCatalogCache();
+        await logEqChange('equipamento', 'criacao', `Equipamento adicionado: ${payload.name}`, { entity_id: inserted.id, entity_name: payload.name });
       }
     }
 
@@ -1263,6 +1279,7 @@
       const idx = equipmentItems.findIndex((item) => item.id === id);
       if (idx >= 0) equipmentItems[idx] = { ...equipmentItems[idx], ...data };
       invalidateCatalogCache();
+      await logEqChange('equipamento', 'edicao', `Equipamento editado: ${data.name}`, { entity_id: id, entity_name: data.name });
     } else {
       const { data: inserted, error } = await client
         .from('equipment_items')
@@ -1279,6 +1296,7 @@
         undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_items', inserted.id, 'Equipamento');
         equipmentItems.push(inserted);
         invalidateCatalogCache();
+        await logEqChange('equipamento', 'criacao', `Equipamento adicionado: ${data.name}`, { entity_id: inserted.id, entity_name: data.name });
       }
     }
 
@@ -1300,6 +1318,7 @@
     if (error) showToast(toast, error.message, true);
     else {
       if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_items', { ...row }, 'Equipamento');
+      await logEqChange('equipamento', 'exclusao', `Equipamento excluído: ${row?.name || ''}`, { entity_id: id, entity_name: row?.name });
       showToast(toast, 'Equipamento excluído.');
       inlineItemDraft = null;
       await loadEquipment();
@@ -1662,6 +1681,7 @@
       const idx = locations.findIndex((item) => item.id === id);
       if (idx >= 0) locations[idx] = { ...locations[idx], ...payload };
       invalidateCatalogCache();
+      await logEqChange('local', 'edicao', `Local editado: ${payload.name}`, { entity_id: id, entity_name: payload.name });
     } else {
       const { data: inserted, error } = await client
         .from('equipment_locations')
@@ -1678,6 +1698,7 @@
         undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
         locations.push(inserted);
         invalidateCatalogCache();
+        await logEqChange('local', 'criacao', `Local adicionado: ${payload.name}`, { entity_id: inserted.id, entity_name: payload.name });
       }
     }
 
@@ -1771,6 +1792,7 @@
       const idx = locations.findIndex((item) => item.id === id);
       if (idx >= 0) locations[idx] = { ...locations[idx], ...data };
       invalidateCatalogCache();
+      await logEqChange('local', 'edicao', `Local editado: ${data.name}`, { entity_id: id, entity_name: data.name });
     } else {
       const { data: inserted, error } = await client
         .from('equipment_locations')
@@ -1787,6 +1809,7 @@
         undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_locations', inserted.id, 'Local');
         locations.push(inserted);
         invalidateCatalogCache();
+        await logEqChange('local', 'criacao', `Local adicionado: ${data.name}`, { entity_id: inserted.id, entity_name: data.name });
       }
     }
 
@@ -1808,6 +1831,7 @@
     if (error) showToast(toast, error.message, true);
     else {
       if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_locations', { ...row }, 'Local');
+      await logEqChange('local', 'exclusao', `Local excluído: ${row?.name || ''}`, { entity_id: id, entity_name: row?.name });
       showToast(toast, 'Local excluído.');
       inlineLocDraft = null;
       await loadLocations();
@@ -1957,6 +1981,7 @@
       else renderLocations();
     }
     if (tabsRendered.checklist) renderChecklist();
+    if (tabsRendered.historico) window.JEEqHistory?.refreshEqHistoricoView?.();
   }
 
   function parsePublisherNotes(notes) {
@@ -2558,6 +2583,14 @@
         return false;
       }
       undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_schedule_slots', id, beforeRow, 'Linha do cronograma', SLOT_UNDO_FIELDS);
+      await logEqChange('cronograma', 'edicao', `Linha editada: ${data.weekday_label} · ${helpers.displayPeriodLabel?.(data.period_label) || data.period_label}`, {
+        entity_id: id,
+        entity_name: data.equipment_name,
+        week_start: data.week_start || null,
+        slot_kind: data.slot_kind,
+        publisher_names: data.publisher_names,
+        location_name: data.location_name
+      });
     } else {
       const { data: inserted, error } = await client
         .from('equipment_schedule_slots')
@@ -2570,6 +2603,14 @@
       }
       if (inserted?.id) {
         undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_schedule_slots', inserted.id, 'Linha do cronograma');
+        await logEqChange('cronograma', 'criacao', `Nova linha: ${data.weekday_label} · ${helpers.displayPeriodLabel?.(data.period_label) || data.period_label}`, {
+          entity_id: inserted.id,
+          entity_name: data.equipment_name,
+          week_start: data.week_start || null,
+          slot_kind: data.slot_kind,
+          publisher_names: data.publisher_names,
+          location_name: data.location_name
+        });
       }
     }
 
@@ -2606,6 +2647,13 @@
     if (error) showToast(toast, error.message, true);
     else {
       if (row) undoApi()?.registerDelete(UNDO_SCOPE, 'equipment_schedule_slots', { ...row }, 'Linha do cronograma');
+      await logEqChange('cronograma', 'exclusao', `Linha excluída: ${row?.weekday_label || ''} · ${helpers.displayPeriodLabel?.(row?.period_label) || row?.period_label || ''}`, {
+        entity_id: id,
+        entity_name: row?.equipment_name,
+        week_start: row?.week_start || null,
+        publisher_names: row?.publisher_names,
+        location_name: row?.location_name
+      });
       showToast(toast, 'Linha excluída.');
       inlineSlotDraft = null;
       await loadSlots();
@@ -3098,6 +3146,14 @@
 
     toast = toastEl();
     client = await getClient();
+    window.JEEqHistory?.bind?.({
+      client,
+      toast,
+      showToast,
+      escapeHtml,
+      xlf,
+      helpers
+    });
     currentWeek = helpers.toISODate(helpers.getSunday(new Date()));
 
     setupTabs();
@@ -3322,6 +3378,7 @@
       else {
         undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_locations', row.id, 'is_active', prevActive, 'Local');
         row.is_active = nextActive;
+        await logEqChange('local', 'status', `${nextActive ? 'Local reativado' : 'Local desativado'}: ${row.name}`, { entity_id: row.id, entity_name: row.name, is_active: nextActive });
         showToast(toast, nextActive ? 'Local reativado.' : 'Local desativado.');
         refreshLocationsView();
       }
@@ -3347,6 +3404,7 @@
       else {
         undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_items', row.id, 'is_active', prevActive, 'Equipamento');
         row.is_active = nextActive;
+        await logEqChange('equipamento', 'status', `${nextActive ? 'Equipamento reativado' : 'Equipamento desativado'}: ${row.name}`, { entity_id: row.id, entity_name: row.name, is_active: nextActive });
         showToast(toast, nextActive ? 'Equipamento reativado.' : 'Equipamento desativado.');
         refreshEquipmentView();
       }
@@ -3372,6 +3430,7 @@
       else {
         undoApi()?.registerToggle(UNDO_SCOPE, 'equipment_publishers', row.id, 'is_active', prevActive, 'Publicador');
         row.is_active = nextActive;
+        await logEqChange('publicador', 'status', `${nextActive ? 'Publicador reativado' : 'Publicador desativado'}: ${publisherName(row)}`, { entity_id: row.id, entity_name: publisherName(row), is_active: nextActive });
         showToast(toast, nextActive ? 'Publicador reativado.' : 'Publicador desativado.');
         refreshPublishersView();
       }
@@ -3431,6 +3490,7 @@
           undoApi()?.registerUpdate(UNDO_SCOPE, 'equipment_publishers', id, row, 'Publicador', PUB_UNDO_FIELDS);
           Object.assign(row, payload);
           enrichPublisherRow(row);
+          await logEqChange('publicador', 'edicao', `Publicador editado: ${displayName}`, { entity_id: id, entity_name: displayName });
           showToast(toast, 'Publicador atualizado.');
           closePublisherModal();
           refreshPublishersView();
@@ -3456,6 +3516,7 @@
           undoApi()?.registerInsert(UNDO_SCOPE, 'equipment_publishers', inserted.id, 'Publicador');
         }
         if (inserted) publishers.push(enrichPublisherRow(inserted));
+        await logEqChange('publicador', 'criacao', `Publicador adicionado: ${profileRow.full_name}`, { entity_id: inserted?.id, entity_name: profileRow.full_name });
         showToast(toast, 'Publicador adicionado.');
         closePublisherModal();
         refreshPublishersView();
@@ -3479,7 +3540,8 @@
         publicadores: false,
         equipamentos: false,
         locais: false,
-        checklist: false
+        checklist: false,
+        historico: false
       };
       syncActiveEqTab();
     } catch (err) {

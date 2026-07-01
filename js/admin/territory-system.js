@@ -238,7 +238,7 @@
   };
   let overSort = { col: 'name', dir: 'asc' };
   let weekendByDate = {};
-  let tabsRendered = { painel: false, semana: false, historico: false, dirigentes: false };
+  let tabsRendered = { painel: false, semana: false, historico: false, campanhas: false, dirigentes: false };
   let assignmentByTerritoryId = new Map();
   let catalogTableTimer = null;
   let histTableTimer = null;
@@ -898,10 +898,16 @@
     const loads = [];
     const labels = [];
 
-    if (tab === 'designar' || tab === 'semana' || tab === 'dirigentes') {
+    if (tab === 'designar' || tab === 'semana' || tab === 'dirigentes' || tab === 'campanhas') {
       if (!profiles.length) {
         loads.push(loadProfiles());
         labels.push('profiles');
+      }
+    }
+    if (tab === 'campanhas') {
+      if (!territories.length) {
+        loads.push(loadTerritories());
+        labels.push('territories');
       }
     }
     if (tab === 'semana') {
@@ -996,6 +1002,20 @@
     if (tab === 'historico' && !tabsRendered.historico) {
       renderHistorico();
       tabsRendered.historico = true;
+    } else if (tab === 'campanhas') {
+      if (window.JETerritoryCampaigns) {
+        await window.JETerritoryCampaigns.ensureReady({
+          client,
+          toast,
+          getProfiles: () => profiles,
+          getTerritories: () => territories,
+          ensureProfiles,
+          ensureTerritories: async () => {
+            if (!territories.length) await loadTerritories();
+          }
+        });
+      }
+      tabsRendered.campanhas = true;
     } else if (tab === 'dirigentes' && !tabsRendered.dirigentes) {
       renderDirigentes();
       tabsRendered.dirigentes = true;
@@ -5320,6 +5340,11 @@
       if (!btn) return;
       openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
     });
+    document.getElementById('campanha-list')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-terr-map]');
+      if (!btn) return;
+      openTerritoryMapLightbox(btn.dataset.terrTitle, btn.dataset.terrMap);
+    });
   }
 
   async function init() {
@@ -5455,7 +5480,7 @@
       await reconcileDomingoPairFlags();
       renderCatalogo();
       renderPriorityList();
-      tabsRendered = { painel: true, semana: false, historico: false, dirigentes: false };
+      tabsRendered = { painel: true, semana: false, historico: false, campanhas: false, dirigentes: false };
       return true;
     } catch (err) {
       delete window.__JEAdminTerritoriosInit;

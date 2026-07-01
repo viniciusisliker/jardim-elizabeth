@@ -173,6 +173,10 @@
     .terr-sched-designados__row:last-child{border-bottom:none}
     .terr-sched-designados__meta{min-width:0;font-weight:600;color:#0f3462}
     .terr-sched-designados__sub{font-size:.6875rem;font-weight:500;color:#6b7280}
+    .terr-camp-status{display:inline-flex;align-items:center;gap:.25rem;padding:.1875rem .5rem;border-radius:9999px;font-size:.6875rem;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+    .terr-camp-status .material-symbols-outlined{font-size:.9375rem}
+    .terr-camp-status--pendente{color:#92400e;background:#fef3c7;border:1px solid #fde68a}
+    .terr-camp-status--trabalhado{color:#166534;background:#dcfce7;border:1px solid #bbf7d0}
     .terr-spots-panel{border-top:1px solid #eef0f4}
     .terr-spot-row--head{background:#f7f9fc;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
     .terr-spots-panel{--terr-grid-cols:4.5rem 1fr 3rem}

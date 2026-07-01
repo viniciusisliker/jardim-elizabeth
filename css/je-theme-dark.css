@@ -563,6 +563,16 @@ html.dark .eq-pub-foot {
   border-color: var(--je-card-border) !important;
   color: var(--je-on-surface-variant) !important;
 }
+html.dark .terr-camp-status--pendente {
+  color: #fcd34d !important;
+  background: rgba(146, 64, 14, 0.35) !important;
+  border-color: rgba(251, 191, 36, 0.35) !important;
+}
+html.dark .terr-camp-status--trabalhado {
+  color: #86efac !important;
+  background: rgba(22, 101, 52, 0.35) !important;
+  border-color: rgba(134, 239, 172, 0.25) !important;
+}
 
 /* Filtros coluna (terr-xlf) */
 html.dark .terr-xlf-sort { color: var(--je-on-surface-variant) !important; }

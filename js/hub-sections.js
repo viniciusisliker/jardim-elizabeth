@@ -101,14 +101,15 @@
       permission: 'agendamentos',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
-      styles: ['css/hub-sections/carrinhos-displays.css?v=2026061070'],
+      styles: ['css/hub-sections/carrinhos-displays.css?v=20260618140000'],
       scripts: [
         'js/week-input-helpers.js?v=2026060984',
         'js/equipment-schedule-helpers.js?v=2026061312',
         'js/admin/table-xlf.js?v=2026061060',
         'js/territory-column-resize.js?v=2026061066',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/carrinhos-displays.js?v=2026061312'
+        'js/admin/equipment-history.js?v=20260618140000',
+        'js/admin/carrinhos-displays.js?v=20260618140000'
       ],
       initKey: 'JEAdminCarrinhosDisplays',
       hero: {
@@ -144,11 +145,12 @@
       permission: 'territorios',
       viewId: 'hub-view-territorios',
       partial: 'hub/sections/territorios.html',
-      styles: ['css/hub-sections/territorios.css?v=2026061721'],
+      styles: ['css/hub-sections/territorios.css?v=20260618120000'],
       scripts: [
         'js/territory-column-resize.js?v=2026061014',
         'js/admin/hub-undo.js?v=2026060996',
-        'js/admin/territory-system.js?v=2026061725'
+        'js/admin/territory-campaigns.js?v=20260618120000',
+        'js/admin/territory-system.js?v=20260618120000'
       ],
       initKey: 'JEAdminTerritorios',
       hero: {

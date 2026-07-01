@@ -15,6 +15,10 @@
             <span class="material-symbols-outlined" aria-hidden="true">history</span>
             <span class="terr-tab-label">Histórico</span>
           </button>
+          <button type="button" class="terr-tab" data-terr-tab="campanhas" title="Campanhas" aria-label="Campanhas">
+            <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
+            <span class="terr-tab-label">Campanhas</span>
+          </button>
           <button type="button" class="terr-tab" data-terr-tab="dirigentes" title="Dirigentes" aria-label="Dirigentes">
             <span class="material-symbols-outlined" aria-hidden="true">groups</span>
             <span class="terr-tab-label">Dirigentes</span>
@@ -90,6 +94,37 @@
     <!-- HISTÓRICO -->
     <section id="panel-historico" class="terr-panel space-y-3">
       <div id="historico-grid"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
+    </section>
+
+    <!-- CAMPANHAS -->
+    <section id="panel-campanhas" class="terr-panel space-y-4">
+      <div class="terr-sched-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Campanhas</h2>
+          <p>T01–T19 · trabalhados e pendentes · sem vínculo com Painel, Cronograma ou Histórico</p>
+        </div>
+        <label class="text-[10px] font-bold uppercase tracking-wide text-white/80 flex items-center gap-2 shrink-0">Campanha
+          <select id="campanha-select" class="terr-sched-input min-w-[10rem]" title="Selecionar campanha"></select>
+        </label>
+        <label class="text-[10px] font-bold uppercase tracking-wide text-white/80 flex items-center gap-2 shrink-0">Filtro
+          <select id="campanha-filter" class="terr-sched-input" title="Filtrar por status">
+            <option value="all">Todos</option>
+            <option value="pendente">Pendentes</option>
+            <option value="trabalhado">Trabalhados</option>
+          </select>
+        </label>
+        <button type="button" id="btn-campanha-refresh" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost" title="Atualizar campanha" aria-label="Atualizar campanha">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">refresh</span>
+        </button>
+        <button type="button" id="btn-campanha-delete" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--ghost" title="Excluir campanha selecionada">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+        </button>
+        <button type="button" id="btn-campanha-new" class="terr-sched-toolbar-btn terr-sched-toolbar-btn--accent">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>Nova campanha
+        </button>
+      </div>
+      <div id="campanha-stats" class="terr-over-stats"></div>
+      <div id="campanha-list"><p class="text-sm text-on-surface-variant p-5">Carregando…</p></div>
     </section>
 
     <!-- DIRIGENTES -->
