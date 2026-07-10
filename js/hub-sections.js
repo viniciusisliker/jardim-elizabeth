@@ -65,13 +65,13 @@
         'css/hub-sections/discursos.css?v=20260710220000'
       ],
       scripts: [
-        'js/admin/discursos-publicos.js?v=20260710220000'
+        'js/admin/discursos-publicos.js?v=20260710230000'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {
         kicker: 'Publicação',
         title: 'Discursos Públicos',
-        subtitle: 'Painel, agenda, oradores, temas S-34 e mensagens para WhatsApp.',
+        subtitle: 'Agenda, oradores e temas S-34 — com WhatsApp e sync no Quadro.',
         showChangelog: false,
         showBack: true
       }

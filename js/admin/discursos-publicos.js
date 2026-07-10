@@ -26,7 +26,7 @@
       <div class="terr-nav-stage dp-nav-stage">
         <div class="terr-nav-scroll">
           <nav class="terr-nav dp-crm-nav" role="tablist" aria-label="Abas de Discursos Públicos">
-            ${[['painel', 'Painel', 'dashboard'], ['agenda', 'Agenda', 'calendar_month'], ['oradores', 'Oradores', 'groups'], ['temas', 'Temas', 'menu_book'], ['arranjo', 'Arranjo', 'view_week']]
+            ${[['agenda', 'Agenda', 'calendar_month'], ['oradores', 'Oradores', 'groups'], ['temas', 'Temas', 'menu_book']]
               .map(([id, label, icon], i) => `<button type="button" class="terr-tab${i ? '' : ' active'}" data-dp-tab="${id}" role="tab" title="${label}" aria-label="${label}">
                 <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
                 <span class="terr-tab-label">${label}</span>
@@ -34,11 +34,9 @@
           </nav>
         </div>
       </div>
-      <section id="dp-panel-painel" class="terr-panel active"></section>
-      <section id="dp-panel-agenda" class="terr-panel"></section>
+      <section id="dp-panel-agenda" class="terr-panel active"></section>
       <section id="dp-panel-oradores" class="terr-panel"></section>
-      <section id="dp-panel-temas" class="terr-panel"></section>
-      <section id="dp-panel-arranjo" class="terr-panel"></section>`;
+      <section id="dp-panel-temas" class="terr-panel"></section>`;
   }
 
   function dateRange(days) {
@@ -47,30 +45,23 @@
     return assignments.filter((a) => a.event_date >= today() && a.event_date <= end.toISOString().slice(0, 10));
   }
 
-  function renderPanel() {
-    const host = $('#dp-panel-painel');
+  function statsHtml() {
     const next30 = dateRange(30);
-    const upcoming = dateRange(56).sort((a, b) => a.event_date.localeCompare(b.event_date));
     const pending = assignments.filter((a) => a.confirmation_status === 'pendente' && a.event_date >= today()).length;
-    const activeSpeakers = speakers.filter((s) => s.is_active).length;
-    host.innerHTML = `
+    return `
       <div class="terr-catalog-stats dp-stats">
-        <article><strong>${next30.filter((a) => a.direction === 'receive').length}</strong><span>Recebemos — próximos 30 dias</span></article>
-        <article><strong>${next30.filter((a) => a.direction === 'send').length}</strong><span>Enviamos — próximos 30 dias</span></article>
-        <article><strong>${pending}</strong><span>Pendentes de confirmação</span></article>
-        <article><strong>${activeSpeakers}</strong><span>Oradores ativos</span></article>
-        <article><strong>${themes.filter((t) => t.is_active).length}</strong><span>Temas cadastrados</span></article>
-      </div>
-      <div class="terr-catalog-card">
-        <div class="terr-catalog-heading"><div><h2>Próximas designações</h2><p>Próximas oito semanas</p></div><button type="button" class="btn-primary" data-dp-new>Nova designação</button></div>
-        ${assignmentTable(upcoming, { dashboard: true })}</div>`;
-    bindAssignmentActions(host);
+        <article><strong>${next30.filter((a) => a.direction === 'receive').length}</strong><span>Recebemos — 30 dias</span></article>
+        <article><strong>${next30.filter((a) => a.direction === 'send').length}</strong><span>Enviamos — 30 dias</span></article>
+        <article><strong>${pending}</strong><span>Pendentes</span></article>
+        <article><strong>${speakers.filter((s) => s.is_active).length}</strong><span>Oradores ativos</span></article>
+        <article><strong>${themes.filter((t) => t.is_active).length}</strong><span>Temas S-34</span></article>
+      </div>`;
   }
 
-  function assignmentTable(rows, { dashboard = false } = {}) {
+  function assignmentTable(rows) {
     if (!rows.length) return empty('Nenhuma designação encontrada.');
     return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table"><thead><tr>
-      <th>Direção</th><th>Data</th><th>Orador</th><th>Tema</th><th>Congregação</th><th>Status</th>${dashboard ? '' : '<th></th>'}
+      <th>Direção</th><th>Data</th><th>Orador</th><th>Tema</th><th>Congregação</th><th>Status</th><th></th>
     </tr></thead><tbody>${rows.map((a) => `<tr data-dp-edit="${a.id}" class="dp-assignment-row">
       <td><span class="dp-badge dp-badge--${a.direction}">${DIRECTION[a.direction]}</span></td>
       <td>${escapeHtml(dateText(a.event_date))}${a.event_time ? `<small>${escapeHtml(a.event_time.slice(0, 5))}</small>` : ''}</td>
@@ -78,27 +69,47 @@
       <td>${escapeHtml(assignmentTheme(a))}</td>
       <td>${escapeHtml(a.congregation_name || a.speech_congregations?.name || '—')}</td>
       <td><span class="dp-status dp-status--${a.confirmation_status}">${STATUS[a.confirmation_status]}</span></td>
-      ${dashboard ? '' : `<td class="dp-actions"><button type="button" data-dp-wa="${a.id}" title="WhatsApp">WhatsApp</button><button type="button" data-dp-delete="${a.id}" title="Excluir">Excluir</button></td>`}
+      <td class="dp-actions"><button type="button" data-dp-wa="${a.id}" title="WhatsApp">WhatsApp</button><button type="button" data-dp-delete="${a.id}" title="Excluir">Excluir</button></td>
     </tr>`).join('')}</tbody></table></div>`;
   }
 
   function renderAgenda() {
     const host = $('#dp-panel-agenda');
+    if (!host) return;
     const month = host.dataset.month || new Date().toISOString().slice(0, 7);
     const direction = host.dataset.direction || '';
     const status = host.dataset.status || '';
-    const rows = assignments.filter((a) => (!month || a.event_date.startsWith(month)) && (!direction || a.direction === direction) && (!status || a.confirmation_status === status))
+    const rows = assignments
+      .filter((a) => (!month || a.event_date.startsWith(month))
+        && (!direction || a.direction === direction)
+        && (!status || a.confirmation_status === status))
       .sort((a, b) => a.event_date.localeCompare(b.event_date));
     host.innerHTML = `
-      <div class="terr-sched-toolbar dp-toolbar">
-        <label>Direção <select data-dp-filter="direction">${option('', 'Todos', direction)}${option('receive', 'Recebemos', direction)}${option('send', 'Enviamos', direction)}</select></label>
-        <label>Status <select data-dp-filter="status">${option('', 'Todos', status)}${Object.entries(STATUS).map(([k, v]) => option(k, v, status)).join('')}</select></label>
-        <label>Mês <input type="month" value="${month}" data-dp-month></label>
-        <button type="button" class="btn-primary" data-dp-new>Nova designação</button>
-        <button type="button" data-dp-wa-range>WhatsApp da semana</button>
-      </div>${assignmentTable(rows)}`;
-    host.querySelectorAll('[data-dp-filter]').forEach((el) => el.addEventListener('change', () => { host.dataset[el.dataset.dpFilter] = el.value; renderAgenda(); }));
-    host.querySelector('[data-dp-month]')?.addEventListener('change', (e) => { host.dataset.month = e.target.value; renderAgenda(); });
+      ${statsHtml()}
+      <div class="terr-catalog-card">
+        <div class="terr-catalog-heading">
+          <div>
+            <h2>Agenda</h2>
+            <p>Recebemos e enviamos · confirmação · WhatsApp · sincroniza com o Quadro (final de semana)</p>
+          </div>
+        </div>
+        <div class="terr-sched-toolbar dp-toolbar">
+          <label>Direção <select data-dp-filter="direction">${option('', 'Todos', direction)}${option('receive', 'Recebemos', direction)}${option('send', 'Enviamos', direction)}</select></label>
+          <label>Status <select data-dp-filter="status">${option('', 'Todos', status)}${Object.entries(STATUS).map(([k, v]) => option(k, v, status)).join('')}</select></label>
+          <label>Mês <input type="month" value="${month}" data-dp-month></label>
+          <button type="button" class="btn-primary" data-dp-new>Nova designação</button>
+          <button type="button" data-dp-wa-range>WhatsApp da semana</button>
+        </div>
+        ${assignmentTable(rows)}
+      </div>`;
+    host.querySelectorAll('[data-dp-filter]').forEach((el) => el.addEventListener('change', () => {
+      host.dataset[el.dataset.dpFilter] = el.value;
+      renderAgenda();
+    }));
+    host.querySelector('[data-dp-month]')?.addEventListener('change', (e) => {
+      host.dataset.month = e.target.value;
+      renderAgenda();
+    });
     bindAssignmentActions(host);
   }
 
@@ -251,18 +262,20 @@
     host.querySelector('[data-dp-themes-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderThemes(); });
   }
 
-  function renderArrangement() {
-    $('#dp-panel-arranjo').innerHTML = `<div class="terr-catalog-card dp-arrangement-note"><h2>Arranjo mensal</h2><p>O arranjo mensal legado continua disponível para consulta. Para novas designações, use a <strong>Agenda</strong>.</p><p>As designações recebidas em <strong>speech_assignments</strong> serão usadas para a sincronização do programa de final de semana.</p><button type="button" data-dp-go-agenda>Ir para Agenda</button></div>`;
-    $('#dp-panel-arranjo [data-dp-go-agenda]').addEventListener('click', () => selectTab('agenda'));
-  }
-
   function selectTab(tab) {
     root.querySelectorAll('[data-dp-tab]').forEach((b) => b.classList.toggle('active', b.dataset.dpTab === tab));
     root.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `dp-panel-${tab}`));
-    if (!rendered[tab]) { ({ painel: renderPanel, agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes, arranjo: renderArrangement }[tab])(); rendered[tab] = true; }
+    const renderers = { agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes };
+    if (!rendered[tab] && renderers[tab]) {
+      renderers[tab]();
+      rendered[tab] = true;
+    }
   }
   function refresh() {
-    Object.keys(rendered).forEach((tab) => { if (rendered[tab]) ({ painel: renderPanel, agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes, arranjo: renderArrangement }[tab])(); });
+    const renderers = { agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes };
+    Object.keys(rendered).forEach((tab) => {
+      if (rendered[tab] && renderers[tab]) renderers[tab]();
+    });
   }
 
   function openModal(title, body) {
@@ -300,12 +313,12 @@
     window.__JEAdminDiscursosInit = true;
     try {
       await loadData();
-      renderPanel();
-      rendered.painel = true;
+      renderAgenda();
+      rendered.agenda = true;
     } catch (err) {
       console.error('Discursos Públicos:', err);
       toast(errorText(err), true);
-      const host = $('#dp-panel-painel');
+      const host = $('#dp-panel-agenda');
       if (host) {
         host.innerHTML = `<div class="terr-empty-state dp-empty"><p>${escapeHtml(errorText(err))}</p><p class="text-sm mt-2">Aplique a migration <code>20260710220000_speech_crm_system</code> e o seed dos temas S-34.</p></div>`;
       }
