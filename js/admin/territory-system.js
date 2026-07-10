@@ -576,6 +576,63 @@
     return msg || 'Erro ao designar território.';
   }
 
+  function findIndividualAssignmentElsewhere(profileId, territoryId) {
+    if (!profileId) return null;
+    return activeAssignments.find(
+      (a) => a.profile_id === profileId
+        && a.territory_id !== territoryId
+        && a.status === 'active'
+        && H().assignmentBlocksIndividualDesignation(a, profiles)
+    ) || null;
+  }
+
+  function confirmMultipleIndividualAssignment(profileId, territoryId) {
+    const busy = findIndividualAssignmentElsewhere(profileId, territoryId);
+    if (!busy) return true;
+    const busyTerr = territories.find((t) => t.id === busy.territory_id);
+    const person = profileName(busy.profiles)
+      || profileName(profiles.find((p) => p.id === profileId));
+    const busyLabel = busyTerr ? H().territoryLabel(busyTerr) : 'outro território';
+    return window.confirm(
+      `${person} já possui ${busyLabel} designado.\n\nQuer designar outro território mesmo assim? Os dois permanecerão ativos no Painel.`
+    );
+  }
+
+  async function assignTerritoryFieldRpc({
+    territoryId,
+    profileId,
+    assignedAt,
+    isDomingoPair = false,
+    allowMultipleIndividual = false
+  }) {
+    const payload = {
+      p_territory_id: territoryId,
+      p_profile_id: profileId,
+      p_assigned_at: assignedAt,
+      p_is_domingo_pair: isDomingoPair,
+      p_allow_multiple_individual: allowMultipleIndividual
+    };
+    const { error } = await client.rpc('assign_territory_field', payload);
+    if (!error) return;
+
+    if (/function|does not exist|42883/i.test(String(error.message || ''))) {
+      const { error: legacyErr } = await client.rpc('assign_territory_field', {
+        p_territory_id: territoryId,
+        p_profile_id: profileId,
+        p_assigned_at: assignedAt,
+        p_is_domingo_pair: isDomingoPair
+      });
+      if (legacyErr) throw new Error(formatDesignationError(legacyErr));
+      if (allowMultipleIndividual) {
+        throw new Error(
+          'O banco ainda não permite duas designações individuais. Aplique a migration allow_multiple_individual_assignments.'
+        );
+      }
+      return;
+    }
+    throw new Error(formatDesignationError(error));
+  }
+
   async function fetchActiveAssignmentForTerritory(territoryId) {
     if (!client || !territoryId) return null;
     const { data, error } = await client
@@ -643,40 +700,24 @@
       throw new Error(`${H().territoryLabel(terr)} já está designado para ${name}.`);
     }
 
-    const profileBusy = activeAssignments.find(
-      (a) => a.profile_id === profileId
-        && a.territory_id !== territoryId
-        && a.status === 'active'
-        && H().assignmentBlocksIndividualDesignation(a, profiles)
-    );
+    const profileBusy = findIndividualAssignmentElsewhere(profileId, territoryId);
+    let allowMultipleIndividual = false;
     if (profileBusy) {
-      const busyTerr = territories.find((t) => t.id === profileBusy.territory_id);
-      throw new Error(
-        `Este dirigente já possui ${busyTerr ? H().territoryLabel(busyTerr) : 'um território'} ativo.`
-      );
+      if (!confirmMultipleIndividualAssignment(profileId, territoryId)) {
+        throw new Error('Designação cancelada.');
+      }
+      allowMultipleIndividual = true;
     }
 
     await repairOrphanTerritoryStatus(territoryId);
 
-    let rpcError = null;
-    const { error } = await client.rpc('assign_territory_field', {
-      p_territory_id: territoryId,
-      p_profile_id: profileId,
-      p_assigned_at: assignedDate,
-      p_is_domingo_pair: false
+    await assignTerritoryFieldRpc({
+      territoryId,
+      profileId,
+      assignedAt: assignedDate,
+      isDomingoPair: false,
+      allowMultipleIndividual
     });
-    if (error) rpcError = error;
-
-    if (rpcError && /function|does not exist|42883/i.test(String(rpcError.message || ''))) {
-      const { error: legacyErr } = await client.rpc('assign_territory_field', {
-        p_territory_id: territoryId,
-        p_profile_id: profileId,
-        p_assigned_at: assignedDate
-      });
-      if (legacyErr) throw legacyErr;
-    } else if (rpcError) {
-      throw new Error(formatDesignationError(rpcError));
-    }
 
     await Promise.all([loadActiveAssignments(), loadTerritories()]);
     await syncScheduleRowsForAssignment(profileId, territoryId);
@@ -1234,9 +1275,9 @@
     const individualOpts = activeOverseers.length
       ? activeOverseers.map((o) => {
         const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-        const disabled = busyProfileIds.has(o.profile_id) ? ' disabled' : '';
+        const busy = busyProfileIds.has(o.profile_id);
         const selected = selectedValue === o.profile_id;
-        return `<option value="${o.profile_id}"${disabled}${selected ? ' selected' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (já designado)' : ''}</option>`;
+        return `<option value="${o.profile_id}"${selected ? ' selected' : ''}>${escapeHtml(profileName(p))}${busy ? ' (já designado)' : ''}</option>`;
       }).join('')
       : '<option value="" disabled>Nenhum dirigente cadastrado — abra a aba Dirigentes</option>';
 
@@ -4196,8 +4237,8 @@
       .filter((o) => o.is_active !== false)
       .map((o) => {
         const p = profiles.find((pr) => pr.id === o.profile_id) || o.profiles;
-        const disabled = busyElsewhere.has(o.profile_id) && o.profile_id !== selectedProfileId;
-        return `<option value="${o.profile_id}" ${o.profile_id === selectedProfileId ? 'selected' : ''}${disabled ? ' disabled' : ''}>${escapeHtml(profileName(p))}${disabled ? ' (ocupado)' : ''}</option>`;
+        const busy = busyElsewhere.has(o.profile_id) && o.profile_id !== selectedProfileId;
+        return `<option value="${o.profile_id}" ${o.profile_id === selectedProfileId ? 'selected' : ''}>${escapeHtml(profileName(p))}${busy ? ' (já designado)' : ''}</option>`;
       })
       .join('');
   }
@@ -4292,12 +4333,10 @@
       if (wasDesignado) {
         const profileChanged = assignment.profile_id !== profileId;
         if (profileChanged) {
-          const busy = activeAssignments.find(
-            (a) => a.profile_id === profileId
-              && a.territory_id !== t.id
-              && H().assignmentBlocksIndividualDesignation(a, profiles)
-          );
-          if (busy) throw new Error('Este dirigente já possui um território ativo.');
+          const busy = findIndividualAssignmentElsewhere(profileId, t.id);
+          if (busy && !confirmMultipleIndividualAssignment(profileId, t.id)) {
+            throw new Error('Designação cancelada.');
+          }
           const { error } = await client
             .from('territory_active_assignments')
             .update({ profile_id: profileId, assigned_at: assignedAt })
@@ -4316,13 +4355,21 @@
           .eq('id', t.id);
         if (terrErr) throw terrErr;
       } else {
-        const { error } = await client.rpc('assign_territory_field', {
-          p_territory_id: t.id,
-          p_profile_id: profileId,
-          p_assigned_at: assignedAt,
-          p_is_domingo_pair: isDomingoPair
+        const busy = !isDomingoPair ? findIndividualAssignmentElsewhere(profileId, t.id) : null;
+        let allowMultipleIndividual = false;
+        if (busy) {
+          if (!confirmMultipleIndividualAssignment(profileId, t.id)) {
+            throw new Error('Designação cancelada.');
+          }
+          allowMultipleIndividual = true;
+        }
+        await assignTerritoryFieldRpc({
+          territoryId: t.id,
+          profileId,
+          assignedAt,
+          isDomingoPair,
+          allowMultipleIndividual
         });
-        if (error) throw error;
         if (observations) {
           const { error: terrErr } = await client
             .from('territories')
