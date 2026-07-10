@@ -1,676 +1,320 @@
 (function () {
   const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
+  const DIRECTION = { receive: 'Recebemos', send: 'Enviamos' };
+  const PRIVILEGE = { anciao: 'Ancião', servo_ministerial: 'Servo Ministerial' };
+  const STATUS = { pendente: 'Pendente', confirmado: 'Confirmado', cancelado: 'Cancelado' };
+  let client, root, toastEl, themes = [], speakers = [], congregations = [], assignments = [];
+  const rendered = {};
 
-  const MONTHS_PT = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
+  const $ = (selector) => root?.querySelector(selector);
+  const text = (v) => String(v ?? '').trim();
+  const today = () => new Date().toISOString().slice(0, 10);
+  const dateText = (iso) => iso ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(`${iso}T12:00:00`)) : '—';
+  const errorText = (err) => /does not exist|schema cache/i.test(String(err?.message || err))
+    ? 'As tabelas de Discursos Públicos ainda não foram aplicadas.'
+    : String(err?.message || err || 'Ocorreu um erro.');
+  const toast = (message, danger) => showToast(toastEl, message, danger);
+  const option = (value, label, selected) => `<option value="${escapeHtml(value)}"${String(value) === String(selected ?? '') ? ' selected' : ''}>${escapeHtml(label)}</option>`;
+  const empty = (message) => `<div class="terr-empty-state dp-empty">${escapeHtml(message)}</div>`;
+  const assignmentTheme = (a) => a.outline_number ? `Esboço ${a.outline_number}${a.theme_title ? ` — ${a.theme_title}` : ''}` : (a.theme_title || '—');
+  const getSpeaker = (id) => speakers.find((s) => s.id === id);
+  const getTheme = (id) => themes.find((t) => t.id === id);
+  const getCongregation = (id) => congregations.find((c) => c.id === id);
 
-  const WEEKDAY_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const CHAR_PILLS = ['Bíblia/Deus', 'Provações/Problemas', 'Religião/Adoração', 'Março/Agosto - SC', 'Orador Local'];
-
-  let board = null;
-  let entries = [];
-  let client = null;
-  let toastEl = null;
-  let activeTab = 'receive';
-  let selection = { receive: 0, send: 0 };
-  let dirty = false;
-
-  let root = null;
-
-  function $(id) {
-    if (root) {
-      const scoped = root.querySelector(`#${id}`);
-      if (scoped) return scoped;
-    }
-    return document.getElementById(id);
-  }
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-
-  function trim(v) { return String(v ?? '').trim(); }
-
-  function toISODate(d) {
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }
-
-  function monthLabel(year, monthIndex) {
-    return `${MONTHS_PT[monthIndex]} / ${year}`;
-  }
-
-  function formatDisplayDate(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso + 'T12:00:00');
-    return `${pad(d.getDate())} de ${MONTHS_PT[d.getMonth()]}`;
-  }
-
-  function referenceMonthFromInput() {
-    const val = $('dp-board-month')?.value;
-    return val ? `${val}-01` : null;
-  }
-
-  function getSaturdaysInMonth(referenceMonth) {
-    const d = new Date(referenceMonth + 'T12:00:00');
-    const out = [];
-    const cursor = new Date(d.getFullYear(), d.getMonth(), 1);
-    while (cursor.getMonth() === d.getMonth()) {
-      if (cursor.getDay() === 6) out.push(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    return out;
-  }
-
-  function newId() {
-    return crypto.randomUUID ? crypto.randomUUID() : `tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
-  function entriesFor(direction) {
-    return entries.filter((e) => e.direction === direction).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  }
-
-  function speechEntry(direction, partial) {
-    return {
-      id: newId(),
-      board_id: board?.id || null,
-      direction,
-      entry_type: 'speech',
-      event_date: null,
-      event_date_end: null,
-      speaker_name: '',
-      outline_number: '',
-      theme: '',
-      characteristics: '',
-      observation: '',
-      note_text: '',
-      sort_order: entriesFor(direction).length + 1,
-      ...partial
-    };
-  }
-
-  function entryFilled(entry) {
-    if (!entry) return false;
-    if (entry.entry_type === 'note') return !!trim(entry.note_text);
-    if (entry.entry_type === 'convention') return !!(trim(entry.theme) || trim(entry.event_date));
-    return ['speaker_name', 'outline_number', 'theme', 'characteristics', 'observation']
-      .some((k) => trim(entry[k]));
-  }
-
-  function entryTitle(entry) {
-    if (entry.entry_type === 'note') return trim(entry.note_text).slice(0, 36) || 'Nota informativa';
-    if (entry.entry_type === 'convention') {
-      return trim(entry.theme) || (entry.event_date ? formatDisplayDate(entry.event_date) : 'Congresso');
-    }
-    if (entry.entry_type === 'special_visit') {
-      return trim(entry.speaker_name) || (entry.event_date ? formatDisplayDate(entry.event_date) : 'Visita SC');
-    }
-    const speaker = trim(entry.speaker_name);
-    if (speaker) return speaker;
-    const theme = trim(entry.theme);
-    if (theme) return theme;
-    if (entry.event_date) return formatDisplayDate(entry.event_date);
-    return 'Sem orador';
-  }
-
-  function entryMeta(entry) {
-    if (entry.entry_type === 'convention') return 'Congresso';
-    if (entry.entry_type === 'special_visit') return 'Visita SC';
-    if (entry.entry_type === 'note') return 'Nota';
-    if (entry.event_date) {
-      const d = new Date(entry.event_date + 'T12:00:00');
-      return `${WEEKDAY_PT[d.getDay()]} · ${pad(d.getDate())}`;
-    }
-    return 'Sem data';
-  }
-
-  function typeBadge(entry) {
-    const map = {
-      speech: ['Discurso', 'speech'],
-      convention: ['Congresso', 'convention'],
-      special_visit: ['Visita SC', 'special'],
-      note: ['Nota', 'note']
-    };
-    const [label, mod] = map[entry.entry_type] || map.speech;
-    return `<span class="dp-type-badge dp-type-badge--${mod}">${label}</span>`;
-  }
-
-  function setDirty(value) {
-    dirty = value;
-    $('dp-btn-save')?.classList.toggle('is-dirty', dirty);
-  }
-
-  function readActiveForm() {
-    const card = (root || document).querySelector('[data-entry-editor]');
-    if (!card) return;
-    const id = card.dataset.entryEditor;
-    const entry = entries.find((e) => e.id === id);
-    if (!entry) return;
-    card.querySelectorAll('[data-field]').forEach((input) => {
-      entry[input.dataset.field] = input.value.trim() || null;
-    });
-  }
-
-  function markDirty() { setDirty(true); }
-
-  function selectEntry(direction, index) {
-    readActiveForm();
-    const list = entriesFor(direction);
-    selection[direction] = Math.max(0, Math.min(index, list.length - 1));
-    renderWorkspace();
-  }
-
-  function reindex(direction) {
-    entriesFor(direction).forEach((e, i) => { e.sort_order = i + 1; });
-  }
-
-  function statsHtml(direction) {
-    const list = entriesFor(direction);
-    const speeches = list.filter((e) => e.entry_type === 'speech');
-    const filled = speeches.filter(entryFilled).length;
-    const pct = speeches.length ? Math.round((filled / speeches.length) * 100) : 0;
-    const specials = list.filter((e) => e.entry_type !== 'speech').length;
-    const label = direction === 'receive' ? 'Recebemos' : 'Enviamos';
-    return `
-      <span class="dp-stat dp-stat--progress" style="--dp-pct:${pct}%">
-        <span class="material-symbols-outlined" style="font-size:16px">pie_chart</span>
-        <strong>${filled}/${speeches.length || 0}</strong> discursos · ${label}
-      </span>
-      ${specials ? `<span class="dp-stat"><strong>${specials}</strong> evento${specials > 1 ? 's' : ''} especial${specials > 1 ? 'is' : ''}</span>` : ''}
-      <span class="dp-stat"><strong>${list.length}</strong> linha${list.length !== 1 ? 's' : ''} no mês</span>`;
-  }
-
-  function renderStats() {
-    const el = $('dp-stats');
-    if (el) el.innerHTML = statsHtml(activeTab);
-  }
-
-  function renderTimeline() {
-    const list = entriesFor(activeTab);
-    const host = $('dp-timeline');
-    if (!host) return;
-    if (!list.length) {
-      host.innerHTML = '';
-      return;
-    }
-    host.innerHTML = list.map((entry, idx) => {
-      const isActive = idx === selection[activeTab];
-      const classes = [
-        'dp-timeline-chip',
-        isActive ? 'is-active' : '',
-        entryFilled(entry) ? 'is-filled' : '',
-        entry.entry_type !== 'speech' ? 'is-special' : ''
-      ].filter(Boolean).join(' ');
-      let day = '•';
-      if (entry.entry_type === 'speech' && entry.event_date) {
-        day = pad(new Date(entry.event_date + 'T12:00:00').getDate());
-      } else if (entry.entry_type === 'convention') day = 'C';
-      else if (entry.entry_type === 'special_visit') day = 'SC';
-      else if (entry.entry_type === 'note') day = 'N';
-      return `
-        <button type="button" class="${classes}" data-timeline-index="${idx}" title="${escapeHtml(entryTitle(entry))}">
-          <span class="dp-timeline-chip__day">${day}</span>
-          <span class="dp-timeline-chip__meta">${escapeHtml(entryMeta(entry))}</span>
-        </button>`;
-    }).join('');
-
-    host.querySelectorAll('[data-timeline-index]').forEach((btn) => {
-      btn.addEventListener('click', () => selectEntry(activeTab, parseInt(btn.dataset.timelineIndex, 10)));
-    });
-  }
-
-  function renderNav() {
-    const list = entriesFor(activeTab);
-    const host = $('dp-nav');
-    if (!host) return;
-    if (!list.length) {
-      host.innerHTML = '<p class="text-xs text-on-surface-variant">Nenhuma linha.</p>';
-      return;
-    }
-    host.innerHTML = list.map((entry, idx) => {
-      const isActive = idx === selection[activeTab];
-      return `
-        <button type="button" class="dp-nav-btn${isActive ? ' is-active' : ''}${entryFilled(entry) ? ' is-filled' : ''}" data-nav-index="${idx}">
-          <span class="dp-nav-meta">${escapeHtml(entryMeta(entry))}</span>
-          <span class="dp-nav-title">${escapeHtml(entryTitle(entry))}</span>
-        </button>`;
-    }).join('');
-
-    host.querySelectorAll('[data-nav-index]').forEach((btn) => {
-      btn.addEventListener('click', () => selectEntry(activeTab, parseInt(btn.dataset.navIndex, 10)));
-    });
-  }
-
-  function fieldHtml(label, field, entry, extra) {
-    const val = entry[field] || '';
-    const filled = trim(val) ? ' is-filled' : '';
-    const attrs = extra || '';
-    return `
-      <div class="dp-field${filled}${field === 'theme' || field === 'note_text' || field === 'observation' ? ' span-2' : ''}">
-        <label>${escapeHtml(label)}</label>
-        ${attrs.includes('textarea')
-          ? `<textarea rows="3" data-field="${field}" placeholder="${escapeHtml(attrs.replace('textarea','').trim())}">${escapeHtml(val)}</textarea>`
-          : `<input data-field="${field}" value="${escapeHtml(val)}" ${attrs}/>`}
-      </div>`;
-  }
-
-  function charPillsHtml(entry) {
-    const current = trim(entry.characteristics);
-    return `
-      <div class="dp-char-pills" data-char-pills>
-        ${CHAR_PILLS.map((pill) =>
-          `<button type="button" class="dp-char-pill${current === pill ? ' is-on' : ''}" data-char-pill="${escapeHtml(pill)}">${escapeHtml(pill)}</button>`
-        ).join('')}
-      </div>`;
-  }
-
-  function renderEditorForm(entry, idx, list) {
-    let fields = '';
-    if (entry.entry_type === 'note') {
-      fields = `
-        ${fieldHtml('Data (opcional)', 'event_date', entry, 'type="date"')}
-        ${fieldHtml('Texto da nota', 'note_text', entry, 'textarea Ex.: Não enviaremos — arranjo de oradores locais')}
-      `;
-    } else if (entry.entry_type === 'convention') {
-      fields = `
-        ${fieldHtml('Início', 'event_date', entry, 'type="date"')}
-        ${fieldHtml('Fim', 'event_date_end', entry, 'type="date"')}
-        ${fieldHtml('Título do evento', 'theme', entry, 'placeholder="Congresso Regional"')}
-        ${fieldHtml('Observação', 'observation', entry, 'placeholder="Detalhes adicionais"')}
-      `;
-    } else {
-      fields = `
-        ${fieldHtml('Data', 'event_date', entry, 'type="date"')}
-        ${fieldHtml('Orador', 'speaker_name', entry, 'placeholder="Nome do orador"')}
-        ${fieldHtml('Esboço', 'outline_number', entry, 'inputmode="numeric" placeholder="26"')}
-        ${fieldHtml('Tema', 'theme', entry, 'placeholder="Título do discurso"')}
-        <details class="dp-more-fields">
-          <summary>Mais campos</summary>
-          <div class="dp-more-fields-body">
-            <div class="dp-field span-2">
-              <label>Características</label>
-              <input data-field="characteristics" value="${escapeHtml(entry.characteristics || '')}" list="dp-characteristics-list" placeholder="Categoria do esboço"/>
-              ${charPillsHtml(entry)}
-            </div>
-            ${fieldHtml('Observação', 'observation', entry, 'placeholder="Congregação, telefone, etc."')}
-          </div>
-        </details>
-      `;
-    }
-
-    return `
-      <div class="dp-doc-panel" data-entry-editor="${entry.id}">
-        <div class="dp-doc-banner">
-          <div>
-            ${typeBadge(entry)}
-            <h3>${escapeHtml(entryTitle(entry))}</h3>
-            <p class="dp-doc-banner-meta">${activeTab === 'receive' ? 'Recebemos' : 'Enviamos'} · ${escapeHtml(entryMeta(entry))}</p>
-          </div>
+  function layout() {
+    root.innerHTML = `
+      <div class="terr-nav-stage dp-nav-stage">
+        <div class="terr-nav-scroll">
+          <nav class="terr-nav dp-crm-nav" role="tablist" aria-label="Abas de Discursos Públicos">
+            ${[['painel', 'Painel', 'dashboard'], ['agenda', 'Agenda', 'calendar_month'], ['oradores', 'Oradores', 'groups'], ['temas', 'Temas', 'menu_book'], ['arranjo', 'Arranjo', 'view_week']]
+              .map(([id, label, icon], i) => `<button type="button" class="terr-tab${i ? '' : ' active'}" data-dp-tab="${id}" role="tab" title="${label}" aria-label="${label}">
+                <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
+                <span class="terr-tab-label">${label}</span>
+              </button>`).join('')}
+          </nav>
         </div>
-        <div class="dp-doc-body">
-          <div class="dp-fields">${fields}</div>
-        </div>
-        ${window.JEHubDocFooter?.renderDocEntryFooter?.({
-          prevDisabled: idx <= 0,
-          nextDisabled: idx >= list.length - 1,
-          removeAttrs: 'data-remove-entry',
-          nextLabel: 'Próximo',
-          removeAria: 'Remover esta entrada',
-          wrapperClass: 'je-doc-footer qa-doc-footer dp-doc-footer'
-        }) || ''}
-      </div>`;
+      </div>
+      <section id="dp-panel-painel" class="terr-panel active"></section>
+      <section id="dp-panel-agenda" class="terr-panel"></section>
+      <section id="dp-panel-oradores" class="terr-panel"></section>
+      <section id="dp-panel-temas" class="terr-panel"></section>
+      <section id="dp-panel-arranjo" class="terr-panel"></section>`;
   }
 
-  function renderPreview(entry) {
-    const host = $('dp-preview-body');
-    if (!entry) {
-      host.className = 'dp-preview-empty';
-      host.textContent = 'Selecione uma entrada para ver o resumo.';
-      return;
-    }
-    host.className = 'dp-preview-sheet';
-    if (entry.entry_type === 'note') {
-      host.innerHTML = `
-        <div class="dp-preview-row"><dt>Nota</dt><dd>${escapeHtml(entry.note_text) || '—'}</dd></div>
-        <div class="dp-preview-row"><dt>Data</dt><dd>${escapeHtml(formatDisplayDate(entry.event_date))}</dd></div>`;
-      return;
-    }
-    if (entry.entry_type === 'convention') {
-      const range = entry.event_date_end && entry.event_date !== entry.event_date_end
-        ? `${formatDisplayDate(entry.event_date)} — ${formatDisplayDate(entry.event_date_end)}`
-        : formatDisplayDate(entry.event_date);
-      host.innerHTML = `
-        <div class="dp-preview-row"><dt>Evento</dt><dd>${escapeHtml(entry.theme) || '—'}</dd></div>
-        <div class="dp-preview-row"><dt>Período</dt><dd>${escapeHtml(range)}</dd></div>
-        <div class="dp-preview-row"><dt>Obs.</dt><dd>${escapeHtml(entry.observation) || '—'}</dd></div>`;
-      return;
-    }
+  function dateRange(days) {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const end = new Date(start); end.setDate(end.getDate() + days);
+    return assignments.filter((a) => a.event_date >= today() && a.event_date <= end.toISOString().slice(0, 10));
+  }
+
+  function renderPanel() {
+    const host = $('#dp-panel-painel');
+    const next30 = dateRange(30);
+    const upcoming = dateRange(56).sort((a, b) => a.event_date.localeCompare(b.event_date));
+    const pending = assignments.filter((a) => a.confirmation_status === 'pendente' && a.event_date >= today()).length;
+    const activeSpeakers = speakers.filter((s) => s.is_active).length;
     host.innerHTML = `
-      <div class="dp-preview-row"><dt>Data</dt><dd>${escapeHtml(formatDisplayDate(entry.event_date))}</dd></div>
-      <div class="dp-preview-row"><dt>Orador</dt><dd>${escapeHtml(entry.speaker_name) || '—'}</dd></div>
-      <div class="dp-preview-row"><dt>Esboço</dt><dd>${escapeHtml(entry.outline_number) || '—'}</dd></div>
-      <div class="dp-preview-row"><dt>Tema</dt><dd>${escapeHtml(entry.theme) || '—'}</dd></div>
-      <div class="dp-preview-row"><dt>Categ.</dt><dd>${escapeHtml(entry.characteristics) || '—'}</dd></div>
-      <div class="dp-preview-row"><dt>Obs.</dt><dd>${escapeHtml(entry.observation) || '—'}</dd></div>`;
+      <div class="terr-catalog-stats dp-stats">
+        <article><strong>${next30.filter((a) => a.direction === 'receive').length}</strong><span>Recebemos — próximos 30 dias</span></article>
+        <article><strong>${next30.filter((a) => a.direction === 'send').length}</strong><span>Enviamos — próximos 30 dias</span></article>
+        <article><strong>${pending}</strong><span>Pendentes de confirmação</span></article>
+        <article><strong>${activeSpeakers}</strong><span>Oradores ativos</span></article>
+        <article><strong>${themes.filter((t) => t.is_active).length}</strong><span>Temas cadastrados</span></article>
+      </div>
+      <div class="terr-catalog-card">
+        <div class="terr-catalog-heading"><div><h2>Próximas designações</h2><p>Próximas oito semanas</p></div><button type="button" class="btn-primary" data-dp-new>Nova designação</button></div>
+        ${assignmentTable(upcoming, { dashboard: true })}</div>`;
+    bindAssignmentActions(host);
   }
 
-  function bindEditorEvents(entry, idx, list) {
-    const card = (root || document).querySelector('[data-entry-editor]');
-    if (!card) return;
+  function assignmentTable(rows, { dashboard = false } = {}) {
+    if (!rows.length) return empty('Nenhuma designação encontrada.');
+    return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table"><thead><tr>
+      <th>Direção</th><th>Data</th><th>Orador</th><th>Tema</th><th>Congregação</th><th>Status</th>${dashboard ? '' : '<th></th>'}
+    </tr></thead><tbody>${rows.map((a) => `<tr data-dp-edit="${a.id}" class="dp-assignment-row">
+      <td><span class="dp-badge dp-badge--${a.direction}">${DIRECTION[a.direction]}</span></td>
+      <td>${escapeHtml(dateText(a.event_date))}${a.event_time ? `<small>${escapeHtml(a.event_time.slice(0, 5))}</small>` : ''}</td>
+      <td>${escapeHtml(a.speaker_name || a.speech_speakers?.full_name || '—')}</td>
+      <td>${escapeHtml(assignmentTheme(a))}</td>
+      <td>${escapeHtml(a.congregation_name || a.speech_congregations?.name || '—')}</td>
+      <td><span class="dp-status dp-status--${a.confirmation_status}">${STATUS[a.confirmation_status]}</span></td>
+      ${dashboard ? '' : `<td class="dp-actions"><button type="button" data-dp-wa="${a.id}" title="WhatsApp">WhatsApp</button><button type="button" data-dp-delete="${a.id}" title="Excluir">Excluir</button></td>`}
+    </tr>`).join('')}</tbody></table></div>`;
+  }
 
-    card.querySelectorAll('[data-field]').forEach((input) => {
-      input.addEventListener('input', () => {
-        markDirty();
-        readActiveForm();
-        renderStats();
-        renderTimeline();
-        renderNav();
-        renderPreview(entries.find((e) => e.id === entry.id));
-        input.closest('.dp-field')?.classList.toggle('is-filled', !!trim(input.value));
+  function renderAgenda() {
+    const host = $('#dp-panel-agenda');
+    const month = host.dataset.month || new Date().toISOString().slice(0, 7);
+    const direction = host.dataset.direction || '';
+    const status = host.dataset.status || '';
+    const rows = assignments.filter((a) => (!month || a.event_date.startsWith(month)) && (!direction || a.direction === direction) && (!status || a.confirmation_status === status))
+      .sort((a, b) => a.event_date.localeCompare(b.event_date));
+    host.innerHTML = `
+      <div class="terr-sched-toolbar dp-toolbar">
+        <label>Direção <select data-dp-filter="direction">${option('', 'Todos', direction)}${option('receive', 'Recebemos', direction)}${option('send', 'Enviamos', direction)}</select></label>
+        <label>Status <select data-dp-filter="status">${option('', 'Todos', status)}${Object.entries(STATUS).map(([k, v]) => option(k, v, status)).join('')}</select></label>
+        <label>Mês <input type="month" value="${month}" data-dp-month></label>
+        <button type="button" class="btn-primary" data-dp-new>Nova designação</button>
+        <button type="button" data-dp-wa-range>WhatsApp da semana</button>
+      </div>${assignmentTable(rows)}`;
+    host.querySelectorAll('[data-dp-filter]').forEach((el) => el.addEventListener('change', () => { host.dataset[el.dataset.dpFilter] = el.value; renderAgenda(); }));
+    host.querySelector('[data-dp-month]')?.addEventListener('change', (e) => { host.dataset.month = e.target.value; renderAgenda(); });
+    bindAssignmentActions(host);
+  }
+
+  function speakerOptions(selected, includeBlank = true) {
+    return `${includeBlank ? option('', 'Digite ou selecione...', selected) : ''}${speakers.filter((s) => s.is_active).sort((a, b) => a.full_name.localeCompare(b.full_name))
+      .map((s) => option(s.id, `${s.full_name}${s.is_local ? ' (local)' : ''}`, selected)).join('')}`;
+  }
+  function congregationOptions(selected) {
+    return `${option('', 'Digite ou selecione...', selected)}${congregations.filter((c) => c.is_active).sort((a, b) => a.name.localeCompare(b.name))
+      .map((c) => option(c.id, c.name, selected)).join('')}`;
+  }
+  function themeOptions(selected, speakerId) {
+    const speaker = getSpeaker(speakerId);
+    const prepared = new Set((speaker?.speech_speaker_themes || []).map((x) => x.theme_id));
+    const ordered = [...themes].filter((t) => t.is_active).sort((a, b) => (prepared.has(b.id) - prepared.has(a.id)) || (a.outline_number - b.outline_number));
+    return `${option('', 'Digite ou selecione...', selected)}${ordered.map((t) => option(t.id, `${prepared.has(t.id) ? '★ ' : ''}Esboço ${t.outline_number} — ${t.title}`, selected)).join('')}`;
+  }
+
+  function openAssignmentModal(existing) {
+    const a = existing || { direction: 'receive', event_date: today(), modality: 'presencial', confirmation_status: 'pendente' };
+    openModal(`${existing ? 'Editar' : 'Nova'} designação`, `
+      <form class="dp-form" data-dp-assignment-form>
+        <label>Direção<select name="direction">${option('receive', 'Recebemos', a.direction)}${option('send', 'Enviamos', a.direction)}</select></label>
+        <label>Data<input required name="event_date" type="date" value="${escapeHtml(a.event_date || '')}"></label>
+        <label>Horário<input name="event_time" type="time" value="${escapeHtml((a.event_time || '').slice(0, 5))}"></label>
+        <label>Orador<select name="speaker_id" data-dp-speaker>${speakerOptions(a.speaker_id)}</select><input name="speaker_name" placeholder="Ou informe o nome" value="${escapeHtml(a.speaker_name || '')}"></label>
+        <label class="dp-span-2">Tema<input data-dp-theme-filter placeholder="Buscar esboço ou título"><select name="theme_id" data-dp-theme>${themeOptions(a.theme_id, a.speaker_id)}</select><input name="theme_title" placeholder="Ou informe o tema" value="${escapeHtml(a.theme_title || '')}"></label>
+        <label>Congregação<select name="congregation_id" data-dp-congregation>${congregationOptions(a.congregation_id)}</select><input name="congregation_name" placeholder="Ou informe a congregação" value="${escapeHtml(a.congregation_name || '')}"></label>
+        <label>Cântico inicial<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
+        <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
+        <label>Status<select name="confirmation_status">${Object.entries(STATUS).map(([k, v]) => option(k, v, a.confirmation_status)).join('')}</select></label>
+        <label class="dp-span-2">Observações<textarea name="notes" rows="3">${escapeHtml(a.notes || '')}</textarea></label>
+        <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
+      </form>`);
+    const form = document.querySelector('[data-dp-assignment-form]');
+    form.querySelector('[data-dp-theme-filter]').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      form.querySelectorAll('[data-dp-theme] option').forEach((item) => {
+        item.hidden = !!q && !item.textContent.toLowerCase().includes(q);
       });
     });
-
-    card.querySelectorAll('[data-char-pill]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const input = card.querySelector('[data-field="characteristics"]');
-        const value = btn.dataset.charPill;
-        input.value = input.value === value ? '' : value;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      });
+    form.querySelector('[data-dp-speaker]').addEventListener('change', (e) => {
+      const select = form.querySelector('[data-dp-theme]');
+      select.innerHTML = themeOptions(select.value, e.target.value);
+      const s = getSpeaker(e.target.value); if (s && !form.speaker_name.value) form.speaker_name.value = s.full_name;
     });
-
-    card.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectEntry(activeTab, idx - 1));
-    card.querySelector('[data-next-entry]')?.addEventListener('click', () => selectEntry(activeTab, idx + 1));
-    card.querySelector('[data-remove-entry]')?.addEventListener('click', async () => {
-      if (!await window.JEDialog.confirm({
-        title: 'Remover linha',
-        message: 'Remover esta entrada do arranjo?',
-        confirmLabel: 'Remover',
-        danger: true
-      })) return;
-      readActiveForm();
-      entries = entries.filter((e) => e.id !== entry.id);
-      reindex(activeTab);
-      selection[activeTab] = Math.min(selection[activeTab], entriesFor(activeTab).length - 1);
-      markDirty();
-      renderWorkspace();
+    form.querySelector('[data-dp-theme]').addEventListener('change', (e) => {
+      const t = getTheme(e.target.value); if (t && !form.theme_title.value) form.theme_title.value = t.title;
+    });
+    form.querySelector('[data-dp-congregation]').addEventListener('change', (e) => {
+      const c = getCongregation(e.target.value); if (c && !form.congregation_name.value) form.congregation_name.value = c.name;
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = Object.fromEntries(new FormData(form)); const s = getSpeaker(v.speaker_id); const t = getTheme(v.theme_id); const c = getCongregation(v.congregation_id);
+      const payload = { ...v, event_time: v.event_time || null, speaker_id: v.speaker_id || null, theme_id: v.theme_id || null, congregation_id: v.congregation_id || null,
+        speaker_name: text(v.speaker_name) || s?.full_name || null, theme_title: text(v.theme_title) || t?.title || null, outline_number: t?.outline_number || null,
+        congregation_name: text(v.congregation_name) || c?.name || null, opening_song: text(v.opening_song) || null, notes: text(v.notes) || null };
+      const q = existing ? client.from('speech_assignments').update(payload).eq('id', existing.id) : client.from('speech_assignments').insert(payload);
+      const { error } = await q; if (error) return toast(errorText(error), true);
+      closeModal(); await loadData(); refresh(); toast('Designação salva.');
     });
   }
 
-  function renderEditor() {
-    const list = entriesFor(activeTab);
-    const host = $('dp-editor-host');
-    if (!host) return;
-    if (!list.length) {
-      host.innerHTML = `
-        <div class="dp-empty-state">
-          <span class="material-symbols-outlined text-secondary" style="font-size:2.5rem">event_busy</span>
-          <p class="mt-3 font-bold text-primary">Nenhuma linha nesta aba</p>
-          <p class="text-sm mt-1">Use <strong>Regenerar sábados</strong> ou adicione uma entrada.</p>
-        </div>`;
-      renderPreview(null);
-      return;
-    }
-    const idx = Math.max(0, Math.min(selection[activeTab] || 0, list.length - 1));
-    selection[activeTab] = idx;
-    const entry = list[idx];
-    if (!entry) {
-      host.innerHTML = '';
-      renderPreview(null);
-      return;
-    }
-    host.innerHTML = renderEditorForm(entry, idx, list);
-    bindEditorEvents(entry, idx, list);
-    renderPreview(entry);
-  }
-
-  function renderWorkspace() {
-    renderStats();
-    renderTimeline();
-    renderNav();
-    renderEditor();
-  }
-
-  function renderAll() {
-    renderWorkspace();
-  }
-
-  function switchTab(tab) {
-    readActiveForm();
-    activeTab = tab;
-    (root || document).querySelectorAll('.tab-btn').forEach((btn) => {
-      btn.classList.toggle('tab-active', btn.dataset.tab === tab);
-      btn.classList.toggle('text-on-surface-variant', btn.dataset.tab !== tab);
-    });
-    renderWorkspace();
-  }
-
-  async function regenerateSaturdays() {
-    if (!board) return;
-    if (!await window.JEDialog.confirm({
-      title: 'Regenerar sábados',
-      message: 'Substituir os discursos (sábados) desta aba? Congressos, visitas e notas serão mantidos.',
-      confirmLabel: 'Regenerar'
-    })) return;
-    readActiveForm();
-    const direction = activeTab;
-    const kept = entries.filter((e) => e.direction !== direction || e.entry_type !== 'speech');
-    const newSpeech = getSaturdaysInMonth(board.reference_month).map((date, i) =>
-      speechEntry(direction, { event_date: toISODate(date), sort_order: i + 1 })
-    );
-    entries = [...kept, ...newSpeech];
-    reindex(direction);
-    selection[direction] = 0;
-    markDirty();
-    renderWorkspace();
-    showToast(toastEl, 'Sábados regenerados.');
-  }
-
-  function addEntry(entryType) {
-    readActiveForm();
-    const direction = activeTab;
-    const partial = { entry_type: entryType };
-    if (entryType === 'convention') partial.theme = 'Congresso Regional';
-    if (entryType === 'special_visit') partial.characteristics = 'Março/Agosto - SC';
-    entries.push(speechEntry(direction, partial));
-    reindex(direction);
-    selection[direction] = entriesFor(direction).length - 1;
-    markDirty();
-    renderWorkspace();
-  }
-
-  function formatSpeechError(err) {
-    const msg = String(err?.message || err || '');
-    if (/row-level security|violates row-level|permission denied|42501/i.test(msg)) {
-      return 'Sem permissão no banco para Discursos Públicos. Confira se sua designação inclui este módulo.';
-    }
-    if (/Could not find the table|does not exist|schema cache/i.test(msg)) {
-      return 'Tabelas de Discursos Públicos não encontradas no banco. Aplique as migrations.';
-    }
-    if (/JWT|session|not authenticated|401/i.test(msg)) {
-      return 'Sessão expirada. Saia e entre de novo.';
-    }
-    return msg || 'Erro ao carregar o arranjo.';
-  }
-
-  async function loadBoard({ silent = false, createIfMissing = true } = {}) {
-    const ref = referenceMonthFromInput();
-    if (!ref) {
-      if (!silent) showToast(toastEl, 'Selecione um mês.', true);
-      return false;
-    }
-
-    const d = new Date(ref + 'T12:00:00');
-    const label = monthLabel(d.getFullYear(), d.getMonth());
-
-    let { data: existing, error: findErr } = await client
-      .from('public_speech_boards')
-      .select('*')
-      .eq('reference_month', ref)
-      .maybeSingle();
-
-    if (findErr) {
-      // Vários rascunhos do mesmo mês — usa o mais recente
-      if (/multiple|PGRST116/i.test(String(findErr.message || findErr.code || ''))) {
-        const { data: list, error: listErr } = await client
-          .from('public_speech_boards')
-          .select('*')
-          .eq('reference_month', ref)
-          .order('updated_at', { ascending: false })
-          .limit(1);
-        if (listErr) {
-          showToast(toastEl, formatSpeechError(listErr), true);
-          return false;
-        }
-        existing = list?.[0] || null;
-      } else {
-        showToast(toastEl, formatSpeechError(findErr), true);
-        return false;
-      }
-    }
-
-    if (!existing) {
-      if (!createIfMissing) {
-        board = null;
-        entries = [];
-        const labelEl = $('dp-board-label');
-        if (labelEl) labelEl.textContent = '—';
-        $('dp-editor-shell')?.classList.add('hidden');
-        return true;
-      }
-      const { data: created, error } = await client.from('public_speech_boards').insert({
-        reference_month: ref,
-        reference_label: label,
-        status: 'draft'
-      }).select('*').single();
-      if (error) { showToast(toastEl, formatSpeechError(error), true); return false; }
-      existing = created;
-    }
-
-    board = existing;
-    const labelEl = $('dp-board-label');
-    if (labelEl) {
-      labelEl.textContent = `${board.reference_label} (${board.status === 'draft' ? 'Rascunho' : board.status})`;
-    }
-    $('dp-editor-shell')?.classList.remove('hidden');
-
-    const { data: rows, error: loadErr } = await client
-      .from('public_speech_entries')
-      .select('*')
-      .eq('board_id', board.id)
-      .order('sort_order');
-
-    if (loadErr) { showToast(toastEl, formatSpeechError(loadErr), true); return false; }
-
-    entries = rows || [];
-    if (!entries.length) {
-      ['receive', 'send'].forEach((direction) => {
-        getSaturdaysInMonth(ref).forEach((date, i) => {
-          entries.push(speechEntry(direction, {
-            board_id: board.id,
-            event_date: toISODate(date),
-            sort_order: i + 1
-          }));
-        });
-      });
-    }
-
-    selection = { receive: 0, send: 0 };
-    setDirty(false);
-    try {
-      renderAll();
-    } catch (err) {
-      console.error('Discursos render:', err);
-      showToast(toastEl, formatSpeechError(err), true);
-      return false;
-    }
-    if (!silent) showToast(toastEl, 'Arranjo carregado.');
-    return true;
-  }
-
-  async function saveBoard() {
-    if (!board) return;
-    readActiveForm();
-
-    const { error: delErr } = await client.from('public_speech_entries').delete().eq('board_id', board.id);
-    if (delErr) { showToast(toastEl, delErr.message, true); return; }
-
-    const payload = entries.map((e, i) => ({
-      board_id: board.id,
-      direction: e.direction,
-      entry_type: e.entry_type || 'speech',
-      event_date: e.event_date || null,
-      event_date_end: e.event_date_end || null,
-      speaker_name: e.speaker_name || null,
-      outline_number: e.outline_number || null,
-      theme: e.theme || null,
-      characteristics: e.characteristics || null,
-      observation: e.observation || null,
-      note_text: e.note_text || null,
-      sort_order: e.sort_order ?? i + 1
+  function bindAssignmentActions(scope) {
+    scope.querySelector('[data-dp-new]')?.addEventListener('click', () => openAssignmentModal());
+    scope.querySelectorAll('[data-dp-edit]').forEach((row) => row.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return; openAssignmentModal(assignments.find((a) => a.id === row.dataset.dpEdit));
     }));
+    scope.querySelectorAll('[data-dp-delete]').forEach((button) => button.addEventListener('click', async () => {
+      const a = assignments.find((x) => x.id === button.dataset.dpDelete);
+      if (!await confirmDialog('Excluir designação', `Excluir a designação de ${a?.speaker_name || 'orador'}?`)) return;
+      const { error } = await client.from('speech_assignments').delete().eq('id', button.dataset.dpDelete);
+      if (error) return toast(errorText(error), true); await loadData(); refresh(); toast('Designação excluída.');
+    }));
+    scope.querySelectorAll('[data-dp-wa]').forEach((button) => button.addEventListener('click', () => openWhatsapp([assignments.find((a) => a.id === button.dataset.dpWa)])));
+    scope.querySelector('[data-dp-wa-range]')?.addEventListener('click', () => {
+      const start = new Date(); start.setDate(start.getDate() - start.getDay()); const end = new Date(start); end.setDate(end.getDate() + 6);
+      openWhatsapp(assignments.filter((a) => a.event_date >= start.toISOString().slice(0, 10) && a.event_date <= end.toISOString().slice(0, 10)));
+    });
+  }
 
-    const { data: inserted, error: insErr } = await client.from('public_speech_entries').insert(payload).select('*');
-    if (insErr) { showToast(toastEl, insErr.message, true); return; }
+  function whatsappText(a) {
+    return `*DISCURSO PÚBLICO*\n*Data:* ${dateText(a.event_date)}\n*Horário:* ${a.event_time?.slice(0, 5) || '—'}\n*Direção:* ${DIRECTION[a.direction]}\n*Orador:* ${a.speaker_name || '—'}\n*Tema:* ${assignmentTheme(a)}\n*Congregação:* ${a.congregation_name || '—'}\n*Cântico:* ${a.opening_song || '—'}\n*Modalidade:* ${a.modality === 'online' ? 'Online' : 'Presencial'}\n*Status:* ${STATUS[a.confirmation_status]}`;
+  }
+  function openWhatsapp(rows) {
+    const message = rows.filter(Boolean).sort((a, b) => a.event_date.localeCompare(b.event_date)).map(whatsappText).join('\n\n');
+    openModal('Mensagem para WhatsApp', `<div class="dp-whatsapp"><textarea readonly rows="16">${escapeHtml(message || 'Nenhuma designação nesta semana.')}</textarea><footer><button type="button" data-dp-copy>Copiar mensagem</button><button type="button" data-dp-close>Fechar</button></footer></div>`);
+    document.querySelector('[data-dp-copy]')?.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(message); toast('Mensagem copiada.'); } catch { toast('Não foi possível copiar automaticamente.', true); }
+    });
+  }
 
-    entries = inserted || [];
-    await client.from('public_speech_boards').update({ updated_at: new Date().toISOString() }).eq('id', board.id);
+  function renderSpeakers() {
+    const host = $('#dp-panel-oradores'); const q = host.dataset.query || '';
+    const rows = speakers.filter((s) => `${s.full_name} ${s.phone} ${s.email}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => a.full_name.localeCompare(b.full_name));
+    const count = (fn) => speakers.filter(fn).length;
+    host.innerHTML = `
+      <div class="terr-catalog-stats dp-stats"><article><strong>${speakers.length}</strong><span>Total</span></article><article><strong>${count((s) => s.is_local)}</strong><span>Locais</span></article><article><strong>${count((s) => s.privilege === 'anciao')}</strong><span>Anciãos</span></article><article><strong>${count((s) => s.privilege === 'servo_ministerial')}</strong><span>Servos</span></article></div>
+      <div class="terr-catalog-card"><div class="terr-sched-toolbar"><input data-dp-speaker-search placeholder="Buscar orador" value="${escapeHtml(q)}"><button class="btn-primary" type="button" data-dp-speaker-new>Novo orador</button></div>
+      ${rows.length ? `<div class="terr-table-wrap"><table class="terr-catalog-table"><thead><tr><th>Nome</th><th>Congregação</th><th>Privilégio</th><th>Telefone</th><th>E-mail</th><th>Temas</th><th></th></tr></thead><tbody>${rows.map((s) => `<tr><td>${escapeHtml(s.full_name)}${s.is_local ? ' <small>Local</small>' : ''}</td><td>${escapeHtml(s.speech_congregations?.name || '—')}</td><td>${PRIVILEGE[s.privilege]}</td><td>${escapeHtml(s.phone || '—')}</td><td>${escapeHtml(s.email || '—')}</td><td>${s.speech_speaker_themes?.length || 0}</td><td><button type="button" data-dp-speaker-edit="${s.id}">Editar</button></td></tr>`).join('')}</tbody></table></div>` : empty('Nenhum orador encontrado.')}</div>`;
+    host.querySelector('[data-dp-speaker-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderSpeakers(); });
+    host.querySelector('[data-dp-speaker-new]').addEventListener('click', () => openSpeakerModal());
+    host.querySelectorAll('[data-dp-speaker-edit]').forEach((b) => b.addEventListener('click', () => openSpeakerModal(getSpeaker(b.dataset.dpSpeakerEdit))));
+  }
 
-    setDirty(false);
-    renderAll();
-    showToast(toastEl, 'Arranjo salvo. Orador e tema aparecem no Quadro — Final de Semana.');
+  function openSpeakerModal(existing) {
+    const s = existing || { privilege: 'anciao', is_local: true, is_active: true };
+    const selected = new Set((s.speech_speaker_themes || []).map((x) => x.theme_id));
+    openModal(`${existing ? 'Editar' : 'Novo'} orador`, `<form class="dp-form" data-dp-speaker-form>
+      <label class="dp-span-2">Nome completo<input required name="full_name" value="${escapeHtml(s.full_name || '')}"></label>
+      <label>Congregação<select name="congregation_id">${congregationOptions(s.congregation_id)}</select><input name="quick_congregation" placeholder="Nova congregação (rápido)"></label>
+      <label>Telefone<input name="phone" value="${escapeHtml(s.phone || '')}"></label><label>E-mail<input name="email" value="${escapeHtml(s.email || '')}"></label>
+      <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
+      <label><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}> Orador local</label><label><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}> Ativo</label>
+      <label class="dp-span-2">Observações<textarea name="notes" rows="2">${escapeHtml(s.notes || '')}</textarea></label>
+      <div class="dp-span-2"><label>Temas preparados</label><input data-dp-theme-search placeholder="Filtrar por número ou título"><div class="dp-theme-checks" data-dp-theme-checks>${themeCheckboxes(selected)}</div></div>
+      <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer></form>`);
+    const form = document.querySelector('[data-dp-speaker-form]');
+    form.querySelector('[data-dp-theme-search]').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase(); form.querySelectorAll('[data-dp-theme-checks] label').forEach((l) => { l.hidden = !l.textContent.toLowerCase().includes(q); });
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); const v = Object.fromEntries(new FormData(form));
+      let congregationId = v.congregation_id || null;
+      if (text(v.quick_congregation)) {
+        const { data, error } = await client.from('speech_congregations').insert({ name: text(v.quick_congregation) }).select().single();
+        if (error) return toast(errorText(error), true); congregationId = data.id;
+      }
+      const payload = { full_name: text(v.full_name), congregation_id: congregationId, phone: text(v.phone) || null, email: text(v.email) || null, privilege: v.privilege, is_local: form.is_local.checked, is_active: form.is_active.checked, notes: text(v.notes) || null };
+      const result = existing ? await client.from('speech_speakers').update(payload).eq('id', existing.id).select().single() : await client.from('speech_speakers').insert(payload).select().single();
+      if (result.error) return toast(errorText(result.error), true);
+      const ids = [...form.querySelectorAll('input[name="theme_ids"]:checked')].map((x) => x.value);
+      const { error: deleteError } = await client.from('speech_speaker_themes').delete().eq('speaker_id', result.data.id);
+      if (deleteError) return toast(errorText(deleteError), true);
+      if (ids.length) { const { error } = await client.from('speech_speaker_themes').insert(ids.map((theme_id) => ({ speaker_id: result.data.id, theme_id }))); if (error) return toast(errorText(error), true); }
+      closeModal(); await loadData(); refresh(); toast('Orador salvo.');
+    });
+  }
+  function themeCheckboxes(selected) {
+    return themes.filter((t) => t.is_active).map((t) => `<label><input type="checkbox" name="theme_ids" value="${t.id}"${selected.has(t.id) ? ' checked' : ''}> ${t.outline_number} — ${escapeHtml(t.title)}</label>`).join('');
+  }
+
+  function renderThemes() {
+    const host = $('#dp-panel-temas'); const q = host.dataset.query || '';
+    const rows = themes.filter((t) => `${t.outline_number} ${t.title}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => a.outline_number - b.outline_number);
+    const preparedCount = (id) => speakers.filter((s) => (s.speech_speaker_themes || []).some((x) => x.theme_id === id)).length;
+    host.innerHTML = `<div class="terr-catalog-card"><div class="terr-sched-toolbar"><input data-dp-themes-search placeholder="Buscar por número ou título" value="${escapeHtml(q)}"></div><p class="dp-catalog-note">Catálogo de temas baseado na lista S-34 (jw.org). Esta lista é somente leitura.</p>
+      ${rows.length ? `<div class="terr-table-wrap"><table class="terr-catalog-table"><thead><tr><th>Esboço</th><th>Título</th><th>Oradores preparados</th></tr></thead><tbody>${rows.map((t) => `<tr><td>${t.outline_number}</td><td>${escapeHtml(t.title)}</td><td>${preparedCount(t.id)}</td></tr>`).join('')}</tbody></table></div>` : empty('Nenhum tema encontrado.')}</div>`;
+    host.querySelector('[data-dp-themes-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderThemes(); });
+  }
+
+  function renderArrangement() {
+    $('#dp-panel-arranjo').innerHTML = `<div class="terr-catalog-card dp-arrangement-note"><h2>Arranjo mensal</h2><p>O arranjo mensal legado continua disponível para consulta. Para novas designações, use a <strong>Agenda</strong>.</p><p>As designações recebidas em <strong>speech_assignments</strong> serão usadas para a sincronização do programa de final de semana.</p><button type="button" data-dp-go-agenda>Ir para Agenda</button></div>`;
+    $('#dp-panel-arranjo [data-dp-go-agenda]').addEventListener('click', () => selectTab('agenda'));
+  }
+
+  function selectTab(tab) {
+    root.querySelectorAll('[data-dp-tab]').forEach((b) => b.classList.toggle('active', b.dataset.dpTab === tab));
+    root.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `dp-panel-${tab}`));
+    if (!rendered[tab]) { ({ painel: renderPanel, agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes, arranjo: renderArrangement }[tab])(); rendered[tab] = true; }
+  }
+  function refresh() {
+    Object.keys(rendered).forEach((tab) => { if (rendered[tab]) ({ painel: renderPanel, agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes, arranjo: renderArrangement }[tab])(); });
+  }
+
+  function openModal(title, body) {
+    closeModal();
+    document.body.insertAdjacentHTML('beforeend', `<div class="dp-modal" role="dialog" aria-modal="true"><div class="dp-modal__card"><header><h2>${escapeHtml(title)}</h2><button type="button" data-dp-close aria-label="Fechar">×</button></header>${body}</div></div>`);
+    document.querySelectorAll('[data-dp-close]').forEach((b) => b.addEventListener('click', closeModal));
+  }
+  function closeModal() { document.querySelector('.dp-modal')?.remove(); }
+  async function confirmDialog(title, message) {
+    if (window.JEDialog?.confirm) return window.JEDialog.confirm({ title, message, confirmLabel: 'Excluir', danger: true });
+    return window.confirm(message);
+  }
+
+  async function loadData() {
+    const [themeRes, speakerRes, congregationRes, assignmentRes] = await Promise.all([
+      client.from('speech_themes').select('*').order('outline_number'),
+      client.from('speech_speakers').select('*, speech_congregations(name), speech_speaker_themes(theme_id)').order('full_name'),
+      client.from('speech_congregations').select('*').order('name'),
+      client.from('speech_assignments').select('*, speech_speakers(full_name, phone), speech_themes(outline_number, title), speech_congregations(name)').order('event_date')
+    ]);
+    const failure = [themeRes, speakerRes, congregationRes, assignmentRes].find((x) => x.error);
+    if (failure) throw failure.error;
+    themes = themeRes.data || []; speakers = speakerRes.data || []; congregations = congregationRes.data || []; assignments = assignmentRes.data || [];
   }
 
   async function init() {
     if (window.__JEAdminDiscursosInit) return true;
-
     const profile = await guardPermission('public_speeches');
     if (!profile) return false;
-
     root = document.getElementById('hub-view-discursos') || document.body;
-    client = await getClient();
     toastEl = document.getElementById('hub-admin-toast');
-
-    const monthInput = $('dp-board-month');
-    if (monthInput) {
-      monthInput.value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
-    }
-
-    $('dp-btn-load-board')?.addEventListener('click', () => loadBoard({ createIfMissing: true }));
-    $('dp-btn-save')?.addEventListener('click', saveBoard);
-    $('dp-btn-regen-saturdays')?.addEventListener('click', regenerateSaturdays);
-    $('dp-btn-add-speech')?.addEventListener('click', () => addEntry('speech'));
-    $('dp-btn-add-convention')?.addEventListener('click', () => addEntry('convention'));
-    $('dp-btn-add-special')?.addEventListener('click', () => addEntry('special_visit'));
-    $('dp-btn-add-note')?.addEventListener('click', () => addEntry('note'));
-
-    root.querySelectorAll('.tab-btn').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (!board || !root.querySelector('[data-entry-editor]')) return;
-      if (e.target.matches('input, textarea, select')) return;
-      if (e.key === 'ArrowLeft') selectEntry(activeTab, selection[activeTab] - 1);
-      if (e.key === 'ArrowRight') selectEntry(activeTab, selection[activeTab] + 1);
-    });
-
+    client = await getClient();
+    layout();
+    root.querySelectorAll('[data-dp-tab]').forEach((button) => button.addEventListener('click', () => selectTab(button.dataset.dpTab)));
     window.__JEAdminDiscursosInit = true;
-
-    // Ao abrir: só carrega se já existir arranjo do mês — não cria automaticamente
-    // (evita toast vermelho de RLS/permissão só por entrar na seção).
     try {
-      await loadBoard({ silent: true, createIfMissing: false });
+      await loadData();
+      renderPanel();
+      rendered.painel = true;
     } catch (err) {
-      console.error('Discursos loadBoard:', err);
-      showToast(toastEl, formatSpeechError(err), true);
+      console.error('Discursos Públicos:', err);
+      toast(errorText(err), true);
+      const host = $('#dp-panel-painel');
+      if (host) {
+        host.innerHTML = `<div class="terr-empty-state dp-empty"><p>${escapeHtml(errorText(err))}</p><p class="text-sm mt-2">Aplique a migration <code>20260710220000_speech_crm_system</code> e o seed dos temas S-34.</p></div>`;
+      }
     }
     return true;
   }
 
   window.JEAdminDiscursos = { init };
-
-  if (!window.JEHubRouter && document.getElementById('dp-board-month')) {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
+  if (!window.JEHubRouter && document.getElementById('hub-view-discursos')) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   }
 })();

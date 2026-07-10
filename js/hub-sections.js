@@ -40,7 +40,7 @@
         'js/hub-doc-footer.js?v=2026060977',
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
-        'js/admin/weekend-discursos-sync.js?v=2026060527',
+        'js/admin/weekend-discursos-sync.js?v=20260710220000',
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
         'js/admin/anuncios-pdf.js?v=2026061051',
@@ -62,18 +62,16 @@
       viewId: 'hub-view-discursos',
       partial: 'hub/sections/discursos.html',
       styles: [
-        'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/discursos.css?v=2026061315'
+        'css/hub-sections/discursos.css?v=20260710220000'
       ],
       scripts: [
-        'js/hub-doc-footer.js?v=2026060977',
-        'js/admin/discursos-publicos.js?v=20260710210000'
+        'js/admin/discursos-publicos.js?v=20260710220000'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {
         kicker: 'Publicação',
         title: 'Discursos Públicos',
-        subtitle: 'Arranjo mensal de oradores recebidos e enviados.',
+        subtitle: 'Painel, agenda, oradores, temas S-34 e mensagens para WhatsApp.',
         showChangelog: false,
         showBack: true
       }

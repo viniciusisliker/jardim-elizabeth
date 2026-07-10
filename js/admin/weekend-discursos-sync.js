@@ -53,6 +53,36 @@
   async function fetchReceiveSpeechesByDate(client, referenceMonth) {
     const byDate = {};
     if (!client || !referenceMonth) return byDate;
+
+    // Prefer CRM assignments (receive) for the month
+    const monthStart = String(referenceMonth).slice(0, 10);
+    const d = new Date(`${monthStart}T12:00:00`);
+    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const endIso = `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}`;
+
+    const { data: crmRows, error: crmErr } = await client
+      .from('speech_assignments')
+      .select('event_date, speaker_name, outline_number, theme_title, congregation_name, confirmation_status')
+      .eq('direction', 'receive')
+      .neq('confirmation_status', 'cancelado')
+      .gte('event_date', monthStart)
+      .lte('event_date', endIso);
+
+    if (!crmErr && crmRows?.length) {
+      crmRows.forEach((row) => {
+        if (!row.event_date) return;
+        byDate[row.event_date] = {
+          entry_type: 'speech',
+          speaker_name: row.speaker_name,
+          outline_number: row.outline_number != null ? String(row.outline_number) : '',
+          theme: row.theme_title || '',
+          observation: row.congregation_name || ''
+        };
+      });
+      return byDate;
+    }
+
+    // Fallback: legado public_speech_boards / entries
     const { data: boards, error: bErr } = await client
       .from('public_speech_boards')
       .select('id')
