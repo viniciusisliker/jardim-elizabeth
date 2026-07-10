@@ -449,7 +449,8 @@
     if (!loadedSections.has(targetId)) {
       initSectionModule(section).catch((err) => {
         console.error('Hub section init:', err);
-        window.JEToast?.show('Erro ao carregar dados desta seção.', { error: true });
+        const detail = err?.message ? ` ${err.message}` : '';
+        window.JEToast?.show(`Erro ao carregar dados desta seção.${detail}`, { error: true });
       });
     }
   }

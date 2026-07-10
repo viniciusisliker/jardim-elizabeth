@@ -553,6 +553,15 @@ html.dark .cfg-member-user,
 html.dark .cfg-member-email {
   color: var(--je-on-surface-variant) !important;
 }
+html.dark .cfg-member-pw-btn {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .cfg-member-pw-btn:hover {
+  background: var(--je-surface-container) !important;
+  color: var(--je-on-surface) !important;
+}
 html.dark .terr-empty,
 html.dark .terr-whatsapp-box,
 html.dark .eq-whatsapp-box,

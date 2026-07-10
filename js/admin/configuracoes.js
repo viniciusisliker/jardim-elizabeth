@@ -95,6 +95,7 @@
 
     const currentProfileId = profile.id;
     const isSuper = window.JEAuth.isSuperUser(profile.role);
+    const isDev = window.JEAuth.hasDeveloperDesignation(profile);
     const xlf = window.JETableXlf;
     let members = [];
     let catalog = [];
@@ -113,12 +114,19 @@
     let openCfgModalId = null;
 
     document.getElementById('cfg-role-note').textContent = isSuper
-      ? 'Como SuperUser, você gerencia designações, cargos, usuários, e-mails, fotos e atribuições da equipe.'
-      : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.';
+      ? (isDev
+        ? 'Como SuperUser/Dev, você gerencia designações, cargos, usuários, e-mails, fotos, senhas e atribuições da equipe.'
+        : 'Como SuperUser, você gerencia designações, cargos, usuários, e-mails, fotos e atribuições da equipe.')
+      : (isDev
+        ? 'Como Dev, você pode alterar a senha dos membros. Somente o SuperUser altera designações e cargos.'
+        : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.');
 
     if (isSuper) {
       document.getElementById('cfg-open-designations')?.classList.remove('hidden');
       document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--super');
+    }
+    if (isDev) {
+      document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--dev');
     }
 
     function closeCfgModal() {
@@ -569,6 +577,12 @@
           </label>`
         : `<span class="cfg-member-user" title="@${escapeHtml(m.username || '')}">@${escapeHtml(m.username || '—')}</span>`;
 
+      const passwordBtn = isDev
+        ? `<button type="button" class="cfg-member-pw-btn" data-member-password="${m.id}" title="Alterar senha" aria-label="Alterar senha de ${escapeHtml(m.full_name || 'membro')}">
+            <span class="material-symbols-outlined" aria-hidden="true">lock_reset</span>
+          </button>`
+        : '';
+
       return `
         <div class="cfg-member-main">
           ${avatarControl}
@@ -576,7 +590,50 @@
             ${nameLine}
             ${userLine}
           </div>
+          ${passwordBtn}
         </div>`;
+    }
+
+    async function changeMemberPassword(profileId) {
+      const member = members.find((m) => m.id === profileId);
+      const name = member?.full_name || 'este membro';
+      const next = await window.JEDialog.prompt({
+        title: 'Alterar senha',
+        message: `Nova senha para ${name} (mínimo 8 caracteres).`,
+        placeholder: 'Nova senha',
+        confirmLabel: 'Continuar',
+        inputType: 'password'
+      });
+      if (next == null) return;
+      if (next.length < 8) {
+        showToast(toast, 'A senha deve ter pelo menos 8 caracteres.', true);
+        return;
+      }
+      if (next.length > 72) {
+        showToast(toast, 'A senha deve ter no máximo 72 caracteres.', true);
+        return;
+      }
+      const confirm = await window.JEDialog.prompt({
+        title: 'Confirmar senha',
+        message: `Digite novamente a nova senha de ${name}.`,
+        placeholder: 'Confirmar senha',
+        confirmLabel: 'Salvar senha',
+        inputType: 'password'
+      });
+      if (confirm == null) return;
+      if (confirm !== next) {
+        showToast(toast, 'As senhas não coincidem.', true);
+        return;
+      }
+      const { error } = await client.rpc('admin_update_user_password', {
+        p_profile_id: profileId,
+        p_new_password: next
+      });
+      if (error) {
+        showToast(toast, error.message || 'Não foi possível alterar a senha.', true);
+        return;
+      }
+      showToast(toast, `Senha de ${name} atualizada.`);
     }
 
     async function removeAvatarFiles(profileId) {
@@ -646,6 +703,21 @@
             <span>${designationChecks}</span>
           </div>`;
       }).join('');
+
+      if (isDev) {
+        root.querySelectorAll('[data-member-password]').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            btn.disabled = true;
+            try {
+              await changeMemberPassword(btn.dataset.memberPassword);
+            } finally {
+              btn.disabled = false;
+            }
+          });
+        });
+      }
 
       if (!isSuper) return;
 

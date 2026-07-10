@@ -67,7 +67,7 @@
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
-        'js/admin/discursos-publicos.js?v=2026061315'
+        'js/admin/discursos-publicos.js?v=20260710210000'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {
@@ -201,10 +201,10 @@
       permission: 'settings',
       viewId: 'hub-view-configuracoes',
       partial: 'hub/sections/configuracoes.html',
-      styles: ['css/hub-sections/configuracoes.css?v=2026061719'],
+      styles: ['css/hub-sections/configuracoes.css?v=20260710200000'],
       scripts: [
         'js/admin/table-xlf.js?v=2026061058',
-        'js/admin/configuracoes.js?v=2026061719'
+        'js/admin/configuracoes.js?v=20260710200000'
       ],
       initKey: 'JEAdminConfiguracoes',
       hero: {

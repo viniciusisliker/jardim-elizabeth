@@ -154,7 +154,8 @@
         danger = false,
         type = 'confirm',
         placeholder = '',
-        defaultValue = ''
+        defaultValue = '',
+        inputType = 'text'
       } = options;
 
       const overlay = document.createElement('div');
@@ -164,8 +165,9 @@
       overlay.setAttribute('aria-labelledby', 'je-dialog-title');
 
       const confirmClass = danger ? 'je-dialog__btn--danger' : 'je-dialog__btn--confirm';
+      const safeInputType = inputType === 'password' ? 'password' : 'text';
       const inputHtml = type === 'prompt'
-        ? `<input type="text" class="je-dialog__input" id="je-dialog-input" placeholder="${escapeAttr(placeholder)}" value="${escapeAttr(defaultValue)}"/>`
+        ? `<input type="${safeInputType}" class="je-dialog__input" id="je-dialog-input" placeholder="${escapeAttr(placeholder)}" value="${escapeAttr(defaultValue)}" autocomplete="${safeInputType === 'password' ? 'new-password' : 'off'}"/>`
         : '';
 
       overlay.innerHTML = `
@@ -199,7 +201,8 @@
 
       function submitConfirm() {
         if (type === 'prompt') {
-          const value = input?.value?.trim() || '';
+          const raw = input?.value ?? '';
+          const value = safeInputType === 'password' ? raw : raw.trim();
           closeDialog(value || null);
           return;
         }

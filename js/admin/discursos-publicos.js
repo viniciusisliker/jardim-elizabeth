@@ -180,12 +180,14 @@
   }
 
   function renderStats() {
-    $('dp-stats').innerHTML = statsHtml(activeTab);
+    const el = $('dp-stats');
+    if (el) el.innerHTML = statsHtml(activeTab);
   }
 
   function renderTimeline() {
     const list = entriesFor(activeTab);
     const host = $('dp-timeline');
+    if (!host) return;
     if (!list.length) {
       host.innerHTML = '';
       return;
@@ -219,6 +221,7 @@
   function renderNav() {
     const list = entriesFor(activeTab);
     const host = $('dp-nav');
+    if (!host) return;
     if (!list.length) {
       host.innerHTML = '<p class="text-xs text-on-surface-variant">Nenhuma linha.</p>';
       return;
@@ -306,14 +309,14 @@
         <div class="dp-doc-body">
           <div class="dp-fields">${fields}</div>
         </div>
-        ${window.JEHubDocFooter.renderDocEntryFooter({
+        ${window.JEHubDocFooter?.renderDocEntryFooter?.({
           prevDisabled: idx <= 0,
           nextDisabled: idx >= list.length - 1,
           removeAttrs: 'data-remove-entry',
           nextLabel: 'Próximo',
           removeAria: 'Remover esta entrada',
           wrapperClass: 'je-doc-footer qa-doc-footer dp-doc-footer'
-        })}
+        }) || ''}
       </div>`;
   }
 
@@ -396,6 +399,7 @@
   function renderEditor() {
     const list = entriesFor(activeTab);
     const host = $('dp-editor-host');
+    if (!host) return;
     if (!list.length) {
       host.innerHTML = `
         <div class="dp-empty-state">
@@ -406,8 +410,14 @@
       renderPreview(null);
       return;
     }
-    const idx = selection[activeTab];
+    const idx = Math.max(0, Math.min(selection[activeTab] || 0, list.length - 1));
+    selection[activeTab] = idx;
     const entry = list[idx];
+    if (!entry) {
+      host.innerHTML = '';
+      renderPreview(null);
+      return;
+    }
     host.innerHTML = renderEditorForm(entry, idx, list);
     bindEditorEvents(entry, idx, list);
     renderPreview(entry);
@@ -468,30 +478,79 @@
     renderWorkspace();
   }
 
-  async function loadBoard({ silent = false } = {}) {
+  function formatSpeechError(err) {
+    const msg = String(err?.message || err || '');
+    if (/row-level security|violates row-level|permission denied|42501/i.test(msg)) {
+      return 'Sem permissão no banco para Discursos Públicos. Confira se sua designação inclui este módulo.';
+    }
+    if (/Could not find the table|does not exist|schema cache/i.test(msg)) {
+      return 'Tabelas de Discursos Públicos não encontradas no banco. Aplique as migrations.';
+    }
+    if (/JWT|session|not authenticated|401/i.test(msg)) {
+      return 'Sessão expirada. Saia e entre de novo.';
+    }
+    return msg || 'Erro ao carregar o arranjo.';
+  }
+
+  async function loadBoard({ silent = false, createIfMissing = true } = {}) {
     const ref = referenceMonthFromInput();
     if (!ref) {
-      showToast(toastEl, 'Selecione um mês.', true);
+      if (!silent) showToast(toastEl, 'Selecione um mês.', true);
       return false;
     }
 
     const d = new Date(ref + 'T12:00:00');
     const label = monthLabel(d.getFullYear(), d.getMonth());
 
-    let { data: existing } = await client.from('public_speech_boards').select('*').eq('reference_month', ref).maybeSingle();
+    let { data: existing, error: findErr } = await client
+      .from('public_speech_boards')
+      .select('*')
+      .eq('reference_month', ref)
+      .maybeSingle();
+
+    if (findErr) {
+      // Vários rascunhos do mesmo mês — usa o mais recente
+      if (/multiple|PGRST116/i.test(String(findErr.message || findErr.code || ''))) {
+        const { data: list, error: listErr } = await client
+          .from('public_speech_boards')
+          .select('*')
+          .eq('reference_month', ref)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        if (listErr) {
+          showToast(toastEl, formatSpeechError(listErr), true);
+          return false;
+        }
+        existing = list?.[0] || null;
+      } else {
+        showToast(toastEl, formatSpeechError(findErr), true);
+        return false;
+      }
+    }
 
     if (!existing) {
+      if (!createIfMissing) {
+        board = null;
+        entries = [];
+        const labelEl = $('dp-board-label');
+        if (labelEl) labelEl.textContent = '—';
+        $('dp-editor-shell')?.classList.add('hidden');
+        return true;
+      }
       const { data: created, error } = await client.from('public_speech_boards').insert({
         reference_month: ref,
         reference_label: label,
         status: 'draft'
       }).select('*').single();
-      if (error) { showToast(toastEl, error.message, true); return false; }
+      if (error) { showToast(toastEl, formatSpeechError(error), true); return false; }
       existing = created;
     }
 
     board = existing;
-    $('dp-board-label').textContent = `${board.reference_label} (${board.status === 'draft' ? 'Rascunho' : board.status})`;
+    const labelEl = $('dp-board-label');
+    if (labelEl) {
+      labelEl.textContent = `${board.reference_label} (${board.status === 'draft' ? 'Rascunho' : board.status})`;
+    }
     $('dp-editor-shell')?.classList.remove('hidden');
 
     const { data: rows, error: loadErr } = await client
@@ -500,7 +559,7 @@
       .eq('board_id', board.id)
       .order('sort_order');
 
-    if (loadErr) { showToast(toastEl, loadErr.message, true); return false; }
+    if (loadErr) { showToast(toastEl, formatSpeechError(loadErr), true); return false; }
 
     entries = rows || [];
     if (!entries.length) {
@@ -517,7 +576,13 @@
 
     selection = { receive: 0, send: 0 };
     setDirty(false);
-    renderAll();
+    try {
+      renderAll();
+    } catch (err) {
+      console.error('Discursos render:', err);
+      showToast(toastEl, formatSpeechError(err), true);
+      return false;
+    }
     if (!silent) showToast(toastEl, 'Arranjo carregado.');
     return true;
   }
@@ -557,12 +622,11 @@
 
   async function init() {
     if (window.__JEAdminDiscursosInit) return true;
+
     const profile = await guardPermission('public_speeches');
     if (!profile) return false;
 
     root = document.getElementById('hub-view-discursos') || document.body;
-    window.__JEAdminDiscursosInit = true;
-
     client = await getClient();
     toastEl = document.getElementById('hub-admin-toast');
 
@@ -571,7 +635,7 @@
       monthInput.value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
     }
 
-    $('dp-btn-load-board')?.addEventListener('click', () => loadBoard());
+    $('dp-btn-load-board')?.addEventListener('click', () => loadBoard({ createIfMissing: true }));
     $('dp-btn-save')?.addEventListener('click', saveBoard);
     $('dp-btn-regen-saturdays')?.addEventListener('click', regenerateSaturdays);
     $('dp-btn-add-speech')?.addEventListener('click', () => addEntry('speech'));
@@ -590,7 +654,16 @@
       if (e.key === 'ArrowRight') selectEntry(activeTab, selection[activeTab] + 1);
     });
 
-    await loadBoard({ silent: true });
+    window.__JEAdminDiscursosInit = true;
+
+    // Ao abrir: só carrega se já existir arranjo do mês — não cria automaticamente
+    // (evita toast vermelho de RLS/permissão só por entrar na seção).
+    try {
+      await loadBoard({ silent: true, createIfMissing: false });
+    } catch (err) {
+      console.error('Discursos loadBoard:', err);
+      showToast(toastEl, formatSpeechError(err), true);
+    }
     return true;
   }
 
