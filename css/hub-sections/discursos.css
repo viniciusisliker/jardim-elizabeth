@@ -184,6 +184,34 @@
     #hub-view-discursos .dp-empty,#hub-view-discursos .terr-empty-state{padding:1.5rem;text-align:center;color:#6b7280;font-size:.875rem}
     #hub-view-discursos .dp-catalog-note{font-size:.75rem;color:#6b7280;margin:0 0 .75rem}
     #hub-view-discursos .dp-arrangement-note h2{margin:0 0 .5rem;color:#002060}
+
+    /* Temas S-34 — lista compacta */
+    #hub-view-discursos .dp-themes{background:#fff;border:1px solid #e2e6ef;border-radius:.875rem;overflow:hidden;box-shadow:0 2px 10px rgba(15,52,98,.04)}
+    #hub-view-discursos .dp-themes-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.625rem .75rem;background:#f7f9fc;border-bottom:1px solid #eef0f4}
+    #hub-view-discursos .dp-themes-search{flex:1;min-width:11rem;display:flex;align-items:center;gap:.375rem;padding:.375rem .625rem;border:1px solid #e2e6ef;border-radius:.5rem;background:#fff}
+    #hub-view-discursos .dp-themes-search .material-symbols-outlined{font-size:1.125rem;color:#6b7280}
+    #hub-view-discursos .dp-themes-search input{flex:1;border:none;outline:none;background:transparent;font-size:.8125rem;font-weight:600;color:#002060;min-width:0}
+    #hub-view-discursos .dp-themes-chips{display:flex;flex-wrap:wrap;gap:.25rem}
+    #hub-view-discursos .dp-themes-chip{border:1px solid #dbe3ef;border-radius:9999px;background:#fff;color:#43474f;font-size:.6875rem;font-weight:700;padding:.3125rem .625rem;cursor:pointer}
+    #hub-view-discursos .dp-themes-chip.is-on{background:#002060;border-color:#002060;color:#fff}
+    #hub-view-discursos .dp-themes-meta{display:flex;justify-content:space-between;gap:.75rem;padding:.375rem .75rem;font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;border-bottom:1px solid #eef0f4}
+    #hub-view-discursos .dp-themes-list{max-height:min(62vh,36rem);overflow:auto}
+    #hub-view-discursos .dp-theme-row{display:grid;grid-template-columns:2.75rem 1fr auto;align-items:center;gap:.625rem;width:100%;padding:.4375rem .75rem;border:none;border-bottom:1px solid #f1f3f7;background:#fff;text-align:left;cursor:pointer;transition:background .12s}
+    #hub-view-discursos .dp-theme-row:hover{background:#f7f9fc}
+    #hub-view-discursos .dp-theme-row:last-child{border-bottom:none}
+    #hub-view-discursos .dp-theme-num{display:inline-flex;align-items:center;justify-content:center;min-width:2.25rem;height:1.5rem;padding:0 .25rem;border-radius:.375rem;background:#eef3fa;color:#002060;font-size:.75rem;font-weight:800;font-variant-numeric:tabular-nums}
+    #hub-view-discursos .dp-theme-title{font-size:.8125rem;font-weight:600;color:#1b1c1c;line-height:1.3}
+    #hub-view-discursos .dp-theme-prep{min-width:1.5rem;text-align:center;font-size:.6875rem;font-weight:800;color:#9ca3af}
+    #hub-view-discursos .dp-theme-prep.has{color:#1a7f4b;background:#e8f5ee;border-radius:9999px;padding:.125rem .4375rem}
+    .dp-theme-detail{padding:1rem 1.125rem 1.125rem}
+    .dp-theme-detail__title{margin:0;font-size:.9375rem;font-weight:700;color:#1b1c1c;line-height:1.35}
+    .dp-theme-detail__meta{margin:.375rem 0 .875rem;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
+    .dp-theme-detail__empty{margin:0;font-size:.8125rem;color:#6b7280}
+    .dp-theme-detail__speakers{list-style:none;margin:0;padding:0;display:grid;gap:.375rem}
+    .dp-theme-detail__speakers li{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.625rem .75rem;border:1px solid #eef0f4;border-radius:.625rem;background:#fafbfc}
+    .dp-theme-detail__speakers strong{display:block;font-size:.8125rem;color:#002060}
+    .dp-theme-detail__speakers span{display:block;font-size:.6875rem;color:#6b7280;margin-top:.125rem}
+    .dp-theme-detail__speakers button{border:1px solid #dbe3ef;border-radius:.5rem;background:#fff;color:#002060;font-size:.6875rem;font-weight:700;padding:.375rem .625rem;cursor:pointer;flex-shrink:0}
     .dp-modal{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(10,40,71,.45);backdrop-filter:blur(4px)}
     .dp-modal__card{width:min(36rem,100%);max-height:min(90vh,44rem);overflow:auto;background:#fff;border-radius:1rem;border:1px solid rgba(31,73,125,.18);box-shadow:0 24px 64px rgba(0,32,96,.22)}
     .dp-modal__card header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:1rem 1.125rem;border-bottom:1px solid #eef0f4}

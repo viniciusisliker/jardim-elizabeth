@@ -253,13 +253,82 @@
     return themes.filter((t) => t.is_active).map((t) => `<label><input type="checkbox" name="theme_ids" value="${t.id}"${selected.has(t.id) ? ' checked' : ''}> ${t.outline_number} — ${escapeHtml(t.title)}</label>`).join('');
   }
 
+  function speakersForTheme(themeId) {
+    return speakers.filter((s) => s.is_active !== false && (s.speech_speaker_themes || []).some((x) => x.theme_id === themeId));
+  }
+
+  function openThemeDetail(themeId) {
+    const theme = getTheme(themeId);
+    if (!theme) return;
+    const list = speakersForTheme(themeId);
+    openModal(`Esboço ${theme.outline_number}`, `
+      <div class="dp-theme-detail">
+        <p class="dp-theme-detail__title">${escapeHtml(theme.title)}</p>
+        <p class="dp-theme-detail__meta">S-34 · ${list.length ? `${list.length} orador${list.length === 1 ? '' : 'es'} preparado${list.length === 1 ? '' : 's'}` : 'Nenhum orador preparado'}</p>
+        ${list.length ? `<ul class="dp-theme-detail__speakers">${list.map((s) => `<li>
+          <div><strong>${escapeHtml(s.full_name)}</strong><span>${escapeHtml(s.speech_congregations?.name || (s.is_local ? 'Local' : '—'))}</span></div>
+          <button type="button" data-dp-theme-speaker="${s.id}">Ver orador</button>
+        </li>`).join('')}</ul>` : `<p class="dp-theme-detail__empty">Marque este esboço nos temas preparados do orador.</p>`}
+      </div>`);
+    document.querySelectorAll('[data-dp-theme-speaker]').forEach((btn) => btn.addEventListener('click', () => {
+      closeModal();
+      selectTab('oradores');
+      const speaker = getSpeaker(btn.dataset.dpThemeSpeaker);
+      if (speaker) openSpeakerModal(speaker);
+    }));
+  }
+
   function renderThemes() {
-    const host = $('#dp-panel-temas'); const q = host.dataset.query || '';
-    const rows = themes.filter((t) => `${t.outline_number} ${t.title}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => a.outline_number - b.outline_number);
-    const preparedCount = (id) => speakers.filter((s) => (s.speech_speaker_themes || []).some((x) => x.theme_id === id)).length;
-    host.innerHTML = `<div class="terr-catalog-card"><div class="terr-sched-toolbar"><input data-dp-themes-search placeholder="Buscar por número ou título" value="${escapeHtml(q)}"></div><p class="dp-catalog-note">Catálogo de temas baseado na lista S-34 (jw.org). Esta lista é somente leitura.</p>
-      ${rows.length ? `<div class="terr-table-wrap"><table class="terr-catalog-table"><thead><tr><th>Esboço</th><th>Título</th><th>Oradores preparados</th></tr></thead><tbody>${rows.map((t) => `<tr><td>${t.outline_number}</td><td>${escapeHtml(t.title)}</td><td>${preparedCount(t.id)}</td></tr>`).join('')}</tbody></table></div>` : empty('Nenhum tema encontrado.')}</div>`;
-    host.querySelector('[data-dp-themes-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderThemes(); });
+    const host = $('#dp-panel-temas');
+    if (!host) return;
+    const q = host.dataset.query || '';
+    const filter = host.dataset.filter || 'all';
+    const preparedCount = (id) => speakersForTheme(id).length;
+    const withPrep = themes.filter((t) => preparedCount(t.id) > 0).length;
+    const bare = themes.length - withPrep;
+    let rows = themes
+      .filter((t) => `${t.outline_number} ${t.title}`.toLowerCase().includes(q.toLowerCase()))
+      .sort((a, b) => a.outline_number - b.outline_number);
+    if (filter === 'prepared') rows = rows.filter((t) => preparedCount(t.id) > 0);
+    if (filter === 'bare') rows = rows.filter((t) => preparedCount(t.id) === 0);
+
+    const keepFocus = document.activeElement?.matches?.('[data-dp-themes-search]');
+    const caret = keepFocus ? document.activeElement.selectionStart : null;
+
+    host.innerHTML = `
+      <div class="dp-themes">
+        <div class="dp-themes-bar">
+          <label class="dp-themes-search">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input data-dp-themes-search type="search" placeholder="Nº ou título…" value="${escapeHtml(q)}" aria-label="Buscar temas">
+          </label>
+          <div class="dp-themes-chips" role="group" aria-label="Filtro de temas">
+            ${[['all', `Todos · ${themes.length}`], ['prepared', `Com orador · ${withPrep}`], ['bare', `Sem orador · ${bare}`]]
+              .map(([id, label]) => `<button type="button" class="dp-themes-chip${filter === id ? ' is-on' : ''}" data-dp-themes-filter="${id}">${label}</button>`).join('')}
+          </div>
+        </div>
+        <div class="dp-themes-meta"><span>Catálogo S-34</span><span>${rows.length} exibido${rows.length === 1 ? '' : 's'}</span></div>
+        ${rows.length ? `<div class="dp-themes-list" role="list">${rows.map((t) => {
+          const n = preparedCount(t.id);
+          return `<button type="button" class="dp-theme-row" role="listitem" data-dp-theme-id="${t.id}" title="Ver oradores">
+            <span class="dp-theme-num">${t.outline_number}</span>
+            <span class="dp-theme-title">${escapeHtml(t.title)}</span>
+            <span class="dp-theme-prep${n ? ' has' : ''}" aria-label="${n} preparados">${n || '—'}</span>
+          </button>`;
+        }).join('')}</div>` : empty('Nenhum tema encontrado.')}
+      </div>`;
+
+    const input = host.querySelector('[data-dp-themes-search]');
+    input.addEventListener('input', (e) => { host.dataset.query = e.target.value; renderThemes(); });
+    if (keepFocus) {
+      input.focus();
+      if (caret != null) input.setSelectionRange(caret, caret);
+    }
+    host.querySelectorAll('[data-dp-themes-filter]').forEach((btn) => btn.addEventListener('click', () => {
+      host.dataset.filter = btn.dataset.dpThemesFilter;
+      renderThemes();
+    }));
+    host.querySelectorAll('[data-dp-theme-id]').forEach((btn) => btn.addEventListener('click', () => openThemeDetail(btn.dataset.dpThemeId)));
   }
 
   function selectTab(tab) {
