@@ -2,4 +2,9 @@ node_modules/
 *.xlsx
 supabase/.temp/
 scripts/.geocode-cache.json
+scripts/.geocode-cache-intersections.json
 scripts/__pycache__/
+maps/original-cards/
+maps/osm-streets.json
+maps/osm-streets-by-name.json
+maps/precise-boundaries.json

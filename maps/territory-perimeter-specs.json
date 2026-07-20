@@ -1,0 +1,141 @@
+{
+  "source": "Cartões físicos S-12-T (maps/original-cards) + js/territory-streets.js",
+  "method": "Perímetro pelas ruas que delimitam a área verde do cartão — não convex hull",
+  "note_cdhu": "T13/T14/T15 são subdivisões do mesmo CDHU (blocos 01–29). Trace no Earth sobre o cartão satélite.",
+  "territories": {
+    "01": {
+      "name": "Campo Limpo",
+      "perimeter": [
+        "Av. Carlos Lacerda (sul)",
+        "Estr. Pirajussara (oeste)",
+        "borda norte incluindo Trav. Carlino C. e Trav. Nair R. Perez (recortes)",
+        "R. Américo Trabulsi (leste)"
+      ],
+      "internal": ["R. Francisco H.", "R. dos Milagres", "R. Louis Brea", "R. Paul Gauguim"]
+    },
+    "02": {
+      "name": "Jardim Elizabeth A",
+      "perimeter": [
+        "R. José Cabral (norte/oeste)",
+        "R. Hermes Ribeiro de Freitas (leste)",
+        "R. Januário da Cunha Barbosa (sul)",
+        "inclui laço R. Doutor Zamitti Mammana e R. Nelson Spilman"
+      ],
+      "internal": ["Zamitti Mammana", "Nelson Spilman", "Viela 2"]
+    },
+    "03": {
+      "name": "Jardim Elizabeth B",
+      "perimeter": [
+        "R. Hermes Ribeiro de Freitas (NO)",
+        "R. Aristides de Britto",
+        "R. Humberto Benemeritti",
+        "faixa ao longo de Januário da Cunha Barbosa / R. José Cabral"
+      ],
+      "internal": ["Viela"]
+    },
+    "04": {
+      "name": "Jardim Elizabeth C",
+      "perimeter": [
+        "R. Hermes Ribeiro de Freitas (norte)",
+        "R. Aristides de Brito (leste)",
+        "R. Humberto Benemeritti (sul)",
+        "Estr. do Campo Limpo (oeste)"
+      ],
+      "internal": ["Benedito de Oliveira", "Alípio Benedito", "Antonio Alves Júnior"]
+    },
+    "05": {
+      "name": "Jardim Elizabeth D",
+      "perimeter": [
+        "R. Januário da Cunha Barbosa (norte)",
+        "R. Piaga / R. Atucupe (sul)",
+        "trecho em direção a R. Taunã / R. Cabaxi (leste)"
+      ],
+      "internal": ["Viela 3", "Viela 4"]
+    },
+    "06": {
+      "name": "Vila Pirajussara",
+      "perimeter": [
+        "R. Martim da Costa Vilela (norte)",
+        "R. Hermes Ribeiro de Freitas (sul)",
+        "cruzamento oeste (próximo R. João Correia)",
+        "extensão leste: Passarela 1, Passagem 2, Passagem 1 — sem incluir Luis Gonzaga Freire"
+      ]
+    },
+    "07": {
+      "name": "Jardim Iracema A",
+      "perimeter": [
+        "R. da Praia de Miramar (norte)",
+        "R. Ramona B. Fernandes (oeste)",
+        "R. Gustavo Doré (sul)",
+        "borda leste irregular (final dos quarteirões)"
+      ],
+      "internal": ["Cel. José Hipólito Trigueirinho", "R. Henrique Moreira"]
+    },
+    "08": {
+      "name": "Jardim Iracema B",
+      "perimeter": [
+        "Av. Augusto B. Tavares",
+        "R. Ramona B. Fernandes",
+        "R. Dr. Dib Gebara",
+        "R. Gustave Doré / Cel. José Hypolito"
+      ]
+    },
+    "09": {
+      "name": "Jardim Helga E",
+      "perimeter": [
+        "R. Luis Gonzaga Freire",
+        "R. Nelson Lomanto",
+        "R. Osvaldo de Arruda Reis",
+        "Escadaria (leste)"
+      ],
+      "internal": ["Viela Quatro"]
+    },
+    "10": {
+      "name": "Jd Leônidas Moreira A",
+      "perimeter": [
+        "três áreas verdes: canto Piaga×Cabaxi (Garagem)",
+        "faixa Atucupê×Cabaxi (Taunã/Mitim)",
+        "cunha leste (Caixa)"
+      ]
+    },
+    "11": {
+      "name": "Jd Leônidas Moreira B",
+      "perimeter": ["Av. Carlos Lacerda", "Rua Cabaxi", "Rua Tabimã", "Rua Amacás / Apeaçú / Ajuruetê"]
+    },
+    "12": {
+      "name": "Jd Leônidas Moreira C",
+      "perimeter": ["Av. Carlos Lacerda", "Rua Tabimã", "Rua Ajuruetê", "Rua Crestins"]
+    },
+    "13": {
+      "name": "CDHU A",
+      "perimeter": ["Conjunto CDHU — blocos conforme cartão satélite (números no cartão)"],
+      "note": "Não unificar com T14/T15; seguir contornos azuis do cartão."
+    },
+    "14": {
+      "name": "CDHU B",
+      "perimeter": ["Subconjunto de blocos CDHU (cartão B)"],
+      "note": "Separar blocos verdes vs azuis do cartão."
+    },
+    "15": {
+      "name": "CDHU C",
+      "perimeter": ["Subconjunto de blocos CDHU (cartão C)"],
+      "note": "Separar blocos restantes do CDHU."
+    },
+    "16": {
+      "name": "Jardim Helga A",
+      "perimeter": ["R. Luis Gonzaga Freire", "R. Augusto de Moraes", "Passagem 1/2", "CDHU (borda)"]
+    },
+    "17": {
+      "name": "Jardim Helga B",
+      "perimeter": ["R. Augusto de Moraes", "R. Thomaz de Araújo", "R. Luis Gonzaga Freire"]
+    },
+    "18": {
+      "name": "Jardim Helga C",
+      "perimeter": ["R. Guerreiro", "R. Luisa Damon", "R. Luis Maria Ridel", "R. Thomaz de Araújo"]
+    },
+    "19": {
+      "name": "Jardim Helga D",
+      "perimeter": ["R. Mitim", "R. Ibi", "R. Guerreiro", "R. Luisa Damon"]
+    }
+  }
+}
