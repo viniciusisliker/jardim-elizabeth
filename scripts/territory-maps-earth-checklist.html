@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checklist — Mapas T01–T19 (Google Earth → Hub)</title>
+  <style>
+    :root { --navy: #002060; --muted: #5c6578; --line: #e2e6ef; --ok: #1a7f4b; --bg: #f7f9fc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; color: #1b1c1c; background: var(--bg); line-height: 1.45; }
+    header { background: var(--navy); color: #fff; padding: 1.25rem 1.5rem; }
+    header h1 { margin: 0; font-size: 1.25rem; }
+    header p { margin: .35rem 0 0; opacity: .85; font-size: .875rem; }
+    main { max-width: 52rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+    section { background: #fff; border: 1px solid var(--line); border-radius: .75rem; padding: 1rem 1.125rem; margin-bottom: 1rem; }
+    h2 { margin: 0 0 .75rem; font-size: 1rem; color: var(--navy); }
+    ol.steps { margin: 0; padding-left: 1.25rem; font-size: .875rem; }
+    ol.steps li { margin-bottom: .4rem; }
+    .meta { font-size: .75rem; color: var(--muted); margin-bottom: .75rem; }
+    .progress { font-weight: 700; color: var(--navy); margin-bottom: .75rem; font-size: .875rem; }
+    article { border: 1px solid var(--line); border-radius: .625rem; padding: .75rem .875rem; margin-bottom: .5rem; }
+    article.done { background: #f0faf4; border-color: #c6e6d4; }
+    article header.row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin: 0 0 .5rem; padding: 0; background: none; color: inherit; }
+    article h3 { margin: 0; font-size: .9375rem; flex: 1; min-width: 10rem; }
+    .file { font-family: ui-monospace, monospace; font-size: .75rem; color: var(--muted); }
+    .streets { margin: 0; padding-left: 1.1rem; font-size: .8125rem; }
+    .notes { font-size: .75rem; color: var(--muted); margin: .35rem 0 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .5rem; }
+    a.btn, button.btn { display: inline-flex; align-items: center; gap: .25rem; font-size: .75rem; font-weight: 700; padding: .35rem .625rem; border-radius: .375rem; border: 1px solid var(--line); background: #fff; color: var(--navy); text-decoration: none; cursor: pointer; }
+    a.btn:hover, button.btn:hover { border-color: var(--navy); }
+    label.check { display: inline-flex; align-items: center; gap: .375rem; font-size: .75rem; font-weight: 700; cursor: pointer; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
+    @media print {
+      body { background: #fff; }
+      header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .toolbar, a.btn { display: none !important; }
+      article { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mapas dos territórios — Google Earth → Hub</h1>
+    <p>Jardim Elizabeth · um polígono por cartão · salvar como <code>img/territorios/tXX.jpg</code></p>
+  </header>
+  <main>
+    <section>
+      <h2>Como desenhar e exportar</h2>
+      <ol class="steps">
+        <li>Abra o <strong>Google Earth Pro</strong>. Camada <strong>Estradas</strong> ligada.</li>
+        <li>Crie a pasta <strong>Jardim Elizabeth</strong> em Lugares e mantenha todos os polígonos nela (para ver buracos/sobreposição).</li>
+        <li>Para cada Txx: use o link Maps → no Earth, <strong>Adicionar polígono</strong>, nome <code>Txx</code>.</li>
+        <li>Estilo: linha amarela largura 3–4; área amarela opacidade ~25–30%.</li>
+        <li>Trace só o perímetro do cartão pelas ruas listadas — sem cortar quadra/casa.</li>
+        <li>Vista de cima, norte para cima; enquadre o polígono; capture/exporte JPEG.</li>
+        <li>Salve como <code>img/territorios/tXX.jpg</code> (800–1400px de largura, de preferência &lt; 1,5&nbsp;MB).</li>
+        <li>Valide: <code>node scripts/validate-territory-maps.mjs</code> → depois peça commit/deploy.</li>
+      </ol>
+      <p class="meta" style="margin-top:.75rem">Isto não substitui o mapa S-6 único da congregação para Betel — só os cartões do site.</p>
+    </section>
+
+    <section>
+      <h2>Checklist T01–T19</h2>
+      <div class="toolbar">
+        <button type="button" class="btn" id="clear-progress">Limpar progresso</button>
+        <button type="button" class="btn" onclick="window.print()">Imprimir</button>
+      </div>
+      <p class="progress" id="progress">0 / 19 concluídos</p>
+      <div id="list"></div>
+    </section>
+  </main>
+  <script>
+    const NAMES = {
+      '01': 'Campo Limpo', '02': 'Jardim Elizabeth A', '03': 'Jardim Elizabeth B', '04': 'Jardim Elizabeth C',
+      '05': 'Jardim Elizabeth D', '06': 'Vila Pirajussara', '07': 'Jardim Iracema A', '08': 'Jardim Iracema B',
+      '09': 'Jardim Helga E', '10': 'Jd Leônidas Moreira A', '11': 'Jd Leônidas Moreira B', '12': 'Jd Leônidas Moreira C',
+      '13': 'CDHU A', '14': 'CDHU B', '15': 'CDHU C', '16': 'Jardim Helga A', '17': 'Jardim Helga B',
+      '18': 'Jardim Helga C', '19': 'Jardim Helga D'
+    };
+    const KEY = 'je-terr-map-checklist-v1';
+    const list = document.getElementById('list');
+    const progressEl = document.getElementById('progress');
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+    }
+    function saveState(state) { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+    function mapsLink(q) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+    }
+
+    async function boot() {
+      const res = await fetch('./territory-map-checklist.json');
+      const data = await res.json();
+      const state = loadState();
+
+      function render() {
+        let done = 0;
+        list.innerHTML = data.territories.map((t) => {
+          const checked = !!state[t.num];
+          if (checked) done += 1;
+          const name = t.name || NAMES[t.num] || '';
+          return `<article class="${checked ? 'done' : ''}" data-num="${t.num}">
+            <header class="row">
+              <label class="check"><input type="checkbox" data-num="${t.num}" ${checked ? 'checked' : ''}> Feito</label>
+              <h3>T${t.num} · ${name}</h3>
+              <span class="file">${t.file}</span>
+            </header>
+            <ul class="streets">${t.streets.map((s) => `<li>${s}</li>`).join('')}</ul>
+            ${t.notes ? `<p class="notes">${t.notes}</p>` : ''}
+            <div class="actions">
+              <a class="btn" href="${mapsLink(t.mapsQuery)}" target="_blank" rel="noopener">Abrir no Maps</a>
+              <button type="button" class="btn" data-copy="${t.mapsQuery}">Copiar busca</button>
+            </div>
+          </article>`;
+        }).join('');
+        progressEl.textContent = `${done} / ${data.territories.length} concluídos`;
+        list.querySelectorAll('input[type=checkbox]').forEach((el) => {
+          el.addEventListener('change', () => {
+            state[el.dataset.num] = el.checked;
+            saveState(state);
+            render();
+          });
+        });
+        list.querySelectorAll('[data-copy]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(btn.dataset.copy);
+            btn.textContent = 'Copiado';
+            setTimeout(() => { btn.textContent = 'Copiar busca'; }, 1200);
+          });
+        });
+      }
+
+      document.getElementById('clear-progress').addEventListener('click', () => {
+        localStorage.removeItem(KEY);
+        Object.keys(state).forEach((k) => delete state[k]);
+        render();
+      });
+      render();
+    }
+    boot().catch((err) => {
+      list.innerHTML = `<p>Não foi possível carregar territory-map-checklist.json. Abra este HTML via servidor local (ex.: <code>node scripts/dev-server.js</code>) ou pela pasta scripts/.</p><pre>${err}</pre>`;
+    });
+  </script>
+</body>
+</html>

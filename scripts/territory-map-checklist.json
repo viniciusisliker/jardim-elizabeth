@@ -1,0 +1,152 @@
+{
+  "congregation": "Jardim Elizabeth",
+  "city": "São Paulo SP",
+  "targetDir": "img/territorios",
+  "filePattern": "tXX.jpg",
+  "exportHints": {
+    "lineColor": "Amarelo",
+    "lineWidth": "3–4",
+    "areaOpacity": "25–30%",
+    "widthPx": "800–1400",
+    "maxMb": 1.5,
+    "view": "Vista de cima, norte para cima"
+  },
+  "territories": [
+    {
+      "num": "01",
+      "name": "Campo Limpo",
+      "file": "t01.jpg",
+      "streets": ["Av. Carlos Lacerda", "Estr. Pirajussara", "R. Américo Trabulsi", "Trav. Carlino C.", "Trav. Nair R. Perez", "R. Francisco H.", "R. dos Milagres", "R. Louis Brea", "R. Paul Gauguim"],
+      "mapsQuery": "Av. Carlos Lacerda e Estr. Pirajussara, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "02",
+      "name": "Jardim Elizabeth A",
+      "file": "t02.jpg",
+      "streets": ["R. Hermes Ribeiro de Freitas", "R. José Cabral", "R. Zamitti Mammana", "R. Nelson Spilman", "R. Januário da C. Barbosa", "Viela 2"],
+      "mapsQuery": "Rua Hermes Ribeiro de Freitas e Zamitti Mammana, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "03",
+      "name": "Jardim Elizabeth B",
+      "file": "t03.jpg",
+      "streets": ["R. Hermes Ribeiro de Freitas", "R. Aristides de Britto", "R. Humberto Benemeritti", "R. Januário da Cunha Barbosa", "R. José Cabral", "Viela"],
+      "mapsQuery": "Rua Humberto Benemeritti e Aristides de Britto, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "04",
+      "name": "Jardim Elizabeth C",
+      "file": "t04.jpg",
+      "streets": ["R. Hermes Ribeiro de Freitas", "R. Humberto Benemeritti", "Estr. do Campo Limpo", "R. Aristides de Brito", "R. Benedito de Oliveira", "R. Alípio Benedito", "R. Antonio Alves Júnior"],
+      "mapsQuery": "Rua Aristides de Brito e Benedito de Oliveira, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "05",
+      "name": "Jardim Elizabeth D",
+      "file": "t05.jpg",
+      "streets": ["R. Januário da Cunha Barbosa", "R. Piaga", "R. Atucupe", "R. Taunã", "R. Cabaxi", "Viela 3", "Viela 4"],
+      "mapsQuery": "Rua Piaga e Rua Atucupe, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "06",
+      "name": "Vila Pirajussara",
+      "file": "t06.jpg",
+      "streets": ["R. Martim da Costa Vilela", "R. Hermes Ribeiro de Freitas", "R. Luis Gonzaga Freire", "R. João Correia", "Passarela 1", "Passagem 1", "Passagem 2"],
+      "mapsQuery": "Rua Martim da Costa Vilela e Rua Hermes Ribeiro de Freitas, Vila Pirajussara, São Paulo, SP"
+    },
+    {
+      "num": "07",
+      "name": "Jardim Iracema A",
+      "file": "t07.jpg",
+      "streets": ["R. Ramona B. Fernandes", "R. da Praia de Miramar", "Cel. José Hipólito Trigueirinho", "R. Henrique Moreira", "R. Gustavo Doré"],
+      "mapsQuery": "Rua Ramona B. Fernandes e R. Gustavo Doré, Jardim Iracema, São Paulo, SP"
+    },
+    {
+      "num": "08",
+      "name": "Jardim Iracema B",
+      "file": "t08.jpg",
+      "streets": ["Av. Augusto B. Tavares", "R. Ramona B. Fernandes", "R. Dr. Dib Gebara", "R. Gustave Doré", "R. Coronel José Hypolito"],
+      "mapsQuery": "Av. Augusto B. Tavares e R. Dr. Dib Gebara, Jardim Iracema, São Paulo, SP"
+    },
+    {
+      "num": "09",
+      "name": "Jardim Helga E",
+      "file": "t09.jpg",
+      "streets": ["R. Luis Gonzaga Freire", "Viela Quatro", "R. Nelson Lomanto", "R. Osvado de Arruda Reis"],
+      "mapsQuery": "Rua Luis Gonzaga Freire e R. Nelson Lomanto, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "10",
+      "name": "Jd Leônidas Moreira A",
+      "file": "t10.jpg",
+      "streets": ["Rua Atucupê", "R. Cabaxi", "Piaga", "Taunã", "Mitim"],
+      "mapsQuery": "Rua Atucupê e Rua Cabaxi, Jardim Elizabeth, São Paulo, SP"
+    },
+    {
+      "num": "11",
+      "name": "Jd Leônidas Moreira B",
+      "file": "t11.jpg",
+      "streets": ["Av. Carlos Lacerda", "Rua Cabaxi", "Rua Tabimã", "Rua Ajuruetê", "R. Amacás", "Apeaçú"],
+      "mapsQuery": "Rua Amacás e Av. Carlos Lacerda, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "12",
+      "name": "Jd Leônidas Moreira C",
+      "file": "t12.jpg",
+      "streets": ["Av. Carlos Lacerda", "Rua Ajuruetê", "Rua Tabimã", "Rua Crestins"],
+      "mapsQuery": "Rua Tabimã e Av. Carlos Lacerda, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "13",
+      "name": "CDHU A",
+      "file": "t13.jpg",
+      "streets": ["Conjunto Habitacional CDHU", "R. Martim da Costa Vilela (entrada)"],
+      "notes": "Blocos numerados 01 a 29.",
+      "mapsQuery": "CDHU Rua Martim da Costa Vilela, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "14",
+      "name": "CDHU B",
+      "file": "t14.jpg",
+      "streets": ["Conjunto Habitacional CDHU", "R. Martim da Costa Vilela (entrada)"],
+      "notes": "Blocos numerados 01 a 29.",
+      "mapsQuery": "CDHU Rua Martim da Costa Vilela, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "15",
+      "name": "CDHU C",
+      "file": "t15.jpg",
+      "streets": ["Conjunto Habitacional CDHU", "R. Martim da Costa Vilela (entrada)"],
+      "notes": "Blocos numerados 01 a 29.",
+      "mapsQuery": "CDHU Rua Martim da Costa Vilela, Campo Limpo, São Paulo, SP"
+    },
+    {
+      "num": "16",
+      "name": "Jardim Helga A",
+      "file": "t16.jpg",
+      "streets": ["R. Luis Gonzaga Freire", "R. Augusto de Moraes", "Passagem 1", "Passagem 2", "CDHU"],
+      "mapsQuery": "Rua Augusto de Moraes e Passagem 1, Jardim Helga, São Paulo, SP"
+    },
+    {
+      "num": "17",
+      "name": "Jardim Helga B",
+      "file": "t17.jpg",
+      "streets": ["R. Augusto de Moraes", "R. Thomaz de Araújo", "R. Luís Gonzaga Freire"],
+      "mapsQuery": "Rua Augusto de Moraes e Rua Thomaz de Araújo, Jardim Helga, São Paulo, SP"
+    },
+    {
+      "num": "18",
+      "name": "Jardim Helga C",
+      "file": "t18.jpg",
+      "streets": ["R. Guerreiro", "R. Luisa Damon", "R. Luis Maria Ridel", "R. Thomaz de Araújo"],
+      "mapsQuery": "Rua Guerreiro e Rua Thomaz de Araújo, Jardim Helga, São Paulo, SP"
+    },
+    {
+      "num": "19",
+      "name": "Jardim Helga D",
+      "file": "t19.jpg",
+      "streets": ["R. Mitim", "R. Ibi", "R. Guerreiro", "R. Luisa Damon"],
+      "mapsQuery": "Rua Mitim e Rua Guerreiro, Jardim Helga, São Paulo, SP"
+    }
+  ]
+}
