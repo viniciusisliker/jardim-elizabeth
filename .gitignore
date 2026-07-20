@@ -1,3 +1,5 @@
 node_modules/
 *.xlsx
 supabase/.temp/
+scripts/.geocode-cache.json
+scripts/__pycache__/

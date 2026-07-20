@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Jardim Elizabeth — Territorios T01–T19</name>
+    <description>Poligonos aproximados. Importe no Google Earth e ajuste com o cartao fisico.</description>
+    
+    <Placemark>
+      <name>T01 - Campo Limpo</name>
+      <description><![CDATA[Ruas: Av. Carlos Lacerda, Estr. Pirajussara, R. Américo Trabulsi, Trav. Carlino C., Trav. Nair R. Perez, R. Francisco H., R. dos Milagres, R. Louis Brea, R. Paul Gauguim]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.78467636980604,-23.644927986534434,0 -46.768155234577584,-23.633150515641976,0 -46.775880335959904,-23.633705559640003,0 -46.778568254112294,-23.635630844329842,0 -46.78467636980604,-23.644927986534434,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T02 - Jardim Elizabeth A</name>
+      <description><![CDATA[Ruas: R. Hermes Ribeiro de Freitas, R. José Cabral, R. Zamitti Mammana, R. Nelson Spilman, R. Januário da C. Barbosa, Viela 2]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.777847991777655,-23.638804728009934,0 -46.775489119204856,-23.640441827616787,0 -46.773421715714015,-23.639312618061805,0 -46.777847991777655,-23.638804728009934,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T03 - Jardim Elizabeth B</name>
+      <description><![CDATA[Ruas: R. Hermes Ribeiro de Freitas, R. Aristides de Britto, R. Humberto Benemeritti, R. Januário da Cunha Barbosa, R. José Cabral, Viela]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77786388276645,-23.638879726090003,0 -46.77510614151529,-23.64109368203946,0 -46.77342527729731,-23.63939558013546,0 -46.7765343388123,-23.637272769615446,0 -46.77786388276645,-23.638879726090003,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T04 - Jardim Elizabeth C</name>
+      <description><![CDATA[Ruas: R. Hermes Ribeiro de Freitas, R. Humberto Benemeritti, Estr. do Campo Limpo, R. Aristides de Brito, R. Benedito de Oliveira, R. Alípio Benedito, R. Antonio Alves Júnior]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.777724026284154,-23.636329568670558,0 -46.777136335547816,-23.637691999895495,0 -46.77390095807941,-23.639932889515965,0 -46.77202680899066,-23.632107895391034,0 -46.777724026284154,-23.636329568670558,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T05 - Jardim Elizabeth D</name>
+      <description><![CDATA[Ruas: R. Januário da Cunha Barbosa, R. Piaga, R. Atucupe, R. Taunã, R. Cabaxi, Viela 3, Viela 4]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77902268634472,-23.640766542677145,0 -46.775368983659405,-23.64210476985763,0 -46.77462616261995,-23.640414530040513,0 -46.7783447991778,-23.639370340596596,0 -46.77902268634472,-23.640766542677145,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T06 - Vila Pirajussara</name>
+      <description><![CDATA[Ruas: R. Martim da Costa Vilela, R. Hermes Ribeiro de Freitas, R. Luis Gonzaga Freire, R. João Correia, Passarela 1, Passagem 1, Passagem 2]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77479401047699,-23.639310185164113,0 -46.77173681867946,-23.641292872948622,0 -46.7737095758377,-23.637319103029913,0 -46.77479401047699,-23.639310185164113,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T07 - Jardim Iracema A</name>
+      <description><![CDATA[Ruas: R. Ramona B. Fernandes, R. da Praia de Miramar, Cel. José Hipólito Trigueirinho, R. Henrique Moreira, R. Gustavo Doré]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.783595,-23.639994,0 -46.781794999999995,-23.639994,0 -46.781794999999995,-23.638194,0 -46.783595,-23.638194,0 -46.783595,-23.639994,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T08 - Jardim Iracema B</name>
+      <description><![CDATA[Ruas: Av. Augusto B. Tavares, R. Ramona B. Fernandes, R. Dr. Dib Gebara, R. Gustave Doré, R. Coronel José Hypolito]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.7846044,-23.6405552,0 -46.782804399999996,-23.6405552,0 -46.782804399999996,-23.6387552,0 -46.7846044,-23.6387552,0 -46.7846044,-23.6405552,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T09 - Jardim Helga E</name>
+      <description><![CDATA[Ruas: R. Luis Gonzaga Freire, Viela Quatro, R. Nelson Lomanto, R. Osvado de Arruda Reis]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.7740577,-23.641693200000002,0 -46.7712585,-23.641693200000002,0 -46.7712585,-23.6397147,0 -46.7740577,-23.6397147,0 -46.7740577,-23.641693200000002,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T10 - Jd Leônidas Moreira A</name>
+      <description><![CDATA[Ruas: Rua Atucupê, R. Cabaxi, Piaga, Taunã, Mitim]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.7789959098835,-23.640559702022152,0 -46.77583643777227,-23.64276788880263,0 -46.77522650430117,-23.641915315502523,0 -46.77817390681189,-23.639240968991196,0 -46.7789959098835,-23.640559702022152,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T11 - Jd Leônidas Moreira B</name>
+      <description><![CDATA[Ruas: Av. Carlos Lacerda, Rua Cabaxi, Rua Tabimã, Rua Ajuruetê, R. Amacás, Apeaçú]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.78019420948065,-23.641222689194695,0 -46.777723727897886,-23.64319103297899,0 -46.77582825223729,-23.634737734073056,0 -46.78019420948065,-23.641222689194695,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T12 - Jd Leônidas Moreira C</name>
+      <description><![CDATA[Ruas: Av. Carlos Lacerda, Rua Ajuruetê, Rua Tabimã, Rua Crestins]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77795038959307,-23.643161338136032,0 -46.77761544851308,-23.644569489944452,0 -46.77595549308345,-23.634702711243065,0 -46.77795038959307,-23.643161338136032,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T13 - CDHU A</name>
+      <description><![CDATA[Ruas: Conjunto Habitacional CDHU, R. Martim da Costa Vilela (entrada)]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.774638100000004,-23.639739300000002,0 -46.7728381,-23.639739300000002,0 -46.7728381,-23.6379393,0 -46.774638100000004,-23.6379393,0 -46.774638100000004,-23.639739300000002,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T14 - CDHU B</name>
+      <description><![CDATA[Ruas: Conjunto Habitacional CDHU, R. Martim da Costa Vilela (entrada)]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77428810000001,-23.6399393,0 -46.772488100000004,-23.6399393,0 -46.772488100000004,-23.6381393,0 -46.77428810000001,-23.6381393,0 -46.77428810000001,-23.6399393,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T15 - CDHU C</name>
+      <description><![CDATA[Ruas: Conjunto Habitacional CDHU, R. Martim da Costa Vilela (entrada)]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.7739381,-23.640089300000003,0 -46.7721381,-23.640089300000003,0 -46.7721381,-23.6382893,0 -46.7739381,-23.6382893,0 -46.7739381,-23.640089300000003,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T16 - Jardim Helga A</name>
+      <description><![CDATA[Ruas: R. Luis Gonzaga Freire, R. Augusto de Moraes, Passagem 1, Passagem 2, CDHU]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.773212300000004,-23.6422834,0 -46.7712585,-23.6422834,0 -46.7712585,-23.6398932,0 -46.773212300000004,-23.6398932,0 -46.773212300000004,-23.6422834,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T17 - Jardim Helga B</name>
+      <description><![CDATA[Ruas: R. Augusto de Moraes, R. Thomaz de Araújo, R. Luís Gonzaga Freire]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77254076723291,-23.644150534159763,0 -46.772062388006404,-23.64016618321534,0 -46.77230888275928,-23.640750152916766,0 -46.77254076723291,-23.644150534159763,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T18 - Jardim Helga C</name>
+      <description><![CDATA[Ruas: R. Guerreiro, R. Luisa Damon, R. Luis Maria Ridel, R. Thomaz de Araújo]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.77486004096607,-23.645695478151325,0 -46.77397110262922,-23.64563270614889,0 -46.772007124708,-23.6430558983838,0 -46.77486004096607,-23.645695478151325,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <name>T19 - Jardim Helga D</name>
+      <description><![CDATA[Ruas: R. Mitim, R. Ibi, R. Guerreiro, R. Luisa Damon]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon>
+        <outerBoundaryIs><LinearRing><coordinates>-46.777138,-23.6461967,0 -46.773426799999996,-23.6461967,0 -46.773426799999996,-23.6413543,0 -46.777138,-23.6413543,0 -46.777138,-23.6461967,0</coordinates></LinearRing></outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>
