@@ -321,7 +321,10 @@
       .forEach((row) => cards.push(renderScheduleCard(row)));
 
     if (!cards.length) return;
-    content.innerHTML = cards.join('');
+    const label = cards.length > 1
+      ? '<p class="hub-terr-grid-label">Territórios da semana</p>'
+      : '';
+    content.innerHTML = label + cards.join('');
     section.classList.remove('hidden');
   }
 

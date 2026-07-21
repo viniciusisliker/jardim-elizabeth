@@ -569,6 +569,16 @@ html.dark .hub-super-action {
 html.dark .hub-super-action__label {
   color: var(--je-on-surface) !important;
 }
+html.dark .hub-sec-home {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-sec-home-card {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.06) 0%, var(--je-card) 100%) !important;
+}
+html.dark .hub-sec-home-card__title { color: var(--je-on-surface) !important; }
+html.dark .hub-sec-home-card__desc { color: var(--je-on-surface-variant) !important; }
+html.dark .hub-terr-grid-label { color: var(--je-on-surface-variant) !important; }
 html.dark .terr-stat-val,
 html.dark .terr-catalog-stat__val,
 html.dark .eq-pub-stat__val,

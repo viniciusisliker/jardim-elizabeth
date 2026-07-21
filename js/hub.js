@@ -102,7 +102,7 @@
     if (isSecretarioProfile(profile)) {
       if (fromHash?.id === 'perfil') return 'perfil';
       if (fromHash?.id === 'secretario') return 'secretario';
-      return 'secretario';
+      return 'home';
     }
     return fromHash?.id || 'home';
   }
@@ -110,7 +110,7 @@
   async function navigateToBoot(profile) {
     const sectionId = resolveBootSection(profile);
     const replaceHash = (isSuperintendenteProfile(profile) && sectionId === 'home')
-      || (isSecretarioProfile(profile) && sectionId === 'secretario');
+      || (isSecretarioProfile(profile) && sectionId === 'home');
     await navigateTo(sectionId, { replaceHash });
   }
 
@@ -237,11 +237,13 @@
 
   function applySecretarioHome(profile) {
     const isSec = isSecretarioProfile(profile);
+    const secHome = document.getElementById('hub-secretario-home');
     const modulesPanel = document.querySelector('.hub-modules-panel');
-    const intro = document.querySelector('.hub-home-intro p');
+    const intro = document.querySelector('.hub-home-intro');
+    secHome?.classList.toggle('hidden', !isSec);
     if (!isSec) return;
     modulesPanel?.classList.add('hidden');
-    if (intro) intro.textContent = 'Área do Secretário — Visita do Superintendente.';
+    intro?.classList.add('hidden');
   }
 
   function sectionByHash(hash) {
@@ -370,13 +372,16 @@
     const changelogBtn = document.getElementById('hub-changelog-btn');
     const isHome = !section || section.id === 'home';
     const isSuperHome = isHome && isSuperintendenteProfile(currentProfile);
+    const isSecHome = isHome && isSecretarioProfile(currentProfile);
 
-    if (kicker) kicker.textContent = isSuperHome ? 'Superintendente' : meta.kicker;
-    if (title) title.textContent = isSuperHome ? 'Visão Geral' : meta.title;
+    if (kicker) kicker.textContent = isSuperHome ? 'Superintendente' : (isSecHome ? 'Secretário' : meta.kicker);
+    if (title) title.textContent = isSuperHome ? 'Visão Geral' : (isSecHome ? 'Área do Secretário' : meta.title);
     if (subtitle) {
       subtitle.textContent = isSuperHome
         ? 'Panorama da congregação — leitura apenas, atualizado pelo Secretário.'
-        : meta.subtitle;
+        : (isSecHome
+          ? 'Visita do Superintendente e seus territórios de campo.'
+          : meta.subtitle);
     }
 
     crumbHub?.classList.toggle('text-accent-gold', isHome);
@@ -389,7 +394,9 @@
     changelogBtn?.classList.toggle('hidden', !meta.showChangelog);
 
     document.title = isHome
-      ? (isSuperHome ? 'Visão Geral – Hub | Jardim Elizabeth' : 'Hub Administrativo – Jardim Elizabeth')
+      ? (isSuperHome
+        ? 'Visão Geral – Hub | Jardim Elizabeth'
+        : (isSecHome ? 'Secretário – Hub | Jardim Elizabeth' : 'Hub Administrativo – Jardim Elizabeth'))
       : `${meta.title} – Hub | Jardim Elizabeth`;
   }
 
