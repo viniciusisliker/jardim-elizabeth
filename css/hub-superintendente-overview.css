@@ -34,6 +34,66 @@
 .hub-super-actions{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1.125rem
 }
+.hub-super-actions--solo{grid-template-columns:1fr}
+.hub-super-qa{margin-bottom:1.125rem}
+.hub-super-qa-grid{margin-bottom:0!important}
+.je-qa-grid{
+  display:grid;gap:.875rem
+}
+@media(min-width:768px){
+  .hub-super-qa-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+}
+.je-qa-card{
+  position:relative;display:flex;flex-direction:column;gap:.875rem;
+  padding:1.125rem 1rem 1rem;border-radius:1rem;background:#fff;
+  border:1px solid rgba(15,52,98,.1);box-shadow:0 4px 16px rgba(15,52,98,.06);
+  text-decoration:none;color:inherit;overflow:hidden;min-height:100%;
+  transition:transform .2s,box-shadow .2s,border-color .2s
+}
+.je-qa-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,#0f3462,#3b5e97)
+}
+.je-qa-card:hover{
+  transform:translateY(-2px);box-shadow:0 10px 28px rgba(15,52,98,.12);
+  border-color:rgba(59,94,151,.28)
+}
+.je-qa-card:hover .je-qa-card-icon{transform:scale(1.05)}
+.je-qa-card:hover .je-qa-card-cta{gap:.5rem}
+.je-qa-card--org::before{background:linear-gradient(90deg,#b45309,#fcd34d)}
+.je-qa-card--midweek::before{background:linear-gradient(90deg,#0f3462,#3b5e97)}
+.je-qa-card--weekend::before{background:linear-gradient(90deg,#0a2847,#c8a96e)}
+.je-qa-card--default::before{background:linear-gradient(90deg,#0f3462,#c8a96e)}
+.je-qa-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.625rem}
+.je-qa-card-icon{
+  display:flex;align-items:center;justify-content:center;
+  width:2.75rem;height:2.75rem;border-radius:.875rem;flex-shrink:0;transition:transform .2s
+}
+.je-qa-card--org .je-qa-card-icon{background:#fef3c7;color:#b45309}
+.je-qa-card--midweek .je-qa-card-icon{background:#eff6ff;color:#0f3462}
+.je-qa-card--weekend .je-qa-card-icon{background:linear-gradient(135deg,#eff6ff,#faf6ef);color:#0f3462}
+.je-qa-card--default .je-qa-card-icon{background:#f5f8fc;color:#3b5e97}
+.je-qa-card-icon .material-symbols-outlined{
+  font-size:1.5rem;font-variation-settings:'FILL' 1,'wght' 500
+}
+.je-qa-card-tag{
+  display:inline-block;padding:.1875rem .4375rem;border-radius:.375rem;
+  font-size:.5625rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase
+}
+.je-qa-card--org .je-qa-card-tag{background:#fef3c7;color:#b45309}
+.je-qa-card--midweek .je-qa-card-tag{background:#dbeafe;color:#0f3462}
+.je-qa-card--weekend .je-qa-card-tag{background:#faf6ef;color:#0f3462}
+.je-qa-card--default .je-qa-card-tag{background:#f5f8fc;color:#3b5e97}
+.je-qa-card-title{
+  margin:0 0 .3125rem;font-family:'Plus Jakarta Sans',Inter,sans-serif;
+  font-size:.9375rem;font-weight:800;color:#0f3462;letter-spacing:-.02em;line-height:1.25
+}
+.je-qa-card-desc{margin:0;font-size:.75rem;color:#43474f;line-height:1.45}
+.je-qa-card-cta{
+  display:inline-flex;align-items:center;gap:.3125rem;margin-top:auto;padding-top:.625rem;
+  border-top:1px solid rgba(15,52,98,.08);font-size:.75rem;font-weight:700;color:#3b5e97;transition:gap .2s
+}
+.je-qa-card-cta .material-symbols-outlined{font-size:1rem!important}
 .hub-super-action{
   display:flex;align-items:center;gap:.875rem;padding:1rem 1.125rem;min-height:4.75rem;
   border-radius:1rem;border:1px solid #e2e6ef;background:#fafbfc;color:#0f3462;text-decoration:none;
@@ -66,7 +126,7 @@
 .hub-super-layout{display:grid;gap:.875rem}
 @media(min-width:1024px){
   .hub-super-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer,.hub-super-actions{grid-column:1/-1}
+  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer,.hub-super-actions,.hub-super-qa{grid-column:1/-1}
 }
 
 .hub-super-panel{

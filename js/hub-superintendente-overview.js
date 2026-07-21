@@ -9,9 +9,50 @@
   ];
 
   const FEATURED_ACTIONS = [
-    { href: 'quadrodeanuncios.html', label: 'Quadro de Anúncios', icon: 'campaign', mod: 'anuncios' },
     { href: 'territorios.html', label: 'Territórios', icon: 'map', mod: 'territorios' }
   ];
+
+  function announcementCardModifier(slug) {
+    if (slug === 'designacoes-mecanicas') return 'org';
+    if (slug === 'meio-de-semana') return 'midweek';
+    if (slug === 'final-de-semana') return 'weekend';
+    return 'default';
+  }
+
+  function renderAnnouncementCard(section) {
+    const mod = announcementCardModifier(section.slug);
+    const href = section.document_url || 'quadrodeanuncios.html';
+    return `
+      <a href="${esc(href)}" target="_blank" rel="noopener" class="je-qa-card je-qa-card--${mod}">
+        <div class="je-qa-card-top">
+          <div class="je-qa-card-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">${esc(section.icon || 'description')}</span>
+          </div>
+          <span class="je-qa-card-tag">${esc(section.category_tag || 'Quadro')}</span>
+        </div>
+        <div>
+          <h3 class="je-qa-card-title">${esc(section.title)}</h3>
+          ${section.description ? `<p class="je-qa-card-desc">${esc(section.description)}</p>` : ''}
+        </div>
+        <span class="je-qa-card-cta">
+          Abrir PDF
+          <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        </span>
+      </a>`;
+  }
+
+  function renderAnnouncementCards(sections) {
+    if (!sections?.length) {
+      return `
+        <div class="hub-super-qa">
+          <p class="hub-super-empty hub-super-empty--compact">Nenhum quadro publicado no momento.</p>
+        </div>`;
+    }
+    return `
+      <div class="hub-super-qa">
+        <div class="je-qa-grid hub-super-qa-grid">${sections.map(renderAnnouncementCard).join('')}</div>
+      </div>`;
+  }
 
   let loadPromise = null;
 
@@ -82,17 +123,11 @@
   }
 
   function renderFeaturedActions(stats) {
-    const annLabel = stats.announcement_published
-      ? (stats.announcement_label || 'Publicado')
-      : 'Sem quadro publicado';
     const terrLabel = `${stats.territories_designados ?? 0}/${stats.territories_total ?? 0} designados`;
-    const meta = {
-      anuncios: annLabel,
-      territorios: terrLabel
-    };
+    const meta = { territorios: terrLabel };
 
     return `
-      <div class="hub-super-actions">
+      <div class="hub-super-actions hub-super-actions--solo">
         ${FEATURED_ACTIONS.map((action) => `
           <a class="hub-super-action hub-super-action--${action.mod}" href="${esc(action.href)}" target="_blank" rel="noopener">
             <span class="hub-super-action__icon material-symbols-outlined" aria-hidden="true">${esc(action.icon)}</span>
@@ -165,6 +200,7 @@
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
+        ${renderAnnouncementCards(data.announcement_sections)}
         ${renderFeaturedActions(stats)}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
@@ -176,10 +212,23 @@
       </div>`;
   }
 
-  async function loadOverview(client) {
-    const { data, error } = await client.rpc('je_superintendente_overview');
+  async function loadAnnouncementSections(client) {
+    const { data, error } = await client
+      .from('announcement_sections')
+      .select('slug, title, description, document_url, icon, category_tag, sort_order')
+      .eq('published', true)
+      .order('sort_order');
     if (error) throw error;
-    return data;
+    return data || [];
+  }
+
+  async function loadOverview(client) {
+    const [{ data, error }, sections] = await Promise.all([
+      client.rpc('je_superintendente_overview'),
+      loadAnnouncementSections(client)
+    ]);
+    if (error) throw error;
+    return { ...(data || {}), announcement_sections: sections };
   }
 
   async function init(profile) {
