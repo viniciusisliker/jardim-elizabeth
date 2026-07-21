@@ -14,7 +14,9 @@
     superintendente_servico: 'Superintendente de Serviço'
   };
 
-  const SUB_ROLES = Object.entries(SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+  /** Sub-cargos de ancião — servos ministeriais terão catálogo próprio no futuro. */
+  const ANCIO_SUB_ROLES = Object.entries(SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+  const SUB_ROLES = ANCIO_SUB_ROLES;
 
   const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   const SESSION_TIMEOUT_MS = 4000;
@@ -511,6 +513,7 @@
     getRoleLabelClasses,
     applyRoleLabelEl,
     SUB_ROLE_LABELS,
+    ANCIO_SUB_ROLES,
     SUB_ROLES,
     hasDeveloperDesignation,
     renderAvatarHtml,

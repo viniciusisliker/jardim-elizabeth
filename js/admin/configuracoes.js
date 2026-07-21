@@ -10,7 +10,7 @@
     { value: 'publicador', label: 'Publicador' }
   ];
 
-  const SUB_ROLES = window.JEAuth?.SUB_ROLES || [
+  const SUB_ROLES = window.JEAuth?.ANCIO_SUB_ROLES || window.JEAuth?.SUB_ROLES || [
     { value: 'secretario', label: 'Secretário' },
     { value: 'coordenador', label: 'Coordenador' },
     { value: 'superintendente_servico', label: 'Superintendente de Serviço' }
@@ -19,8 +19,6 @@
   const SUB_ROLE_LABELS = window.JEAuth?.SUB_ROLE_LABELS || Object.fromEntries(
     SUB_ROLES.map((r) => [r.value, r.label])
   );
-
-  const ELDER_ROLES = new Set(['anciao', 'servo_ministerial']);
 
   const ADMIN_ROLES = new Set(window.JE_CONFIG?.adminRoles || ['superuser', 'anciao', 'servo_ministerial']);
   const AVATAR_BUCKET = 'profile-avatars';
@@ -806,12 +804,14 @@
             ).join('')}</select>`
           : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, display_role: m.display_role, sub_role: m.sub_role, designation: m.designation, designations: [] }))}</span>`;
 
-        const canHaveSubRole = ELDER_ROLES.has(m.role);
+        const canHaveSubRole = m.role === 'anciao';
         const subRoleSelect = isSuper
-          ? `<select data-member-sub-role="${m.id}" class="cfg-field"${canHaveSubRole ? '' : ' disabled'}><option value="">—</option>${SUB_ROLES.map((r) =>
-              `<option value="${r.value}" ${m.sub_role === r.value ? 'selected' : ''}>${r.label}</option>`
-            ).join('')}</select>`
-          : `<span class="text-[11px] text-on-surface-variant">${escapeHtml(memberSubRoleLabel(m))}</span>`;
+          ? (canHaveSubRole
+            ? `<select data-member-sub-role="${m.id}" class="cfg-field"><option value="">—</option>${SUB_ROLES.map((r) =>
+                `<option value="${r.value}" ${m.sub_role === r.value ? 'selected' : ''}>${r.label}</option>`
+              ).join('')}</select>`
+            : `<span class="text-[11px] text-on-surface-variant italic">A definir</span>`)
+          : `<span class="text-[11px] text-on-surface-variant">${canHaveSubRole ? escapeHtml(memberSubRoleLabel(m)) : 'A definir'}</span>`;
 
         const designationInput = isSuper
           ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="cfg-field"/>`
@@ -939,7 +939,7 @@
         sel.addEventListener('change', async () => {
           const nextRole = sel.value;
           const payload = { role: nextRole };
-          if (!ELDER_ROLES.has(nextRole)) payload.sub_role = null;
+          if (nextRole !== 'anciao') payload.sub_role = null;
           const { error } = await client.from('profiles').update(payload).eq('id', sel.dataset.role);
           if (error) showToast(toast, error.message, true);
           else {
