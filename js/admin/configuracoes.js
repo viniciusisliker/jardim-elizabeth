@@ -185,8 +185,8 @@
         showToast(toast, 'Usuário inválido (3–32 caracteres: letras, números, ponto, hífen ou underline).', true);
         return;
       }
-      if (!isValidEmail(email)) {
-        showToast(toast, 'Informe um e-mail válido.', true);
+      if (email && !isValidEmail(email)) {
+        showToast(toast, 'Informe um e-mail válido ou deixe em branco.', true);
         return;
       }
       if (password.length < 8) {
@@ -202,7 +202,7 @@
       const { data: profileId, error } = await client.rpc('admin_create_team_member', {
         p_full_name: fullName,
         p_username: username,
-        p_email: email,
+        p_email: email || null,
         p_password: password,
         p_role: role
       });

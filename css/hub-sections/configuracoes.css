@@ -146,6 +146,7 @@
     .cfg-new-member-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.375rem .5rem}
     .cfg-new-member-field{display:flex;flex-direction:column;gap:.125rem;min-width:0}
     .cfg-new-member-label{font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .cfg-new-member-optional{font-weight:600;text-transform:none;letter-spacing:0;color:#9ca3af}
     .cfg-new-member-form__actions{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.375rem;padding-top:.125rem}
     .cfg-search-wrap--modal{max-width:none;flex:1 1 100%}
     .cfg-card--in-modal{border:none;border-radius:0;flex:1;min-height:0;display:flex;flex-direction:column}
