@@ -71,7 +71,8 @@
 }
 .hub-super-panel__title .material-symbols-outlined{font-size:1rem;color:#3b5e97}
 .hub-super-panel__meta{font-size:.5625rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-.hub-super-panel__body{padding:.5rem .875rem .625rem;flex:1;min-height:0;max-height:17.5rem;overflow-y:auto}
+.hub-super-panel__body{padding:.4375rem .75rem .5625rem;flex:1;min-height:0;max-height:15rem;overflow-y:auto}
+.hub-super-panel--equip .hub-super-panel__body{max-height:13.5rem}
 
 .hub-super-empty{margin:0;padding:1.25rem .5rem;text-align:center;font-size:.6875rem;color:#9ca3af}
 .hub-super-empty--compact{padding:.75rem .5rem}
@@ -117,6 +118,32 @@
 .hub-super-table tr:last-child td{border-bottom:none}
 .hub-super-table td:first-child{font-weight:700;color:#0f3462;white-space:nowrap}
 .hub-super-table td strong{display:block;font-weight:700;color:#0f3462}
+
+.hub-super-equip{display:flex;flex-direction:column;gap:.1875rem}
+.hub-super-equip-day{
+  display:grid;grid-template-columns:2.75rem minmax(0,1fr);gap:.25rem .4375rem;
+  align-items:start;padding:.3125rem 0;border-bottom:1px solid #f1f3f6
+}
+.hub-super-equip-day:last-child{border-bottom:none;padding-bottom:0}
+.hub-super-equip-day__label{
+  font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  color:#3b5e97;line-height:1.25;padding-top:.125rem
+}
+.hub-super-equip-slots{display:flex;flex-direction:column;gap:.1875rem;min-width:0}
+.hub-super-equip-slot{
+  display:grid;grid-template-columns:3.125rem minmax(4.5rem,.95fr) minmax(0,1.05fr);
+  gap:.1875rem .3125rem;align-items:baseline;font-size:.625rem;line-height:1.3;min-width:0
+}
+.hub-super-equip-period{
+  display:inline-flex;align-items:center;justify-content:center;min-height:1.375rem;
+  padding:.0625rem .3125rem;border-radius:9999px;background:#eef3fa;color:#0f3462;
+  font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1.15
+}
+.hub-super-equip-period--manha{background:#fef3c7;color:#92400e}
+.hub-super-equip-place{min-width:0;word-break:break-word;line-height:1.25}
+.hub-super-equip-place strong{font-weight:700;color:#0f3462;font-size:.625rem}
+.hub-super-equip-loc{display:inline;font-size:.5625rem;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-left:.1875rem}
+.hub-super-equip-pubs{color:#4b5563;min-width:0;word-break:break-word;font-size:.59375rem;line-height:1.25}
 
 .hub-super-doc{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.625rem;align-items:center;

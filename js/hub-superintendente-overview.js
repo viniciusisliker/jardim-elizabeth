@@ -149,30 +149,45 @@
       </article>`).join('')}</div>`;
   }
 
+  function periodBadgeClass(label) {
+    return /manh/i.test(String(label || '')) ? 'hub-super-equip-period--manha' : '';
+  }
+
+  function groupEquipmentByDay(items) {
+    const order = [];
+    const map = new Map();
+    items.forEach((row) => {
+      const day = row.weekday_label || '—';
+      if (!map.has(day)) {
+        map.set(day, []);
+        order.push(day);
+      }
+      map.get(day).push(row);
+    });
+    return order.map((day) => ({ day, slots: map.get(day) }));
+  }
+
   function renderEquipment(items) {
     if (!items?.length) return '<p class="hub-super-empty">Nenhum horário cadastrado.</p>';
-    return `
-      <div class="hub-super-table-wrap">
-        <table class="hub-super-table">
-          <thead>
-            <tr>
-              <th scope="col">Dia</th>
-              <th scope="col">Período</th>
-              <th scope="col">Equipamento</th>
-              <th scope="col">Publicadores</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map((row) => `
-              <tr>
-                <td>${esc(row.weekday_label)}</td>
-                <td>${esc(row.period_label || '—')}</td>
-                <td><strong>${esc(row.equipment_name || row.equipment_type || 'Equipamento')}</strong>${row.location_name ? `<br><span style="color:#6b7280;font-size:.625rem">${esc(row.location_name)}</span>` : ''}</td>
-                <td>${esc(row.publisher_names || '—')}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
+    const groups = groupEquipmentByDay(items);
+    return `<div class="hub-super-equip">${groups.map(({ day, slots }) => `
+      <div class="hub-super-equip-day">
+        <span class="hub-super-equip-day__label">${esc(day)}</span>
+        <div class="hub-super-equip-slots">
+          ${slots.map((row) => {
+            const name = esc(row.equipment_name || row.equipment_type || '—');
+            const loc = row.location_name
+              ? `<span class="hub-super-equip-loc">${esc(row.location_name)}</span>`
+              : '';
+            return `
+            <article class="hub-super-equip-slot">
+              <span class="hub-super-equip-period ${periodBadgeClass(row.period_label)}">${esc(row.period_label || '—')}</span>
+              <span class="hub-super-equip-place"><strong>${name}</strong>${loc}</span>
+              <span class="hub-super-equip-pubs">${esc(row.publisher_names || '—')}</span>
+            </article>`;
+          }).join('')}
+        </div>
+      </div>`).join('')}</div>`;
   }
 
   function renderQuickLinks(stats) {
@@ -248,7 +263,7 @@
           ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda))}
           ${panel('Discursos', 'record_voice_over', speechMeta, renderSpeeches(data.speeches_upcoming))}
           ${panel('Designações ativas', 'assignment_ind', `${stats.territories_designados ?? 0} território(s)`, renderAssignments(data.territory_assignments))}
-          ${panel('Carrinhos e displays', 'shopping_cart', equipMeta, renderEquipment(data.equipment_this_week))}
+          ${panel('Carrinhos e displays', 'shopping_cart', equipMeta, renderEquipment(data.equipment_this_week), 'hub-super-panel--equip')}
           ${panel('Cronograma de territórios', 'map', 'Semana tipo', renderTerritorySchedule(data.territory_schedule), 'hub-super-panel--wide')}
           <footer class="hub-super-footer">
             ${renderQuickLinks(stats)}
