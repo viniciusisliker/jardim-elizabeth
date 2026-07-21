@@ -122,10 +122,7 @@
     }).join('')}</div>`;
   }
 
-  function renderFeaturedActions(stats) {
-    const terrLabel = `${stats.territories_designados ?? 0}/${stats.territories_total ?? 0} designados`;
-    const meta = { territorios: terrLabel };
-
+  function renderFeaturedActions() {
     return `
       <div class="hub-super-actions hub-super-actions--solo">
         ${FEATURED_ACTIONS.map((action) => `
@@ -133,7 +130,6 @@
             <span class="hub-super-action__icon material-symbols-outlined" aria-hidden="true">${esc(action.icon)}</span>
             <span class="hub-super-action__body">
               <strong class="hub-super-action__label">${esc(action.label)}</strong>
-              <span class="hub-super-action__meta">${esc(meta[action.mod])}</span>
             </span>
             <span class="material-symbols-outlined hub-super-action__chev" aria-hidden="true">chevron_right</span>
           </a>`).join('')}
@@ -201,12 +197,11 @@
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
         ${renderAnnouncementCards(data.announcement_sections)}
-        ${renderFeaturedActions(stats)}
+        ${renderFeaturedActions()}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
           <footer class="hub-super-footer hub-super-panel--wide">
             ${renderQuickLinks()}
-            <p class="hub-super-footer-note">Dados de ${fmtDate(String(data.generated_at || '').slice(0, 10))} · recarregue para atualizar${stats.notifications_unread ? ` · ${stats.notifications_unread} notificação(ões)` : ''}</p>
           </footer>
         </div>
       </div>`;
