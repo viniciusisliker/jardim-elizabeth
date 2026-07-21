@@ -86,6 +86,48 @@
     listEl.innerHTML = chips.join('');
   }
 
+  function isSuperintendenteProfile(profile) {
+    return window.JEAuth?.isSuperintendente?.(profile) ?? profile?.role === 'superintendente';
+  }
+
+  function resolveBootSection(profile) {
+    const fromHash = sectionByHash(location.hash);
+    if (isSuperintendenteProfile(profile)) {
+      return fromHash?.id === 'perfil' ? 'perfil' : 'home';
+    }
+    return fromHash?.id || 'home';
+  }
+
+  async function navigateToBoot(profile) {
+    const sectionId = resolveBootSection(profile);
+    const replaceHash = isSuperintendenteProfile(profile)
+      ? sectionId === 'home'
+      : false;
+    await navigateTo(sectionId, { replaceHash });
+  }
+
+  function applySuperintendenteHome(profile) {
+    const isSuper = isSuperintendenteProfile(profile);
+    const overview = document.getElementById('hub-super-overview');
+    const modulesPanel = document.querySelector('.hub-modules-panel');
+    const intro = document.querySelector('.hub-home-intro p');
+
+    overview?.classList.toggle('hidden', !isSuper);
+    modulesPanel?.classList.toggle('hidden', isSuper);
+
+    if (intro) {
+      intro.textContent = isSuper
+        ? 'Panorama da congregação — leitura apenas.'
+        : 'Selecione um módulo abaixo.';
+    }
+
+    if (isSuper) {
+      Promise.resolve(window.JEHubSuperOverview?.init?.(profile)).catch((err) => {
+        console.warn('Super overview:', err);
+      });
+    }
+  }
+
   function initHubHomeTools() {
     renderRecentModules();
 
@@ -186,6 +228,8 @@
       const visibleCards = group.querySelectorAll('.hub-module-card:not(.hidden)');
       group.classList.toggle('hidden', visibleCards.length === 0);
     });
+
+    applySuperintendenteHome(profile);
   }
 
   function sectionByHash(hash) {
@@ -313,10 +357,15 @@
     const backBtn = document.getElementById('hub-hero-back');
     const changelogBtn = document.getElementById('hub-changelog-btn');
     const isHome = !section || section.id === 'home';
+    const isSuperHome = isHome && isSuperintendenteProfile(currentProfile);
 
-    if (kicker) kicker.textContent = meta.kicker;
-    if (title) title.textContent = meta.title;
-    if (subtitle) subtitle.textContent = meta.subtitle;
+    if (kicker) kicker.textContent = isSuperHome ? 'Superintendente' : meta.kicker;
+    if (title) title.textContent = isSuperHome ? 'Visão Geral' : meta.title;
+    if (subtitle) {
+      subtitle.textContent = isSuperHome
+        ? 'Panorama da congregação — territórios, agenda, discursos e campo.'
+        : meta.subtitle;
+    }
 
     crumbHub?.classList.toggle('text-accent-gold', isHome);
     crumbHub?.classList.toggle('text-white/60', !isHome);
@@ -328,7 +377,7 @@
     changelogBtn?.classList.toggle('hidden', !meta.showChangelog);
 
     document.title = isHome
-      ? 'Hub Administrativo – Jardim Elizabeth'
+      ? (isSuperHome ? 'Visão Geral – Hub | Jardim Elizabeth' : 'Hub Administrativo – Jardim Elizabeth')
       : `${meta.title} – Hub | Jardim Elizabeth`;
   }
 
@@ -425,6 +474,9 @@
     if (targetId !== 'home') recordRecentSection(targetId);
     if (targetId === 'home') {
       initHubHomeTools();
+      if (isSuperintendenteProfile(currentProfile)) {
+        window.JEHubSuperOverview?.refresh?.();
+      }
       ensureHomeExtras().catch((err) => console.warn('Hub home extras:', err));
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -466,6 +518,10 @@
     document.getElementById('hub-hero-back')?.addEventListener('click', () => navigateTo('home'));
 
     window.addEventListener('hashchange', () => {
+      if (isSuperintendenteProfile(currentProfile)) {
+        navigateTo(resolveBootSection(currentProfile), { replaceHash: true });
+        return;
+      }
       const section = sectionByHash(location.hash);
       navigateTo(section?.id || 'home', { replaceHash: false });
     });
@@ -486,8 +542,7 @@
     safeHubInit(() => window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id));
     safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile));
 
-    const fromHash = sectionByHash(location.hash);
-    await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+    await navigateToBoot(currentProfile);
     prefetchAllowedSections(currentProfile);
   }
 
@@ -521,8 +576,7 @@
         initHubHomeTools();
         safeHubInit(() => window.JEHubChangelog?.init());
 
-        const fromHash = sectionByHash(location.hash);
-        await navigateTo(fromHash?.id || 'home', { replaceHash: false });
+        await navigateToBoot(cached);
 
         guardHubAccess({ redirect: false })
           .then(async (access) => {

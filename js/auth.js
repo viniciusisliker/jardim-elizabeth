@@ -254,10 +254,24 @@
     return hasPermission(profile, 'announcements');
   }
 
+  function isSuperintendente(roleOrProfile) {
+    const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
+    return role === 'superintendente';
+  }
+
+  /** URL de entrada no Hub após login (Superintendente → home / visão geral). */
+  function getHubEntryUrl(profile) {
+    return 'hub.html';
+  }
+
+  function getHubEntryLabel(profile) {
+    return isSuperintendente(profile) ? 'Visão Geral' : 'Hub Administrativo';
+  }
+
   function canAccessHub(profile) {
     if (!profile) return false;
     if (isSuperUser(profile.role)) return true;
-    if (profile.role === 'superintendente') return true;
+    if (isSuperintendente(profile)) return true;
 
     if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
 
@@ -468,6 +482,9 @@
     renderAvatarHtml,
     isAdminRole,
     isSuperUser,
+    isSuperintendente,
+    getHubEntryUrl,
+    getHubEntryLabel,
     hasPermission,
     canManageAnnouncements,
     canAccessHub

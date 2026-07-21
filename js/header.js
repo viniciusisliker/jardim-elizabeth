@@ -173,10 +173,10 @@
     if (canHub) {
       slot.appendChild(buildMobilePromoLink({
         id: 'mobile-hub-link',
-        href: 'hub.html',
+        href: window.JEAuth?.getHubEntryUrl?.(profile) || 'hub.html',
         icon: 'dashboard',
-        tag: 'Administrativo',
-        label: 'Hub Administrativo'
+        tag: window.JEAuth?.isSuperintendente?.(profile) ? 'Superintendente' : 'Administrativo',
+        label: window.JEAuth?.getHubEntryLabel?.(profile) || 'Hub Administrativo'
       }));
     }
   }
@@ -237,9 +237,9 @@
         Meu Perfil
       </a>
       ${canHub ? `
-        <a href="${siteUrl('hub.html')}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
+        <a href="${siteUrl(window.JEAuth.getHubEntryUrl(profile))}" class="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-surface-container-low text-primary font-medium">
           <span class="material-symbols-outlined" style="font-size:20px">dashboard</span>
-          Hub Administrativo
+          ${window.JEAuth.getHubEntryLabel(profile)}
         </a>
       ` : `
         <p class="text-xs text-on-surface-variant px-2 py-2">Seu perfil não possui acesso administrativo.</p>
@@ -298,7 +298,7 @@
       }
       const cached = window.JEAuth?.getCachedProfile?.();
       if (cached && window.JEAuth.canAccessHub(cached)) {
-        window.location.href = siteUrl('hub.html');
+        window.location.href = siteUrl(window.JEAuth.getHubEntryUrl(cached));
         return;
       }
       const profile = await window.JEAuth?.getCurrentProfile?.();
@@ -308,7 +308,7 @@
         showLoginModal();
         return;
       }
-      window.location.href = siteUrl('hub.html');
+      window.location.href = siteUrl(window.JEAuth.getHubEntryUrl(profile));
     });
 
     qs('profile-btn')?.addEventListener('click', (e) => {
@@ -396,7 +396,7 @@
         hideLoginModal();
 
         if (window.JEAuth.canAccessHub(resolvedProfile)) {
-          window.location.href = siteUrl('hub.html');
+          window.location.replace(siteUrl(window.JEAuth.getHubEntryUrl(resolvedProfile)));
           return;
         }
 
