@@ -105,16 +105,6 @@
 }
 .hub-super-agenda-date em{font-style:normal;font-size:.75rem;line-height:1.1}
 
-.hub-super-badges{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.25rem}
-.hub-super-badge{
-  display:inline-flex;align-items:center;padding:.125rem .4375rem;border-radius:9999px;
-  font-size:.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap
-}
-.hub-super-badge--receive{background:#dbeafe;color:#1d4ed8}
-.hub-super-badge--send{background:#fef3c7;color:#b45309}
-.hub-super-badge--pending{background:#fee2e2;color:#b91c1c}
-.hub-super-badge--ok{background:#d1fae5;color:#047857}
-
 .hub-super-doc{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.625rem;align-items:center;
   padding:.5625rem 0;border-bottom:1px solid #f1f3f6

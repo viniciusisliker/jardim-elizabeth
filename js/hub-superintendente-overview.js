@@ -22,28 +22,9 @@
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   }
 
-  function fmtTime(value) {
-    if (!value) return '';
-    return String(value).slice(0, 5);
-  }
-
-  function speechDirectionLabel(direction) {
-    return direction === 'send' ? 'Enviamos' : 'Recebemos';
-  }
-
-  function speechDirectionClass(direction) {
-    return direction === 'send' ? 'hub-super-badge--send' : 'hub-super-badge--receive';
-  }
-
-  function statusBadge(status) {
-    if (status === 'pendente') return '<span class="hub-super-badge hub-super-badge--pending">Pendente</span>';
-    if (status === 'confirmado') return '<span class="hub-super-badge hub-super-badge--ok">Confirmado</span>';
-    return '';
-  }
-
-  function panel(title, icon, meta, body) {
+  function panel(title, icon, meta, body, extraClass = '') {
     return `
-      <section class="hub-super-panel">
+      <section class="hub-super-panel ${extraClass}">
         <header class="hub-super-panel__head">
           <h2 class="hub-super-panel__title">
             <span class="material-symbols-outlined" aria-hidden="true">${esc(icon)}</span>${esc(title)}
@@ -65,25 +46,6 @@
         <div>
           <p class="hub-super-item__main">${esc(ev.title)}</p>
           <p class="hub-super-item__sub">${esc(ev.category || 'Evento')}${ev.event_time ? ` · ${esc(ev.event_time)}` : ''}${ev.location ? ` · ${esc(ev.location)}` : ''}</p>
-        </div>
-      </article>`).join('')}</div>`;
-  }
-
-  function renderSpeeches(items) {
-    if (!items?.length) return '<p class="hub-super-empty">Nenhum discurso nos próximos 30 dias.</p>';
-    return `<div class="hub-super-list">${items.map((row) => `
-      <article class="hub-super-item">
-        <div>
-          <p class="hub-super-item__main">${esc(row.speaker_name || 'Orador')}</p>
-          <p class="hub-super-item__sub">${esc(row.theme_title || 'Tema')} · ${esc(row.congregation_name || '—')}</p>
-          <div class="hub-super-badges">
-            <span class="hub-super-badge ${speechDirectionClass(row.direction)}">${speechDirectionLabel(row.direction)}</span>
-            ${statusBadge(row.confirmation_status)}
-          </div>
-        </div>
-        <div class="hub-super-item__aside">
-          <span class="hub-super-item__sub">${fmtDate(row.event_date)}</span>
-          ${fmtTime(row.event_time) ? `<span class="hub-super-item__sub">${fmtTime(row.event_time)}</span>` : ''}
         </div>
       </article>`).join('')}</div>`;
   }
@@ -168,15 +130,13 @@
   function renderOverview(data) {
     const stats = data.stats || {};
     const visit = data.superintendent_visit;
-    const speechMeta = `${stats.speeches_receive_30d ?? 0} rec. · ${stats.speeches_send_30d ?? 0} env.`;
 
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
         ${renderFeaturedActions(stats)}
         <div class="hub-super-layout">
-          ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda))}
-          ${panel('Discursos', 'record_voice_over', speechMeta, renderSpeeches(data.speeches_upcoming))}
+          ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda), 'hub-super-panel--wide')}
           <footer class="hub-super-footer hub-super-panel--wide">
             ${renderQuickLinks()}
             <p class="hub-super-footer-note">Dados de ${fmtDate(String(data.generated_at || '').slice(0, 10))} · recarregue para atualizar${stats.notifications_unread ? ` · ${stats.notifications_unread} notificação(ões)` : ''}</p>
