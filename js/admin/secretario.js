@@ -105,12 +105,80 @@
     currentVisitId = visitId || null;
     const visit = visits.find((v) => v.id === currentVisitId) || null;
     fillForm(visit);
+    setMainFormEnabled(!!visit);
     renderVisitSelect();
     await loadDocuments(client, currentVisitId);
     renderDocuments();
   }
 
+  function setMainFormEnabled(enabled) {
+    document.getElementById('sec-visit-form')?.querySelectorAll('input, textarea, button').forEach((el) => {
+      if (el.id === 'sec-visit-delete') return;
+      el.disabled = !enabled;
+    });
+    document.getElementById('sec-visit-visible')?.toggleAttribute('disabled', !enabled);
+    document.getElementById('sec-visit-upload')?.toggleAttribute('disabled', !enabled);
+    document.querySelector('.sec-upload-btn')?.classList.toggle('sec-btn--disabled', !enabled);
+  }
+
+  function openNewVisitModal() {
+    const modal = document.getElementById('sec-new-visit-modal');
+    if (!modal) return;
+    document.getElementById('sec-new-visit-title').value = 'Visita do Superintendente';
+    document.getElementById('sec-new-visit-date').value = '';
+    document.getElementById('sec-new-visit-notes').value = '';
+    document.getElementById('sec-new-visit-visible').checked = true;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sec-modal-open');
+    document.getElementById('sec-new-visit-title')?.focus();
+  }
+
+  function closeNewVisitModal() {
+    const modal = document.getElementById('sec-new-visit-modal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('sec-modal-open');
+  }
+
+  async function createVisitFromModal(client, toast) {
+    const title = document.getElementById('sec-new-visit-title')?.value?.trim();
+    const visitDate = document.getElementById('sec-new-visit-date')?.value || null;
+    const notes = document.getElementById('sec-new-visit-notes')?.value?.trim() || '';
+    const isVisible = document.getElementById('sec-new-visit-visible')?.checked !== false;
+
+    if (!title) {
+      showToast(toast, 'Informe um título para a visita.', true);
+      return;
+    }
+
+    const payload = {
+      title,
+      visit_date: visitDate || null,
+      notes,
+      is_visible: isVisible,
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await client.from('superintendent_visits').insert(payload).select('id').single();
+    if (error) {
+      showToast(toast, error.message, true);
+      return;
+    }
+
+    showToast(toast, 'Visita criada.');
+    closeNewVisitModal();
+    await loadVisits(client);
+    await selectVisit(client, data?.id || null);
+  }
+
   async function saveVisit(client, toast) {
+    if (!currentVisitId) {
+      openNewVisitModal();
+      return;
+    }
+
     const title = document.getElementById('sec-visit-title')?.value?.trim();
     const visitDate = document.getElementById('sec-visit-date')?.value || null;
     const notes = document.getElementById('sec-visit-notes')?.value?.trim() || '';
@@ -136,14 +204,6 @@
         return;
       }
       showToast(toast, 'Visita atualizada.');
-    } else {
-      const { data, error } = await client.from('superintendent_visits').insert(payload).select('id').single();
-      if (error) {
-        showToast(toast, error.message, true);
-        return;
-      }
-      currentVisitId = data?.id || null;
-      showToast(toast, 'Visita criada.');
     }
 
     await loadVisits(client);
@@ -180,7 +240,7 @@
     if (visits.length) await selectVisit(client, visits[0].id);
     else {
       fillForm(null);
-      documents = [];
+      setMainFormEnabled(false);
       renderVisitSelect();
       renderDocuments();
     }
@@ -283,11 +343,21 @@
         await saveVisit(client, toast);
       });
 
-      document.getElementById('sec-visit-new')?.addEventListener('click', () => {
-        currentVisitId = null;
-        fillForm({ title: 'Visita do Superintendente', notes: '', is_visible: true });
-        renderVisitSelect();
-        renderDocuments();
+      document.getElementById('sec-visit-new')?.addEventListener('click', openNewVisitModal);
+
+      document.getElementById('sec-new-visit-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await createVisitFromModal(client, toast);
+      });
+
+      document.querySelectorAll('[data-sec-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeNewVisitModal);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const modal = document.getElementById('sec-new-visit-modal');
+        if (modal && !modal.classList.contains('hidden')) closeNewVisitModal();
       });
 
       document.getElementById('sec-visit-select')?.addEventListener('change', async (e) => {
@@ -314,7 +384,8 @@
       await loadVisits(client);
       if (visits.length) await selectVisit(client, visits[0].id);
       else {
-        fillForm({ title: 'Visita do Superintendente', notes: '', is_visible: true });
+        fillForm(null);
+        setMainFormEnabled(false);
         renderVisitSelect();
         renderDocuments();
       }

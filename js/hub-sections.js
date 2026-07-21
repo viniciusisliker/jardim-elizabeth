@@ -182,8 +182,8 @@
       permission: 'secretario',
       viewId: 'hub-view-secretario',
       partial: 'hub/sections/secretario.html',
-      styles: ['css/hub-sections/secretario.css?v=20260721140000'],
-      scripts: ['js/admin/secretario.js?v=20260721140000'],
+      styles: ['css/hub-sections/secretario.css?v=20260721280000'],
+      scripts: ['js/admin/secretario.js?v=20260721280000'],
       initKey: 'JEAdminSecretario',
       hero: {
         kicker: 'Secretário',
