@@ -161,22 +161,25 @@
             </button>
           </article>`;
         }).join('')
-      : '<p class="hub-super-empty hub-super-empty--compact">Nenhum documento anexado.</p>';
+      : '<p class="hub-super-empty hub-super-empty--compact hub-super-visit__no-docs">Nenhum documento anexado.</p>';
 
     const dateHtml = visit.visit_date
-      ? `<div class="hub-super-visit__date-chip">
+      ? `<div class="hub-super-visit__date-chip" title="Data prevista da visita">
           <span class="material-symbols-outlined" aria-hidden="true">event</span>
-          <span>Data prevista: <strong>${fmtDate(visit.visit_date)}</strong></span>
+          <strong>${fmtDate(visit.visit_date)}</strong>
         </div>`
-      : '<p class="hub-super-visit__date-pending">Data a definir pelo Secretário</p>';
+      : '<p class="hub-super-visit__date-pending">Data a definir</p>';
+
+    const docsBlock = docs.length
+      ? `<div class="hub-super-docs-list">${docsHtml}</div>`
+      : '';
 
     return `
-      ${dateHtml}
-      ${notes}
-      <section class="hub-super-visit__docs" aria-labelledby="hub-super-visit-docs-label">
-        <p id="hub-super-visit-docs-label" class="hub-super-visit__docs-label">Documentos</p>
-        <div class="hub-super-docs-list">${docsHtml}</div>
-      </section>`;
+      <div class="hub-super-visit__strip">
+        ${dateHtml}
+        ${docsBlock}
+      </div>
+      ${notes}`;
   }
 
   function renderVisitSection(visit) {
