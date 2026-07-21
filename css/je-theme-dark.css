@@ -485,6 +485,39 @@ html.dark .hub-modules-panel {
   border-color: var(--je-card-border) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
+html.dark .hub-super-overview,
+html.dark .hub-super-panel,
+html.dark .hub-super-kpi {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-super-panel__head,
+html.dark .hub-super-table th,
+html.dark .hub-super-kpi {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+html.dark .hub-super-visit {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, var(--je-card) 100%) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+html.dark .hub-super-visit__head {
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+html.dark .hub-super-kpi strong,
+html.dark .hub-super-panel__title,
+html.dark .hub-super-item__main,
+html.dark .hub-super-visit__title,
+html.dark .hub-super-visit__subtitle,
+html.dark .hub-super-table td:first-child,
+html.dark .hub-super-table td strong {
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-super-link {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
 html.dark .terr-stat-val,
 html.dark .terr-catalog-stat__val,
 html.dark .eq-pub-stat__val,

@@ -118,16 +118,10 @@
     const isSuper = isSuperintendenteProfile(profile);
     const overview = document.getElementById('hub-super-overview');
     const modulesPanel = document.querySelector('.hub-modules-panel');
-    const intro = document.querySelector('.hub-home-intro p');
-
+    const intro = document.querySelector('.hub-home-intro');
     overview?.classList.toggle('hidden', !isSuper);
     modulesPanel?.classList.toggle('hidden', isSuper);
-
-    if (intro) {
-      intro.textContent = isSuper
-        ? 'Panorama da congregação — leitura apenas.'
-        : 'Selecione um módulo abaixo.';
-    }
+    intro?.classList.toggle('hidden', isSuper);
 
     if (isSuper) {
       Promise.resolve(window.JEHubSuperOverview?.init?.(profile)).catch((err) => {
@@ -381,7 +375,7 @@
     if (title) title.textContent = isSuperHome ? 'Visão Geral' : meta.title;
     if (subtitle) {
       subtitle.textContent = isSuperHome
-        ? 'Panorama da congregação — territórios, agenda, discursos e campo.'
+        ? 'Panorama da congregação — leitura apenas, atualizado pelo Secretário.'
         : meta.subtitle;
     }
 
