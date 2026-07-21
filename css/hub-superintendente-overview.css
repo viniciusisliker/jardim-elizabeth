@@ -31,10 +31,36 @@
   letter-spacing:.04em;color:#6b7280
 }
 
+.hub-super-actions{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.625rem;margin-bottom:1rem
+}
+.hub-super-action{
+  display:flex;align-items:center;gap:.625rem;padding:.75rem .875rem;border-radius:.875rem;
+  border:1px solid #e2e6ef;background:#fafbfc;color:#0f3462;text-decoration:none;
+  transition:border-color .15s,background .15s,box-shadow .15s;min-width:0
+}
+.hub-super-action:hover{border-color:#3b5e97;background:#fff;box-shadow:0 2px 8px rgba(15,52,98,.08)}
+.hub-super-action__icon{
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:2.25rem;height:2.25rem;border-radius:.5625rem;font-size:1.25rem!important
+}
+.hub-super-action--anuncios .hub-super-action__icon{background:#fef3c7;color:#b45309}
+.hub-super-action--territorios .hub-super-action__icon{background:#dbeafe;color:#1d4ed8}
+.hub-super-action__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.125rem}
+.hub-super-action__label{
+  font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:.75rem;font-weight:800;line-height:1.2;color:#0f3462
+}
+.hub-super-action__meta{font-size:.5625rem;font-weight:600;color:#6b7280;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-super-action__chev{font-size:1.125rem!important;color:#9ca3af;flex-shrink:0}
+@media(max-width:479px){
+  .hub-super-actions{grid-template-columns:1fr}
+  .hub-super-action__meta{white-space:normal}
+}
+
 .hub-super-layout{display:grid;gap:.875rem}
 @media(min-width:1024px){
   .hub-super-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer{grid-column:1/-1}
+  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer,.hub-super-actions{grid-column:1/-1}
 }
 
 .hub-super-panel{

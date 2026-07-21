@@ -5,9 +5,12 @@
   const QUICK_LINKS = [
     { href: 'index.html', label: 'Site', icon: 'home' },
     { href: 'agenda.html', label: 'Agenda', icon: 'calendar_month' },
-    { href: 'quadrodeanuncios.html', label: 'Quadro', icon: 'campaign' },
-    { href: 'territorios.html', label: 'Territórios', icon: 'map' },
     { href: 'agendamentos.html', label: 'Agendamentos', icon: 'event_available' }
+  ];
+
+  const FEATURED_ACTIONS = [
+    { href: 'quadrodeanuncios.html', label: 'Quadro de Anúncios', icon: 'campaign', mod: 'anuncios' },
+    { href: 'territorios.html', label: 'Territórios', icon: 'map', mod: 'territorios' }
   ];
 
   let loadPromise = null;
@@ -85,17 +88,35 @@
       </article>`).join('')}</div>`;
   }
 
-  function renderQuickLinks(stats) {
-    const ann = stats.announcement_published
+  function renderFeaturedActions(stats) {
+    const annLabel = stats.announcement_published
       ? (stats.announcement_label || 'Publicado')
-      : 'Rascunho';
+      : 'Sem quadro publicado';
+    const terrLabel = `${stats.territories_designados ?? 0}/${stats.territories_total ?? 0} designados`;
+    const meta = {
+      anuncios: annLabel,
+      territorios: terrLabel
+    };
+
+    return `
+      <div class="hub-super-actions">
+        ${FEATURED_ACTIONS.map((action) => `
+          <a class="hub-super-action hub-super-action--${action.mod}" href="${esc(action.href)}" target="_blank" rel="noopener">
+            <span class="hub-super-action__icon material-symbols-outlined" aria-hidden="true">${esc(action.icon)}</span>
+            <span class="hub-super-action__body">
+              <strong class="hub-super-action__label">${esc(action.label)}</strong>
+              <span class="hub-super-action__meta">${esc(meta[action.mod])}</span>
+            </span>
+            <span class="material-symbols-outlined hub-super-action__chev" aria-hidden="true">chevron_right</span>
+          </a>`).join('')}
+      </div>`;
+  }
+
+  function renderQuickLinks() {
     return `<div class="hub-super-links">${QUICK_LINKS.map((link) => `
       <a class="hub-super-link" href="${esc(link.href)}" target="_blank" rel="noopener">
         <span class="material-symbols-outlined" aria-hidden="true">${esc(link.icon)}</span>${esc(link.label)}
       </a>`).join('')}
-      <span class="hub-super-link" style="cursor:default;opacity:.85">
-        <span class="material-symbols-outlined" aria-hidden="true">campaign</span>Quadro: ${esc(ann)}
-      </span>
     </div>`;
   }
 
@@ -152,11 +173,12 @@
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
+        ${renderFeaturedActions(stats)}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda))}
           ${panel('Discursos', 'record_voice_over', speechMeta, renderSpeeches(data.speeches_upcoming))}
           <footer class="hub-super-footer hub-super-panel--wide">
-            ${renderQuickLinks(stats)}
+            ${renderQuickLinks()}
             <p class="hub-super-footer-note">Dados de ${fmtDate(String(data.generated_at || '').slice(0, 10))} · recarregue para atualizar${stats.notifications_unread ? ` · ${stats.notifications_unread} notificação(ões)` : ''}</p>
           </footer>
         </div>
