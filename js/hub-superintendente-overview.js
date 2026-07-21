@@ -37,9 +37,7 @@
       </a>`;
   }
 
-  function renderTerritoriosCard(stats) {
-    const designados = stats.territories_designados ?? 0;
-    const total = stats.territories_total ?? 0;
+  function renderTerritoriosCard() {
     return `
       <a href="territorios.html" target="_blank" rel="noopener" class="je-qa-card je-qa-card--territorios">
         <div class="je-qa-card-top">
@@ -50,7 +48,7 @@
         </div>
         <div>
           <h3 class="je-qa-card-title">Territórios</h3>
-          <p class="je-qa-card-desc">Mapas, designações e cronograma da pregação — ${designados}/${total} designados.</p>
+          <p class="je-qa-card-desc">Mapas, designações e cronograma da pregação.</p>
         </div>
         <span class="je-qa-card-cta">
           Abrir
@@ -59,9 +57,9 @@
       </a>`;
   }
 
-  function renderAnnouncementCards(sections, stats = {}) {
+  function renderAnnouncementCards(sections) {
     const cards = (sections || []).map(renderAnnouncementCard).join('');
-    const territorios = renderTerritoriosCard(stats);
+    const territorios = renderTerritoriosCard();
     if (!sections?.length) {
       return `
         <div class="hub-super-qa">
@@ -219,7 +217,7 @@
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
-        ${renderAnnouncementCards(data.announcement_sections, stats)}
+        ${renderAnnouncementCards(data.announcement_sections)}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
           <footer class="hub-super-footer hub-super-panel--wide">
