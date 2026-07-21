@@ -83,10 +83,53 @@
         </header>
         <div class="cfg-modal__body cfg-modal__body--flush">
           <div class="cfg-modal__toolbar cfg-modal__toolbar--search">
+            <button type="button" id="cfg-add-member" class="cfg-btn cfg-btn--primary hidden">
+              <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+              Novo membro
+            </button>
             <label class="cfg-search-wrap cfg-search-wrap--modal">
               <span class="material-symbols-outlined" aria-hidden="true">search</span>
               <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar membro…" autocomplete="off"/>
             </label>
+          </div>
+          <div id="cfg-new-member-panel" class="cfg-new-member hidden" aria-hidden="true">
+            <form id="cfg-new-member-form" class="cfg-new-member-form">
+              <label class="cfg-new-member-field">
+                <span class="cfg-new-member-label">Nome completo</span>
+                <input type="text" id="cfg-new-member-name" name="full_name" class="cfg-field" placeholder="Nome exibido no site" autocomplete="name" required/>
+              </label>
+              <label class="cfg-new-member-field">
+                <span class="cfg-new-member-label">Usuário</span>
+                <span class="cfg-member-user-edit">
+                  <span class="cfg-member-user-prefix" aria-hidden="true">@</span>
+                  <input type="text" id="cfg-new-member-username" name="username" class="cfg-field cfg-field--username" placeholder="usuario" autocomplete="off" spellcheck="false" required/>
+                </span>
+              </label>
+              <label class="cfg-new-member-field">
+                <span class="cfg-new-member-label">E-mail</span>
+                <input type="email" id="cfg-new-member-email" name="email" class="cfg-field cfg-field--email" placeholder="email@exemplo.org" autocomplete="off" required/>
+              </label>
+              <label class="cfg-new-member-field">
+                <span class="cfg-new-member-label">Senha inicial</span>
+                <input type="password" id="cfg-new-member-password" name="password" class="cfg-field" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required/>
+              </label>
+              <label class="cfg-new-member-field">
+                <span class="cfg-new-member-label">Cargo</span>
+                <select id="cfg-new-member-role" name="role" class="cfg-field">
+                  <option value="publicador" selected>Publicador</option>
+                  <option value="servo_ministerial">Servo Ministerial</option>
+                  <option value="anciao">Ancião</option>
+                  <option value="superuser">SuperUser</option>
+                </select>
+              </label>
+              <div class="cfg-new-member-form__actions">
+                <button type="button" id="cfg-new-member-cancel" class="cfg-btn cfg-btn--ghost">Cancelar</button>
+                <button type="submit" id="cfg-new-member-submit" class="cfg-btn cfg-btn--primary">
+                  <span class="material-symbols-outlined" aria-hidden="true">check</span>
+                  Criar membro
+                </button>
+              </div>
+            </form>
           </div>
           <div class="cfg-card cfg-card--in-modal">
             <div class="cfg-members-scroll">

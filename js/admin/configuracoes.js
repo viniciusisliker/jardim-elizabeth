@@ -123,6 +123,7 @@
 
     if (isSuper) {
       document.getElementById('cfg-open-designations')?.classList.remove('hidden');
+      document.getElementById('cfg-add-member')?.classList.remove('hidden');
       document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--super');
     }
     if (isDev) {
@@ -138,6 +139,89 @@
       }
       document.body.classList.remove('cfg-modal-open');
       openCfgModalId = null;
+      hideNewMemberPanel();
+    }
+
+    const newMemberPanel = document.getElementById('cfg-new-member-panel');
+    const newMemberForm = document.getElementById('cfg-new-member-form');
+
+    function hideNewMemberPanel() {
+      if (!newMemberPanel) return;
+      newMemberPanel.classList.add('hidden');
+      newMemberPanel.setAttribute('aria-hidden', 'true');
+    }
+
+    function showNewMemberPanel() {
+      if (!newMemberPanel) return;
+      newMemberPanel.classList.remove('hidden');
+      newMemberPanel.setAttribute('aria-hidden', 'false');
+      document.getElementById('cfg-new-member-name')?.focus();
+    }
+
+    function resetNewMemberForm() {
+      if (!newMemberForm) return;
+      newMemberForm.reset();
+      const roleSelect = document.getElementById('cfg-new-member-role');
+      if (roleSelect) roleSelect.value = 'publicador';
+    }
+
+    async function createTeamMember(event) {
+      event.preventDefault();
+      if (!isSuper) return;
+
+      const fullName = normalizeFullName(document.getElementById('cfg-new-member-name')?.value);
+      const username = normalizeUsername(document.getElementById('cfg-new-member-username')?.value);
+      const email = String(document.getElementById('cfg-new-member-email')?.value || '').trim().toLowerCase();
+      const password = document.getElementById('cfg-new-member-password')?.value || '';
+      const role = document.getElementById('cfg-new-member-role')?.value || 'publicador';
+      const submitBtn = document.getElementById('cfg-new-member-submit');
+
+      if (!isValidFullName(fullName)) {
+        showToast(toast, 'Informe um nome entre 2 e 120 caracteres.', true);
+        return;
+      }
+      if (!isValidUsername(username)) {
+        showToast(toast, 'Usuário inválido (3–32 caracteres: letras, números, ponto, hífen ou underline).', true);
+        return;
+      }
+      if (!isValidEmail(email)) {
+        showToast(toast, 'Informe um e-mail válido.', true);
+        return;
+      }
+      if (password.length < 8) {
+        showToast(toast, 'A senha deve ter pelo menos 8 caracteres.', true);
+        return;
+      }
+      if (password.length > 72) {
+        showToast(toast, 'A senha deve ter no máximo 72 caracteres.', true);
+        return;
+      }
+
+      submitBtn?.setAttribute('disabled', 'disabled');
+      const { data: profileId, error } = await client.rpc('admin_create_team_member', {
+        p_full_name: fullName,
+        p_username: username,
+        p_email: email,
+        p_password: password,
+        p_role: role
+      });
+      submitBtn?.removeAttribute('disabled');
+
+      if (error) {
+        showToast(toast, error.message, true);
+        return;
+      }
+
+      resetNewMemberForm();
+      hideNewMemberPanel();
+      showToast(toast, `Membro "${fullName}" criado.`);
+      await reloadMembers();
+      if (profileId) {
+        memberSearch = fullName;
+        const searchInput = document.getElementById('cfg-member-search');
+        if (searchInput) searchInput.value = fullName;
+        renderMembers({ updateUi: true });
+      }
     }
 
     function openCfgModal(modalId, { focusSelector } = {}) {
@@ -964,6 +1048,22 @@
       memberSearch = e.target.value;
       renderMembers({ updateUi: true });
     });
+
+    document.getElementById('cfg-add-member')?.addEventListener('click', () => {
+      if (newMemberPanel?.classList.contains('hidden')) {
+        showNewMemberPanel();
+      } else {
+        hideNewMemberPanel();
+        resetNewMemberForm();
+      }
+    });
+
+    document.getElementById('cfg-new-member-cancel')?.addEventListener('click', () => {
+      hideNewMemberPanel();
+      resetNewMemberForm();
+    });
+
+    newMemberForm?.addEventListener('submit', createTeamMember);
 
     document.getElementById('cfg-add-designation')?.addEventListener('click', async () => {
       const label = await window.JEDialog.prompt({
