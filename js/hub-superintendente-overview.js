@@ -51,30 +51,6 @@
       </section>`;
   }
 
-  function renderKpis(stats) {
-    const pending = stats.speeches_pending ?? 0;
-    const alta = stats.territories_alta ?? 0;
-    return `
-      <div class="hub-super-kpis">
-        <article class="hub-super-kpi">
-          <strong>${stats.members ?? '—'}</strong>
-          <span>Membros</span>
-        </article>
-        <article class="hub-super-kpi">
-          <strong>${stats.territories_designados ?? 0}<span style="font-size:.875rem;font-weight:700;color:#6b7280">/${stats.territories_total ?? 0}</span></strong>
-          <span>Territórios designados</span>
-        </article>
-        <article class="hub-super-kpi ${pending ? 'hub-super-kpi--warn' : ''}">
-          <strong>${pending}</strong>
-          <span>Discursos pendentes</span>
-        </article>
-        <article class="hub-super-kpi ${alta ? 'hub-super-kpi--accent' : ''}">
-          <strong>${alta}</strong>
-          <span>Alta prioridade</span>
-        </article>
-      </div>`;
-  }
-
   function renderAgenda(items) {
     if (!items?.length) return '<p class="hub-super-empty">Nenhum evento publicado.</p>';
     return `<div class="hub-super-list">${items.map((ev) => `
@@ -264,7 +240,6 @@
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
-        ${renderKpis(stats)}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda))}
           ${panel('Discursos', 'record_voice_over', speechMeta, renderSpeeches(data.speeches_upcoming))}

@@ -6,27 +6,6 @@
 .hub-super-overview__inner{padding:1.25rem 1.5rem 1.5rem}
 @media(min-width:768px){.hub-super-overview__inner{padding:1.5rem 1.75rem 1.75rem}}
 
-.hub-super-kpis{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.625rem;margin-bottom:1rem
-}
-@media(min-width:640px){.hub-super-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.hub-super-kpi{
-  display:flex;flex-direction:column;gap:.1875rem;padding:.75rem .875rem;
-  border:1px solid #e2e6ef;border-radius:.75rem;background:#f8fafc;min-width:0
-}
-.hub-super-kpi strong{
-  font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:1.5rem;font-weight:800;
-  color:#0f3462;line-height:1.1
-}
-.hub-super-kpi span{
-  font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-  color:#6b7280;line-height:1.35
-}
-.hub-super-kpi--warn{border-color:#fecaca;background:#fef2f2}
-.hub-super-kpi--warn strong{color:#b91c1c}
-.hub-super-kpi--accent{border-color:#fde68a;background:#fffbeb}
-.hub-super-kpi--accent strong{color:#b45309}
-
 .hub-super-visit{
   margin-bottom:1rem;border:1px solid #bfdbfe;border-radius:.875rem;
   background:linear-gradient(180deg,#f8fbff 0%,#fff 100%);overflow:hidden
