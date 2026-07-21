@@ -178,7 +178,7 @@
     const groups = groupEquipmentByDay(items);
     return `<div class="hub-super-equip">${groups.map(({ day, slots }) => `
       <div class="hub-super-equip-day">
-        <span class="hub-super-equip-day__label">${esc(day)}</span>
+        <span class="hub-super-equip-day__label">${esc(shortDay(day))}</span>
         <div class="hub-super-equip-slots">
           ${slots.map((row) => {
             const name = esc(row.equipment_name || row.equipment_type || '—');
