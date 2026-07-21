@@ -6,6 +6,7 @@
     { value: 'superuser', label: 'SuperUser' },
     { value: 'anciao', label: 'Ancião' },
     { value: 'servo_ministerial', label: 'Servo Ministerial' },
+    { value: 'superintendente', label: 'Superintendente' },
     { value: 'publicador', label: 'Publicador' }
   ];
 

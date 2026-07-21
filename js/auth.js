@@ -3,6 +3,7 @@
     superuser: 'SuperUser',
     anciao: 'Ancião',
     servo_ministerial: 'Servo Ministerial',
+    superintendente: 'Superintendente',
     publicador: 'Publicador'
   };
 
@@ -256,6 +257,7 @@
   function canAccessHub(profile) {
     if (!profile) return false;
     if (isSuperUser(profile.role)) return true;
+    if (profile.role === 'superintendente') return true;
 
     if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
 
