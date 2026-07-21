@@ -2,12 +2,6 @@
   const esc = (t) => String(t ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-  const QUICK_LINKS = [
-    { href: 'index.html', label: 'Site', icon: 'home' },
-    { href: 'agenda.html', label: 'Agenda', icon: 'calendar_month' },
-    { href: 'agendamentos.html', label: 'Agendamentos', icon: 'event_available' }
-  ];
-
   function announcementCardModifier(slug) {
     if (slug === 'designacoes-mecanicas') return 'org';
     if (slug === 'meio-de-semana') return 'midweek';
@@ -101,10 +95,12 @@
     if (ev.event_date) {
       const d = new Date(`${ev.event_date}T12:00:00`);
       if (!Number.isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const showYear = year !== new Date().getFullYear();
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' }).replace(/\.$/, '');
         return {
           day: d.toLocaleDateString('pt-BR', { day: '2-digit' }),
-          month: d.toLocaleDateString('pt-BR', { month: 'short' }).replace(/\.$/, ''),
-          label: ev.date_label || d.toLocaleDateString('pt-BR', { weekday: 'short' })
+          sub: showYear ? `${month} ${year}` : month
         };
       }
     }
@@ -112,8 +108,7 @@
     const match = display.match(/^(\d{1,2})\s*(.*)$/);
     return {
       day: match?.[1] || display,
-      month: match?.[2] || '',
-      label: ev.date_label || ''
+      sub: match?.[2] || ''
     };
   }
 
@@ -129,26 +124,17 @@
       <article class="hub-super-agenda-card${highlight}">
         <div class="hub-super-agenda-date" aria-hidden="true">
           <span class="hub-super-agenda-date__day">${esc(date.day)}</span>
-          ${date.month ? `<span class="hub-super-agenda-date__month">${esc(date.month)}</span>` : ''}
-          ${date.label ? `<span class="hub-super-agenda-date__label">${esc(date.label)}</span>` : ''}
+          ${date.sub ? `<span class="hub-super-agenda-date__sub">${esc(date.sub)}</span>` : ''}
         </div>
         <div class="hub-super-agenda-body">
-          <p class="hub-super-agenda-title">${esc(ev.title)}</p>
-          <div class="hub-super-agenda-meta">
+          <div class="hub-super-agenda-row">
+            <p class="hub-super-agenda-title">${esc(ev.title)}</p>
             ${ev.category ? `<span class="hub-super-agenda-cat">${esc(ev.category)}</span>` : ''}
-            ${metaParts.join('')}
           </div>
+          ${metaParts.length ? `<div class="hub-super-agenda-meta">${metaParts.join('')}</div>` : ''}
         </div>
       </article>`;
     }).join('')}</div>`;
-  }
-
-  function renderQuickLinks() {
-    return `<div class="hub-super-links">${QUICK_LINKS.map((link) => `
-      <a class="hub-super-link" href="${esc(link.href)}" target="_blank" rel="noopener">
-        <span class="material-symbols-outlined" aria-hidden="true">${esc(link.icon)}</span>${esc(link.label)}
-      </a>`).join('')}
-    </div>`;
   }
 
   function renderSuperintendentVisit(visit) {
@@ -211,19 +197,13 @@
   }
 
   function renderOverview(data) {
-    const stats = data.stats || {};
     const visit = data.superintendent_visit;
 
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
         ${renderAnnouncementCards(data.announcement_sections)}
-        <div class="hub-super-layout">
-          ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
-          <footer class="hub-super-footer hub-super-panel--wide">
-            ${renderQuickLinks()}
-          </footer>
-        </div>
+        ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--agenda')}
       </div>`;
   }
 

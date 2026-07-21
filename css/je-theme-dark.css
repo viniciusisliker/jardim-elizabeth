@@ -546,6 +546,9 @@ html.dark .hub-super-agenda-title,
 html.dark .hub-super-agenda-date__day {
   color: var(--je-on-surface) !important;
 }
+html.dark .hub-super-agenda-date__sub {
+  color: var(--je-on-surface-variant) !important;
+}
 html.dark .sec-modal__panel {
   background: var(--je-card) !important;
   border-color: var(--je-card-border) !important;
@@ -564,11 +567,6 @@ html.dark .hub-super-action {
   color: var(--je-on-surface) !important;
 }
 html.dark .hub-super-action__label {
-  color: var(--je-on-surface) !important;
-}
-html.dark .hub-super-link {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: var(--je-card-border) !important;
   color: var(--je-on-surface) !important;
 }
 html.dark .terr-stat-val,
