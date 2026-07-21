@@ -1,4 +1,4 @@
--- Inclui Visita do Superintendente na one-page do Superintendente.
+-- Corrige je_superintendente_overview: subquery de documentos não expunha created_at.
 
 CREATE OR REPLACE FUNCTION public.je_superintendente_overview()
 RETURNS jsonb
@@ -222,3 +222,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.je_superintendente_overview() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.je_superintendente_overview() TO authenticated;
