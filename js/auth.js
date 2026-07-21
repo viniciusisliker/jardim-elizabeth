@@ -8,6 +8,14 @@
     publicador: 'Publicador'
   };
 
+  const SUB_ROLE_LABELS = {
+    secretario: 'Secretário',
+    coordenador: 'Coordenador',
+    superintendente_servico: 'Superintendente de Serviço'
+  };
+
+  const SUB_ROLES = Object.entries(SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+
   const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   const SESSION_TIMEOUT_MS = 4000;
   const PROFILE_CACHE_KEY = 'je_profile_cache';
@@ -30,7 +38,7 @@
     }
   }
 
-  const PROFILE_SELECT_BASE = 'id, full_name, role, designation, username, can_announcements, avatar_url';
+  const PROFILE_SELECT_BASE = 'id, full_name, role, sub_role, designation, username, can_announcements, avatar_url';
   const PROFILE_DESIGNATIONS = `profile_access_designations (
       access_designations ( id, slug, label, permissions, is_active )
     )`;
@@ -68,6 +76,7 @@
         full_name: profile.full_name,
         role: profile.role,
         display_role: profile.display_role || null,
+        sub_role: profile.sub_role || null,
         designation: profile.designation,
         username: profile.username,
         can_announcements: !!profile.can_announcements,
@@ -190,9 +199,17 @@
   function getRoleLabel(roleOrProfile, designation) {
     const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
     const profile = typeof roleOrProfile === 'object' ? roleOrProfile : null;
-    const extra = profile
-      ? (profile.designation || (profile.designations || []).map((d) => d.label).join(', ') || '')
-      : (designation || '');
+    const extraParts = [];
+    if (profile?.sub_role) extraParts.push(SUB_ROLE_LABELS[profile.sub_role] || profile.sub_role);
+    if (profile) {
+      if (profile.designation) extraParts.push(profile.designation);
+      (profile.designations || []).forEach((d) => {
+        if (d.label) extraParts.push(d.label);
+      });
+    } else if (designation) {
+      extraParts.push(designation);
+    }
+    const extra = extraParts.join(', ');
     const labelRole = profile?.display_role || role;
     const base = ROLE_LABELS[labelRole] || labelRole;
     return extra ? `${base} (${extra})` : base;
@@ -263,8 +280,12 @@
   }
 
   function isSecretario(roleOrProfile) {
-    const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
-    return role === 'secretario';
+    const profile = typeof roleOrProfile === 'object' ? roleOrProfile : null;
+    const role = profile?.role ?? roleOrProfile;
+    if (role === 'secretario') return true;
+    if (profile?.sub_role === 'secretario') return true;
+    if ((profile?.permissions || []).includes('secretario')) return true;
+    return false;
   }
 
   /** URL de entrada no Hub após login. */
@@ -283,7 +304,6 @@
     if (!profile) return false;
     if (isSuperUser(profile.role)) return true;
     if (isSuperintendente(profile)) return true;
-    if (isSecretario(profile)) return true;
 
     if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
 
@@ -490,6 +510,8 @@
     getRoleLabel,
     getRoleLabelClasses,
     applyRoleLabelEl,
+    SUB_ROLE_LABELS,
+    SUB_ROLES,
     hasDeveloperDesignation,
     renderAvatarHtml,
     isAdminRole,

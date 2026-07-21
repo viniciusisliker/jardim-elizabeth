@@ -7,9 +7,20 @@
     { value: 'anciao', label: 'Ancião' },
     { value: 'servo_ministerial', label: 'Servo Ministerial' },
     { value: 'superintendente', label: 'Superintendente' },
-    { value: 'secretario', label: 'Secretário' },
     { value: 'publicador', label: 'Publicador' }
   ];
+
+  const SUB_ROLES = window.JEAuth?.SUB_ROLES || [
+    { value: 'secretario', label: 'Secretário' },
+    { value: 'coordenador', label: 'Coordenador' },
+    { value: 'superintendente_servico', label: 'Superintendente de Serviço' }
+  ];
+
+  const SUB_ROLE_LABELS = window.JEAuth?.SUB_ROLE_LABELS || Object.fromEntries(
+    SUB_ROLES.map((r) => [r.value, r.label])
+  );
+
+  const ELDER_ROLES = new Set(['anciao', 'servo_ministerial']);
 
   const ADMIN_ROLES = new Set(window.JE_CONFIG?.adminRoles || ['superuser', 'anciao', 'servo_ministerial']);
   const AVATAR_BUCKET = 'profile-avatars';
@@ -109,6 +120,7 @@
       name: {},
       email: {},
       role: {},
+      sub_role: {},
       designation: {},
       access: {}
     };
@@ -117,8 +129,8 @@
 
     document.getElementById('cfg-role-note').textContent = isSuper
       ? (isDev
-        ? 'Como SuperUser/Dev, você gerencia designações, cargos, usuários, e-mails, fotos, senhas e atribuições da equipe.'
-        : 'Como SuperUser, você gerencia designações, cargos, usuários, e-mails, fotos e atribuições da equipe.')
+        ? 'Como SuperUser/Dev, você gerencia designações de acesso, cargos, sub-cargos, usuários, e-mails, fotos, senhas e atribuições da equipe.'
+        : 'Como SuperUser, você gerencia designações de acesso, cargos, sub-cargos, usuários, e-mails, fotos e atribuições da equipe.')
       : (isDev
         ? 'Como Dev, você pode alterar a senha dos membros. Somente o SuperUser altera designações e cargos.'
         : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.');
@@ -282,9 +294,18 @@
       return window.JEAuth.getRoleLabel({
         role: m.role,
         display_role: m.display_role,
+        sub_role: m.sub_role,
         designation: m.designation,
         designations: []
       });
+    }
+
+    function memberSubRoleLabel(m) {
+      return m.sub_role ? (SUB_ROLE_LABELS[m.sub_role] || m.sub_role) : '—';
+    }
+
+    function subRoleFilterKey(m) {
+      return m.sub_role || '—';
     }
 
     function memberAccessSortKey(m) {
@@ -312,6 +333,16 @@
         );
       }
       xlf.xlfEnsureKeys(memberFilter.role, ROLES.map((r) => r.value));
+      xlf.xlfEnsureKeys(
+        memberFilter.sub_role,
+        [...new Set(members.map(subRoleFilterKey))].sort((a, b) =>
+          memberSubRoleLabel({ sub_role: a === '—' ? null : a }).localeCompare(
+            memberSubRoleLabel({ sub_role: b === '—' ? null : b }),
+            'pt-BR',
+            { sensitivity: 'base' }
+          )
+        )
+      );
       xlf.xlfEnsureKeys(
         memberFilter.designation,
         [...new Set(members.map((m) => m.designation || '—'))].sort((a, b) =>
@@ -359,6 +390,9 @@
           case 'role':
             cmp = memberRoleLabel(a).localeCompare(memberRoleLabel(b), 'pt-BR', { sensitivity: 'base' });
             break;
+          case 'sub_role':
+            cmp = memberSubRoleLabel(a).localeCompare(memberSubRoleLabel(b), 'pt-BR', { sensitivity: 'base' });
+            break;
           case 'designation':
             cmp = (a.designation || '').localeCompare(b.designation || '', 'pt-BR', { sensitivity: 'base' });
             break;
@@ -381,7 +415,7 @@
       if (q) {
         list = list.filter((m) => {
           const email = memberEmails.get(m.id) || '';
-          const hay = `${m.full_name || ''} ${m.username || ''} ${m.designation || ''} ${email}`.toLowerCase();
+          const hay = `${m.full_name || ''} ${m.username || ''} ${m.designation || ''} ${memberSubRoleLabel(m)} ${email}`.toLowerCase();
           return hay.includes(q);
         });
       }
@@ -391,6 +425,7 @@
         list = xlf.xlfApplyMapFilter(list, memberFilter.email, (m) => memberEmails.get(m.id) || '—');
       }
       list = xlf.xlfApplyMapFilter(list, memberFilter.role, (m) => m.role);
+      list = xlf.xlfApplyMapFilter(list, memberFilter.sub_role, subRoleFilterKey);
       list = xlf.xlfApplyMapFilter(list, memberFilter.designation, (m) => m.designation || '—');
       list = applyMemberAccessFilter(list);
       return getSortedMembers(list);
@@ -401,6 +436,7 @@
       const nameOpts = xlf.xlfOptionsFromKeys(Object.keys(memberFilter.name));
       const emailOpts = xlf.xlfOptionsFromKeys(Object.keys(memberFilter.email));
       const desOpts = xlf.xlfOptionsFromKeys(Object.keys(memberFilter.designation));
+      const subRoleOpts = xlf.xlfOptionsFromKeys(Object.keys(memberFilter.sub_role));
       const accessOpts = [
         { value: ACCESS_NONE, label: 'Sem designação' },
         ...catalog.filter((d) => d.is_active).map((d) => ({ value: d.id, label: d.label }))
@@ -429,8 +465,15 @@
         wrap: 'span'
       });
       html += xlf.xlfColumnHeader('member-sort', memberSort, memberFilter, {
+        col: 'sub_role',
+        label: 'Sub-cargo',
+        filterKey: 'sub_role',
+        options: subRoleOpts,
+        wrap: 'span'
+      });
+      html += xlf.xlfColumnHeader('member-sort', memberSort, memberFilter, {
         col: 'designation',
-        label: 'Design.',
+        label: 'Nota',
         filterKey: 'designation',
         options: desOpts,
         wrap: 'span'
@@ -450,7 +493,7 @@
       const scroll = document.querySelector('.cfg-members-scroll');
       if (!head) return;
       if (!xlf) {
-        head.innerHTML = `<span>Membro</span>${isSuper ? '<span>E-mail</span>' : ''}<span>Cargo</span><span>Design.</span><span>Acesso</span>`;
+        head.innerHTML = `<span>Membro</span>${isSuper ? '<span>E-mail</span>' : ''}<span>Cargo</span><span>Sub-cargo</span><span>Nota</span><span>Acesso</span>`;
         return;
       }
       if (scroll) scroll.dataset.xlfScope = 'cfg-members';
@@ -493,7 +536,7 @@
     async function reloadMembers() {
       const { data, error } = await client
         .from('profiles')
-        .select('id, full_name, username, role, display_role, designation, avatar_url, profile_access_designations(designation_id)')
+        .select('id, full_name, username, role, display_role, sub_role, designation, avatar_url, profile_access_designations(designation_id)')
         .order('full_name');
       if (error) {
         document.getElementById('members-table').innerHTML = `<p class="cfg-empty text-error">${escapeHtml(error.message)}</p>`;
@@ -761,7 +804,14 @@
           ? `<select data-role="${m.id}" class="cfg-field">${ROLES.map((r) =>
               `<option value="${r.value}" ${m.role === r.value ? 'selected' : ''}>${r.label}</option>`
             ).join('')}</select>`
-          : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, display_role: m.display_role, designation: m.designation, designations: [] }))}</span>`;
+          : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, display_role: m.display_role, sub_role: m.sub_role, designation: m.designation, designations: [] }))}</span>`;
+
+        const canHaveSubRole = ELDER_ROLES.has(m.role);
+        const subRoleSelect = isSuper
+          ? `<select data-member-sub-role="${m.id}" class="cfg-field"${canHaveSubRole ? '' : ' disabled'}><option value="">—</option>${SUB_ROLES.map((r) =>
+              `<option value="${r.value}" ${m.sub_role === r.value ? 'selected' : ''}>${r.label}</option>`
+            ).join('')}</select>`
+          : `<span class="text-[11px] text-on-surface-variant">${escapeHtml(memberSubRoleLabel(m))}</span>`;
 
         const designationInput = isSuper
           ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="cfg-field"/>`
@@ -785,6 +835,7 @@
             <span>${memberMainCell(m)}</span>
             ${isSuper ? `<span>${emailCell}</span>` : ''}
             <span>${roleSelect}</span>
+            <span>${subRoleSelect}</span>
             <span>${designationInput}</span>
             <span>${designationChecks}</span>
           </div>`;
@@ -886,11 +937,27 @@
 
       root.querySelectorAll('[data-role]').forEach((sel) =>
         sel.addEventListener('change', async () => {
-          const { error } = await client.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.role);
+          const nextRole = sel.value;
+          const payload = { role: nextRole };
+          if (!ELDER_ROLES.has(nextRole)) payload.sub_role = null;
+          const { error } = await client.from('profiles').update(payload).eq('id', sel.dataset.role);
           if (error) showToast(toast, error.message, true);
           else {
             showToast(toast, 'Cargo atualizado.');
             await reloadMembers();
+          }
+        })
+      );
+
+      root.querySelectorAll('[data-member-sub-role]').forEach((sel) =>
+        sel.addEventListener('change', async () => {
+          const subRole = sel.value || null;
+          const { error } = await client.from('profiles').update({ sub_role: subRole }).eq('id', sel.dataset.memberSubRole);
+          if (error) showToast(toast, error.message, true);
+          else {
+            const member = members.find((m) => m.id === sel.dataset.memberSubRole);
+            if (member) member.sub_role = subRole;
+            showToast(toast, 'Sub-cargo atualizado.');
           }
         })
       );

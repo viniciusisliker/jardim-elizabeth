@@ -24,10 +24,10 @@
     .cfg-search::placeholder{color:#9ca3af}
     .cfg-card{background:#fff;border:1px solid #e2e6ef;border-radius:.5625rem;overflow:hidden}
     .cfg-members-scroll{overflow-x:auto;max-height:min(62vh,34rem);overflow-y:auto}
-    .cfg-members-panel{min-width:40rem}
-    .cfg-members-panel--super{min-width:48rem}
-    .cfg-member-row{display:grid;grid-template-columns:minmax(8rem,1.15fr) minmax(6rem,.85fr) minmax(5rem,.75fr) minmax(10rem,1.25fr);gap:.25rem .375rem;align-items:center;padding:.3125rem .5rem;border-bottom:1px solid #eef0f4;font-size:.75rem;line-height:1.25}
-    .cfg-members-panel--super .cfg-member-row{grid-template-columns:minmax(9rem,1.2fr) minmax(8rem,1.05fr) minmax(4.75rem,.7fr) minmax(4.5rem,.65fr) minmax(8.5rem,1.15fr)}
+    .cfg-members-panel{min-width:44rem}
+    .cfg-members-panel--super{min-width:54rem}
+    .cfg-member-row{display:grid;grid-template-columns:minmax(8rem,1.15fr) minmax(4.5rem,.65fr) minmax(5rem,.75fr) minmax(4.5rem,.65fr) minmax(8rem,1.1fr);gap:.25rem .375rem;align-items:center;padding:.3125rem .5rem;border-bottom:1px solid #eef0f4;font-size:.75rem;line-height:1.25}
+    .cfg-members-panel--super .cfg-member-row{grid-template-columns:minmax(9rem,1.2fr) minmax(8rem,1.05fr) minmax(4.75rem,.7fr) minmax(5rem,.75fr) minmax(4.5rem,.65fr) minmax(8.5rem,1.15fr)}
     .cfg-member-row:last-child{border-bottom:none}
     .cfg-member-row:not(.cfg-member-row--head):hover{background:#fafbfc}
     .cfg-member-row--head{background:#f7f9fc;padding:.25rem .5rem;position:sticky;top:0;z-index:2;overflow:visible;align-items:stretch}
