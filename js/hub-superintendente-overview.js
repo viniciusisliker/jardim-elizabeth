@@ -38,9 +38,9 @@
     return '';
   }
 
-  function panel(title, icon, meta, body, extraClass = '') {
+  function panel(title, icon, meta, body) {
     return `
-      <section class="hub-super-panel ${extraClass}">
+      <section class="hub-super-panel">
         <header class="hub-super-panel__head">
           <h2 class="hub-super-panel__title">
             <span class="material-symbols-outlined" aria-hidden="true">${esc(icon)}</span>${esc(title)}
@@ -66,46 +66,6 @@
       </article>`).join('')}</div>`;
   }
 
-  function renderTerritorySchedule(items) {
-    if (!items?.length) return '<p class="hub-super-empty">Cronograma semanal não cadastrado.</p>';
-    return `
-      <div class="hub-super-table-wrap">
-        <table class="hub-super-table">
-          <thead>
-            <tr>
-              <th scope="col">Dia</th>
-              <th scope="col">Terr.</th>
-              <th scope="col">Dirigente</th>
-              <th scope="col">Horário / local</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map((row) => `
-              <tr>
-                <td>${esc(row.weekday_label)}</td>
-                <td>${esc(row.territory_code || '—')}</td>
-                <td><strong>${esc(row.dirigente_name || '—')}</strong></td>
-                <td>${esc(row.schedule_times || '—')}${row.location_name ? ` · ${esc(row.location_name)}` : ''}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  }
-
-  function renderAssignments(items) {
-    if (!items?.length) return '<p class="hub-super-empty">Nenhuma designação ativa.</p>';
-    return `<div class="hub-super-list">${items.map((row) => `
-      <article class="hub-super-item">
-        <div>
-          <p class="hub-super-item__main">T${esc(row.territory_num)} · ${esc(row.territory_name || 'Território')}</p>
-          <p class="hub-super-item__sub">${esc(row.publisher_name || '—')}</p>
-        </div>
-        <div class="hub-super-item__aside">
-          <span class="hub-super-item__sub">${fmtDate(row.assigned_at)}</span>
-        </div>
-      </article>`).join('')}</div>`;
-  }
-
   function renderSpeeches(items) {
     if (!items?.length) return '<p class="hub-super-empty">Nenhum discurso nos próximos 30 dias.</p>';
     return `<div class="hub-super-list">${items.map((row) => `
@@ -123,53 +83,6 @@
           ${fmtTime(row.event_time) ? `<span class="hub-super-item__sub">${fmtTime(row.event_time)}</span>` : ''}
         </div>
       </article>`).join('')}</div>`;
-  }
-
-  function shortDay(label) {
-    const s = String(label || '').trim();
-    if (s.length <= 4) return s;
-    return s.slice(0, 3);
-  }
-
-  function periodBadgeClass(label) {
-    return /manh/i.test(String(label || '')) ? 'hub-super-equip-period--manha' : '';
-  }
-
-  function groupEquipmentByDay(items) {
-    const order = [];
-    const map = new Map();
-    items.forEach((row) => {
-      const day = row.weekday_label || '—';
-      if (!map.has(day)) {
-        map.set(day, []);
-        order.push(day);
-      }
-      map.get(day).push(row);
-    });
-    return order.map((day) => ({ day, slots: map.get(day) }));
-  }
-
-  function renderEquipment(items) {
-    if (!items?.length) return '<p class="hub-super-empty">Nenhum horário cadastrado.</p>';
-    const groups = groupEquipmentByDay(items);
-    return `<div class="hub-super-equip">${groups.map(({ day, slots }) => `
-      <div class="hub-super-equip-day">
-        <span class="hub-super-equip-day__label">${esc(shortDay(day))}</span>
-        <div class="hub-super-equip-slots">
-          ${slots.map((row) => {
-            const name = esc(row.equipment_name || row.equipment_type || '—');
-            const loc = row.location_name
-              ? `<span class="hub-super-equip-loc">${esc(row.location_name)}</span>`
-              : '';
-            return `
-            <article class="hub-super-equip-slot">
-              <span class="hub-super-equip-period ${periodBadgeClass(row.period_label)}">${esc(row.period_label || '—')}</span>
-              <span class="hub-super-equip-place"><strong>${name}</strong>${loc}</span>
-              <span class="hub-super-equip-pubs">${esc(row.publisher_names || '—')}</span>
-            </article>`;
-          }).join('')}
-        </div>
-      </div>`).join('')}</div>`;
   }
 
   function renderQuickLinks(stats) {
@@ -235,7 +148,6 @@
     const stats = data.stats || {};
     const visit = data.superintendent_visit;
     const speechMeta = `${stats.speeches_receive_30d ?? 0} rec. · ${stats.speeches_send_30d ?? 0} env.`;
-    const equipMeta = `${stats.equipment_slots_week ?? 0} horários · ${stats.equipment_publishers ?? 0} pub.`;
 
     return `
       <div class="hub-super-overview__inner">
@@ -243,10 +155,7 @@
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda))}
           ${panel('Discursos', 'record_voice_over', speechMeta, renderSpeeches(data.speeches_upcoming))}
-          ${panel('Designações ativas', 'assignment_ind', `${stats.territories_designados ?? 0} território(s)`, renderAssignments(data.territory_assignments))}
-          ${panel('Carrinhos e displays', 'shopping_cart', equipMeta, renderEquipment(data.equipment_this_week), 'hub-super-panel--equip')}
-          ${panel('Cronograma de territórios', 'map', 'Semana tipo', renderTerritorySchedule(data.territory_schedule), 'hub-super-panel--wide')}
-          <footer class="hub-super-footer">
+          <footer class="hub-super-footer hub-super-panel--wide">
             ${renderQuickLinks(stats)}
             <p class="hub-super-footer-note">Dados de ${fmtDate(String(data.generated_at || '').slice(0, 10))} · recarregue para atualizar${stats.notifications_unread ? ` · ${stats.notifications_unread} notificação(ões)` : ''}</p>
           </footer>

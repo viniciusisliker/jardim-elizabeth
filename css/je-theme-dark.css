@@ -490,8 +490,7 @@ html.dark .hub-super-panel {
   background: var(--je-card) !important;
   border-color: var(--je-card-border) !important;
 }
-html.dark .hub-super-panel__head,
-html.dark .hub-super-table th {
+html.dark .hub-super-panel__head {
   background: rgba(255, 255, 255, 0.04) !important;
 }
 html.dark .hub-super-visit {
@@ -505,22 +504,8 @@ html.dark .hub-super-visit__head {
 html.dark .hub-super-panel__title,
 html.dark .hub-super-item__main,
 html.dark .hub-super-visit__title,
-html.dark .hub-super-visit__subtitle,
-html.dark .hub-super-table td:first-child,
-html.dark .hub-super-table td strong {
+html.dark .hub-super-visit__subtitle {
   color: var(--je-on-surface) !important;
-}
-html.dark .hub-super-equip-place strong,
-html.dark .hub-super-equip-day__label {
-  color: var(--je-on-surface) !important;
-}
-html.dark .hub-super-equip-period {
-  background: rgba(59, 130, 246, 0.15) !important;
-  color: #93c5fd !important;
-}
-html.dark .hub-super-equip-period--manha {
-  background: rgba(245, 158, 11, 0.15) !important;
-  color: #fcd34d !important;
 }
 html.dark .hub-super-link {
   background: rgba(255, 255, 255, 0.04) !important;
