@@ -41,7 +41,17 @@
   display:grid;gap:.875rem
 }
 @media(min-width:768px){
-  .hub-super-qa-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+  .hub-super-qa-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+}
+@media(min-width:1024px){
+  .hub-super-qa-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+.hub-super-qa-empty{
+  grid-column:1/-1;margin:0;padding:1rem;text-align:center;font-size:.6875rem;color:#9ca3af;
+  border:1px dashed #dbe3ef;border-radius:.75rem
+}
+@media(min-width:1024px){
+  .hub-super-qa-empty{grid-column:1/4}
 }
 .je-qa-card{
   position:relative;display:flex;flex-direction:column;gap:.875rem;
@@ -63,6 +73,7 @@
 .je-qa-card--org::before{background:linear-gradient(90deg,#b45309,#fcd34d)}
 .je-qa-card--midweek::before{background:linear-gradient(90deg,#0f3462,#3b5e97)}
 .je-qa-card--weekend::before{background:linear-gradient(90deg,#0a2847,#c8a96e)}
+.je-qa-card--territorios::before{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}
 .je-qa-card--default::before{background:linear-gradient(90deg,#0f3462,#c8a96e)}
 .je-qa-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.625rem}
 .je-qa-card-icon{
@@ -72,6 +83,7 @@
 .je-qa-card--org .je-qa-card-icon{background:#fef3c7;color:#b45309}
 .je-qa-card--midweek .je-qa-card-icon{background:#eff6ff;color:#0f3462}
 .je-qa-card--weekend .je-qa-card-icon{background:linear-gradient(135deg,#eff6ff,#faf6ef);color:#0f3462}
+.je-qa-card--territorios .je-qa-card-icon{background:#eff6ff;color:#1d4ed8}
 .je-qa-card--default .je-qa-card-icon{background:#f5f8fc;color:#3b5e97}
 .je-qa-card-icon .material-symbols-outlined{
   font-size:1.5rem;font-variation-settings:'FILL' 1,'wght' 500
@@ -83,6 +95,7 @@
 .je-qa-card--org .je-qa-card-tag{background:#fef3c7;color:#b45309}
 .je-qa-card--midweek .je-qa-card-tag{background:#dbeafe;color:#0f3462}
 .je-qa-card--weekend .je-qa-card-tag{background:#faf6ef;color:#0f3462}
+.je-qa-card--territorios .je-qa-card-tag{background:#dbeafe;color:#1d4ed8}
 .je-qa-card--default .je-qa-card-tag{background:#f5f8fc;color:#3b5e97}
 .je-qa-card-title{
   margin:0 0 .3125rem;font-family:'Plus Jakarta Sans',Inter,sans-serif;
@@ -126,7 +139,7 @@
 .hub-super-layout{display:grid;gap:.875rem}
 @media(min-width:1024px){
   .hub-super-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer,.hub-super-actions,.hub-super-qa{grid-column:1/-1}
+  .hub-super-visit,.hub-super-panel--wide,.hub-super-footer,.hub-super-qa{grid-column:1/-1}
 }
 
 .hub-super-panel{

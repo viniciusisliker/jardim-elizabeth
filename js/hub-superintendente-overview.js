@@ -8,10 +8,6 @@
     { href: 'agendamentos.html', label: 'Agendamentos', icon: 'event_available' }
   ];
 
-  const FEATURED_ACTIONS = [
-    { href: 'territorios.html', label: 'Territórios', icon: 'map', mod: 'territorios' }
-  ];
-
   function announcementCardModifier(slug) {
     if (slug === 'designacoes-mecanicas') return 'org';
     if (slug === 'meio-de-semana') return 'midweek';
@@ -41,16 +37,43 @@
       </a>`;
   }
 
-  function renderAnnouncementCards(sections) {
+  function renderTerritoriosCard(stats) {
+    const designados = stats.territories_designados ?? 0;
+    const total = stats.territories_total ?? 0;
+    return `
+      <a href="territorios.html" target="_blank" rel="noopener" class="je-qa-card je-qa-card--territorios">
+        <div class="je-qa-card-top">
+          <div class="je-qa-card-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>
+          </div>
+          <span class="je-qa-card-tag">Campo</span>
+        </div>
+        <div>
+          <h3 class="je-qa-card-title">Territórios</h3>
+          <p class="je-qa-card-desc">Mapas, designações e cronograma da pregação — ${designados}/${total} designados.</p>
+        </div>
+        <span class="je-qa-card-cta">
+          Abrir
+          <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        </span>
+      </a>`;
+  }
+
+  function renderAnnouncementCards(sections, stats = {}) {
+    const cards = (sections || []).map(renderAnnouncementCard).join('');
+    const territorios = renderTerritoriosCard(stats);
     if (!sections?.length) {
       return `
         <div class="hub-super-qa">
-          <p class="hub-super-empty hub-super-empty--compact">Nenhum quadro publicado no momento.</p>
+          <div class="je-qa-grid hub-super-qa-grid">
+            <p class="hub-super-qa-empty">Nenhum quadro publicado no momento.</p>
+            ${territorios}
+          </div>
         </div>`;
     }
     return `
       <div class="hub-super-qa">
-        <div class="je-qa-grid hub-super-qa-grid">${sections.map(renderAnnouncementCard).join('')}</div>
+        <div class="je-qa-grid hub-super-qa-grid">${cards}${territorios}</div>
       </div>`;
   }
 
@@ -122,20 +145,6 @@
     }).join('')}</div>`;
   }
 
-  function renderFeaturedActions() {
-    return `
-      <div class="hub-super-actions hub-super-actions--solo">
-        ${FEATURED_ACTIONS.map((action) => `
-          <a class="hub-super-action hub-super-action--${action.mod}" href="${esc(action.href)}" target="_blank" rel="noopener">
-            <span class="hub-super-action__icon material-symbols-outlined" aria-hidden="true">${esc(action.icon)}</span>
-            <span class="hub-super-action__body">
-              <strong class="hub-super-action__label">${esc(action.label)}</strong>
-            </span>
-            <span class="material-symbols-outlined hub-super-action__chev" aria-hidden="true">chevron_right</span>
-          </a>`).join('')}
-      </div>`;
-  }
-
   function renderQuickLinks() {
     return `<div class="hub-super-links">${QUICK_LINKS.map((link) => `
       <a class="hub-super-link" href="${esc(link.href)}" target="_blank" rel="noopener">
@@ -196,8 +205,7 @@
     return `
       <div class="hub-super-overview__inner">
         ${renderVisitSection(visit)}
-        ${renderAnnouncementCards(data.announcement_sections)}
-        ${renderFeaturedActions()}
+        ${renderAnnouncementCards(data.announcement_sections, stats)}
         <div class="hub-super-layout">
           ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
           <footer class="hub-super-footer hub-super-panel--wide">
