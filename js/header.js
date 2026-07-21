@@ -175,7 +175,7 @@
         id: 'mobile-hub-link',
         href: window.JEAuth?.getHubEntryUrl?.(profile) || 'hub.html',
         icon: 'dashboard',
-        tag: window.JEAuth?.isSuperintendente?.(profile) ? 'Superintendente' : 'Administrativo',
+        tag: window.JEAuth?.isSecretario?.(profile) ? 'Secretário' : (window.JEAuth?.isSuperintendente?.(profile) ? 'Superintendente' : 'Administrativo'),
         label: window.JEAuth?.getHubEntryLabel?.(profile) || 'Hub Administrativo'
       }));
     }

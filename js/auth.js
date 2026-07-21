@@ -4,6 +4,7 @@
     anciao: 'Ancião',
     servo_ministerial: 'Servo Ministerial',
     superintendente: 'Superintendente',
+    secretario: 'Secretário',
     publicador: 'Publicador'
   };
 
@@ -238,6 +239,8 @@
     if (!profile || !permission) return false;
     if (isSuperUser(profile.role)) return true;
 
+    if (permission === 'secretario' && isSecretario(profile)) return true;
+
     if (hasAssignedDesignations(profile)) {
       if ((profile.permissions || []).includes(permission)) return true;
       if (permission === 'announcements' && profile.can_announcements) return true;
@@ -259,19 +262,28 @@
     return role === 'superintendente';
   }
 
-  /** URL de entrada no Hub após login (Superintendente → home / visão geral). */
+  function isSecretario(roleOrProfile) {
+    const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
+    return role === 'secretario';
+  }
+
+  /** URL de entrada no Hub após login. */
   function getHubEntryUrl(profile) {
+    if (isSecretario(profile)) return 'hub.html#secretario';
     return 'hub.html';
   }
 
   function getHubEntryLabel(profile) {
-    return isSuperintendente(profile) ? 'Visão Geral' : 'Hub Administrativo';
+    if (isSecretario(profile)) return 'Secretário';
+    if (isSuperintendente(profile)) return 'Visão Geral';
+    return 'Hub Administrativo';
   }
 
   function canAccessHub(profile) {
     if (!profile) return false;
     if (isSuperUser(profile.role)) return true;
     if (isSuperintendente(profile)) return true;
+    if (isSecretario(profile)) return true;
 
     if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
 
@@ -483,6 +495,7 @@
     isAdminRole,
     isSuperUser,
     isSuperintendente,
+    isSecretario,
     getHubEntryUrl,
     getHubEntryLabel,
     hasPermission,

@@ -127,8 +127,41 @@
       </a>`).join('')}</div>`;
   }
 
+  function renderSuperintendentVisit(visit) {
+    if (!visit?.id) {
+      return '<p class="hub-super-empty">O Secretário ainda não publicou informações sobre a visita.</p>';
+    }
+    const docs = visit.documents || [];
+    const notes = visit.notes
+      ? `<div class="hub-super-visit-notes">${esc(visit.notes).replace(/\n/g, '<br>')}</div>`
+      : '<p class="hub-super-empty hub-super-empty--inline">Sem informações textuais.</p>';
+    const docsHtml = docs.length
+      ? `<div class="hub-super-list">${docs.map((doc) => `
+          <article class="hub-super-row hub-super-doc-row">
+            <span class="material-symbols-outlined hub-super-doc-icon" aria-hidden="true">description</span>
+            <div>
+              <p class="hub-super-row__main">${esc(doc.label || doc.file_name)}</p>
+              <p class="hub-super-row__sub">${esc(doc.file_name)}</p>
+            </div>
+            <button type="button" class="hub-super-doc-btn" data-super-doc-path="${esc(doc.storage_path)}">Abrir</button>
+          </article>`).join('')}</div>`
+      : '<p class="hub-super-empty hub-super-empty--inline">Nenhum documento anexado.</p>';
+
+    return `
+      <div class="hub-super-visit-head">
+        <p class="hub-super-visit-title">${esc(visit.title || 'Visita do Superintendente')}</p>
+        <p class="hub-super-visit-date">${visit.visit_date ? `Data: ${fmtDate(visit.visit_date)}` : 'Data a definir'}</p>
+      </div>
+      ${notes}
+      <div class="hub-super-visit-docs">
+        <p class="hub-super-visit-docs-label">Documentos</p>
+        ${docsHtml}
+      </div>`;
+  }
+
   function renderOverview(data) {
     const stats = data.stats || {};
+    const visit = data.superintendent_visit;
     return `
       <p class="hub-super-overview__lead">
         <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
@@ -136,6 +169,13 @@
       </p>
       ${renderStats(stats)}
       <div class="hub-super-grid">
+        <section class="hub-super-card hub-super-card--wide hub-super-card--featured">
+          <header class="hub-super-card__head">
+            <h2 class="hub-super-card__title"><span class="material-symbols-outlined" aria-hidden="true">event_note</span>Visita do Superintendente</h2>
+            <span class="hub-super-card__meta">${visit?.updated_at ? `Atualizado ${fmtDate(String(visit.updated_at).slice(0, 10))}` : 'Secretário'}</span>
+          </header>
+          <div class="hub-super-card__body" id="hub-super-visit-body">${renderSuperintendentVisit(visit)}</div>
+        </section>
         <section class="hub-super-card">
           <header class="hub-super-card__head">
             <h2 class="hub-super-card__title"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>Próximos eventos</h2>
@@ -201,6 +241,18 @@
       if (!loadPromise) loadPromise = loadOverview(client);
       const data = await loadPromise;
       root.innerHTML = renderOverview(data || {});
+      root.querySelector('#hub-super-visit-body')?.addEventListener('click', async (e) => {
+        const path = e.target.closest('[data-super-doc-path]')?.dataset.superDocPath;
+        if (!path) return;
+        try {
+          const client = await window.JEAuth.getClient();
+          const { data: signed, error } = await client.storage.from('superintendent-visits').createSignedUrl(path, 3600);
+          if (error || !signed?.signedUrl) throw error || new Error('URL indisponível');
+          window.open(signed.signedUrl, '_blank', 'noopener');
+        } catch (err) {
+          console.warn('Download visit doc:', err);
+        }
+      });
       return true;
     } catch (err) {
       console.warn('Superintendente overview:', err);

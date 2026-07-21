@@ -461,7 +461,7 @@
     .hub-boot-error__link:hover{text-decoration:underline}
   </style>
   <link href="css/je-theme-dark.css?v=20260710200000" rel="stylesheet"/>
-  <link href="css/hub-superintendente-overview.css?v=20260721130000" rel="stylesheet"/>
+  <link href="css/hub-superintendente-overview.css?v=20260721140000" rel="stylesheet"/>
 </head>
 
 <body class="hub-page bg-background text-on-background min-h-screen flex flex-col hub-auth-pending" style="font-family:'Inter',sans-serif;">
@@ -619,6 +619,20 @@
           </section>
 
           <section class="hub-module-group">
+            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Secretário</h3>
+            <div class="hub-module-grid">
+              <button type="button" data-hub-tab="secretario" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_note</span></span>
+                <div class="hub-module-body">
+                  <h4>Secretário</h4>
+                  <p>Visita do Superintendente — documentos e informações.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="donativos" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
@@ -669,6 +683,7 @@
       <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-carrinhos-displays" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-audio-video" class="hub-view hidden hub-view--wide"></div>
+      <div id="hub-view-secretario" class="hub-view hidden hub-view--wide"></div>
 
       <div id="hub-view-donativos" class="hub-view hidden">
         <div class="hub-section-panel mx-auto w-full">
@@ -865,7 +880,7 @@
 
   <script src="js/config.js"></script>
   <script src="js/access-permissions.js"></script>
-  <script src="js/auth.js?v=20260721133000"></script>
+  <script src="js/auth.js?v=20260721140000"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js?v=2026060801"></script>
@@ -897,7 +912,7 @@
   <script src="js/je-pwa-install.js?v=2026061719"></script>
   <script src="js/je-pwa-update.js?v=2026061719"></script>
   <script src="js/je-push.js?v=2026061719"></script>
-  <script src="js/hub-superintendente-overview.js?v=20260721130000"></script>
-  <script src="js/hub.js?v=20260721133000"></script>
+  <script src="js/hub-superintendente-overview.js?v=20260721140000"></script>
+  <script src="js/hub.js?v=20260721140000"></script>
 </body>
 </html>

@@ -73,4 +73,15 @@
   background:#eef3fa;color:#0f3462;font-size:.5625rem;font-weight:800;line-height:1.2
 }
 .hub-super-agenda-date em{display:block;font-style:normal;font-size:.8125rem;line-height:1.1}
+.hub-super-card--featured{border-color:#bfdbfe;background:linear-gradient(180deg,#f8fbff 0%,#fff 100%)}
+.hub-super-visit-head{margin-bottom:.625rem}
+.hub-super-visit-title{margin:0;font-size:.8125rem;font-weight:800;color:#0f3462}
+.hub-super-visit-date{margin:.125rem 0 0;font-size:.625rem;color:#6b7280}
+.hub-super-visit-notes{font-size:.6875rem;line-height:1.5;color:#374151;white-space:normal;margin-bottom:.75rem;padding:.625rem .75rem;border-radius:.5625rem;background:#f8fafc;border:1px solid #eef0f4}
+.hub-super-visit-docs-label{margin:0 0 .375rem;font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+.hub-super-empty--inline{padding:.625rem;margin:0}
+.hub-super-doc-row{align-items:center;grid-template-columns:auto 1fr auto}
+.hub-super-doc-icon{color:#3b5e97;font-size:1.125rem!important}
+.hub-super-doc-btn{border:none;border-radius:.4375rem;padding:.3125rem .5625rem;background:#eef3fa;color:#0f3462;font-size:.625rem;font-weight:800;cursor:pointer}
+.hub-super-doc-btn:hover{background:#dbeafe}
 .hub-super-footer-note{margin:1rem 0 0;font-size:.625rem;color:#9ca3af;text-align:center}

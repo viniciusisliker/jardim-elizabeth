@@ -176,6 +176,23 @@
         showBack: true
       }
     },
+    secretario: {
+      id: 'secretario',
+      hash: 'secretario',
+      permission: 'secretario',
+      viewId: 'hub-view-secretario',
+      partial: 'hub/sections/secretario.html',
+      styles: ['css/hub-sections/secretario.css?v=20260721140000'],
+      scripts: ['js/admin/secretario.js?v=20260721140000'],
+      initKey: 'JEAdminSecretario',
+      hero: {
+        kicker: 'Secretário',
+        title: 'Secretário',
+        subtitle: 'Visita do Superintendente — informações e documentos para a Visão Geral.',
+        showChangelog: false,
+        showBack: true
+      }
+    },
     perfil: {
       id: 'perfil',
       hash: 'perfil',

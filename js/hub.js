@@ -90,19 +90,27 @@
     return window.JEAuth?.isSuperintendente?.(profile) ?? profile?.role === 'superintendente';
   }
 
+  function isSecretarioProfile(profile) {
+    return window.JEAuth?.isSecretario?.(profile) ?? profile?.role === 'secretario';
+  }
+
   function resolveBootSection(profile) {
     const fromHash = sectionByHash(location.hash);
     if (isSuperintendenteProfile(profile)) {
       return fromHash?.id === 'perfil' ? 'perfil' : 'home';
+    }
+    if (isSecretarioProfile(profile)) {
+      if (fromHash?.id === 'perfil') return 'perfil';
+      if (fromHash?.id === 'secretario') return 'secretario';
+      return 'secretario';
     }
     return fromHash?.id || 'home';
   }
 
   async function navigateToBoot(profile) {
     const sectionId = resolveBootSection(profile);
-    const replaceHash = isSuperintendenteProfile(profile)
-      ? sectionId === 'home'
-      : false;
+    const replaceHash = (isSuperintendenteProfile(profile) && sectionId === 'home')
+      || (isSecretarioProfile(profile) && sectionId === 'secretario');
     await navigateTo(sectionId, { replaceHash });
   }
 
@@ -230,6 +238,16 @@
     });
 
     applySuperintendenteHome(profile);
+    applySecretarioHome(profile);
+  }
+
+  function applySecretarioHome(profile) {
+    const isSec = isSecretarioProfile(profile);
+    const modulesPanel = document.querySelector('.hub-modules-panel');
+    const intro = document.querySelector('.hub-home-intro p');
+    if (!isSec) return;
+    modulesPanel?.classList.add('hidden');
+    if (intro) intro.textContent = 'Área do Secretário — Visita do Superintendente.';
   }
 
   function sectionByHash(hash) {
@@ -519,6 +537,10 @@
 
     window.addEventListener('hashchange', () => {
       if (isSuperintendenteProfile(currentProfile)) {
+        navigateTo(resolveBootSection(currentProfile), { replaceHash: true });
+        return;
+      }
+      if (isSecretarioProfile(currentProfile)) {
         navigateTo(resolveBootSection(currentProfile), { replaceHash: true });
         return;
       }

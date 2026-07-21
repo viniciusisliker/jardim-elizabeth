@@ -8,10 +8,11 @@
     audio_video: 'Áudio e Vídeo',
     territorios: 'Territórios',
     donativos: 'Donativos',
+    secretario: 'Secretário',
     settings: 'Configurações'
   };
 
-  const MODULE_PERMISSIONS = ['agenda', 'announcements', 'public_speeches', 'agendamentos', 'audio_video', 'territorios', 'donativos'];
+  const MODULE_PERMISSIONS = ['agenda', 'announcements', 'public_speeches', 'agendamentos', 'audio_video', 'territorios', 'donativos', 'secretario'];
 
   window.JEAccess = {
     PERMISSION_LABELS,
