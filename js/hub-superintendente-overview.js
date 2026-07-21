@@ -35,19 +35,50 @@
       </section>`;
   }
 
+  function agendaDateBlock(ev) {
+    if (ev.event_date) {
+      const d = new Date(`${ev.event_date}T12:00:00`);
+      if (!Number.isNaN(d.getTime())) {
+        return {
+          day: d.toLocaleDateString('pt-BR', { day: '2-digit' }),
+          month: d.toLocaleDateString('pt-BR', { month: 'short' }).replace(/\.$/, ''),
+          label: ev.date_label || d.toLocaleDateString('pt-BR', { weekday: 'short' })
+        };
+      }
+    }
+    const display = String(ev.date_display || fmtDate(ev.event_date) || '—');
+    const match = display.match(/^(\d{1,2})\s*(.*)$/);
+    return {
+      day: match?.[1] || display,
+      month: match?.[2] || '',
+      label: ev.date_label || ''
+    };
+  }
+
   function renderAgenda(items) {
-    if (!items?.length) return '<p class="hub-super-empty">Nenhum evento publicado.</p>';
-    return `<div class="hub-super-list">${items.map((ev) => `
-      <article class="hub-super-item hub-super-agenda-item">
-        <div class="hub-super-agenda-date">
-          <em>${esc(ev.date_display || fmtDate(ev.event_date))}</em>
-          ${esc(ev.date_label || '')}
+    if (!items?.length) return '<p class="hub-super-empty hub-super-empty--agenda">Nenhum evento publicado no momento.</p>';
+    return `<div class="hub-super-agenda-list">${items.map((ev) => {
+      const date = agendaDateBlock(ev);
+      const metaParts = [];
+      if (ev.event_time) metaParts.push(`<span class="hub-super-agenda-chip"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${esc(ev.event_time)}</span>`);
+      if (ev.location) metaParts.push(`<span class="hub-super-agenda-chip"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>${esc(ev.location)}</span>`);
+      const highlight = ev.is_highlight ? ' hub-super-agenda-card--highlight' : '';
+      return `
+      <article class="hub-super-agenda-card${highlight}">
+        <div class="hub-super-agenda-date" aria-hidden="true">
+          <span class="hub-super-agenda-date__day">${esc(date.day)}</span>
+          ${date.month ? `<span class="hub-super-agenda-date__month">${esc(date.month)}</span>` : ''}
+          ${date.label ? `<span class="hub-super-agenda-date__label">${esc(date.label)}</span>` : ''}
         </div>
-        <div>
-          <p class="hub-super-item__main">${esc(ev.title)}</p>
-          <p class="hub-super-item__sub">${esc(ev.category || 'Evento')}${ev.event_time ? ` · ${esc(ev.event_time)}` : ''}${ev.location ? ` · ${esc(ev.location)}` : ''}</p>
+        <div class="hub-super-agenda-body">
+          <p class="hub-super-agenda-title">${esc(ev.title)}</p>
+          <div class="hub-super-agenda-meta">
+            ${ev.category ? `<span class="hub-super-agenda-cat">${esc(ev.category)}</span>` : ''}
+            ${metaParts.join('')}
+          </div>
         </div>
-      </article>`).join('')}</div>`;
+      </article>`;
+    }).join('')}</div>`;
   }
 
   function renderFeaturedActions(stats) {
@@ -136,7 +167,7 @@
         ${renderVisitSection(visit)}
         ${renderFeaturedActions(stats)}
         <div class="hub-super-layout">
-          ${panel('Próximos eventos', 'calendar_month', 'Agenda publicada', renderAgenda(data.agenda), 'hub-super-panel--wide')}
+          ${panel('Próximos eventos', 'calendar_month', `${(data.agenda || []).length} evento(s)`, renderAgenda(data.agenda), 'hub-super-panel--wide hub-super-panel--agenda')}
           <footer class="hub-super-footer hub-super-panel--wide">
             ${renderQuickLinks()}
             <p class="hub-super-footer-note">Dados de ${fmtDate(String(data.generated_at || '').slice(0, 10))} · recarregue para atualizar${stats.notifications_unread ? ` · ${stats.notifications_unread} notificação(ões)` : ''}</p>

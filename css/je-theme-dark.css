@@ -507,6 +507,25 @@ html.dark .hub-super-visit__title,
 html.dark .hub-super-visit__subtitle {
   color: var(--je-on-surface) !important;
 }
+html.dark .hub-super-panel--agenda {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.06) 0%, var(--je-card) 100%) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+html.dark .hub-super-panel--agenda .hub-super-panel__head {
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+html.dark .hub-super-agenda-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-super-agenda-date {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+html.dark .hub-super-agenda-title,
+html.dark .hub-super-agenda-date__day {
+  color: var(--je-on-surface) !important;
+}
 html.dark .hub-super-action {
   background: rgba(255, 255, 255, 0.04) !important;
   border-color: var(--je-card-border) !important;
