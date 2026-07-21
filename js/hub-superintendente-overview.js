@@ -162,23 +162,37 @@
       ? `<div class="hub-super-visit__notes">${esc(visit.notes).replace(/\n/g, '<br>')}</div>`
       : '';
     const docsHtml = docs.length
-      ? docs.map((doc) => `
+      ? docs.map((doc) => {
+          const label = doc.label || doc.file_name;
+          const showFile = doc.file_name && doc.file_name !== label;
+          return `
           <article class="hub-super-doc">
             <span class="material-symbols-outlined hub-super-doc__icon" aria-hidden="true">description</span>
-            <div>
-              <p class="hub-super-item__main">${esc(doc.label || doc.file_name)}</p>
-              <p class="hub-super-item__sub">${esc(doc.file_name)}</p>
+            <div class="hub-super-doc__body">
+              <p class="hub-super-doc__name">${esc(label)}</p>
+              ${showFile ? `<p class="hub-super-doc__file">${esc(doc.file_name)}</p>` : ''}
             </div>
-            <button type="button" class="hub-super-doc__btn" data-super-doc-path="${esc(doc.storage_path)}">Abrir</button>
-          </article>`).join('')
+            <button type="button" class="hub-super-doc__btn" data-super-doc-path="${esc(doc.storage_path)}">
+              <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>Abrir
+            </button>
+          </article>`;
+        }).join('')
       : '<p class="hub-super-empty hub-super-empty--compact">Nenhum documento anexado.</p>';
 
+    const dateHtml = visit.visit_date
+      ? `<div class="hub-super-visit__date-chip">
+          <span class="material-symbols-outlined" aria-hidden="true">event</span>
+          <span>Data prevista: <strong>${fmtDate(visit.visit_date)}</strong></span>
+        </div>`
+      : '<p class="hub-super-visit__date-pending">Data a definir pelo Secretário</p>';
+
     return `
-      <p class="hub-super-visit__subtitle">${esc(visit.title || 'Visita do Superintendente')}</p>
-      <p class="hub-super-visit__date">${visit.visit_date ? `Data prevista: ${fmtDate(visit.visit_date)}` : 'Data a definir pelo Secretário'}</p>
+      ${dateHtml}
       ${notes}
-      <p class="hub-super-visit__docs-label">Documentos</p>
-      ${docsHtml}`;
+      <section class="hub-super-visit__docs" aria-labelledby="hub-super-visit-docs-label">
+        <p id="hub-super-visit-docs-label" class="hub-super-visit__docs-label">Documentos</p>
+        <div class="hub-super-docs-list">${docsHtml}</div>
+      </section>`;
   }
 
   function renderVisitSection(visit) {
@@ -190,7 +204,7 @@
         <header class="hub-super-visit__head">
           <h2 class="hub-super-visit__title">
             <span class="material-symbols-outlined" aria-hidden="true">event_note</span>
-            Visita do Superintendente
+            ${esc(visit?.title || 'Visita do Superintendente')}
           </h2>
           <span class="hub-super-visit__meta">${esc(meta)}</span>
         </header>
