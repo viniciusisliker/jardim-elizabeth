@@ -149,6 +149,12 @@
       </article>`).join('')}</div>`;
   }
 
+  function shortDay(label) {
+    const s = String(label || '').trim();
+    if (s.length <= 4) return s;
+    return s.slice(0, 3);
+  }
+
   function periodBadgeClass(label) {
     return /manh/i.test(String(label || '')) ? 'hub-super-equip-period--manha' : '';
   }
