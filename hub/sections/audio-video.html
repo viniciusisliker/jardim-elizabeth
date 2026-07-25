@@ -11,6 +11,10 @@
             <span class="material-symbols-outlined" aria-hidden="true">checklist</span>
             <span class="av-tab-label">Checklists</span>
           </button>
+          <button type="button" class="av-tab" data-av-tab="assistencia">
+            <span class="material-symbols-outlined" aria-hidden="true">event_seat</span>
+            <span class="av-tab-label">Assistência</span>
+          </button>
           <button type="button" class="av-tab" data-av-tab="notas">
             <span class="material-symbols-outlined" aria-hidden="true">sticky_note_2</span>
             <span class="av-tab-label">Notas</span>
@@ -96,6 +100,56 @@
       </div>
       <p id="av-checklist-summary" class="av-checklist-summary"></p>
       <div id="av-checklists" class="av-checklist-grid"></div>
+    </section>
+
+    <section id="av-panel-assistencia" class="av-panel space-y-4">
+      <div class="av-toolbar">
+        <div class="flex-1 min-w-[10rem]">
+          <h2>Assistência</h2>
+          <p>Registre a assistência ao final de cada reunião. O Secretário vê o histórico no painel dele.</p>
+        </div>
+      </div>
+
+      <form id="av-attendance-form" class="av-attendance-form">
+        <input type="hidden" id="av-attendance-id"/>
+        <div class="av-attendance-form__grid">
+          <label class="av-field">
+            <span>Data da reunião</span>
+            <input type="date" id="av-attendance-date" class="av-input" required/>
+          </label>
+          <label class="av-field">
+            <span>Tipo de reunião</span>
+            <select id="av-attendance-kind" class="av-input" required>
+              <option value="midweek">Meio de semana</option>
+              <option value="weekend">Final de semana</option>
+            </select>
+          </label>
+          <label class="av-field">
+            <span>Assistência</span>
+            <input type="number" id="av-attendance-count" class="av-input" min="0" step="1" required placeholder="Ex.: 84"/>
+          </label>
+          <label class="av-field av-attendance-extra hidden" id="av-attendance-extra-wrap">
+            <span>Contagem extra</span>
+            <input type="number" id="av-attendance-extra" class="av-input" min="0" step="1" placeholder="Opcional"/>
+          </label>
+        </div>
+        <label class="av-field">
+          <span>Observações</span>
+          <textarea id="av-attendance-remarks" class="av-input" rows="2" placeholder="Ex.: microfone auxiliar, transmissão Zoom…"></textarea>
+        </label>
+        <div class="av-attendance-form__foot">
+          <button type="button" id="av-attendance-cancel-edit" class="av-toolbar-btn av-toolbar-btn--ghost hidden">Cancelar edição</button>
+          <button type="submit" class="av-toolbar-btn av-toolbar-btn--accent">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
+            <span id="av-attendance-submit-label">Registrar assistência</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="av-attendance-recent">
+        <h3 class="av-attendance-recent__title">Registros recentes</h3>
+        <div id="av-attendance-list" class="av-attendance-list"></div>
+      </div>
     </section>
 
     <section id="av-panel-notas" class="av-panel space-y-4">

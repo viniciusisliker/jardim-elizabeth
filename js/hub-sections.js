@@ -124,9 +124,9 @@
       permission: 'audio_video',
       viewId: 'hub-view-audio-video',
       partial: 'hub/sections/audio-video.html',
-      styles: ['css/hub-sections/audio-video.css?v=2026061048'],
+      styles: ['css/hub-sections/audio-video.css?v=20260724233000'],
       scripts: [
-        'js/admin/audio-video.js?v=2026061048'
+        'js/admin/audio-video.js?v=20260724233000'
       ],
       initKey: 'JEAdminAudioVideo',
       hero: {
@@ -182,11 +182,11 @@
       permission: 'secretario',
       viewId: 'hub-view-secretario',
       partial: 'hub/sections/secretario.html',
-      styles: ['css/hub-sections/secretario.css?v=20260724220000'],
+      styles: ['css/hub-sections/secretario.css?v=20260724234500'],
       scripts: [
-        'js/admin/secretario-service.js?v=20260724220000',
-        'js/admin/secretario-visit.js?v=20260724220000',
-        'js/admin/secretario.js?v=20260724220000'
+        'js/admin/secretario-service.js?v=20260724234500',
+        'js/admin/secretario-visit.js?v=20260724234500',
+        'js/admin/secretario.js?v=20260724234500'
       ],
       initKey: 'JEAdminSecretario',
       hero: {

@@ -1,5 +1,14 @@
 (function () {
-  const { guardPermission, getClient, showToast } = window.JEAdmin;
+  const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
+
+  const MEETING_LABELS = {
+    midweek: 'Meio de semana',
+    weekend: 'Final de semana'
+  };
+
+  let attendanceLogs = [];
+  let extraAttendanceEnabled = false;
+  let editingAttendanceId = null;
 
   const CHECKLISTS = [
     {
@@ -296,6 +305,163 @@
     showToast(toastEl(), 'Checklists limpos.');
   }
 
+  function todayIsoDate() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(`${dateStr}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function resetAttendanceForm() {
+    editingAttendanceId = null;
+    document.getElementById('av-attendance-id').value = '';
+    document.getElementById('av-attendance-date').value = todayIsoDate();
+    document.getElementById('av-attendance-kind').value = 'midweek';
+    document.getElementById('av-attendance-count').value = '';
+    document.getElementById('av-attendance-extra').value = '';
+    document.getElementById('av-attendance-remarks').value = '';
+    document.getElementById('av-attendance-submit-label').textContent = 'Registrar assistência';
+    document.getElementById('av-attendance-cancel-edit')?.classList.add('hidden');
+  }
+
+  function fillAttendanceForm(row) {
+    editingAttendanceId = row.id;
+    document.getElementById('av-attendance-id').value = row.id;
+    document.getElementById('av-attendance-date').value = row.meeting_date;
+    document.getElementById('av-attendance-kind').value = row.meeting_kind;
+    document.getElementById('av-attendance-count').value = row.attendance_count;
+    document.getElementById('av-attendance-extra').value = row.extra_count ?? '';
+    document.getElementById('av-attendance-remarks').value = row.remarks || '';
+    document.getElementById('av-attendance-submit-label').textContent = 'Salvar alterações';
+    document.getElementById('av-attendance-cancel-edit')?.classList.remove('hidden');
+    document.getElementById('av-attendance-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function loadAttendanceSettings(client) {
+    const { data } = await client.from('secretary_settings').select('extra_attendance_count').eq('id', true).maybeSingle();
+    extraAttendanceEnabled = !!data?.extra_attendance_count;
+    document.getElementById('av-attendance-extra-wrap')?.classList.toggle('hidden', !extraAttendanceEnabled);
+  }
+
+  async function loadAttendanceLogs(client) {
+    const { data, error } = await client
+      .from('secretary_attendance_logs')
+      .select(`
+        id, meeting_date, meeting_kind, attendance_count, extra_count, remarks, created_at,
+        profiles:submitted_by ( full_name )
+      `)
+      .order('meeting_date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(24);
+    if (error) throw error;
+    attendanceLogs = data || [];
+    renderAttendanceList();
+  }
+
+  function renderAttendanceList() {
+    const root = document.getElementById('av-attendance-list');
+    if (!root) return;
+    if (!attendanceLogs.length) {
+      root.innerHTML = '<p class="av-hint">Nenhum registro ainda. Preencha o formulário acima após a reunião.</p>';
+      return;
+    }
+    root.innerHTML = attendanceLogs.map((row) => `
+      <article class="av-attendance-item">
+        <div class="av-attendance-item__main">
+          <p class="av-attendance-item__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
+          <p class="av-attendance-item__kind">${escapeHtml(MEETING_LABELS[row.meeting_kind] || row.meeting_kind)}</p>
+        </div>
+        <div class="av-attendance-item__counts">
+          <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
+          ${row.extra_count != null ? `<span class="av-attendance-item__extra">+${escapeHtml(String(row.extra_count))}</span>` : ''}
+        </div>
+        <div class="av-attendance-item__meta">
+          ${row.remarks ? `<p class="av-attendance-item__remarks">${escapeHtml(row.remarks)}</p>` : ''}
+          <p class="av-attendance-item__by">${escapeHtml(row.profiles?.full_name || 'Equipe A/V')}</p>
+        </div>
+        <div class="av-attendance-item__actions">
+          <button type="button" class="av-attendance-item__btn" data-av-att-edit="${row.id}" title="Editar">
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--danger" data-av-att-del="${row.id}" title="Excluir">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      </article>`).join('');
+  }
+
+  function bindAttendanceForm(client, profile) {
+    const form = document.getElementById('av-attendance-form');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
+    resetAttendanceForm();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        meeting_date: document.getElementById('av-attendance-date').value,
+        meeting_kind: document.getElementById('av-attendance-kind').value,
+        attendance_count: Number(document.getElementById('av-attendance-count').value) || 0,
+        extra_count: extraAttendanceEnabled && document.getElementById('av-attendance-extra').value !== ''
+          ? Number(document.getElementById('av-attendance-extra').value)
+          : null,
+        remarks: document.getElementById('av-attendance-remarks').value.trim(),
+        submitted_by: profile.id,
+        updated_at: new Date().toISOString()
+      };
+
+      let error;
+      if (editingAttendanceId) {
+        ({ error } = await client.from('secretary_attendance_logs').update(payload).eq('id', editingAttendanceId));
+      } else {
+        ({ error } = await client.from('secretary_attendance_logs').insert(payload));
+      }
+
+      if (error) {
+        showToast(toastEl(), error.message, true);
+        return;
+      }
+
+      showToast(toastEl(), editingAttendanceId ? 'Registro atualizado.' : 'Assistência registrada.');
+      resetAttendanceForm();
+      await loadAttendanceLogs(client);
+    });
+
+    document.getElementById('av-attendance-cancel-edit')?.addEventListener('click', resetAttendanceForm);
+
+    document.getElementById('av-attendance-list')?.addEventListener('click', async (e) => {
+      const editId = e.target.closest('[data-av-att-edit]')?.dataset.avAttEdit;
+      const delId = e.target.closest('[data-av-att-del]')?.dataset.avAttDel;
+      if (editId) {
+        const row = attendanceLogs.find((item) => item.id === editId);
+        if (row) fillAttendanceForm(row);
+        return;
+      }
+      if (delId) {
+        const row = attendanceLogs.find((item) => item.id === delId);
+        const label = row ? `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind]}` : 'este registro';
+        if (!window.confirm(`Excluir ${label}?`)) return;
+        const { error } = await client.from('secretary_attendance_logs').delete().eq('id', delId);
+        if (error) {
+          showToast(toastEl(), error.message, true);
+          return;
+        }
+        showToast(toastEl(), 'Registro excluído.');
+        if (editingAttendanceId === delId) resetAttendanceForm();
+        await loadAttendanceLogs(client);
+      }
+    });
+  }
+
   async function loadNotes(client) {
     const { data } = await client.from('site_settings').select('value').eq('key', 'audio_video').maybeSingle();
     const value = data?.value || {};
@@ -334,6 +500,9 @@
     document.getElementById('av-btn-reset-checklists')?.addEventListener('click', resetChecklists);
 
     const client = await getClient();
+    await loadAttendanceSettings(client);
+    await loadAttendanceLogs(client);
+    bindAttendanceForm(client, profile);
     await loadNotes(client);
     bindNotesForm(client);
     return true;

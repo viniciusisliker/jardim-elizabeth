@@ -7,6 +7,18 @@
     pioneiro_auxiliar: 'Pioneiros auxiliares',
     pioneiro_regular: 'Pioneiros regulares'
   };
+  const PUBLISHER_TYPE_LABEL = {
+    publicador: 'Publicador',
+    pioneiro_auxiliar: 'Pioneiro auxiliar',
+    pioneiro_regular: 'Pioneiro regular'
+  };
+  const PUBLISHER_STATUS_LABEL = {
+    ativo: 'Ativo',
+    irregular: 'Irregular',
+    inativo: 'Desativado',
+    reintegrado: 'Readmitido',
+    primeiro_relatorio: 'Primeiro relatório'
+  };
   const STATUS_LABELS = {
     ativo: 'Publicadores ativos',
     irregular: 'Irregulares',
@@ -31,6 +43,7 @@
   let reports = new Map();
   let monthStatus = { is_closed: false, observations: '' };
   let attendance = { midweek: 0, weekend: 0, midweekExtra: null, weekendExtra: null };
+  let attendanceLogs = [];
   let adjustments = [];
   let settings = {};
 
@@ -223,6 +236,181 @@
     root.innerHTML = cards.join('');
   }
 
+  function renderPublisherList() {
+    const root = document.getElementById('sec-publisher-list');
+    const filter = document.getElementById('sec-publisher-filter')?.value || 'all';
+    if (!root) return;
+
+    let list = [...publishers];
+    if (filter === 'ativo') list = list.filter((p) => p.status === 'ativo');
+    else if (filter === 'irregular') list = list.filter((p) => p.status === 'irregular');
+    else if (filter === 'pioneiro_auxiliar') list = list.filter((p) => p.publisher_type === 'pioneiro_auxiliar');
+    else if (filter === 'pioneiro_regular') list = list.filter((p) => p.publisher_type === 'pioneiro_regular');
+
+    list.sort((a, b) => displayName(a).localeCompare(displayName(b), 'pt-BR'));
+
+    if (!list.length) {
+      root.innerHTML = '<p class="sec-empty">Nenhum publicador neste filtro.</p>';
+      return;
+    }
+
+    const byGroup = new Map();
+    list.forEach((p) => {
+      const g = p.group_name || 'Sem grupo';
+      if (!byGroup.has(g)) byGroup.set(g, []);
+      byGroup.get(g).push(p);
+    });
+
+    root.innerHTML = [...byGroup.entries()].map(([groupName, items]) => `
+      <section class="sec-publisher-group">
+        <h3 class="sec-publisher-group__title">${escapeHtml(groupName)}</h3>
+        ${items.map((p) => `
+          <button type="button" class="sec-publisher-row" data-sec-edit-publisher="${p.profile_id}">
+            <span class="material-symbols-outlined sec-publisher-row__avatar">person</span>
+            <span class="sec-publisher-row__body">
+              <span class="sec-publisher-row__name">${escapeHtml(displayName(p))}</span>
+              <span class="sec-publisher-row__status">${escapeHtml(PUBLISHER_TYPE_LABEL[p.publisher_type] || p.publisher_type)} · ${escapeHtml(PUBLISHER_STATUS_LABEL[p.status] || p.status)}</span>
+            </span>
+            <span class="sec-publisher-row__meta">
+              ${p.baptism_date ? `<span>Batismo: ${fmtYears(ageYears(p.baptism_date))}</span>` : ''}
+              ${p.phone ? `<span>${escapeHtml(p.phone)}</span>` : ''}
+            </span>
+            ${p.is_starred ? '<span class="material-symbols-outlined sec-publisher-row__star">star</span>' : ''}
+            <span class="material-symbols-outlined sec-publisher-row__edit" aria-hidden="true">edit</span>
+          </button>`).join('')}
+      </section>`).join('');
+  }
+
+  function fillPublisherGroupSelect() {
+    const select = document.getElementById('sec-publisher-group');
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = '<option value="">Sem grupo</option>' + groups.map((g) =>
+      `<option value="${g.id}">${escapeHtml(g.name)}</option>`
+    ).join('');
+    if (current) select.value = current;
+  }
+
+  function openPublisherModal(profileId = null) {
+    fillPublisherGroupSelect();
+    const isEdit = !!profileId;
+    const p = isEdit ? publishers.find((x) => x.profile_id === profileId) : null;
+
+    document.getElementById('sec-publisher-modal-title').textContent = isEdit ? 'Editar Publicador' : 'Novo Publicador';
+    document.getElementById('sec-publisher-modal-sub').textContent = isEdit
+      ? 'Atualize os dados da ficha do publicador.'
+      : 'Cria a conta de login e a ficha no Secretário.';
+    document.getElementById('sec-publisher-profile-id').value = profileId || '';
+    document.getElementById('sec-publisher-name').value = p?.full_name || '';
+    document.getElementById('sec-publisher-username').value = p?.username || '';
+    document.getElementById('sec-publisher-login-email').value = '';
+    document.getElementById('sec-publisher-password').value = '';
+    document.getElementById('sec-publisher-group').value = p?.group_id || '';
+    document.getElementById('sec-publisher-type').value = p?.publisher_type || 'publicador';
+    document.getElementById('sec-publisher-status').value = p?.status || 'ativo';
+    document.getElementById('sec-publisher-baptism').value = p?.baptism_date || '';
+    document.getElementById('sec-publisher-birth').value = p?.birth_date || '';
+    document.getElementById('sec-publisher-phone').value = p?.phone || '';
+    document.getElementById('sec-publisher-contact-email').value = p?.email || '';
+    document.getElementById('sec-publisher-starred').checked = !!p?.is_starred;
+    document.getElementById('sec-publisher-notes').value = p?.notes || '';
+
+    document.getElementById('sec-publisher-username-wrap').classList.toggle('hidden', isEdit);
+    document.getElementById('sec-publisher-email-wrap').classList.toggle('hidden', isEdit);
+    document.getElementById('sec-publisher-password-wrap').classList.toggle('hidden', isEdit);
+    document.getElementById('sec-publisher-username').required = !isEdit;
+    document.getElementById('sec-publisher-password').required = !isEdit;
+    document.getElementById('sec-publisher-save').textContent = isEdit ? 'Salvar alterações' : 'Criar publicador';
+
+    openModal('sec-publisher-modal');
+    document.getElementById('sec-publisher-name')?.focus();
+  }
+
+  function normalizeFullName(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ');
+  }
+
+  function normalizeUsername(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  async function savePublisher(e) {
+    e.preventDefault();
+    const profileId = document.getElementById('sec-publisher-profile-id').value;
+    const isEdit = !!profileId;
+    const fullName = normalizeFullName(document.getElementById('sec-publisher-name').value);
+    const saveBtn = document.getElementById('sec-publisher-save');
+
+    if (fullName.length < 2) {
+      showToast(toast, 'Informe o nome completo.', true);
+      return;
+    }
+
+    saveBtn?.setAttribute('disabled', 'disabled');
+
+    try {
+      let targetProfileId = profileId;
+
+      if (!isEdit) {
+        const username = normalizeUsername(document.getElementById('sec-publisher-username').value);
+        const loginEmail = document.getElementById('sec-publisher-login-email').value.trim().toLowerCase();
+        const password = document.getElementById('sec-publisher-password').value || '';
+
+        if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
+          showToast(toast, 'Usuário inválido (3–32 caracteres).', true);
+          return;
+        }
+        if (password.length < 8) {
+          showToast(toast, 'A senha deve ter pelo menos 8 caracteres.', true);
+          return;
+        }
+
+        const { data: createdId, error: createError } = await client.rpc('secretary_create_publisher', {
+          p_full_name: fullName,
+          p_username: username,
+          p_email: loginEmail || null,
+          p_password: password
+        });
+        if (createError) throw createError;
+        targetProfileId = createdId;
+      } else if (fullName !== (publishers.find((p) => p.profile_id === profileId)?.full_name || '')) {
+        const { error: nameError } = await client.rpc('secretary_update_publisher_name', {
+          p_profile_id: profileId,
+          p_full_name: fullName
+        });
+        if (nameError) throw nameError;
+      }
+
+      const payload = {
+        profile_id: targetProfileId,
+        group_id: document.getElementById('sec-publisher-group').value || null,
+        publisher_type: document.getElementById('sec-publisher-type').value,
+        status: document.getElementById('sec-publisher-status').value,
+        baptism_date: document.getElementById('sec-publisher-baptism').value || null,
+        birth_date: document.getElementById('sec-publisher-birth').value || null,
+        phone: document.getElementById('sec-publisher-phone').value.trim(),
+        email: document.getElementById('sec-publisher-contact-email').value.trim(),
+        is_starred: document.getElementById('sec-publisher-starred').checked,
+        notes: document.getElementById('sec-publisher-notes').value.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: profileError } = await client
+        .from('secretary_publisher_profiles')
+        .upsert(payload, { onConflict: 'profile_id' });
+      if (profileError) throw profileError;
+
+      showToast(toast, isEdit ? 'Publicador atualizado.' : 'Publicador criado.');
+      closeModal('sec-publisher-modal');
+      await loadData();
+      renderAll();
+    } catch (err) {
+      showToast(toast, err?.message || 'Erro ao salvar publicador.', true);
+    } finally {
+      saveBtn?.removeAttribute('disabled');
+    }
+  }
+
   function renderReportList() {
     const root = document.getElementById('sec-report-list');
     const filter = document.getElementById('sec-report-filter')?.value || 'missing';
@@ -267,29 +455,97 @@
       </section>`).join('');
   }
 
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(`${dateStr}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function fmtDateTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function meetingKindLabel(kind) {
+    return kind === 'weekend' ? 'Final de semana' : 'Meio de semana';
+  }
+
+  function logsForMonth(logs, y, m) {
+    return (logs || []).filter((row) => {
+      const d = new Date(`${row.meeting_date}T12:00:00`);
+      return d.getFullYear() === y && d.getMonth() + 1 === m;
+    });
+  }
+
+  function avgFromLogs(logs, kind) {
+    const items = logs.filter((row) => row.meeting_kind === kind);
+    if (!items.length) return 0;
+    const sum = items.reduce((acc, row) => acc + (Number(row.attendance_count) || 0), 0);
+    return Math.round(sum / items.length);
+  }
+
+  function applyAttendanceFromLogs(monthLogs) {
+    attendance.midweek = avgFromLogs(monthLogs, 'midweek');
+    attendance.weekend = avgFromLogs(monthLogs, 'weekend');
+    const midExtra = monthLogs.filter((row) => row.meeting_kind === 'midweek' && row.extra_count != null);
+    const weekExtra = monthLogs.filter((row) => row.meeting_kind === 'weekend' && row.extra_count != null);
+    attendance.midweekExtra = midExtra.length
+      ? Math.round(midExtra.reduce((acc, row) => acc + Number(row.extra_count), 0) / midExtra.length)
+      : null;
+    attendance.weekendExtra = weekExtra.length
+      ? Math.round(weekExtra.reduce((acc, row) => acc + Number(row.extra_count), 0) / weekExtra.length)
+      : null;
+  }
+
   function renderAttendance() {
-    const root = document.getElementById('sec-attendance-cards');
-    if (!root) return;
-    const extra = settings.extra_attendance_count;
-    root.innerHTML = ['midweek', 'weekend'].map((kind) => {
-      const label = kind === 'midweek' ? 'Reunião de meio de semana' : 'Reunião de final de semana';
-      const count = kind === 'midweek' ? attendance.midweek : attendance.weekend;
-      const extraVal = kind === 'midweek' ? attendance.midweekExtra : attendance.weekendExtra;
-      return `
-      <article class="sec-attendance-card">
-        <h3 class="sec-attendance-card__title">${label}</h3>
-        <label class="sec-field">
-          <span class="sec-label">Assistência</span>
-          <input type="number" min="0" class="sec-input" data-sec-att="${kind}" value="${count}"/>
-        </label>
-        ${extra ? `
-        <label class="sec-field">
-          <span class="sec-label">Contagem extra</span>
-          <input type="number" min="0" class="sec-input" data-sec-att-extra="${kind}" value="${extraVal ?? ''}"/>
-        </label>` : ''}
-        <button type="button" class="sec-toolbar-btn sec-toolbar-btn--accent sec-attendance-save" data-sec-att-save="${kind}">Salvar</button>
-      </article>`;
-    }).join('');
+    const summaryRoot = document.getElementById('sec-attendance-summary');
+    const historyRoot = document.getElementById('sec-attendance-history');
+    if (!summaryRoot || !historyRoot) return;
+
+    const monthLogs = logsForMonth(attendanceLogs, year, month).sort((a, b) => b.meeting_date.localeCompare(a.meeting_date));
+    const midCount = monthLogs.filter((row) => row.meeting_kind === 'midweek').length;
+    const weekCount = monthLogs.filter((row) => row.meeting_kind === 'weekend').length;
+
+    summaryRoot.innerHTML = `
+      <div class="sec-attendance-grid">
+        <article class="sec-attendance-card sec-attendance-card--readonly">
+          <h3 class="sec-attendance-card__title">Meio de semana</h3>
+          <p class="sec-attendance-card__value">${attendance.midweek || '—'}</p>
+          <p class="sec-attendance-card__meta">${midCount} registro${midCount === 1 ? '' : 's'} · média do mês</p>
+        </article>
+        <article class="sec-attendance-card sec-attendance-card--readonly">
+          <h3 class="sec-attendance-card__title">Final de semana</h3>
+          <p class="sec-attendance-card__value">${attendance.weekend || '—'}</p>
+          <p class="sec-attendance-card__meta">${weekCount} registro${weekCount === 1 ? '' : 's'} · média do mês</p>
+        </article>
+      </div>`;
+
+    if (!monthLogs.length) {
+      historyRoot.innerHTML = '<p class="sec-empty">Nenhum registro de assistência neste mês. A equipe de Áudio e Vídeo preenche após cada reunião.</p>';
+      return;
+    }
+
+    historyRoot.innerHTML = monthLogs.map((row) => `
+      <article class="sec-attendance-log">
+        <div class="sec-attendance-log__main">
+          <p class="sec-attendance-log__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
+          <p class="sec-attendance-log__kind">${escapeHtml(meetingKindLabel(row.meeting_kind))}</p>
+        </div>
+        <div class="sec-attendance-log__counts">
+          <span class="sec-attendance-log__count">${escapeHtml(String(row.attendance_count))}</span>
+          ${row.extra_count != null ? `<span class="sec-attendance-log__extra">+${escapeHtml(String(row.extra_count))} extra</span>` : ''}
+        </div>
+        <div class="sec-attendance-log__meta">
+          ${row.remarks ? `<p class="sec-attendance-log__remarks">${escapeHtml(row.remarks)}</p>` : ''}
+          <p class="sec-attendance-log__by">
+            ${escapeHtml(row.profiles?.full_name || 'Áudio e Vídeo')}
+            · ${escapeHtml(fmtDateTime(row.created_at))}
+          </p>
+        </div>
+      </article>`).join('');
   }
 
   function renderS1Summary() {
@@ -321,8 +577,8 @@
         ])}
       </div>
       <div class="sec-s1-attendance">
-        <p>Assistência meio de semana: <strong>${attendance.midweek}</strong></p>
-        <p>Assistência final de semana: <strong>${attendance.weekend}</strong></p>
+        <p>Assistência meio de semana (média): <strong>${attendance.midweek}</strong></p>
+        <p>Assistência final de semana (média): <strong>${attendance.weekend}</strong></p>
       </div>`;
   }
 
@@ -448,16 +704,24 @@
   }
 
   async function loadData() {
-    const [gRes, pRes, rRes, mRes, aRes, adjRes, sRes] = await Promise.all([
+    const monthStart = `${year}-${String(month).padStart(2, '0')}-01`;
+    const monthEndDate = new Date(year, month, 0);
+    const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(monthEndDate.getDate()).padStart(2, '0')}`;
+
+    const [gRes, pRes, rRes, mRes, aRes, logRes, adjRes, sRes] = await Promise.all([
       client.from('secretary_service_groups').select('id, name, sort_order').order('sort_order'),
       client.from('secretary_publisher_profiles').select(`
-        profile_id, group_id, publisher_type, status, baptism_date, birth_date, phone, email, is_starred,
+        profile_id, group_id, publisher_type, status, baptism_date, birth_date, phone, email, is_starred, notes,
         profiles ( full_name, username, role ),
         secretary_service_groups ( name )
       `),
       client.from('secretary_field_reports').select('*').eq('service_year', year).eq('service_month', month),
       client.from('secretary_month_status').select('*').eq('service_year', year).eq('service_month', month).maybeSingle(),
       client.from('secretary_meeting_attendance').select('*').eq('service_year', year).eq('service_month', month),
+      client.from('secretary_attendance_logs').select(`
+        id, meeting_date, meeting_kind, attendance_count, extra_count, remarks, created_at,
+        profiles:submitted_by ( full_name )
+      `).gte('meeting_date', monthStart).lte('meeting_date', monthEnd).order('meeting_date', { ascending: false }),
       client.from('secretary_month_adjustments').select('*').eq('service_year', year).eq('service_month', month),
       client.from('secretary_settings').select('*').eq('id', true).maybeSingle()
     ]);
@@ -478,6 +742,7 @@
       phone: row.phone,
       email: row.email,
       is_starred: row.is_starred,
+      notes: row.notes || '',
       full_name: row.profiles?.full_name || '',
       username: row.profiles?.username || ''
     })).sort((a, b) => a.full_name.localeCompare(b.full_name, 'pt-BR'));
@@ -486,12 +751,18 @@
     monthStatus = mRes.data || { is_closed: false, observations: '' };
     adjustments = adjRes.data || [];
     settings = sRes.data || {};
+    attendanceLogs = logRes.error ? [] : (logRes.data || []);
 
-    const att = aRes.data || [];
-    attendance.midweek = att.find((a) => a.meeting_kind === 'midweek')?.attendance_count ?? 0;
-    attendance.weekend = att.find((a) => a.meeting_kind === 'weekend')?.attendance_count ?? 0;
-    attendance.midweekExtra = att.find((a) => a.meeting_kind === 'midweek')?.extra_count ?? null;
-    attendance.weekendExtra = att.find((a) => a.meeting_kind === 'weekend')?.extra_count ?? null;
+    const monthLogs = logsForMonth(attendanceLogs, year, month);
+    if (monthLogs.length) {
+      applyAttendanceFromLogs(monthLogs);
+    } else {
+      const att = aRes.data || [];
+      attendance.midweek = att.find((a) => a.meeting_kind === 'midweek')?.attendance_count ?? 0;
+      attendance.weekend = att.find((a) => a.meeting_kind === 'weekend')?.attendance_count ?? 0;
+      attendance.midweekExtra = att.find((a) => a.meeting_kind === 'midweek')?.extra_count ?? null;
+      attendance.weekendExtra = att.find((a) => a.meeting_kind === 'weekend')?.extra_count ?? null;
+    }
   }
 
   async function syncPublishersFromProfiles() {
@@ -508,6 +779,7 @@
     updateMonthLabel();
     renderKpiStrip();
     renderPubStats();
+    renderPublisherList();
     renderReportList();
     renderAttendance();
     renderS1Summary();
@@ -535,26 +807,6 @@
     }
     showToast(toast, 'Relatório salvo.');
     closeModal('sec-report-modal');
-    await loadData();
-    renderAll();
-  }
-
-  async function saveAttendance(kind) {
-    const count = Number(document.querySelector(`[data-sec-att="${kind}"]`)?.value) || 0;
-    const extraEl = document.querySelector(`[data-sec-att-extra="${kind}"]`);
-    const payload = {
-      service_year: year,
-      service_month: month,
-      meeting_kind: kind,
-      attendance_count: count,
-      extra_count: extraEl ? (extraEl.value === '' ? null : Number(extraEl.value)) : null
-    };
-    const { error } = await client.from('secretary_meeting_attendance').upsert(payload, { onConflict: 'service_year,service_month,meeting_kind' });
-    if (error) {
-      showToast(toast, error.message, true);
-      return;
-    }
-    showToast(toast, 'Assistência salva.');
     await loadData();
     renderAll();
   }
@@ -735,6 +987,17 @@
       renderAll();
     });
 
+    document.getElementById('sec-publisher-new')?.addEventListener('click', () => openPublisherModal());
+    document.getElementById('sec-publisher-filter')?.addEventListener('change', renderPublisherList);
+    document.getElementById('sec-publisher-list')?.addEventListener('click', (e) => {
+      const id = e.target.closest('[data-sec-edit-publisher]')?.dataset.secEditPublisher;
+      if (id) openPublisherModal(id);
+    });
+    document.getElementById('sec-publisher-form')?.addEventListener('submit', savePublisher);
+    document.querySelectorAll('[data-sec-publisher-close]').forEach((el) => {
+      el.addEventListener('click', () => closeModal('sec-publisher-modal'));
+    });
+
     document.getElementById('sec-report-filter')?.addEventListener('change', renderReportList);
     document.getElementById('sec-report-list')?.addEventListener('click', (e) => {
       const id = e.target.closest('[data-sec-edit-report]')?.dataset.secEditReport;
@@ -742,11 +1005,6 @@
     });
     document.getElementById('sec-report-form')?.addEventListener('submit', saveReport);
     document.querySelectorAll('[data-sec-report-close]').forEach((el) => el.addEventListener('click', () => closeModal('sec-report-modal')));
-
-    document.getElementById('sec-attendance-cards')?.addEventListener('click', (e) => {
-      const kind = e.target.closest('[data-sec-att-save]')?.dataset.secAttSave;
-      if (kind) saveAttendance(kind);
-    });
 
     document.getElementById('sec-settings-open')?.addEventListener('click', () => {
       fillSettingsForm();
