@@ -458,10 +458,45 @@
   }
 
   function filterThemeCheckboxLabels(container, query) {
-    container?.querySelectorAll('[data-dp-theme-item]').forEach((label) => {
-      const text = label.dataset.dpThemeText || label.textContent;
-      label.classList.toggle('dp-filter-hidden', !matchesSearch(text, query));
+    container?.querySelectorAll('[data-dp-theme-item], [data-dp-theme-pick]').forEach((el) => {
+      const label = el.dataset.dpThemeText || el.textContent;
+      el.classList.toggle('dp-filter-hidden', !matchesSearch(label, query));
     });
+  }
+
+  function themePickerHtml(selected) {
+    return themes.filter((t) => t.is_active).map((t) => {
+      const label = `${t.outline_number} ${t.title}`;
+      const on = selected.has(t.id);
+      return `<button type="button" class="dp-theme-pick${on ? ' is-on' : ''}" data-dp-theme-pick="${t.id}" data-dp-theme-text="${escapeHtml(label)}">
+        <span class="dp-theme-pick__num">${t.outline_number}</span>
+        <span class="dp-theme-pick__title">${escapeHtml(t.title)}</span>
+        <span class="material-symbols-outlined dp-theme-pick__icon" aria-hidden="true">${on ? 'check_circle' : 'add_circle'}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function updateThemePickCount(form) {
+    const countEl = form.querySelector('[data-dp-theme-count]');
+    if (!countEl) return;
+    const n = form.querySelectorAll('[data-dp-theme-pick].is-on').length;
+    countEl.textContent = `${n} selecionado${n === 1 ? '' : 's'}`;
+  }
+
+  function bindThemePicker(form) {
+    const list = form.querySelector('[data-dp-theme-checks]');
+    list?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-dp-theme-pick]');
+      if (!btn) return;
+      btn.classList.toggle('is-on');
+      const icon = btn.querySelector('.dp-theme-pick__icon');
+      if (icon) icon.textContent = btn.classList.contains('is-on') ? 'check_circle' : 'add_circle';
+      updateThemePickCount(form);
+    });
+    form.querySelector('[data-dp-theme-search]')?.addEventListener('input', (e) => {
+      filterThemeCheckboxLabels(list, e.target.value);
+    });
+    updateThemePickCount(form);
   }
 
   function findSpeakerByName(name) {
@@ -721,22 +756,50 @@
     const s = existing || { privilege: 'anciao', is_local: true, is_active: true };
     const selected = new Set((s.speech_speaker_themes || []).map((x) => x.theme_id));
     const congregationValue = { congregation_id: s.congregation_id, congregation_name: s.speech_congregations?.name || '' };
-    openModal(`${existing ? 'Editar' : 'Novo'} orador`, `<form class="dp-form" data-dp-speaker-form>
-      <label class="dp-span-2">Nome completo<input required name="full_name" value="${escapeHtml(s.full_name || '')}"></label>
-      ${comboFieldHtml('congregation', congregationValue, { label: 'Congregação' })}
-      <label>Telefone<input name="phone" value="${escapeHtml(s.phone || '')}"></label><label>E-mail<input name="email" value="${escapeHtml(s.email || '')}"></label>
-      <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
-      <label><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}> Orador local</label><label><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}> Ativo</label>
-      <label class="dp-span-2">Observações<textarea name="notes" rows="2">${escapeHtml(s.notes || '')}</textarea></label>
-      <div class="dp-span-2"><label>Temas preparados</label><input data-dp-theme-search type="search" placeholder="Filtrar por número ou título…"><div class="dp-theme-checks" data-dp-theme-checks>${themeCheckboxes(selected)}</div></div>
-      <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer></form>`);
+    openModal(`${existing ? 'Editar' : 'Novo'} orador`, `
+      <form class="dp-form dp-form--speaker" data-dp-speaker-form>
+        <label class="dp-span-2">Nome completo
+          <div class="dp-input-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+            <input required name="full_name" autocomplete="name" value="${escapeHtml(s.full_name || '')}">
+          </div>
+        </label>
+        ${comboFieldHtml('congregation', congregationValue, { label: 'Congregação' })}
+        <label>Telefone
+          <div class="dp-input-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">call</span>
+            <input name="phone" type="tel" autocomplete="tel" value="${escapeHtml(s.phone || '')}">
+          </div>
+        </label>
+        <label>E-mail
+          <div class="dp-input-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+            <input name="email" type="email" autocomplete="email" value="${escapeHtml(s.email || '')}">
+          </div>
+        </label>
+        <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
+        <div class="dp-form-toggles dp-span-2">
+          <label class="dp-toggle"><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}><span class="material-symbols-outlined" aria-hidden="true">home</span> Orador local</label>
+          <label class="dp-toggle"><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}><span class="material-symbols-outlined" aria-hidden="true">verified</span> Ativo</label>
+        </div>
+        <label class="dp-span-2">Observações<textarea name="notes" rows="2">${escapeHtml(s.notes || '')}</textarea></label>
+        <div class="dp-span-2 dp-theme-picker">
+          <div class="dp-theme-picker__head">
+            <span class="dp-theme-picker__label">Temas preparados</span>
+            <span class="dp-theme-picker__count" data-dp-theme-count>0 selecionados</span>
+          </div>
+          <div class="dp-theme-picker__search">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input data-dp-theme-search type="search" placeholder="Nº ou título do esboço…" autocomplete="off">
+          </div>
+          <div class="dp-theme-picker__list" data-dp-theme-checks>${themePickerHtml(selected)}</div>
+        </div>
+        <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
+      </form>`, { wide: true });
     const form = modalRoot()?.querySelector('[data-dp-speaker-form]');
     if (!form) return;
     bindFormCombos(form);
-    const themeChecks = form.querySelector('[data-dp-theme-checks]');
-    form.querySelector('[data-dp-theme-search]')?.addEventListener('input', (e) => {
-      filterThemeCheckboxLabels(themeChecks, e.target.value);
-    });
+    bindThemePicker(form);
     form.addEventListener('submit', async (e) => {
       e.preventDefault(); const v = Object.fromEntries(new FormData(form));
       let congregationId;
@@ -748,18 +811,12 @@
       const payload = { full_name: text(v.full_name), congregation_id: congregationId, phone: text(v.phone) || null, email: text(v.email) || null, privilege: v.privilege, is_local: form.is_local.checked, is_active: form.is_active.checked, notes: text(v.notes) || null };
       const result = existing ? await client.from('speech_speakers').update(payload).eq('id', existing.id).select().single() : await client.from('speech_speakers').insert(payload).select().single();
       if (result.error) return toast(errorText(result.error), true);
-      const ids = [...form.querySelectorAll('input[name="theme_ids"]:checked')].map((x) => x.value);
+      const ids = [...form.querySelectorAll('[data-dp-theme-pick].is-on')].map((btn) => btn.dataset.dpThemePick);
       const { error: deleteError } = await client.from('speech_speaker_themes').delete().eq('speaker_id', result.data.id);
       if (deleteError) return toast(errorText(deleteError), true);
       if (ids.length) { const { error } = await client.from('speech_speaker_themes').insert(ids.map((theme_id) => ({ speaker_id: result.data.id, theme_id }))); if (error) return toast(errorText(error), true); }
       closeModal(); await loadData(); refresh(); toast('Orador salvo.');
     });
-  }
-  function themeCheckboxes(selected) {
-    return themes.filter((t) => t.is_active).map((t) => {
-      const label = `${t.outline_number} — ${t.title}`;
-      return `<label data-dp-theme-item data-dp-theme-text="${escapeHtml(label)}"><input type="checkbox" name="theme_ids" value="${t.id}"${selected.has(t.id) ? ' checked' : ''}> ${t.outline_number} — ${escapeHtml(t.title)}</label>`;
-    }).join('');
   }
 
   function speakersForTheme(themeId) {
@@ -856,9 +913,9 @@
     });
   }
 
-  function openModal(title, body) {
+  function openModal(title, body, { wide = false } = {}) {
     closeModal();
-    document.body.insertAdjacentHTML('beforeend', `<div class="dp-modal" role="dialog" aria-modal="true"><div class="dp-modal__card"><header><h2>${escapeHtml(title)}</h2><button type="button" data-dp-close aria-label="Fechar">×</button></header>${body}</div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="dp-modal" role="dialog" aria-modal="true"><div class="dp-modal__card${wide ? ' dp-modal__card--wide' : ''}"><header><h2>${escapeHtml(title)}</h2><button type="button" data-dp-close aria-label="Fechar">×</button></header>${body}</div></div>`);
     document.querySelectorAll('[data-dp-close]').forEach((b) => b.addEventListener('click', closeModal));
   }
   function closeModal() { document.querySelector('.dp-modal')?.remove(); }
