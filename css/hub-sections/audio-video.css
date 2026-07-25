@@ -114,6 +114,17 @@
 .av-attendance-item__btn:hover{background:#ede9fe}
 .av-attendance-item__btn--danger{background:#fef2f2;color:#dc2626}
 .av-attendance-item__btn--danger:hover{background:#fee2e2}
+.av-attendance-item__btn--wa{background:#ecfdf5;color:#059669}
+.av-attendance-item__btn--wa:hover{background:#d1fae5}
+.av-attendance-whatsapp{
+  display:flex;flex-wrap:wrap;align-items:center;gap:.625rem;margin-top:.625rem;padding:.625rem .75rem;
+  background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%);border:1px solid #bbf7d0;border-radius:.625rem;
+}
+.av-attendance-whatsapp.hidden{display:none!important}
+.av-attendance-whatsapp__hint{margin:0;font-size:.6875rem;color:#047857;line-height:1.35;flex:1 1 12rem}
+.av-toolbar-btn--whatsapp{background:#25d366;color:#fff;border:1px solid #1ebe57}
+.av-toolbar-btn--whatsapp:hover{background:#1ebe57}
+.av-toolbar-btn--whatsapp .material-symbols-outlined{font-size:1rem!important}
 .av-attendance-item__btn .material-symbols-outlined{font-size:.875rem}
 .av-images-card{background:#fff;border:1px solid #e2e6ef;border-radius:.75rem;padding:1rem;display:grid;gap:.875rem}
 .av-images-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:.625rem}

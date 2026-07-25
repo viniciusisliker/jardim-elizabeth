@@ -34,9 +34,9 @@
     moduleKey: 'audio-video',
     viewId: 'hub-view-audio-video',
     partial: 'hub/sections/audio-video.html',
-    styles: ['css/hub-sections/audio-video.css?v=20260725250000'],
+    styles: ['css/hub-sections/audio-video.css?v=20260725350000'],
     scripts: [
-      'js/admin/audio-video.js?v=20260725250000'
+      'js/admin/audio-video.js?v=20260725350000'
     ],
     initKey: 'JEAdminAudioVideo'
   };

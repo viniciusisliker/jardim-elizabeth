@@ -8,6 +8,7 @@
 
   let attendanceLogs = [];
   let editingAttendanceId = null;
+  let pendingAttendanceWhatsApp = '';
   let avImages = [];
 
   const IMAGE_BUCKET = 'audio-video';
@@ -339,6 +340,51 @@
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  function buildAttendanceWhatsAppMessage(row, submitterName) {
+    const kind = MEETING_LABELS[row.meeting_kind] || row.meeting_kind;
+    const lines = [
+      '📊 *Assistência — Jardim Elizabeth*',
+      '',
+      `📅 Data: ${fmtDate(row.meeting_date)}`,
+      `🏛 Reunião: ${kind}`,
+      `👥 Presencial: ${row.attendance_count}`
+    ];
+    if (row.zoom_attendance_count != null && row.zoom_attendance_count !== '') {
+      lines.push(`💻 Zoom: ${row.zoom_attendance_count}`);
+    }
+    if (row.remarks) {
+      lines.push(`📝 Obs.: ${row.remarks}`);
+    }
+    if (submitterName) {
+      lines.push('', `Registrado por ${submitterName} (Áudio e Vídeo)`);
+    }
+    return lines.join('\n');
+  }
+
+  function hideAttendanceWhatsAppPrompt() {
+    pendingAttendanceWhatsApp = '';
+    document.getElementById('av-attendance-whatsapp-wrap')?.classList.add('hidden');
+  }
+
+  function showAttendanceWhatsAppPrompt(message) {
+    pendingAttendanceWhatsApp = message;
+    document.getElementById('av-attendance-whatsapp-wrap')?.classList.remove('hidden');
+  }
+
+  function openAttendanceWhatsApp(message) {
+    const msg = message || pendingAttendanceWhatsApp;
+    if (!msg) return;
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(msg)
+        .then(() => showToast(toastEl(), 'WhatsApp aberto — mensagem também copiada.'))
+        .catch(() => showToast(toastEl(), 'WhatsApp aberto com a mensagem pronta.'));
+    } else {
+      showToast(toastEl(), 'WhatsApp aberto com a mensagem pronta.');
+    }
+  }
+
   function resetAttendanceForm() {
     editingAttendanceId = null;
     document.getElementById('av-attendance-id').value = '';
@@ -349,6 +395,7 @@
     document.getElementById('av-attendance-remarks').value = '';
     document.getElementById('av-attendance-submit-label').textContent = 'Registrar';
     document.getElementById('av-attendance-cancel-edit')?.classList.add('hidden');
+    hideAttendanceWhatsAppPrompt();
   }
 
   function fillAttendanceForm(row) {
@@ -361,6 +408,7 @@
     document.getElementById('av-attendance-remarks').value = row.remarks || '';
     document.getElementById('av-attendance-submit-label').textContent = 'Salvar';
     document.getElementById('av-attendance-cancel-edit')?.classList.remove('hidden');
+    hideAttendanceWhatsAppPrompt();
     document.getElementById('av-attendance-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -401,6 +449,9 @@
           <p class="av-attendance-item__by">${escapeHtml(row.profiles?.full_name || 'Equipe A/V')}</p>
         </div>
         <div class="av-attendance-item__actions">
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--wa" data-av-att-wa="${row.id}" title="Enviar no WhatsApp">
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+          </button>
           <button type="button" class="av-attendance-item__btn" data-av-att-edit="${row.id}" title="Editar">
             <span class="material-symbols-outlined" aria-hidden="true">edit</span>
           </button>
@@ -444,16 +495,31 @@
         return;
       }
 
-      showToast(toastEl(), editingAttendanceId ? 'Registro atualizado.' : 'Assistência registrada.');
+      const wasEdit = !!editingAttendanceId;
+      const message = buildAttendanceWhatsAppMessage(payload, profile.full_name || profile.username);
+      showToast(toastEl(), wasEdit ? 'Registro atualizado.' : 'Assistência registrada.');
       resetAttendanceForm();
+      showAttendanceWhatsAppPrompt(message);
       await loadAttendanceLogs(client);
+    });
+
+    document.getElementById('av-attendance-whatsapp-btn')?.addEventListener('click', () => {
+      openAttendanceWhatsApp();
     });
 
     document.getElementById('av-attendance-cancel-edit')?.addEventListener('click', resetAttendanceForm);
 
     document.getElementById('av-attendance-list')?.addEventListener('click', async (e) => {
+      const waId = e.target.closest('[data-av-att-wa]')?.dataset.avAttWa;
       const editId = e.target.closest('[data-av-att-edit]')?.dataset.avAttEdit;
       const delId = e.target.closest('[data-av-att-del]')?.dataset.avAttDel;
+      if (waId) {
+        const row = attendanceLogs.find((item) => item.id === waId);
+        if (row) {
+          openAttendanceWhatsApp(buildAttendanceWhatsAppMessage(row, row.profiles?.full_name || 'Equipe A/V'));
+        }
+        return;
+      }
       if (editId) {
         const row = attendanceLogs.find((item) => item.id === editId);
         if (row) fillAttendanceForm(row);
