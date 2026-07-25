@@ -11,6 +11,10 @@ Saída:   maps/precise-boundaries.json
 Uso:
   python scripts/rebuild-territory-polygons.py
   python scripts/rebuild-territory-polygons.py --no-jpg
+
+Preferir polígonos traçados no Google Earth:
+  python scripts/import-earth-kml.py
+  python scripts/export-individual-kmz.py
 """
 from __future__ import annotations
 

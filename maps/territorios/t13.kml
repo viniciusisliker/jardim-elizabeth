@@ -2,12 +2,11 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T13 · CDHU A</name>
-    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
+    <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Blocos 01-02, 09-16, 19-24, 27-29 (contornos azuis do cartão T13).]]></description>
-      
+      <description><![CDATA[Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

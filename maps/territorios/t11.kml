@@ -2,12 +2,11 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T11 · Jd Leônidas Moreira B</name>
-    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
+    <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
     <Placemark>
       <name>T11 - Jd Leônidas Moreira B</name>
-      <description><![CDATA[Avenida Carlos Lacerda x Rua Cabaxi; Avenida Carlos Lacerda x Rua Amacás; Rua Tabimã x Rua Amacás]]></description>
-      
+      <description><![CDATA[Importado de t11.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

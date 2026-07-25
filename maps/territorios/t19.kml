@@ -2,12 +2,11 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T19 · Jardim Helga D</name>
-    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
+    <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
     <Placemark>
       <name>T19 - Jardim Helga D</name>
-      <description><![CDATA[OSM: Mitim/Guerreiro x Avenida Ibi (Luisa Damon ausente no OSM)]]></description>
-      
+      <description><![CDATA[Importado de t19.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

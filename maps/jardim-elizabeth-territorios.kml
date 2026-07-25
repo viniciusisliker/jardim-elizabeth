@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>Jardim Elizabeth — Territorios (OSM Jul 2026)</name>
-    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
+    <name>Jardim Elizabeth — Territorios</name>
+    <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
     <Placemark>
       <name>T01 - Campo Limpo</name>
-      <description><![CDATA[Avenida Carlos Lacerda x Estrada Pirajussara; Estrada Pirajussara x Rua dos Milagres; Rua dos Milagres x Rua Paul Gauguin]]></description>
-      
+      <description><![CDATA[Importado de t01.kml (1 poligono(s), 5 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -16,8 +15,7 @@
     </Placemark>
     <Placemark>
       <name>T02 - Jardim Elizabeth A</name>
-      <description><![CDATA[Rua José Cabral x Rua Hermes Ribeiro de Fr; Rua Hermes Ribeiro de Fr x Rua Januário da Cunha Ba; Rua Januário da Cunha Ba x Rua José Cabral]]></description>
-      
+      <description><![CDATA[Importado de t02.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -26,8 +24,7 @@
     </Placemark>
     <Placemark>
       <name>T03 - Jardim Elizabeth B</name>
-      <description><![CDATA[Rua Hermes Ribeiro de Fr x Rua Aristides de Britto; Rua Aristides de Britto x Rua Humberto Benemeritti; Rua Humberto Benemeritti x Rua Januário da Cunha Ba]]></description>
-      
+      <description><![CDATA[Importado de t03.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -36,8 +33,7 @@
     </Placemark>
     <Placemark>
       <name>T04 - Jardim Elizabeth C</name>
-      <description><![CDATA[Rua Hermes Ribeiro de Fr x Estrada do Campo Limpo; Rua Hermes Ribeiro de Fr x Rua Aristides de Britto; Rua Humberto Benemeritti x Rua Aristides de Britto]]></description>
-      
+      <description><![CDATA[Importado de t04.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -46,8 +42,7 @@
     </Placemark>
     <Placemark>
       <name>T05 - Jardim Elizabeth D</name>
-      <description><![CDATA[Rua Januário da Cunha Ba x Rua Piaga; Rua Piaga x Rua Taunã; Rua Taunã x Rua Cabaxi]]></description>
-      
+      <description><![CDATA[Importado de t05.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -56,8 +51,7 @@
     </Placemark>
     <Placemark>
       <name>T06 - Vila Pirajussara</name>
-      <description><![CDATA[Rua Martim da Costa Vile x Rua João Correia; Rua Martim da Costa Vile x Passagem 2; Rua Hermes Ribeiro de Fr x Passagem 2]]></description>
-      
+      <description><![CDATA[Importado de t06.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -66,8 +60,7 @@
     </Placemark>
     <Placemark>
       <name>T07 - Jardim Iracema A</name>
-      <description><![CDATA[Rua da Praia de Miramar x Rua Ramona Baptista Fern; Rua da Praia de Miramar x Rua Gustavo Doré; Rua Gustavo Doré x Rua Ramona Baptista Fern]]></description>
-      
+      <description><![CDATA[Importado de t07.kml (1 poligono(s), 3 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -76,8 +69,7 @@
     </Placemark>
     <Placemark>
       <name>T08 - Jardim Iracema B</name>
-      <description><![CDATA[Avenida Augusto Barreto  x Rua Ramona Baptista Fern; Avenida Augusto Barreto  x Rua Doutor Dib Gebara; Rua Gustavo Doré x Rua Doutor Dib Gebara]]></description>
-      
+      <description><![CDATA[Importado de t08.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -86,8 +78,7 @@
     </Placemark>
     <Placemark>
       <name>T09 - Jardim Helga E</name>
-      <description><![CDATA[Rua Luis Gonzaga Freire x Rua Nelson Lomanto; Rua Nelson Lomanto x Rua Osvaldo de Arruda Re; Rua Luis Gonzaga Freire x Rua Osvaldo de Arruda Re]]></description>
-      
+      <description><![CDATA[Importado de t09.kml (1 poligono(s), 3 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -96,8 +87,7 @@
     </Placemark>
     <Placemark>
       <name>T10 - Jd Leônidas Moreira A</name>
-      <description><![CDATA[Rua Atucupe x Rua Piaga; Rua Atucupe x Rua Mitim; Rua Cabaxi x Rua Piaga]]></description>
-      
+      <description><![CDATA[Importado de t10.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -106,8 +96,7 @@
     </Placemark>
     <Placemark>
       <name>T11 - Jd Leônidas Moreira B</name>
-      <description><![CDATA[Avenida Carlos Lacerda x Rua Cabaxi; Avenida Carlos Lacerda x Rua Amacás; Rua Tabimã x Rua Amacás]]></description>
-      
+      <description><![CDATA[Importado de t11.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -116,8 +105,7 @@
     </Placemark>
     <Placemark>
       <name>T12 - Jd Leônidas Moreira C</name>
-      <description><![CDATA[Avenida Carlos Lacerda x Rua Tabimã; Avenida Carlos Lacerda x Rua Crestins; Rua Ajuruetê x Rua Crestins]]></description>
-      
+      <description><![CDATA[Importado de t12.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -126,8 +114,7 @@
     </Placemark>
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Blocos 01-02, 09-16, 19-24, 27-29 (contornos azuis do cartão T13).]]></description>
-      
+      <description><![CDATA[Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -136,8 +123,7 @@
     </Placemark>
     <Placemark>
       <name>T14 - CDHU B</name>
-      <description><![CDATA[Blocos 03–08 (fileira inferior direita no cartão T14).]]></description>
-      
+      <description><![CDATA[Importado de t14.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -146,8 +132,7 @@
     </Placemark>
     <Placemark>
       <name>T15 - CDHU C</name>
-      <description><![CDATA[Blocos 17–18, 25–26 + área Campo (cartão T15).]]></description>
-      
+      <description><![CDATA[Importado de t15.kml (2 poligono(s), 8 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -156,8 +141,7 @@
     </Placemark>
     <Placemark>
       <name>T16 - Jardim Helga A</name>
-      <description><![CDATA[Rua Luis Gonzaga Freire x Rua Augusto de Moraes; Rua Augusto de Moraes x Rua Thomaz de Araújo; Rua Luis Gonzaga Freire x Rua Thomaz de Araújo]]></description>
-      
+      <description><![CDATA[Importado de t16.kml (1 poligono(s), 3 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -166,8 +150,7 @@
     </Placemark>
     <Placemark>
       <name>T17 - Jardim Helga B</name>
-      <description><![CDATA[Rua Augusto de Moraes x Rua Thomaz de Araújo; Rua Thomaz de Araújo x Rua Luis Gonzaga Freire; Rua Luis Gonzaga Freire x Rua Augusto de Moraes]]></description>
-      
+      <description><![CDATA[Importado de t17.kml (1 poligono(s), 3 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -176,8 +159,7 @@
     </Placemark>
     <Placemark>
       <name>T18 - Jardim Helga C</name>
-      <description><![CDATA[OSM: Guerreiro/Ridel x Thomaz (Rua Luisa Damon ausente no OSM)]]></description>
-      
+      <description><![CDATA[Importado de t18.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -186,8 +168,7 @@
     </Placemark>
     <Placemark>
       <name>T19 - Jardim Helga D</name>
-      <description><![CDATA[OSM: Mitim/Guerreiro x Avenida Ibi (Luisa Damon ausente no OSM)]]></description>
-      
+      <description><![CDATA[Importado de t19.kml (1 poligono(s), 4 pontos)]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
