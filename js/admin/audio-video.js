@@ -394,15 +394,26 @@
     if (submitEl) submitEl.textContent = submit;
   }
 
-  function openAttendanceModal() {
+  function mountAttendanceModal() {
     const modal = document.getElementById('av-attendance-modal');
+    if (!modal) return null;
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+    return modal;
+  }
+
+  function openAttendanceModal() {
+    const modal = mountAttendanceModal();
     if (!modal) return;
     modal.classList.remove('hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('av-modal-open');
     window.setTimeout(() => {
-      document.getElementById('av-attendance-count')?.focus();
-    }, 40);
+      const dateEl = document.getElementById('av-attendance-date');
+      const countEl = document.getElementById('av-attendance-count');
+      (window.matchMedia('(max-width: 639px)').matches ? dateEl : countEl)?.focus({ preventScroll: true });
+    }, 60);
   }
 
   function closeAttendanceModal() {
@@ -510,6 +521,7 @@
   }
 
   function bindAttendanceForm(client, profile) {
+    mountAttendanceModal();
     const form = document.getElementById('av-attendance-form');
     if (!form || form.dataset.bound === '1') return;
     form.dataset.bound = '1';
