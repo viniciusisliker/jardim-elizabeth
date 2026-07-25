@@ -436,26 +436,28 @@
     }
     root.innerHTML = attendanceLogs.map((row) => `
       <article class="av-attendance-item">
-        <div class="av-attendance-item__main">
-          <p class="av-attendance-item__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
-          <p class="av-attendance-item__kind">${escapeHtml(MEETING_LABELS[row.meeting_kind] || row.meeting_kind)}</p>
-        </div>
-        <div class="av-attendance-item__counts">
-          <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
-          ${row.zoom_attendance_count != null ? `<span class="av-attendance-item__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
+        <div class="av-attendance-item__top">
+          <div class="av-attendance-item__main">
+            <p class="av-attendance-item__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
+            <p class="av-attendance-item__kind">${escapeHtml(MEETING_LABELS[row.meeting_kind] || row.meeting_kind)}</p>
+          </div>
+          <div class="av-attendance-item__counts">
+            <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
+            ${row.zoom_attendance_count != null ? `<span class="av-attendance-item__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
+          </div>
         </div>
         <div class="av-attendance-item__meta">
           ${row.remarks ? `<p class="av-attendance-item__remarks">${escapeHtml(row.remarks)}</p>` : ''}
           <p class="av-attendance-item__by">${escapeHtml(row.profiles?.full_name || 'Equipe A/V')}</p>
         </div>
-        <div class="av-attendance-item__actions">
-          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--wa" data-av-att-wa="${row.id}" title="Enviar no WhatsApp">
+        <div class="av-attendance-item__actions" role="group" aria-label="Ações do registro">
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--wa" data-av-att-wa="${row.id}" aria-label="Enviar no WhatsApp" title="Enviar no WhatsApp">
             <span class="material-symbols-outlined" aria-hidden="true">chat</span>
           </button>
-          <button type="button" class="av-attendance-item__btn" data-av-att-edit="${row.id}" title="Editar">
-            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--edit" data-av-att-edit="${row.id}" aria-label="Editar registro" title="Editar">
+            <span class="material-symbols-outlined" aria-hidden="true">edit_square</span>
           </button>
-          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--danger" data-av-att-del="${row.id}" title="Excluir">
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--danger" data-av-att-del="${row.id}" aria-label="Excluir registro" title="Excluir">
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
           </button>
         </div>
