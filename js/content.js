@@ -269,8 +269,11 @@
 
   function renderAnnouncementCard(s) {
     const mod = announcementCardModifier(s.slug);
+    const sameTab = s.slug === 'designacoes-mecanicas';
+    const targetAttr = sameTab ? '' : ' target="_blank" rel="noopener"';
+    const ctaIcon = sameTab ? 'picture_as_pdf' : 'open_in_new';
     return `
-      <a href="${esc(s.document_url)}" target="_blank" rel="noopener"
+      <a href="${esc(s.document_url)}"${targetAttr}
          class="je-qa-card je-qa-card--${mod} group">
         <div class="je-qa-card-top">
           <div class="je-qa-card-icon">
@@ -284,7 +287,7 @@
         </div>
         <span class="je-qa-card-cta">
           Abrir PDF
-          <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          <span class="material-symbols-outlined" style="font-size:16px">${ctaIcon}</span>
         </span>
       </a>`;
   }

@@ -12,8 +12,11 @@
   function renderAnnouncementCard(section) {
     const mod = announcementCardModifier(section.slug);
     const href = section.document_url || 'quadrodeanuncios.html';
+    const sameTab = section.slug === 'designacoes-mecanicas';
+    const targetAttr = sameTab ? '' : ' target="_blank" rel="noopener"';
+    const ctaIcon = sameTab ? 'picture_as_pdf' : 'open_in_new';
     return `
-      <a href="${esc(href)}" target="_blank" rel="noopener" class="je-qa-card je-qa-card--${mod}">
+      <a href="${esc(href)}"${targetAttr} class="je-qa-card je-qa-card--${mod}">
         <div class="je-qa-card-top">
           <div class="je-qa-card-icon">
             <span class="material-symbols-outlined" aria-hidden="true">${esc(section.icon || 'description')}</span>
@@ -26,7 +29,7 @@
         </div>
         <span class="je-qa-card-cta">
           Abrir PDF
-          <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+          <span class="material-symbols-outlined" aria-hidden="true">${ctaIcon}</span>
         </span>
       </a>`;
   }
