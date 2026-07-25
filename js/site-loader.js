@@ -1017,11 +1017,14 @@
     materialSymbolsReady();
     ensurePwaAssets();
 
+    await ensureSiteConfigScripts();
+
     loadComponent(`${assetBase}/components/header.html`, 'header', () => {
       highlightActiveNav();
       if (window.initSiteHeader) window.initSiteHeader();
       window.JEPwaInstall?.bindTriggers?.();
       window.JETheme?.bindToggles?.();
+      window.JESiteConfig?.apply?.().catch((err) => console.warn('site config:', err));
     });
 
     loadComponent(`${assetBase}/components/footer.html`, 'footer', () => {
@@ -1029,7 +1032,35 @@
         const footer = document.getElementById('footer');
         if (footer) fixRelativeLinks(footer, '../');
       }
+      window.JESiteConfig?.apply?.().catch(() => {});
     });
+  }
+
+  function loadScriptOnce(src) {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function ensureSiteConfigScripts() {
+    const v = '20260725200000';
+    try {
+      if (!window.JESiteConfigSchema) {
+        await loadScriptOnce(`${assetBase}/js/site-config-schema.js?v=${v}`);
+      }
+      if (!window.JESiteConfig) {
+        await loadScriptOnce(`${assetBase}/js/site-config.js?v=${v}`);
+      }
+    } catch (err) {
+      console.warn('Site config scripts:', err);
+    }
   }
 
   function loadComponent(url, targetId, afterLoad) {
@@ -1125,6 +1156,8 @@
     window.__JESiteNavIndicatorBound = true;
     window.addEventListener('resize', queueSiteNavIndicatorRefresh);
   }
+
+  window.JESiteNav = { refresh: highlightActiveNav };
 
   boot();
 })();

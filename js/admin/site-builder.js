@@ -1,403 +1,428 @@
 (function () {
   const { guardPermission, getClient, showToast, escapeHtml } = window.JEAdmin;
-  const R = window.JESitePageRenderer;
+  const Schema = () => window.JESiteConfigSchema;
 
   let client;
-  let pages = [];
-  let currentId = null;
-  let selectedBlockId = null;
+  let config = null;
+  let currentSection = 'global';
+  let customPages = [];
+  let currentCustomId = null;
   let saveTimer = null;
   let saving = false;
   let bound = false;
 
   function $(id) { return document.getElementById(id); }
 
-  function currentPage() {
-    return pages.find((p) => p.id === currentId) || null;
-  }
-
-  function blocksOf(page) {
-    if (!page?.layout?.blocks || !Array.isArray(page.layout.blocks)) {
-      page.layout = { blocks: [] };
-    }
-    return page.layout.blocks;
-  }
-
   function setStatus(text) {
     const el = $('sb-save-status');
     if (el) el.textContent = text;
   }
 
-  function slugify(text) {
-    return String(text || 'pagina')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 48) || 'pagina';
-  }
-
-  function uniqueSlug(base) {
-    let slug = slugify(base);
-    let n = 1;
-    while (pages.some((p) => p.slug === slug && p.id !== currentId)) {
-      slug = `${slugify(base)}-${n += 1}`;
-    }
-    return slug;
-  }
-
   function markDirty() {
     setStatus('Alterações não salvas…');
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => saveCurrentPage(), 1400);
+    saveTimer = setTimeout(saveDraft, 1200);
   }
 
-  function renderCanvas() {
-    const page = currentPage();
-    const canvas = $('sb-canvas');
-    if (!page || !canvas) return;
-    R.renderPage(canvas, page, { editMode: true, selectedId: selectedBlockId });
-    bindCanvasEvents(canvas);
+  function previewUrl(section) {
+    const meta = Schema()?.PAGE_META?.[section] || Schema()?.PAGE_META?.home;
+    const file = meta?.preview || 'index.html';
+    const base = `${location.origin}${location.pathname.replace(/hub\.html.*$/, '')}`;
+    return `${base}${file}?site_preview=1`;
   }
 
-  function bindCanvasEvents(canvas) {
-    canvas.querySelectorAll('.je-sp-block').forEach((el) => {
-      el.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        selectedBlockId = el.dataset.blockId;
-        renderCanvas();
-        renderBlockEditor();
-        switchTab('block');
-      });
-    });
-  }
-
-  function renderPagesList() {
-    const list = $('sb-pages-list');
-    if (!list) return;
-    list.innerHTML = pages.map((p) => `
-      <li>
-        <button type="button" class="${p.id === currentId ? 'active' : ''}" data-page-id="${escapeHtml(p.id)}">
-          <span class="sb-pages-list__title">${escapeHtml(p.title)}</span>
-          <span class="sb-pages-list__meta">/${escapeHtml(p.slug)} · ${p.status === 'published' ? 'Publicada' : 'Rascunho'}</span>
-        </button>
-      </li>`).join('');
-    list.querySelectorAll('[data-page-id]').forEach((btn) => {
-      btn.addEventListener('click', () => selectPage(btn.dataset.pageId));
-    });
-  }
-
-  function syncTopbar() {
-    const page = currentPage();
-    const titleInput = $('sb-site-title');
-    const pubBtn = $('sb-publish');
-    if (!page) return;
-    if (titleInput && document.activeElement !== titleInput) {
-      titleInput.value = page.title || '';
-    }
-    if (pubBtn) {
-      pubBtn.childNodes[0].textContent = page.status === 'published' ? 'Publicado' : 'Publicar';
-    }
-    setStatus(saving ? 'Salvando…' : 'Todas as alterações foram salvas');
-  }
-
-  function syncThemeInputs() {
-    const page = currentPage();
-    if (!page) return;
-    const theme = R.normalizeTheme(page.theme);
-    const bg = $('sb-theme-bg');
-    const text = $('sb-theme-text');
-    const accent = $('sb-theme-accent');
-    const heading = $('sb-theme-heading-font');
-    if (bg) bg.value = theme.bgColor;
-    if (text) text.value = theme.textColor;
-    if (accent) accent.value = theme.accentColor;
-    if (heading) heading.value = theme.headingFont;
-  }
-
-  function field(label, id, value, type = 'text', extra = '') {
-    if (type === 'textarea') {
-      return `<label>${escapeHtml(label)}<textarea data-field="${escapeHtml(id)}">${escapeHtml(value)}</textarea></label>`;
-    }
-    if (type === 'select') {
-      return `<label>${escapeHtml(label)}<select data-field="${escapeHtml(id)}">${extra}</select></label>`;
-    }
-    return `<label>${escapeHtml(label)}<input type="${escapeHtml(type)}" data-field="${escapeHtml(id)}" value="${escapeHtml(value)}"/></label>`;
-  }
-
-  function renderBlockEditor() {
-    const page = currentPage();
-    const editor = $('sb-block-editor');
-    const empty = $('sb-block-empty');
-    const actions = $('sb-block-actions');
-    if (!page || !editor) return;
-
-    const block = blocksOf(page).find((b) => b.id === selectedBlockId);
-    if (!block) {
-      editor.classList.add('hidden');
-      actions?.classList.add('hidden');
-      empty?.classList.remove('hidden');
+  function refreshPreview() {
+    const frame = $('sb-preview-frame');
+    if (!frame) return;
+    if (currentCustomId) {
+      const page = customPages.find((p) => p.id === currentCustomId);
+      if (page) frame.src = `${location.origin}${location.pathname.replace(/hub\.html.*$/, '')}pagina.html?slug=${encodeURIComponent(page.slug)}&site_preview=1`;
       return;
     }
-
-    empty?.classList.add('hidden');
-    editor.classList.remove('hidden');
-    actions?.classList.remove('hidden');
-
-    const alignOpts = `
-      <option value="left"${block.data.align === 'left' ? ' selected' : ''}>Esquerda</option>
-      <option value="center"${block.data.align === 'center' ? ' selected' : ''}>Centro</option>
-      <option value="right"${block.data.align === 'right' ? ' selected' : ''}>Direita</option>`;
-    const alignField = field('Alinhamento', 'align', block.data.align, 'select', alignOpts);
-
-    let html = '';
-    switch (block.type) {
-      case 'hero':
-        html = field('Título', 'title', block.data.title)
-          + field('Subtítulo', 'subtitle', block.data.subtitle)
-          + field('URL da imagem', 'imageUrl', block.data.imageUrl)
-          + alignField;
-        break;
-      case 'heading':
-        html = field('Texto', 'text', block.data.text) + alignField;
-        break;
-      case 'text':
-        html = field('Texto', 'text', block.data.text, 'textarea') + alignField;
-        break;
-      case 'image':
-        html = field('URL da imagem', 'url', block.data.url)
-          + field('Texto alternativo', 'alt', block.data.alt)
-          + field('Legenda', 'caption', block.data.caption)
-          + field('Largura', 'width', block.data.width, 'select',
-            `<option value="normal"${block.data.width !== 'full' ? ' selected' : ''}>Normal</option><option value="full"${block.data.width === 'full' ? ' selected' : ''}>Largura total</option>`)
-          + alignField;
-        break;
-      case 'button':
-        html = field('Rótulo', 'label', block.data.label)
-          + field('Link', 'url', block.data.url)
-          + field('Estilo', 'style', block.data.style, 'select',
-            `<option value="filled"${block.data.style !== 'outline' ? ' selected' : ''}>Preenchido</option><option value="outline"${block.data.style === 'outline' ? ' selected' : ''}>Contorno</option>`)
-          + alignField;
-        break;
-      case 'spacer':
-        html = field('Altura (px)', 'height', block.data.height, 'number');
-        break;
-      case 'embed':
-        html = field('URL (https)', 'url', block.data.url)
-          + field('Altura (px)', 'height', block.data.height, 'number');
-        break;
-      case 'divider':
-        html = '<p class="sb-block-empty">Divisor visual — sem opções.</p>';
-        break;
-      default:
-        html = '<p class="sb-block-empty">Tipo de bloco desconhecido.</p>';
-    }
-
-    editor.innerHTML = html;
-    editor.querySelectorAll('[data-field]').forEach((input) => {
-      const key = input.dataset.field;
-      const handler = () => {
-        if (input.type === 'number') {
-          block.data[key] = Number(input.value) || 0;
-        } else {
-          block.data[key] = input.value;
-        }
-        renderCanvas();
-        markDirty();
-      };
-      input.addEventListener('input', handler);
-      input.addEventListener('change', handler);
-    });
+    frame.src = previewUrl(currentSection);
   }
 
-  function switchTab(name) {
-    document.querySelectorAll('.sb-panel-tab').forEach((tab) => {
-      const active = tab.dataset.sbTab === name;
-      tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    document.querySelectorAll('.sb-panel__body').forEach((panel) => {
-      const id = panel.id.replace('sb-tab-', '');
-      if (id === name) {
-        panel.hidden = false;
-        panel.classList.add('active');
-      } else {
-        panel.hidden = true;
-        panel.classList.remove('active');
-      }
-    });
+  async function loadDraft() {
+    const { data } = await client.from('site_settings').select('value').eq('key', 'site_config_draft').maybeSingle();
+    if (data?.value) return Schema().normalize(data.value);
+    const { data: pub } = await client.from('site_settings').select('value').eq('key', 'site_config').maybeSingle();
+    if (pub?.value) return Schema().normalize(pub.value);
+    return Schema().defaults();
   }
 
-  async function loadPages() {
-    const { data, error } = await client
-      .from('site_pages')
-      .select('*')
-      .order('sort_order')
-      .order('title');
-    if (error) throw error;
-    pages = (data || []).map((p) => ({
-      ...p,
-      layout: p.layout || { blocks: [] },
-      theme: R.normalizeTheme(p.theme)
-    }));
-    if (!pages.length) {
-      await createPage({ title: 'Página inicial', slug: 'inicio' });
-      return;
-    }
-    if (!currentId || !pages.some((p) => p.id === currentId)) {
-      currentId = pages[0].id;
-    }
-    selectedBlockId = null;
-    renderPagesList();
-    renderCanvas();
-    renderBlockEditor();
-    syncTopbar();
-    syncThemeInputs();
-  }
-
-  async function createPage({ title, slug } = {}) {
-    const t = title || 'Nova página';
-    const s = slug || uniqueSlug(t);
-    const { data: { user } } = await client.auth.getUser();
-    const payload = {
-      title: t,
-      slug: s,
-      status: 'draft',
-      layout: {
-        blocks: [
-          R.newBlock('hero')
-        ]
-      },
-      theme: R.defaultTheme(),
-      sort_order: pages.length,
-      created_by: user?.id || null
-    };
-    const { data, error } = await client.from('site_pages').insert(payload).select('*').single();
-    if (error) throw error;
-    pages.push({ ...data, layout: data.layout || { blocks: [] }, theme: R.normalizeTheme(data.theme) });
-    currentId = data.id;
-    selectedBlockId = null;
-    renderPagesList();
-    renderCanvas();
-    syncTopbar();
-    syncThemeInputs();
-    showToast($('hub-admin-toast'), 'Página criada.');
-  }
-
-  async function saveCurrentPage() {
-    const page = currentPage();
-    if (!page || saving) return;
+  async function saveDraft() {
+    if (!config || saving) return;
     saving = true;
     setStatus('Salvando…');
-    const payload = {
-      title: page.title,
-      slug: page.slug,
-      status: page.status,
-      layout: page.layout,
-      theme: page.theme,
-      updated_at: new Date().toISOString()
-    };
-    const { error } = await client.from('site_pages').update(payload).eq('id', page.id);
+    const { error } = await client.from('site_settings').upsert({ key: 'site_config_draft', value: config });
     saving = false;
     if (error) {
       setStatus('Erro ao salvar');
       showToast($('hub-admin-toast'), error.message, true);
       return;
     }
-    setStatus('Todas as alterações foram salvas');
-    renderPagesList();
+    setStatus('Rascunho salvo');
+    refreshPreview();
   }
 
-  function selectPage(id) {
-    if (id === currentId) return;
+  async function publishSite() {
     clearTimeout(saveTimer);
-    saveCurrentPage().finally(() => {
-      currentId = id;
-      selectedBlockId = null;
-      renderPagesList();
-      renderCanvas();
-      renderBlockEditor();
-      syncTopbar();
-      syncThemeInputs();
-    });
-  }
-
-  function addBlock(type) {
-    const page = currentPage();
-    if (!page) return;
-    const block = R.newBlock(type);
-    blocksOf(page).push(block);
-    selectedBlockId = block.id;
-    renderCanvas();
-    renderBlockEditor();
-    switchTab('block');
-    markDirty();
-  }
-
-  function moveBlock(dir) {
-    const page = currentPage();
-    if (!page || !selectedBlockId) return;
-    const blocks = blocksOf(page);
-    const idx = blocks.findIndex((b) => b.id === selectedBlockId);
-    const next = idx + dir;
-    if (idx < 0 || next < 0 || next >= blocks.length) return;
-    [blocks[idx], blocks[next]] = [blocks[next], blocks[idx]];
-    renderCanvas();
-    markDirty();
-  }
-
-  function deleteBlock() {
-    const page = currentPage();
-    if (!page || !selectedBlockId) return;
-    page.layout.blocks = blocksOf(page).filter((b) => b.id !== selectedBlockId);
-    selectedBlockId = null;
-    renderCanvas();
-    renderBlockEditor();
-    markDirty();
-  }
-
-  async function setPageStatus(status) {
-    const page = currentPage();
-    if (!page) return;
-    page.status = status;
-    await saveCurrentPage();
-    syncTopbar();
-    showToast($('hub-admin-toast'), status === 'published' ? 'Página publicada.' : 'Página em rascunho.');
-  }
-
-  async function deleteCurrentPage() {
-    const page = currentPage();
-    if (!page) return;
-    if (pages.length <= 1) {
-      showToast($('hub-admin-toast'), 'Não é possível excluir a única página.', true);
-      return;
-    }
-    const ok = await window.JEDialog?.confirm?.({
-      title: 'Excluir página',
-      message: `Excluir "${page.title}" permanentemente?`,
-      confirmLabel: 'Excluir',
-      danger: true
-    });
-    if (ok === false) return;
-    const { error } = await client.from('site_pages').delete().eq('id', page.id);
+    await saveDraft();
+    const { error } = await client.from('site_settings').upsert({ key: 'site_config', value: config });
     if (error) {
       showToast($('hub-admin-toast'), error.message, true);
       return;
     }
-    pages = pages.filter((p) => p.id !== page.id);
-    currentId = pages[0]?.id || null;
-    selectedBlockId = null;
-    renderPagesList();
-    renderCanvas();
-    syncTopbar();
-    showToast($('hub-admin-toast'), 'Página excluída.');
+    window.JESiteConfig?.invalidateCache?.();
+    setStatus('Site publicado');
+    showToast($('hub-admin-toast'), 'Site publicado com sucesso.');
   }
 
-  function publicUrl(page) {
-    const slug = page?.slug || '';
-    const base = `${location.origin}${location.pathname.replace(/hub\.html.*$/, '')}`;
-    return `${base}pagina.html?slug=${encodeURIComponent(slug)}`;
+  async function loadCustomPages() {
+    const { data, error } = await client.from('site_pages').select('*').order('sort_order').order('title');
+    if (error) throw error;
+    customPages = data || [];
+  }
+
+  function field(label, path, value, type = 'text', extra = '') {
+    const id = path.replace(/[^\w]/g, '_');
+    if (type === 'textarea') {
+      return `<label class="sb-field">${escapeHtml(label)}<textarea data-path="${escapeHtml(path)}" rows="3">${escapeHtml(value)}</textarea></label>`;
+    }
+    if (type === 'checkbox') {
+      return `<label class="sb-field sb-field--row"><input type="checkbox" data-path="${escapeHtml(path)}" ${value ? 'checked' : ''}/> ${escapeHtml(label)}</label>`;
+    }
+    if (type === 'select') {
+      return `<label class="sb-field">${escapeHtml(label)}<select data-path="${escapeHtml(path)}">${extra}</select></label>`;
+    }
+    return `<label class="sb-field">${escapeHtml(label)}<input type="${escapeHtml(type)}" data-path="${escapeHtml(path)}" value="${escapeHtml(value)}"/></label>`;
+  }
+
+  function getPath(obj, path) {
+    return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  }
+
+  function setPath(obj, path, value) {
+    const keys = path.split('.');
+    let cur = obj;
+    for (let i = 0; i < keys.length - 1; i += 1) {
+      const k = keys[i];
+      const next = keys[i + 1];
+      if (cur[k] == null) cur[k] = /^\d+$/.test(next) ? [] : {};
+      cur = cur[k];
+    }
+    cur[keys[keys.length - 1]] = value;
+  }
+
+  function bindForm(root) {
+    root.querySelectorAll('[data-path]').forEach((input) => {
+      const handler = () => {
+        let val;
+        if (input.type === 'checkbox') val = input.checked;
+        else if (input.type === 'number') val = Number(input.value) || 0;
+        else val = input.value;
+        setPath(config, input.dataset.path, val);
+        markDirty();
+      };
+      input.addEventListener('input', handler);
+      input.addEventListener('change', handler);
+    });
+    root.querySelectorAll('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action === 'add-nav') {
+          config.global.nav.push({ id: `link-${Date.now()}`, label: 'Novo link', href: '#', emoji: '🔗', visible: true });
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'add-shortcut') {
+          config.home.shortcuts.items.push({ href: '#', emoji: '🔗', title: 'Novo', desc: '', variant: 'agenda' });
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'add-news') {
+          config.home.news.items.push({ icon: 'new_releases', text: 'Nova novidade' });
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'add-meeting') {
+          config.global.footer.meetings.push({ day: '—', detail: 'Horário' });
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'add-step' && btn.dataset.page) {
+          const page = config.pages[btn.dataset.page];
+          if (!page.steps) page.steps = [];
+          page.steps.push('Novo passo');
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'remove-nav' && btn.dataset.index != null) {
+          config.global.nav.splice(Number(btn.dataset.index), 1);
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'remove-shortcut' && btn.dataset.index != null) {
+          config.home.shortcuts.items.splice(Number(btn.dataset.index), 1);
+          renderEditor();
+          markDirty();
+        }
+        if (action === 'remove-news' && btn.dataset.index != null) {
+          config.home.news.items.splice(Number(btn.dataset.index), 1);
+          renderEditor();
+          markDirty();
+        }
+      });
+    });
+  }
+
+  function renderGlobalForm() {
+    const g = config.global;
+    const f = g.footer;
+    let navHtml = (g.nav || []).map((item, i) => `
+      <div class="sb-repeat">
+        ${field('Rótulo', `global.nav.${i}.label`, item.label)}
+        ${field('Link', `global.nav.${i}.href`, item.href)}
+        ${field('Emoji', `global.nav.${i}.emoji`, item.emoji)}
+        ${field('Visível', `global.nav.${i}.visible`, item.visible !== false, 'checkbox')}
+        <button type="button" class="sb-mini-btn sb-mini-btn--danger" data-action="remove-nav" data-index="${i}">Remover</button>
+      </div>`).join('');
+    let meetingsHtml = (f.meetings || []).map((m, i) => `
+      <div class="sb-repeat">
+        ${field('Dia', `global.footer.meetings.${i}.day`, m.day)}
+        ${field('Detalhe', `global.footer.meetings.${i}.detail`, m.detail)}
+      </div>`).join('');
+
+    return `
+      <section class="sb-editor-section">
+        <h3>Identidade</h3>
+        ${field('Nome da congregação', 'global.brandName', g.brandName)}
+        ${field('URL do logo', 'global.logoUrl', g.logoUrl)}
+      </section>
+      <section class="sb-editor-section">
+        <h3>Menu principal</h3>
+        ${navHtml}
+        <button type="button" class="sb-mini-btn" data-action="add-nav">+ Item de menu</button>
+      </section>
+      <section class="sb-editor-section">
+        <h3>Rodapé</h3>
+        ${field('Chamada', 'global.footer.kicker', f.kicker)}
+        ${field('Título', 'global.footer.headline', f.headline)}
+        ${field('Endereço (linha 1)', 'global.footer.location.lines.0', f.location?.lines?.[0] || '')}
+        ${field('Endereço (linha 2)', 'global.footer.location.lines.1', f.location?.lines?.[1] || '')}
+        ${field('Endereço (linha 3)', 'global.footer.location.lines.2', f.location?.lines?.[2] || '')}
+        ${field('E-mail', 'global.footer.email', f.email)}
+        ${field('Copyright', 'global.footer.copyright', f.copyright)}
+        ${field('Local mobile', 'global.footer.mobileLocation', f.mobileLocation)}
+        <h4>Reuniões</h4>
+        ${meetingsHtml}
+        <button type="button" class="sb-mini-btn" data-action="add-meeting">+ Reunião</button>
+      </section>`;
+  }
+
+  function renderHomeForm() {
+    const h = config.home;
+    let shortcuts = (h.shortcuts?.items || []).map((item, i) => `
+      <div class="sb-repeat">
+        ${field('Título', `home.shortcuts.items.${i}.title`, item.title)}
+        ${field('Descrição', `home.shortcuts.items.${i}.desc`, item.desc)}
+        ${field('Link', `home.shortcuts.items.${i}.href`, item.href)}
+        ${field('Emoji', `home.shortcuts.items.${i}.emoji`, item.emoji)}
+        <button type="button" class="sb-mini-btn sb-mini-btn--danger" data-action="remove-shortcut" data-index="${i}">Remover</button>
+      </div>`).join('');
+    let news = (h.news?.items || []).map((item, i) => `
+      <div class="sb-repeat">
+        ${field('Ícone Material', `home.news.items.${i}.icon`, item.icon)}
+        ${field('Texto', `home.news.items.${i}.text`, item.text)}
+        <button type="button" class="sb-mini-btn sb-mini-btn--danger" data-action="remove-news" data-index="${i}">Remover</button>
+      </div>`).join('');
+
+    return `
+      <section class="sb-editor-section">
+        <h3>Hero</h3>
+        ${field('Selo', 'home.hero.eyebrow', h.hero?.eyebrow)}
+        ${field('Ícone selo', 'home.hero.eyebrowIcon', h.hero?.eyebrowIcon)}
+        ${field('Título', 'home.hero.title', h.hero?.title)}
+        ${field('Imagem URL', 'home.hero.imageUrl', h.hero?.imageUrl)}
+        ${field('Alt da imagem', 'home.hero.imageAlt', h.hero?.imageAlt)}
+      </section>
+      <section class="sb-editor-section">
+        <h3>Atalhos</h3>
+        ${field('Kicker', 'home.shortcuts.kicker', h.shortcuts?.kicker)}
+        ${field('Título', 'home.shortcuts.title', h.shortcuts?.title)}
+        ${shortcuts}
+        <button type="button" class="sb-mini-btn" data-action="add-shortcut">+ Atalho</button>
+      </section>
+      <section class="sb-editor-section">
+        <h3>Esta semana</h3>
+        ${field('Kicker', 'home.week.kicker', h.week?.kicker)}
+        ${field('Título', 'home.week.title', h.week?.title)}
+        ${field('Rótulo reunião', 'home.meeting.label', h.meeting?.label)}
+        ${field('Horário', 'home.meeting.time', h.meeting?.time)}
+        ${field('Local', 'home.meeting.placeName', h.meeting?.placeName)}
+        ${field('Endereço linha 1', 'home.meeting.addressLines.0', h.meeting?.addressLines?.[0] || '')}
+        ${field('Endereço linha 2', 'home.meeting.addressLines.1', h.meeting?.addressLines?.[1] || '')}
+      </section>
+      <section class="sb-editor-section">
+        <h3>Novidades</h3>
+        ${field('Título', 'home.news.title', h.news?.title)}
+        ${news}
+        <button type="button" class="sb-mini-btn" data-action="add-news">+ Novidade</button>
+      </section>`;
+  }
+
+  function renderPageForm(pageId) {
+    const p = config.pages[pageId] || {};
+    let stepsHtml = '';
+    if (Array.isArray(p.steps)) {
+      stepsHtml = `<h4>Passos</h4>${p.steps.map((s, i) => field(`Passo ${i + 1}`, `pages.${pageId}.steps.${i}`, s)).join('')}
+        <button type="button" class="sb-mini-btn" data-action="add-step" data-page="${pageId}">+ Passo</button>`;
+    }
+    const introFields = p.introText != null
+      ? field('Introdução (HTML)', `pages.${pageId}.introText`, p.introText, 'textarea')
+      : `${field('Intro — destaque', `pages.${pageId}.intro.bold`, p.intro?.bold || '')}${field('Intro — texto', `pages.${pageId}.intro.text`, p.intro?.text || '')}`;
+
+    return `
+      <section class="sb-editor-section">
+        <h3>Cabeçalho da página</h3>
+        ${field('Breadcrumb', `pages.${pageId}.crumb`, p.crumb || '')}
+        ${field('Título', `pages.${pageId}.title`, p.title || '')}
+        ${field('Subtítulo', `pages.${pageId}.subtitle`, p.subtitle || '', 'textarea')}
+        ${field('Selo de status', `pages.${pageId}.statusPill`, p.statusPill || '')}
+      </section>
+      ${introFields ? `<section class="sb-editor-section"><h3>Introdução</h3>${introFields}${stepsHtml}</section>` : stepsHtml ? `<section class="sb-editor-section">${stepsHtml}</section>` : ''}`;
+  }
+
+  function renderCustomPageForm(page) {
+    return `
+      <section class="sb-editor-section">
+        <h3>Página extra</h3>
+        <label class="sb-field">Título<input id="sb-custom-title" type="text" value="${escapeHtml(page.title)}"/></label>
+        <label class="sb-field">Slug (URL)<input id="sb-custom-slug" type="text" value="${escapeHtml(page.slug)}"/></label>
+        <p class="sb-hint">Link: pagina.html?slug=${escapeHtml(page.slug)}</p>
+        <p class="sb-hint">Status: ${page.status === 'published' ? 'Publicada' : 'Rascunho'}</p>
+        <div class="sb-row-actions">
+          <button type="button" id="sb-custom-publish" class="sb-mini-btn">${page.status === 'published' ? 'Despublicar' : 'Publicar'}</button>
+          <button type="button" id="sb-custom-delete" class="sb-mini-btn sb-mini-btn--danger">Excluir página</button>
+        </div>
+      </section>`;
+  }
+
+  function renderEditor() {
+    const form = $('sb-editor-form');
+    const title = $('sb-editor-title');
+    if (!form) return;
+
+    document.querySelector('.sb-workspace--site')?.classList.toggle('hidden', !!currentCustomId);
+    $('sb-custom-editor')?.classList.toggle('hidden', !currentCustomId);
+
+    if (currentCustomId) {
+      const page = customPages.find((p) => p.id === currentCustomId);
+      if (!page) return;
+      title.textContent = page.title;
+      form.innerHTML = renderCustomPageForm(page);
+      bindCustomForm(page);
+      return;
+    }
+
+    const meta = Schema()?.PAGE_META?.[currentSection];
+    title.textContent = meta?.label || 'Propriedades';
+
+    if (currentSection === 'global') form.innerHTML = renderGlobalForm();
+    else if (currentSection === 'home') form.innerHTML = renderHomeForm();
+    else form.innerHTML = renderPageForm(currentSection);
+
+    bindForm(form);
+  }
+
+  function bindCustomForm(page) {
+    const form = $('sb-editor-form');
+    const titleInput = form.querySelector('#sb-custom-title');
+    const slugInput = form.querySelector('#sb-custom-slug');
+    const saveCustom = async () => {
+      page.title = titleInput?.value?.trim() || page.title;
+      page.slug = slugInput?.value?.trim() || page.slug;
+      await client.from('site_pages').update({ title: page.title, slug: page.slug }).eq('id', page.id);
+      renderPagesList();
+      refreshPreview();
+    };
+    titleInput?.addEventListener('input', () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveCustom, 800); });
+    slugInput?.addEventListener('input', () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveCustom, 800); });
+    $('sb-custom-publish')?.addEventListener('click', async () => {
+      page.status = page.status === 'published' ? 'draft' : 'published';
+      await client.from('site_pages').update({ status: page.status }).eq('id', page.id);
+      renderPagesList();
+      showToast($('hub-admin-toast'), page.status === 'published' ? 'Página publicada.' : 'Página em rascunho.');
+    });
+    $('sb-custom-delete')?.addEventListener('click', async () => {
+      await client.from('site_pages').delete().eq('id', page.id);
+      customPages = customPages.filter((p) => p.id !== page.id);
+      currentCustomId = null;
+      currentSection = 'home';
+      renderPagesList();
+      renderEditor();
+      refreshPreview();
+    });
+  }
+
+  function renderPagesList() {
+    const list = $('sb-pages-list');
+    const customList = $('sb-custom-pages-list');
+    if (!list) return;
+
+    const items = [
+      { id: 'global', label: 'Site (global)' },
+      { id: 'home', label: 'Início' },
+      ...Schema().SITE_PAGE_IDS.filter((id) => id !== 'home').map((id) => ({
+        id,
+        label: Schema().PAGE_META[id]?.label || id
+      }))
+    ];
+
+    list.innerHTML = items.map((item) => `
+      <li><button type="button" class="${!currentCustomId && currentSection === item.id ? 'active' : ''}" data-section="${escapeHtml(item.id)}">${escapeHtml(item.label)}</button></li>`).join('');
+
+    list.querySelectorAll('[data-section]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentCustomId = null;
+        currentSection = btn.dataset.section;
+        renderPagesList();
+        renderEditor();
+        refreshPreview();
+      });
+    });
+
+    if (customList) {
+      customList.innerHTML = customPages.map((p) => `
+        <li><button type="button" class="${currentCustomId === p.id ? 'active' : ''}" data-custom-id="${escapeHtml(p.id)}">${escapeHtml(p.title)}</button></li>`).join('');
+      customList.querySelectorAll('[data-custom-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentCustomId = btn.dataset.customId;
+          currentSection = '';
+          renderPagesList();
+          renderEditor();
+          refreshPreview();
+        });
+      });
+    }
+  }
+
+  async function createCustomPage() {
+    const title = 'Nova página';
+    const slug = `pagina-${Date.now().toString(36).slice(-4)}`;
+    const { data, error } = await client.from('site_pages').insert({
+      title,
+      slug,
+      status: 'draft',
+      layout: { blocks: [window.JESitePageRenderer?.newBlock?.('hero') || { id: 'h', type: 'hero', data: { title: 'Nova página', align: 'center' } }] },
+      theme: window.JESitePageRenderer?.defaultTheme?.() || {}
+    }).select('*').single();
+    if (error) throw error;
+    customPages.push(data);
+    currentCustomId = data.id;
+    renderPagesList();
+    renderEditor();
+    refreshPreview();
   }
 
   function bindUi() {
@@ -406,102 +431,40 @@
 
     $('sb-back')?.addEventListener('click', () => {
       clearTimeout(saveTimer);
-      saveCurrentPage().finally(() => window.JEHubRouter?.navigateTo?.('home'));
+      saveDraft().finally(() => window.JEHubRouter?.navigateTo?.('home'));
     });
-
-    $('sb-site-title')?.addEventListener('input', (ev) => {
-      const page = currentPage();
-      if (!page) return;
-      page.title = ev.target.value;
-      if (!page._slugManual) page.slug = uniqueSlug(page.title);
-      markDirty();
-      renderPagesList();
-    });
-
-    document.querySelectorAll('[data-sb-add]').forEach((btn) => {
-      btn.addEventListener('click', () => addBlock(btn.dataset.sbAdd));
-    });
-
-    document.querySelectorAll('.sb-panel-tab').forEach((tab) => {
-      tab.addEventListener('click', () => switchTab(tab.dataset.sbTab));
-    });
-
-    $('sb-new-page')?.addEventListener('click', () => createPage({ title: 'Nova página' }));
-
-    $('sb-block-up')?.addEventListener('click', () => moveBlock(-1));
-    $('sb-block-down')?.addEventListener('click', () => moveBlock(1));
-    $('sb-block-delete')?.addEventListener('click', () => deleteBlock());
-
-    $('sb-preview')?.addEventListener('click', () => {
-      const page = currentPage();
-      if (!page) return;
-      window.open(publicUrl(page), '_blank', 'noopener');
-    });
-
-    $('sb-copy-link')?.addEventListener('click', async () => {
-      const page = currentPage();
-      if (!page) return;
-      const url = publicUrl(page);
-      try {
-        await navigator.clipboard.writeText(url);
-        showToast($('hub-admin-toast'), 'Link copiado.');
-      } catch {
-        showToast($('hub-admin-toast'), url);
-      }
-    });
-
-    const pubBtn = $('sb-publish');
-    const pubMenu = $('sb-publish-menu');
-    pubBtn?.addEventListener('click', (ev) => {
-      if (!pubMenu) return;
-      const rect = pubBtn.getBoundingClientRect();
-      pubMenu.style.top = `${rect.bottom + 6}px`;
-      pubMenu.style.left = `${rect.right - 180}px`;
-      pubMenu.classList.toggle('hidden');
-      ev.stopPropagation();
-    });
-
-    document.addEventListener('click', () => pubMenu?.classList.add('hidden'));
-
-    pubMenu?.querySelectorAll('[data-sb-action]').forEach((btn) => {
-      btn.addEventListener('click', async (ev) => {
-        ev.stopPropagation();
-        pubMenu.classList.add('hidden');
-        const action = btn.dataset.sbAction;
-        if (action === 'publish') await setPageStatus('published');
-        if (action === 'unpublish') await setPageStatus('draft');
-        if (action === 'delete-page') await deleteCurrentPage();
-      });
-    });
-
-    ['sb-theme-bg', 'sb-theme-text', 'sb-theme-accent', 'sb-theme-heading-font'].forEach((id) => {
-      $(id)?.addEventListener('input', () => {
-        const page = currentPage();
-        if (!page) return;
-        page.theme = {
-          ...R.normalizeTheme(page.theme),
-          bgColor: $('sb-theme-bg')?.value || page.theme.bgColor,
-          textColor: $('sb-theme-text')?.value || page.theme.textColor,
-          accentColor: $('sb-theme-accent')?.value || page.theme.accentColor,
-          headingFont: $('sb-theme-heading-font')?.value || page.theme.headingFont
-        };
-        renderCanvas();
-        markDirty();
-      });
-    });
+    $('sb-publish')?.addEventListener('click', publishSite);
+    $('sb-preview')?.addEventListener('click', () => window.open(previewUrl(currentCustomId ? 'home' : currentSection), '_blank', 'noopener'));
+    $('sb-refresh-preview')?.addEventListener('click', refreshPreview);
+    $('sb-new-custom-page')?.addEventListener('click', () => createCustomPage().catch((e) => showToast($('hub-admin-toast'), e.message, true)));
   }
 
   async function init() {
     const profile = await guardPermission('site_builder');
     if (!profile) return false;
 
+    if (!window.JESiteConfigSchema) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'js/site-config-schema.js?v=20260725200000';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
     client = await getClient();
     bindUi();
     try {
-      await loadPages();
+      config = await loadDraft();
+      await loadCustomPages();
+      renderPagesList();
+      renderEditor();
+      refreshPreview();
+      setStatus('Rascunho carregado');
     } catch (err) {
-      console.error('Site builder:', err);
-      showToast($('hub-admin-toast'), err.message || 'Erro ao carregar páginas.', true);
+      console.error('Site editor:', err);
+      showToast($('hub-admin-toast'), err.message || 'Erro ao carregar editor.', true);
       return false;
     }
     return true;

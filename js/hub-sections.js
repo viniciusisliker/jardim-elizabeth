@@ -240,17 +240,18 @@
       permission: 'site_builder',
       viewId: 'hub-view-site-builder',
       partial: 'hub/sections/site-builder.html',
-      styles: ['css/hub-sections/site-builder.css?v=20260725180000'],
+      styles: ['css/hub-sections/site-builder.css?v=20260725200000'],
       scripts: [
+        'js/site-config-schema.js?v=20260725200000',
         'js/site-page-renderer.js?v=20260725180000',
-        'js/admin/site-builder.js?v=20260725180000'
+        'js/admin/site-builder.js?v=20260725200000'
       ],
       initKey: 'JEAdminSiteBuilder',
       fullscreen: true,
       hero: {
         kicker: 'Desenvolvedor',
-        title: 'Editor de Site',
-        subtitle: 'Crie e publique páginas no estilo Google Sites.',
+        title: 'Editor do Site',
+        subtitle: 'Edite menu, home, páginas e publique o site inteiro.',
         showChangelog: false,
         showBack: true
       }

@@ -807,19 +807,19 @@
 
 <div id="header"></div>
 
-<main>
+<main data-je-page="home">
   <section class="je-home-hero je-home-fade">
     <div class="max-w-7xl mx-auto px-6 je-page-shell je-home-hero-inner">
       <div class="je-home-hero-grid">
         <div class="je-home-hero-visual je-home-fade-2">
-          <img src="img/cong.jpg" alt="Salão do Reino da Congregação Jardim Elizabeth" width="800" height="600" decoding="async" fetchpriority="high">
+          <img id="je-site-home-hero-img" src="img/cong.jpg" alt="Salão do Reino da Congregação Jardim Elizabeth" width="800" height="600" decoding="async" fetchpriority="high">
         </div>
         <div class="je-home-hero-copy">
-          <p class="je-home-hero-eyebrow">
+          <p id="je-site-home-hero-eyebrow" class="je-home-hero-eyebrow">
             <span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>
-            Salão do Reino
+            <span id="je-site-home-hero-eyebrow-text">Salão do Reino</span>
           </p>
-          <h1>Congregação Jardim Elizabeth</h1>
+          <h1 id="je-site-home-hero-title">Congregação Jardim Elizabeth</h1>
         </div>
       </div>
     </div>
@@ -830,11 +830,11 @@
       <div class="je-home-section-block">
         <div class="je-home-section-head">
           <div>
-            <p class="je-home-section-kicker">Navegação</p>
-            <h2 class="je-home-section-title">Acesso rápido</h2>
+            <p id="je-site-home-shortcuts-kicker" class="je-home-section-kicker">Navegação</p>
+            <h2 id="je-site-home-shortcuts-title" class="je-home-section-title">Acesso rápido</h2>
           </div>
         </div>
-        <div class="je-home-shortcuts">
+        <div id="je-site-home-shortcuts" class="je-home-shortcuts">
         <a class="je-home-shortcut je-home-shortcut--agenda" href="agenda.html">
           <span class="je-home-shortcut-icon" aria-hidden="true">🗓️</span>
           <span class="je-home-shortcut-body">
@@ -881,8 +881,8 @@
       <div class="je-home-section-block">
         <div class="je-home-section-head">
           <div>
-            <p class="je-home-section-kicker">Resumo</p>
-            <h2 class="je-home-section-title">Esta semana</h2>
+            <p id="je-site-home-week-kicker" class="je-home-section-kicker">Resumo</p>
+            <h2 id="je-site-home-week-title" class="je-home-section-title">Esta semana</h2>
           </div>
         </div>
 
@@ -890,14 +890,14 @@
         <article class="je-home-meeting">
           <div class="je-home-meeting-head">
             <span class="material-symbols-outlined" aria-hidden="true">event</span>
-            <span class="je-home-meeting-label">Próxima reunião</span>
+            <span id="je-site-home-meeting-label" class="je-home-meeting-label">Próxima reunião</span>
           </div>
           <p class="je-home-meeting-day" id="proxima-reuniao-dia"></p>
-          <p class="je-home-meeting-time">Início às 19h30</p>
+          <p id="je-site-home-meeting-time" class="je-home-meeting-time">Início às 19h30</p>
           <div class="je-home-meeting-place">
-            <strong>Salão do Reino</strong>
+            <strong id="je-site-home-meeting-place">Salão do Reino</strong>
             <div class="je-home-meeting-place-row">
-              <p class="je-home-meeting-address">
+              <p id="je-site-home-meeting-address" class="je-home-meeting-address">
                 <span class="je-home-meeting-address-line">Rua Professor Orestes Rosólia,&nbsp;164</span>
                 <span class="je-home-meeting-address-line">Jardim Rosana, São Paulo – SP</span>
               </p>
@@ -964,10 +964,10 @@
           <header class="je-home-card-head">
             <div class="je-home-card-head-left">
               <span class="material-symbols-outlined" aria-hidden="true">new_releases</span>
-              <h3 class="je-home-card-title">Novidades</h3>
+              <h3 id="je-site-home-news-title" class="je-home-card-title">Novidades</h3>
             </div>
           </header>
-          <ul class="je-home-news-list je-home-card-body">
+          <ul id="je-site-home-news-list" class="je-home-news-list je-home-card-body">
             <li class="je-home-news-item">
               <span class="je-home-news-icon" aria-hidden="true"><span class="material-symbols-outlined">tune</span></span>
               <p class="je-home-news-text">Home mais simples e direta</p>
