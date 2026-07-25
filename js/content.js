@@ -448,6 +448,13 @@
     }
 
     ensureTerritoryExtras();
+    cards().forEach((card) => {
+      const num = card.dataset.num;
+      const img = card.querySelector('[data-je-map-open] img');
+      if (num && img && window.JETerritoryAssignment?.bindTerritoryMapImg) {
+        window.JETerritoryAssignment.bindTerritoryMapImg(img, null, num);
+      }
+    });
     applySearch();
     openTerritoryFromHash();
     window.addEventListener('hashchange', openTerritoryFromHash);
@@ -466,12 +473,9 @@
       }
       if (t.map_image_url || t.num) {
         const img = card.querySelector('img');
-        if (img) {
-          const src = window.JETerritoryAssignment?.resolveTerritoryMapUrl(t.map_image_url, t.num);
-          if (src) {
-            img.src = src;
-            img.alt = `Mapa Território ${t.num} – ${t.display_name || card.querySelector('.je-ter-card-title, h3')?.textContent || 'Território'}`;
-          }
+        if (img && window.JETerritoryAssignment?.bindTerritoryMapImg) {
+          window.JETerritoryAssignment.bindTerritoryMapImg(img, t.map_image_url, t.num);
+          img.alt = `Mapa Território ${t.num} – ${t.display_name || card.querySelector('.je-ter-card-title, h3')?.textContent || 'Território'}`;
         }
       }
       if (t.slug) card.dataset.nome = t.slug;

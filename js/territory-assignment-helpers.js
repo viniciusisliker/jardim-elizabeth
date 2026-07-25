@@ -204,15 +204,36 @@
     return path.includes('/admin/') ? '../' : '';
   }
 
+  function resolveTerritoryMapFallbackUrl(num) {
+    if (num == null || num === '') return null;
+    return `${siteRootPrefix()}img/territorios/${territoryMapFileName(num)}`;
+  }
+
   function resolveTerritoryMapUrl(url, num) {
     let raw = String(url || '').trim();
     if (!raw && num != null && num !== '') {
-      raw = `img/territorios/${territoryMapFileName(num)}`;
+      raw = `img/territorios-enhanced/${territoryMapFileName(num)}`;
+    }
+    if (/^img\/territorios\/t\d{2}\.jpg$/i.test(raw)) {
+      raw = raw.replace(/^img\/territorios\//i, 'img/territorios-enhanced/');
     }
     if (!raw) return null;
     if (/^https?:\/\//i.test(raw) || raw.startsWith('//')) return raw;
     if (raw.startsWith('/')) return raw;
     return `${siteRootPrefix()}${raw.replace(/^\.\//, '')}`;
+  }
+
+  function bindTerritoryMapImg(img, url, num) {
+    if (!img) return;
+    const primary = resolveTerritoryMapUrl(url, num);
+    const fallback = resolveTerritoryMapFallbackUrl(num);
+    if (primary) img.src = primary;
+    if (fallback && primary !== fallback) {
+      img.onerror = function onTerritoryMapError() {
+        img.onerror = null;
+        img.src = fallback;
+      };
+    }
   }
 
   function sortByPriority(territories) {
@@ -716,6 +737,8 @@
     territoryMapFileName,
     siteRootPrefix,
     resolveTerritoryMapUrl,
+    resolveTerritoryMapFallbackUrl,
+    bindTerritoryMapImg,
     sortByPriority,
     generateWhatsAppSchedule
   };

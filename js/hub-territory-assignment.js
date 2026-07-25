@@ -28,11 +28,17 @@
       </button>`;
   }
 
-  function renderMapThumb(mapUrl, title) {
+  function renderMapThumb(mapUrl, title, num) {
     if (!mapUrl) return '';
+    const fallback = num != null && num !== '' && H.resolveTerritoryMapFallbackUrl
+      ? H.resolveTerritoryMapFallbackUrl(num)
+      : '';
+    const onerr = fallback
+      ? ` onerror="this.onerror=null;this.src='${escapeHtml(fallback)}'"`
+      : '';
     return `
       <button type="button" class="hub-terr-map" data-hub-terr-map="${escapeHtml(mapUrl)}" data-hub-terr-title="${escapeHtml(title)}" aria-label="Ver mapa · ${escapeHtml(title)}">
-        <img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"/>
+        <img src="${escapeHtml(mapUrl)}" alt="" loading="lazy"${onerr}/>
       </button>`;
   }
 
@@ -193,7 +199,7 @@
           ${notesBlocks}
           ${renderMapLink(mapUrl, title)}
         </div>
-        ${renderMapThumb(mapUrl, title)}
+        ${renderMapThumb(mapUrl, title, t.num)}
       </article>`;
   }
 
@@ -210,7 +216,7 @@
           ${fieldMeta ? `<div class="hub-terr-details">${fieldMeta}</div>` : ''}
           ${renderMapLink(mapUrl, title) || `<a href="${escapeHtml(territoryPageUrl(t))}" class="hub-terr-link">Ver território <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>`}
         </div>
-        ${renderMapThumb(mapUrl, title)}
+        ${renderMapThumb(mapUrl, title, t.num)}
       </article>`;
   }
 
@@ -245,7 +251,7 @@
           ${notesLine}
           ${t.num ? renderMapLink(mapUrl, mapTitle) : ''}
         </div>
-        ${t.num && mapUrl ? renderMapThumb(mapUrl, mapTitle) : ''}
+        ${t.num && mapUrl ? renderMapThumb(mapUrl, mapTitle, t.num) : ''}
       </article>`;
   }
 

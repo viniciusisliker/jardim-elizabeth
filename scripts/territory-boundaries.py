@@ -6,11 +6,13 @@ Uso:
   python scripts/territory-boundaries.py import [--merge] [--fallback]
   python scripts/territory-boundaries.py export
   python scripts/territory-boundaries.py validate [--strict]
-  python scripts/territory-boundaries.py sync [--merge]
+  python scripts/territory-boundaries.py sync [--merge] [--render]
+  python scripts/territory-boundaries.py render [--num 01 02]
 """
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
@@ -209,6 +211,19 @@ def cmd_annotate(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_render(args: argparse.Namespace) -> int:
+    script = ROOT / "scripts" / "render-territory-images.py"
+    cmd = [sys.executable, str(script)]
+    if args.num:
+        cmd.append("--num")
+        cmd.extend(args.num)
+    if args.width:
+        cmd.extend(["--width", str(args.width)])
+    if args.skip_osm:
+        cmd.append("--skip-osm")
+    return subprocess.call(cmd)
+
+
 def cmd_sync(args: argparse.Namespace) -> int:
     code = cmd_import(args)
     if code:
@@ -216,7 +231,12 @@ def cmd_sync(args: argparse.Namespace) -> int:
     code = cmd_export(args)
     if code:
         return code
-    return cmd_validate(args)
+    code = cmd_validate(args)
+    if code:
+        return code
+    if getattr(args, "render", False):
+        return cmd_render(args)
+    return 0
 
 
 def main() -> None:
@@ -237,18 +257,33 @@ def main() -> None:
     p_validate.add_argument("--strict", action="store_true", help="Falha se houver avisos")
     p_validate.add_argument("--verbose", action="store_true", help="Mostra infos")
 
-    p_sync = sub.add_parser("sync", help="import + export + validate")
+    p_render = sub.add_parser("render", help="Gera imagens em img/territorios-enhanced/")
+    p_render.add_argument("--num", nargs="*", help="Territorios (ex: 01 07)")
+    p_render.add_argument("--width", type=int, default=1400)
+    p_render.add_argument("--skip-osm", action="store_true")
+
+    p_sync = sub.add_parser("sync", help="import + export + validate (+ render opcional)")
     p_sync.add_argument("--input", type=Path)
     p_sync.add_argument("--file", type=Path)
     p_sync.add_argument("--merge", action="store_true")
     p_sync.add_argument("--fallback", action="store_true")
     p_sync.add_argument("--strict", action="store_true")
+    p_sync.add_argument("--render", action="store_true", help="Gera img/territorios-enhanced/ apos validar")
+    p_sync.add_argument("--num", nargs="*", help="Com --render: territorios especificos")
+    p_sync.add_argument("--width", type=int, default=1400)
+    p_sync.add_argument("--skip-osm", action="store_true")
 
     args = parser.parse_args()
     if args.command == "sync":
         args.verbose = False
         raise SystemExit(cmd_sync(args))
-    handlers = {"import": cmd_import, "export": cmd_export, "validate": cmd_validate, "annotate": cmd_annotate}
+    handlers = {
+        "import": cmd_import,
+        "export": cmd_export,
+        "validate": cmd_validate,
+        "annotate": cmd_annotate,
+        "render": cmd_render,
+    }
     raise SystemExit(handlers[args.command](args))
 
 
