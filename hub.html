@@ -439,8 +439,12 @@
 
     .hub-sec-home{
       margin-bottom:0.625rem;background:#fff;border:1px solid #e2e6ef;border-radius:0.875rem;
-      box-shadow:0 1px 3px rgba(15,52,98,.06);overflow:hidden
+      box-shadow:0 1px 3px rgba(15,52,98,.06);overflow:hidden;padding:1rem 1rem 1.125rem
     }
+    .hub-sec-home__intro{
+      margin:0 0 0.875rem;font-size:0.8125rem;color:#43474f
+    }
+    .hub-sec-home .hub-module-grid{margin:0}
     .hub-sec-home-card{
       display:flex;align-items:center;gap:0.75rem;width:100%;padding:0.875rem 1rem;
       border:none;background:linear-gradient(180deg,#fafcff 0%,#fff 100%);
@@ -553,14 +557,49 @@
 
       <div id="hub-view-home" class="hub-view">
         <section id="hub-secretario-home" class="hub-sec-home hidden" aria-label="Área do Secretário">
-          <button type="button" data-hub-tab="secretario" class="hub-sec-home-card">
-            <span class="material-symbols-outlined hub-sec-home-card__icon" aria-hidden="true">event_note</span>
-            <span class="hub-sec-home-card__body">
-              <span class="hub-sec-home-card__title">Secretário</span>
-              <span class="hub-sec-home-card__desc">Relatórios, assistência, S-1 e visita do Superintendente.</span>
-            </span>
-            <span class="material-symbols-outlined hub-sec-home-card__chev" aria-hidden="true">chevron_right</span>
-          </button>
+          <p class="hub-sec-home__intro">Selecione um módulo abaixo.</p>
+          <div class="hub-module-grid">
+            <button type="button" data-hub-tab="secretario" class="hub-module-card hub-module-card--secretario">
+              <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+              <div class="hub-module-body">
+                <h4>Publicadores</h4>
+                <p>Cadastro, grupos, petições e estatísticas.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </button>
+            <button type="button" data-hub-tab="secretario-relatorios" class="hub-module-card hub-module-card--secretario">
+              <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span></span>
+              <div class="hub-module-body">
+                <h4>Relatórios</h4>
+                <p>Relatórios de campo e lembretes do mês.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </button>
+            <button type="button" data-hub-tab="secretario-assistencia" class="hub-module-card hub-module-card--secretario">
+              <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_seat</span></span>
+              <div class="hub-module-body">
+                <h4>Assistência</h4>
+                <p>Contagem de assistência às reuniões.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </button>
+            <button type="button" data-hub-tab="secretario-s1" class="hub-module-card hub-module-card--secretario">
+              <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></span>
+              <div class="hub-module-body">
+                <h4>Formulário S-1</h4>
+                <p>Resumo mensal, ajustes e fechamento.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </button>
+            <button type="button" data-hub-tab="secretario-visita" class="hub-module-card hub-module-card--secretario">
+              <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_note</span></span>
+              <div class="hub-module-body">
+                <h4>Visita do Superintendente</h4>
+                <p>Documentos e informações para a Visão Geral.</p>
+              </div>
+              <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+            </button>
+          </div>
         </section>
         <section id="hub-territory-assignment" class="hidden hub-terr-assign" aria-label="Sua designação de território">
           <div id="hub-territory-assignment-content"></div>
@@ -647,10 +686,34 @@
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Técnico e mídia</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="audio-video" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
-                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">surround_sound</span></span>
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">home</span></span>
                 <div class="hub-module-body">
-                  <h4>Áudio e Vídeo</h4>
-                  <p>Mesa de som, projeção, checklists e notas da equipe.</p>
+                  <h4>Início</h4>
+                  <p>Referência rápida para mesa de som, projeção e Zoom.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="audio-video-checklists" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">checklist</span></span>
+                <div class="hub-module-body">
+                  <h4>Checklists</h4>
+                  <p>Listas de verificação antes e durante as reuniões.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="audio-video-assistencia" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_seat</span></span>
+                <div class="hub-module-body">
+                  <h4>Assistência</h4>
+                  <p>Registro de assistência às reuniões para o secretário.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="audio-video-notas" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">sticky_note_2</span></span>
+                <div class="hub-module-body">
+                  <h4>Notas</h4>
+                  <p>Notas compartilhadas e imagens da equipe.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -661,10 +724,42 @@
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Secretário</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="secretario" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+                <div class="hub-module-body">
+                  <h4>Publicadores</h4>
+                  <p>Cadastro, grupos, petições e estatísticas.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="secretario-relatorios" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">assignment_ind</span></span>
+                <div class="hub-module-body">
+                  <h4>Relatórios</h4>
+                  <p>Relatórios de campo e lembretes do mês.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="secretario-assistencia" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_seat</span></span>
+                <div class="hub-module-body">
+                  <h4>Assistência</h4>
+                  <p>Contagem de assistência às reuniões.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="secretario-s1" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></span>
+                <div class="hub-module-body">
+                  <h4>Formulário S-1</h4>
+                  <p>Resumo mensal, ajustes e fechamento.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="secretario-visita" data-hub-requires-permission="secretario" class="hub-module-card hub-module-card--secretario">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_note</span></span>
                 <div class="hub-module-body">
-                  <h4>Secretário</h4>
-                  <p>Visita do Superintendente — documentos e informações.</p>
+                  <h4>Visita do Superintendente</h4>
+                  <p>Documentos e informações para a Visão Geral.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -687,14 +782,6 @@
                 <div class="hub-module-body">
                   <h4>Configurações</h4>
                   <p>Usuários, cargos, designações e permissões de acesso.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </button>
-              <button type="button" data-hub-tab="site-builder" data-hub-requires-permission="site_builder" class="hub-module-card hub-module-card--site-builder">
-                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">language</span></span>
-                <div class="hub-module-body">
-                  <h4>Editor do Site</h4>
-                  <p>Menu, home, páginas públicas e publicação do site inteiro.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -764,7 +851,6 @@
       </div>
 
       <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
-      <div id="hub-view-site-builder" class="hub-view hidden"></div>
       <div id="hub-view-perfil" class="hub-view hidden hub-view--wide"></div>
 
     </div>
@@ -934,7 +1020,7 @@
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=20260710200000"></script>
-  <script src="js/hub-sections.js?v=20260725200000"></script>
+  <script src="js/hub-sections.js?v=20260725220000"></script>
   <script src="js/hub-events.js?v=2026060929"></script>
   <script src="js/hub-changelog.js?v=2026062412"></script>
   <script src="js/week-input-helpers.js?v=2026060984"></script>
@@ -961,6 +1047,6 @@
   <script src="js/je-pwa-update.js?v=2026061719"></script>
   <script src="js/je-push.js?v=2026061719"></script>
   <script src="js/hub-superintendente-overview.js?v=20260721206000"></script>
-  <script src="js/hub.js?v=20260721143000"></script>
+  <script src="js/hub.js?v=20260725210000"></script>
 </body>
 </html>

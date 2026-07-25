@@ -101,7 +101,7 @@
     }
     if (isSecretarioProfile(profile)) {
       if (fromHash?.id === 'perfil') return 'perfil';
-      if (fromHash?.id === 'secretario') return 'secretario';
+      if (fromHash?.permission === 'secretario') return fromHash.id;
       return 'home';
     }
     return fromHash?.id || 'home';
@@ -400,11 +400,24 @@
       : `${meta.title} – Hub | Jardim Elizabeth`;
   }
 
+  function sectionModuleKey(section) {
+    return section?.moduleKey || section?.id;
+  }
+
+  function applyModuleTab(section) {
+    if (section?.secretarioTab) {
+      window.JEAdminSecretarioService?.switchTab?.(section.secretarioTab);
+    }
+    if (section?.audioVideoTab) {
+      window.JEAdminAudioVideo?.switchTab?.(section.audioVideoTab);
+    }
+  }
+
   function showViews(sectionId) {
-    const section = SECTIONS[sectionId];
-    Object.values(SECTIONS).forEach((s) => {
-      const el = document.getElementById(s.viewId);
-      if (el) el.classList.toggle('hidden', s.id !== sectionId);
+    const section = SECTIONS[sectionId] || SECTIONS.home;
+    const activeViewId = section.viewId;
+    document.querySelectorAll('.hub-view').forEach((el) => {
+      el.classList.toggle('hidden', el.id !== activeViewId);
     });
     document.body.classList.toggle('hub-site-builder-mode', !!section?.fullscreen);
   }
@@ -412,7 +425,8 @@
   async function mountSectionShell(section) {
     if (!section) return;
     if (section.id === 'agenda') await ensureAgendaDataReady();
-    if (mountedSections.has(section.id)) return;
+    const modKey = sectionModuleKey(section);
+    if (mountedSections.has(modKey)) return;
 
     const loads = [];
     if (section.styles?.length) {
@@ -439,12 +453,20 @@
       await loadSectionScripts(section.scripts);
     }
 
-    mountedSections.add(section.id);
+    mountedSections.add(modKey);
   }
 
   async function initSectionModule(section) {
-    if (!section || loadedSections.has(section.id) || initInFlight.has(section.id)) return;
-    initInFlight.add(section.id);
+    const modKey = sectionModuleKey(section);
+    if (!section || initInFlight.has(modKey)) {
+      if (loadedSections.has(modKey)) applyModuleTab(section);
+      return;
+    }
+    if (loadedSections.has(modKey)) {
+      applyModuleTab(section);
+      return;
+    }
+    initInFlight.add(modKey);
 
     try {
       const mod = section.initKey ? window[section.initKey] : null;
@@ -456,9 +478,10 @@
         if (ready === false) throw new Error(`Init ${section.id}`);
       }
 
-      loadedSections.add(section.id);
+      loadedSections.add(modKey);
+      applyModuleTab(section);
     } finally {
-      initInFlight.delete(section.id);
+      initInFlight.delete(modKey);
     }
   }
 
@@ -519,12 +542,15 @@
       window.JEPwaInstall?.bindTriggers?.();
     }
 
-    if (!loadedSections.has(targetId)) {
+    const modKey = sectionModuleKey(section);
+    if (!loadedSections.has(modKey)) {
       initSectionModule(section).catch((err) => {
         console.error('Hub section init:', err);
         const detail = err?.message ? ` ${err.message}` : '';
         window.JEToast?.show(`Erro ao carregar dados desta seção.${detail}`, { error: true });
       });
+    } else {
+      applyModuleTab(section);
     }
   }
 

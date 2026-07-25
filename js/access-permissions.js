@@ -9,8 +9,7 @@
     territorios: 'Territórios',
     donativos: 'Donativos',
     secretario: 'Secretário',
-    settings: 'Configurações',
-    site_builder: 'Editor de Site'
+    settings: 'Configurações'
   };
 
   const MODULE_PERMISSIONS = ['agenda', 'announcements', 'public_speeches', 'agendamentos', 'audio_video', 'territorios', 'donativos', 'secretario'];

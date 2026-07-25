@@ -1,4 +1,62 @@
 (function () {
+  const SECRETARIO_SHARED = {
+    permission: 'secretario',
+    moduleKey: 'secretario',
+    viewId: 'hub-view-secretario',
+    partial: 'hub/sections/secretario.html',
+    styles: ['css/hub-sections/secretario.css?v=20260725210000'],
+    scripts: [
+      'js/admin/secretario-service.js?v=20260725210000',
+      'js/admin/secretario-visit.js?v=20260724234500',
+      'js/admin/secretario.js?v=20260724234500'
+    ],
+    initKey: 'JEAdminSecretario'
+  };
+
+  function secSection(id, hash, tab, title, subtitle) {
+    return {
+      ...SECRETARIO_SHARED,
+      id,
+      hash,
+      secretarioTab: tab,
+      hero: {
+        kicker: 'Secretário',
+        title,
+        subtitle,
+        showChangelog: false,
+        showBack: true
+      }
+    };
+  }
+
+  const AV_SHARED = {
+    permission: 'audio_video',
+    moduleKey: 'audio-video',
+    viewId: 'hub-view-audio-video',
+    partial: 'hub/sections/audio-video.html',
+    styles: ['css/hub-sections/audio-video.css?v=20260725220000'],
+    scripts: [
+      'js/admin/audio-video.js?v=20260725220000'
+    ],
+    initKey: 'JEAdminAudioVideo'
+  };
+
+  function avSection(id, hash, tab, title, subtitle) {
+    return {
+      ...AV_SHARED,
+      id,
+      hash,
+      audioVideoTab: tab,
+      hero: {
+        kicker: 'Técnico e mídia',
+        title,
+        subtitle,
+        showChangelog: false,
+        showBack: true
+      }
+    };
+  }
+
   window.JEHubSections = {
     home: {
       id: 'home',
@@ -118,25 +176,34 @@
         showBack: true
       }
     },
-    'audio-video': {
-      id: 'audio-video',
-      hash: 'audio-video',
-      permission: 'audio_video',
-      viewId: 'hub-view-audio-video',
-      partial: 'hub/sections/audio-video.html',
-      styles: ['css/hub-sections/audio-video.css?v=20260725110000'],
-      scripts: [
-        'js/admin/audio-video.js?v=20260725110000'
-      ],
-      initKey: 'JEAdminAudioVideo',
-      hero: {
-        kicker: 'Técnico e mídia',
-        title: 'Áudio e Vídeo',
-        subtitle: 'Mesa de som, projeção, Zoom, checklists e notas compartilhadas da equipe.',
-        showChangelog: false,
-        showBack: true
-      }
-    },
+    'audio-video': avSection(
+      'audio-video',
+      'audio-video',
+      'inicio',
+      'Início',
+      'Referência rápida para mesa de som, projeção e transmissão Zoom.'
+    ),
+    'audio-video-checklists': avSection(
+      'audio-video-checklists',
+      'audio-video-checklists',
+      'checklists',
+      'Checklists',
+      'Listas de verificação antes e durante as reuniões.'
+    ),
+    'audio-video-assistencia': avSection(
+      'audio-video-assistencia',
+      'audio-video-assistencia',
+      'assistencia',
+      'Assistência',
+      'Registro de assistência às reuniões para o secretário.'
+    ),
+    'audio-video-notas': avSection(
+      'audio-video-notas',
+      'audio-video-notas',
+      'notas',
+      'Notas',
+      'Notas compartilhadas e imagens da equipe de Áudio e Vídeo.'
+    ),
     territorios: {
       id: 'territorios',
       hash: 'territorios',
@@ -176,27 +243,41 @@
         showBack: true
       }
     },
-    secretario: {
-      id: 'secretario',
-      hash: 'secretario',
-      permission: 'secretario',
-      viewId: 'hub-view-secretario',
-      partial: 'hub/sections/secretario.html',
-      styles: ['css/hub-sections/secretario.css?v=20260725103000'],
-      scripts: [
-        'js/admin/secretario-service.js?v=20260725103000',
-        'js/admin/secretario-visit.js?v=20260724234500',
-        'js/admin/secretario.js?v=20260724234500'
-      ],
-      initKey: 'JEAdminSecretario',
-      hero: {
-        kicker: 'Secretário',
-        title: 'Secretário',
-        subtitle: 'Relatórios de campo, assistência, formulário S-1 e visita do Superintendente.',
-        showChangelog: false,
-        showBack: true
-      }
-    },
+    secretario: secSection(
+      'secretario',
+      'secretario',
+      'publicadores',
+      'Publicadores',
+      'Cadastro, grupos, petições e estatísticas da congregação.'
+    ),
+    'secretario-relatorios': secSection(
+      'secretario-relatorios',
+      'secretario-relatorios',
+      'relatorios',
+      'Relatórios',
+      'Relatórios de campo do mês, lembretes e publicadores pendentes.'
+    ),
+    'secretario-assistencia': secSection(
+      'secretario-assistencia',
+      'secretario-assistencia',
+      'assistencia',
+      'Assistência',
+      'Contagem de assistência às reuniões enviada pela equipe de Áudio e Vídeo.'
+    ),
+    'secretario-s1': secSection(
+      'secretario-s1',
+      'secretario-s1',
+      's1',
+      'Formulário S-1',
+      'Resumo mensal, ajustes, fechamento do mês e exportação CSV.'
+    ),
+    'secretario-visita': secSection(
+      'secretario-visita',
+      'secretario-visita',
+      'visita',
+      'Visita do Superintendente',
+      'Informações, documentos e publicação para a Visão Geral do Superintendente.'
+    ),
     perfil: {
       id: 'perfil',
       hash: 'perfil',
@@ -230,28 +311,6 @@
         kicker: 'Contribuições e sistema',
         title: 'Equipe e Permissões',
         subtitle: 'Cargos congregacionais, designações de acesso e módulos do Hub.',
-        showChangelog: false,
-        showBack: true
-      }
-    },
-    'site-builder': {
-      id: 'site-builder',
-      hash: 'site-builder',
-      permission: 'site_builder',
-      viewId: 'hub-view-site-builder',
-      partial: 'hub/sections/site-builder.html',
-      styles: ['css/hub-sections/site-builder.css?v=20260725200000'],
-      scripts: [
-        'js/site-config-schema.js?v=20260725200000',
-        'js/site-page-renderer.js?v=20260725180000',
-        'js/admin/site-builder.js?v=20260725200000'
-      ],
-      initKey: 'JEAdminSiteBuilder',
-      fullscreen: true,
-      hero: {
-        kicker: 'Desenvolvedor',
-        title: 'Editor do Site',
-        subtitle: 'Edite menu, home, páginas e publique o site inteiro.',
         showChangelog: false,
         showBack: true
       }

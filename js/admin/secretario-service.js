@@ -1072,5 +1072,5 @@
     }
   }
 
-  window.JEAdminSecretarioService = { initService };
+  window.JEAdminSecretarioService = { initService, switchTab };
 })();
