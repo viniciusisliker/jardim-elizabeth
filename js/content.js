@@ -10,6 +10,46 @@
 
   let agendaEventsCache = null;
 
+  function todayIso() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
+  function isUpcomingEvent(ev, nowMs = Date.now()) {
+    if (!ev.event_date) return true;
+    const time = ev.event_time ? String(ev.event_time).slice(0, 5) : '23:59';
+    const start = new Date(`${ev.event_date}T${time}:00`).getTime();
+    if (!Number.isNaN(start)) return start >= nowMs;
+    return ev.event_date >= todayIso();
+  }
+
+  function upcomingAgendaEvents(events) {
+    return (events || [])
+      .filter(isUpcomingEvent)
+      .sort((a, b) => {
+        const da = a.event_date || '9999-12-31';
+        const db = b.event_date || '9999-12-31';
+        if (da !== db) return da.localeCompare(db);
+        return (a.sort_order || 0) - (b.sort_order || 0);
+      });
+  }
+
+  function groupUpcomingAgendaByMonth(events) {
+    const groups = new Map();
+    events.forEach((ev) => {
+      const key = ev.month_key || (ev.event_date ? ev.event_date.slice(0, 7) : 'futuros');
+      if (!groups.has(key)) {
+        groups.set(key, { label: ev.month_label || key, events: [] });
+      }
+      groups.get(key).events.push(ev);
+    });
+    return [...groups.entries()].sort(([ka], [kb]) => {
+      if (ka === 'futuros') return 1;
+      if (kb === 'futuros') return -1;
+      return ka.localeCompare(kb);
+    });
+  }
+
   async function fetchAgendaEvents(options = {}) {
     const limit = options.limit || 0;
     if (!limit && agendaEventsCache) return agendaEventsCache;
@@ -20,8 +60,13 @@
       let query = client
         .from('agenda_events')
         .select(AGENDA_EVENT_FIELDS)
-        .eq('published', true)
-        .order('event_date', { ascending: false });
+        .eq('published', true);
+      if (options.upcoming) {
+        query = query.or(`event_date.gte.${todayIso()},event_date.is.null`);
+        query = query.order('event_date', { ascending: true, nullsFirst: false });
+      } else {
+        query = query.order('event_date', { ascending: false });
+      }
       if (limit > 0) query = query.limit(limit);
       const { data, error } = await query;
       if (error || !data?.length) return null;
@@ -495,18 +540,18 @@
     if (!lista) return;
 
     try {
-      const events = await fetchAgendaEvents({ limit: 48 });
-      if (!events?.length) {
+      const events = upcomingAgendaEvents(await fetchAgendaEvents({ limit: 80, upcoming: true }));
+      if (!events.length) {
         if (mesEl) mesEl.textContent = '';
-        renderProximosEmpty('Nenhum evento publicado no momento.');
+        renderProximosEmpty('Nenhum evento próximo no momento.');
         return;
       }
 
-      const groups = groupAgendaByMonth(events);
+      const groups = groupUpcomingAgendaByMonth(events);
       const firstGroup = groups[0]?.[1];
       if (!firstGroup) {
         if (mesEl) mesEl.textContent = '';
-        renderProximosEmpty('Nenhum evento publicado no momento.');
+        renderProximosEmpty('Nenhum evento próximo no momento.');
         return;
       }
 

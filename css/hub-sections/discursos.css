@@ -165,9 +165,31 @@
     #hub-view-discursos .terr-sched-toolbar label,#hub-view-discursos .dp-toolbar label{display:flex;flex-direction:column;gap:.25rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.8)}
     #hub-view-discursos .terr-sched-toolbar input,#hub-view-discursos .terr-sched-toolbar select,#hub-view-discursos .dp-toolbar input,#hub-view-discursos .dp-toolbar select{min-height:2.25rem;border-radius:.5rem;border:1px solid rgba(255,255,255,.25);background:#fff;color:#002060;padding:.375rem .5rem;font-size:.8125rem;font-weight:600}
     #hub-view-discursos .terr-table-wrap{overflow:auto}
-    #hub-view-discursos .terr-catalog-table,#hub-view-discursos .dp-table{width:100%;border-collapse:collapse;font-size:.8125rem}
-    #hub-view-discursos .terr-catalog-table th,#hub-view-discursos .dp-table th{text-align:left;font-size:.625rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;padding:.5rem;border-bottom:1px solid #eef0f4;background:#f7f9fc;position:sticky;top:0}
-    #hub-view-discursos .terr-catalog-table td,#hub-view-discursos .dp-table td{padding:.625rem .5rem;border-bottom:1px solid #eef0f4;vertical-align:top}
+    #hub-view-discursos .terr-catalog-table,#hub-view-discursos .dp-table{width:100%;min-width:52rem;border-collapse:collapse;font-size:.8125rem;table-layout:fixed;line-height:1.35}
+    #hub-view-discursos .dp-col-direction{width:7.5rem}
+    #hub-view-discursos .dp-col-date{width:8.5rem}
+    #hub-view-discursos .dp-col-speaker{width:11rem}
+    #hub-view-discursos .dp-col-theme{width:auto}
+    #hub-view-discursos .dp-col-congregation{width:10rem}
+    #hub-view-discursos .dp-col-status{width:6.5rem}
+    #hub-view-discursos .dp-col-actions{width:9.5rem}
+    #hub-view-discursos .terr-catalog-table th,#hub-view-discursos .dp-table th{text-align:left;font-size:.625rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;padding:.5rem;border-bottom:1px solid #eef0f4;background:#f7f9fc;position:sticky;top:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #hub-view-discursos .terr-catalog-table td,#hub-view-discursos .dp-table td{padding:.625rem .5rem;border-bottom:1px solid #eef0f4;vertical-align:middle;overflow:hidden}
+    #hub-view-discursos .dp-cell-truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0}
+    #hub-view-discursos .dp-cell-theme{max-width:none;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+    #hub-view-discursos .dp-cell-date small{display:block;margin-top:.125rem;font-size:.6875rem;color:#6b7280;font-weight:600}
+    #hub-view-discursos .dp-table-speakers{min-width:58rem}
+    #hub-view-discursos .dp-sp-col-name{width:14rem}
+    #hub-view-discursos .dp-sp-col-congregation{width:10rem}
+    #hub-view-discursos .dp-sp-col-privilege{width:9rem}
+    #hub-view-discursos .dp-sp-col-phone{width:8.5rem}
+    #hub-view-discursos .dp-sp-col-email{width:auto}
+    #hub-view-discursos .dp-sp-col-themes{width:4rem}
+    #hub-view-discursos .dp-sp-col-actions{width:5.5rem}
+    #hub-view-discursos .dp-cell-name small{margin-left:.25rem;font-size:.6875rem;font-weight:700;color:#1a7f4b}
+    #hub-view-discursos .dp-cell-email{max-width:none}
+    #hub-view-discursos .dp-cell-nowrap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #hub-view-discursos .dp-cell-center{text-align:center;font-weight:700;color:#002060}
     #hub-view-discursos .terr-catalog-table tr:hover td,#hub-view-discursos .dp-assignment-row:hover td{background:#fafbfc}
     #hub-view-discursos .dp-assignment-row{cursor:pointer}
     #hub-view-discursos .dp-badge{display:inline-flex;padding:.125rem .5rem;border-radius:9999px;font-size:.625rem;font-weight:800}
@@ -221,6 +243,8 @@
     .dp-form label{display:flex;flex-direction:column;gap:.3125rem;font-size:.6875rem;font-weight:700;color:#43474f}
     .dp-form .dp-span-2{grid-column:1/-1}
     .dp-form input,.dp-form select,.dp-form textarea{border:1px solid #e2e6ef;border-radius:.5rem;padding:.5rem .625rem;font-size:.875rem;color:#1b1c1c}
+    .dp-form label input[type="search"]{margin-bottom:.25rem}
+    .dp-theme-checks label.dp-filter-hidden{display:none!important}
     .dp-form footer{grid-column:1/-1;display:flex;justify-content:flex-end;gap:.5rem;padding-top:.25rem}
     .dp-theme-checks{max-height:12rem;overflow:auto;border:1px solid #eef0f4;border-radius:.5rem;padding:.5rem;display:grid;gap:.25rem}
     .dp-theme-checks label{display:flex;flex-direction:row;align-items:flex-start;gap:.5rem;font-size:.75rem;font-weight:500}

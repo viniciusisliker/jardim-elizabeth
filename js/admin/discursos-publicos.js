@@ -21,6 +21,43 @@
   const getTheme = (id) => themes.find((t) => t.id === id);
   const getCongregation = (id) => congregations.find((c) => c.id === id);
 
+  function normalizeSearch(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function matchesSearch(text, query) {
+    const q = normalizeSearch(query);
+    if (!q) return true;
+    return normalizeSearch(text).includes(q);
+  }
+
+  function activeSpeakers(query = '') {
+    return speakers
+      .filter((s) => s.is_active && matchesSearch(`${s.full_name}${s.is_local ? ' local' : ''}`, query))
+      .sort((a, b) => a.full_name.localeCompare(b.full_name, 'pt-BR'));
+  }
+
+  function activeThemes(query = '', speakerId) {
+    const speaker = getSpeaker(speakerId);
+    const prepared = new Set((speaker?.speech_speaker_themes || []).map((x) => x.theme_id));
+    return themes
+      .filter((t) => t.is_active && matchesSearch(`${t.outline_number} ${t.title}`, query))
+      .sort((a, b) => (prepared.has(b.id) - prepared.has(a.id)) || (a.outline_number - b.outline_number));
+  }
+
+  function activeCongregations(query = '') {
+    return congregations
+      .filter((c) => c.is_active && matchesSearch(c.name, query))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  }
+
+  function modalRoot() {
+    return document.querySelector('.dp-modal');
+  }
+
   function layout() {
     root.innerHTML = `
       <div class="terr-nav-stage dp-nav-stage">
@@ -60,17 +97,24 @@
 
   function assignmentTable(rows) {
     if (!rows.length) return empty('Nenhuma designação encontrada.');
-    return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table"><thead><tr>
+    return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table"><colgroup>
+      <col class="dp-col-direction"/><col class="dp-col-date"/><col class="dp-col-speaker"/><col class="dp-col-theme"/><col class="dp-col-congregation"/><col class="dp-col-status"/><col class="dp-col-actions"/>
+    </colgroup><thead><tr>
       <th>Direção</th><th>Data</th><th>Orador</th><th>Tema</th><th>Congregação</th><th>Status</th><th></th>
-    </tr></thead><tbody>${rows.map((a) => `<tr data-dp-edit="${a.id}" class="dp-assignment-row">
+    </tr></thead><tbody>${rows.map((a) => {
+      const theme = assignmentTheme(a);
+      const congregation = a.congregation_name || a.speech_congregations?.name || '—';
+      const speaker = a.speaker_name || a.speech_speakers?.full_name || '—';
+      return `<tr data-dp-edit="${a.id}" class="dp-assignment-row">
       <td><span class="dp-badge dp-badge--${a.direction}">${DIRECTION[a.direction]}</span></td>
-      <td>${escapeHtml(dateText(a.event_date))}${a.event_time ? `<small>${escapeHtml(a.event_time.slice(0, 5))}</small>` : ''}</td>
-      <td>${escapeHtml(a.speaker_name || a.speech_speakers?.full_name || '—')}</td>
-      <td>${escapeHtml(assignmentTheme(a))}</td>
-      <td>${escapeHtml(a.congregation_name || a.speech_congregations?.name || '—')}</td>
+      <td class="dp-cell-date">${escapeHtml(dateText(a.event_date))}${a.event_time ? `<small>${escapeHtml(a.event_time.slice(0, 5))}</small>` : ''}</td>
+      <td class="dp-cell-truncate" title="${escapeHtml(speaker)}">${escapeHtml(speaker)}</td>
+      <td class="dp-cell-truncate dp-cell-theme" title="${escapeHtml(theme)}">${escapeHtml(theme)}</td>
+      <td class="dp-cell-truncate" title="${escapeHtml(congregation)}">${escapeHtml(congregation)}</td>
       <td><span class="dp-status dp-status--${a.confirmation_status}">${STATUS[a.confirmation_status]}</span></td>
       <td class="dp-actions"><button type="button" data-dp-wa="${a.id}" title="WhatsApp">WhatsApp</button><button type="button" data-dp-delete="${a.id}" title="Excluir">Excluir</button></td>
-    </tr>`).join('')}</tbody></table></div>`;
+    </tr>`;
+    }).join('')}</tbody></table></div>`;
   }
 
   function renderAgenda() {
@@ -113,19 +157,180 @@
     bindAssignmentActions(host);
   }
 
-  function speakerOptions(selected, includeBlank = true) {
-    return `${includeBlank ? option('', 'Digite ou selecione...', selected) : ''}${speakers.filter((s) => s.is_active).sort((a, b) => a.full_name.localeCompare(b.full_name))
+  function speakerOptions(selected, query = '') {
+    return `${option('', 'Digite ou selecione...', selected)}${activeSpeakers(query)
       .map((s) => option(s.id, `${s.full_name}${s.is_local ? ' (local)' : ''}`, selected)).join('')}`;
   }
-  function congregationOptions(selected) {
-    return `${option('', 'Digite ou selecione...', selected)}${congregations.filter((c) => c.is_active).sort((a, b) => a.name.localeCompare(b.name))
+  function congregationOptions(selected, query = '') {
+    return `${option('', 'Digite ou selecione...', selected)}${activeCongregations(query)
       .map((c) => option(c.id, c.name, selected)).join('')}`;
   }
-  function themeOptions(selected, speakerId) {
+  function themeOptions(selected, speakerId, query = '') {
     const speaker = getSpeaker(speakerId);
     const prepared = new Set((speaker?.speech_speaker_themes || []).map((x) => x.theme_id));
-    const ordered = [...themes].filter((t) => t.is_active).sort((a, b) => (prepared.has(b.id) - prepared.has(a.id)) || (a.outline_number - b.outline_number));
-    return `${option('', 'Digite ou selecione...', selected)}${ordered.map((t) => option(t.id, `${prepared.has(t.id) ? '★ ' : ''}Esboço ${t.outline_number} — ${t.title}`, selected)).join('')}`;
+    return `${option('', 'Digite ou selecione...', selected)}${activeThemes(query, speakerId)
+      .map((t) => option(t.id, `${prepared.has(t.id) ? '★ ' : ''}Esboço ${t.outline_number} — ${t.title}`, selected)).join('')}`;
+  }
+
+  function refreshAssignmentSpeakerSelect(form, query = '') {
+    const select = form.querySelector('[data-dp-speaker]');
+    if (!select) return;
+    const selected = select.value;
+    select.innerHTML = speakerOptions(selected, query);
+    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  }
+
+  function refreshAssignmentThemeSelect(form, query = '') {
+    const select = form.querySelector('[data-dp-theme]');
+    const speakerSelect = form.querySelector('[data-dp-speaker]');
+    if (!select) return;
+    const selected = select.value;
+    select.innerHTML = themeOptions(selected, speakerSelect?.value, query);
+    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  }
+
+  function refreshAssignmentCongregationSelect(form, query = '') {
+    const select = form.querySelector('[data-dp-congregation]');
+    if (!select) return;
+    const selected = select.value;
+    select.innerHTML = congregationOptions(selected, query);
+    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  }
+
+  function filterThemeCheckboxLabels(container, query) {
+    container?.querySelectorAll('[data-dp-theme-item]').forEach((label) => {
+      const text = label.dataset.dpThemeText || label.textContent;
+      label.classList.toggle('dp-filter-hidden', !matchesSearch(text, query));
+    });
+  }
+
+  function findSpeakerByName(name) {
+    const n = text(name);
+    if (!n) return null;
+    const key = normalizeSearch(n);
+    return speakers.find((s) => normalizeSearch(s.full_name) === key) || null;
+  }
+
+  function findCongregationByName(name) {
+    const n = text(name);
+    if (!n) return null;
+    const key = normalizeSearch(n);
+    return congregations.find((c) => c.is_active !== false && normalizeSearch(c.name) === key) || null;
+  }
+
+  function resolveThemeId({ themeId, themeTitle }) {
+    if (themeId) return themeId;
+    const title = text(themeTitle);
+    if (!title) return null;
+
+    const numMatch = title.match(/(?:esbo[cç]o\s*)?#?\s*(\d{1,3})\b/i);
+    if (numMatch) {
+      const byNum = themes.find((t) => t.outline_number === Number(numMatch[1]));
+      if (byNum) return byNum.id;
+    }
+
+    const key = normalizeSearch(title);
+    const exact = themes.find((t) => normalizeSearch(t.title) === key);
+    if (exact) return exact.id;
+
+    const partial = themes.find((t) => {
+      const label = normalizeSearch(`${t.outline_number} ${t.title}`);
+      return label.includes(key) || key.includes(normalizeSearch(t.title));
+    });
+    return partial?.id || null;
+  }
+
+  async function ensureCongregationId(congregationId, congregationName) {
+    if (congregationId) return congregationId;
+    const name = text(congregationName);
+    if (!name) return null;
+    const existing = findCongregationByName(name);
+    if (existing) return existing.id;
+    const { data, error } = await client.from('speech_congregations').insert({ name }).select('id').single();
+    if (error) throw error;
+    return data.id;
+  }
+
+  async function ensureSpeakerFromAssignment({ speakerId, speakerName, congregationId, congregationName }) {
+    if (speakerId) return speakerId;
+    const name = text(speakerName);
+    if (!name) return null;
+
+    const existing = findSpeakerByName(name);
+    if (existing) return existing.id;
+
+    const congId = await ensureCongregationId(congregationId, congregationName);
+    const congName = congregationName || getCongregation(congId)?.name || '';
+    const { data, error } = await client.from('speech_speakers').insert({
+      full_name: name,
+      congregation_id: congId,
+      privilege: 'anciao',
+      is_local: normalizeSearch(congName) === normalizeSearch('Jardim Elizabeth'),
+      is_active: true
+    }).select('id').single();
+    if (error) throw error;
+    return data.id;
+  }
+
+  async function ensureSpeakerThemeLink(speakerId, themeId) {
+    if (!speakerId || !themeId) return;
+    const speaker = getSpeaker(speakerId);
+    const linked = (speaker?.speech_speaker_themes || []).some((row) => row.theme_id === themeId);
+    if (linked) return;
+    const { error } = await client.from('speech_speaker_themes').insert({ speaker_id: speakerId, theme_id: themeId });
+    if (error && error.code !== '23505') throw error;
+  }
+
+  async function saveAssignmentFromForm(form, existing) {
+    const v = Object.fromEntries(new FormData(form));
+    let speakerId = v.speaker_id || null;
+    let themeId = v.theme_id || null;
+    let s = getSpeaker(speakerId);
+    let t = getTheme(themeId);
+    let c = getCongregation(v.congregation_id);
+
+    const speakerName = text(v.speaker_name) || s?.full_name || null;
+    const themeTitle = text(v.theme_title) || t?.title || null;
+    const congregationName = text(v.congregation_name) || c?.name || null;
+    const congregationId = await ensureCongregationId(v.congregation_id || null, congregationName);
+
+    speakerId = await ensureSpeakerFromAssignment({
+      speakerId,
+      speakerName,
+      congregationId,
+      congregationName
+    });
+    s = speakerId ? (getSpeaker(speakerId) || { full_name: speakerName }) : s;
+
+    themeId = resolveThemeId({ themeId, themeTitle });
+    t = getTheme(themeId) || t;
+
+    if (speakerId && themeId) {
+      await ensureSpeakerThemeLink(speakerId, themeId);
+    }
+
+    const payload = {
+      direction: v.direction,
+      event_date: v.event_date,
+      event_time: v.event_time || null,
+      speaker_id: speakerId,
+      speaker_name: speakerName || s?.full_name || null,
+      theme_id: themeId,
+      theme_title: themeTitle || t?.title || null,
+      outline_number: t?.outline_number || null,
+      congregation_id: congregationId,
+      congregation_name: congregationName || getCongregation(congregationId)?.name || null,
+      opening_song: text(v.opening_song) || null,
+      modality: v.modality,
+      confirmation_status: v.confirmation_status,
+      notes: text(v.notes) || null
+    };
+
+    const q = existing
+      ? client.from('speech_assignments').update(payload).eq('id', existing.id)
+      : client.from('speech_assignments').insert(payload);
+    const { error } = await q;
+    if (error) throw error;
   }
 
   function openAssignmentModal(existing) {
@@ -135,42 +340,51 @@
         <label>Direção<select name="direction">${option('receive', 'Recebemos', a.direction)}${option('send', 'Enviamos', a.direction)}</select></label>
         <label>Data<input required name="event_date" type="date" value="${escapeHtml(a.event_date || '')}"></label>
         <label>Horário<input name="event_time" type="time" value="${escapeHtml((a.event_time || '').slice(0, 5))}"></label>
-        <label>Orador<select name="speaker_id" data-dp-speaker>${speakerOptions(a.speaker_id)}</select><input name="speaker_name" placeholder="Ou informe o nome" value="${escapeHtml(a.speaker_name || '')}"></label>
-        <label class="dp-span-2">Tema<input data-dp-theme-filter placeholder="Buscar esboço ou título"><select name="theme_id" data-dp-theme>${themeOptions(a.theme_id, a.speaker_id)}</select><input name="theme_title" placeholder="Ou informe o tema" value="${escapeHtml(a.theme_title || '')}"></label>
-        <label>Congregação<select name="congregation_id" data-dp-congregation>${congregationOptions(a.congregation_id)}</select><input name="congregation_name" placeholder="Ou informe a congregação" value="${escapeHtml(a.congregation_name || '')}"></label>
+        <label>Orador<input data-dp-speaker-filter type="search" placeholder="Buscar orador…"><select name="speaker_id" data-dp-speaker>${speakerOptions(a.speaker_id)}</select><input name="speaker_name" placeholder="Ou informe o nome" value="${escapeHtml(a.speaker_name || '')}"></label>
+        <label class="dp-span-2">Tema<input data-dp-theme-filter type="search" placeholder="Buscar esboço ou título…"><select name="theme_id" data-dp-theme>${themeOptions(a.theme_id, a.speaker_id)}</select><input name="theme_title" placeholder="Ou informe o tema" value="${escapeHtml(a.theme_title || '')}"></label>
+        <label>Congregação<input data-dp-congregation-filter type="search" placeholder="Buscar congregação…"><select name="congregation_id" data-dp-congregation>${congregationOptions(a.congregation_id)}</select><input name="congregation_name" placeholder="Ou informe a congregação" value="${escapeHtml(a.congregation_name || '')}"></label>
         <label>Cântico inicial<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
         <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
         <label>Status<select name="confirmation_status">${Object.entries(STATUS).map(([k, v]) => option(k, v, a.confirmation_status)).join('')}</select></label>
         <label class="dp-span-2">Observações<textarea name="notes" rows="3">${escapeHtml(a.notes || '')}</textarea></label>
         <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
       </form>`);
-    const form = document.querySelector('[data-dp-assignment-form]');
-    form.querySelector('[data-dp-theme-filter]').addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase();
-      form.querySelectorAll('[data-dp-theme] option').forEach((item) => {
-        item.hidden = !!q && !item.textContent.toLowerCase().includes(q);
-      });
+    const form = modalRoot()?.querySelector('[data-dp-assignment-form]');
+    if (!form) return;
+    form.querySelector('[data-dp-speaker-filter]')?.addEventListener('input', (e) => {
+      refreshAssignmentSpeakerSelect(form, e.target.value);
     });
-    form.querySelector('[data-dp-speaker]').addEventListener('change', (e) => {
-      const select = form.querySelector('[data-dp-theme]');
-      select.innerHTML = themeOptions(select.value, e.target.value);
-      const s = getSpeaker(e.target.value); if (s && !form.speaker_name.value) form.speaker_name.value = s.full_name;
+    form.querySelector('[data-dp-theme-filter]')?.addEventListener('input', (e) => {
+      refreshAssignmentThemeSelect(form, e.target.value);
     });
-    form.querySelector('[data-dp-theme]').addEventListener('change', (e) => {
-      const t = getTheme(e.target.value); if (t && !form.theme_title.value) form.theme_title.value = t.title;
+    form.querySelector('[data-dp-congregation-filter]')?.addEventListener('input', (e) => {
+      refreshAssignmentCongregationSelect(form, e.target.value);
     });
-    form.querySelector('[data-dp-congregation]').addEventListener('change', (e) => {
-      const c = getCongregation(e.target.value); if (c && !form.congregation_name.value) form.congregation_name.value = c.name;
+    form.querySelector('[data-dp-speaker]')?.addEventListener('change', (e) => {
+      const themeFilter = form.querySelector('[data-dp-theme-filter]');
+      refreshAssignmentThemeSelect(form, themeFilter?.value || '');
+      const s = getSpeaker(e.target.value);
+      if (s && !form.speaker_name.value) form.speaker_name.value = s.full_name;
+    });
+    form.querySelector('[data-dp-theme]')?.addEventListener('change', (e) => {
+      const t = getTheme(e.target.value);
+      if (t && !form.theme_title.value) form.theme_title.value = t.title;
+    });
+    form.querySelector('[data-dp-congregation]')?.addEventListener('change', (e) => {
+      const c = getCongregation(e.target.value);
+      if (c && !form.congregation_name.value) form.congregation_name.value = c.name;
     });
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const v = Object.fromEntries(new FormData(form)); const s = getSpeaker(v.speaker_id); const t = getTheme(v.theme_id); const c = getCongregation(v.congregation_id);
-      const payload = { ...v, event_time: v.event_time || null, speaker_id: v.speaker_id || null, theme_id: v.theme_id || null, congregation_id: v.congregation_id || null,
-        speaker_name: text(v.speaker_name) || s?.full_name || null, theme_title: text(v.theme_title) || t?.title || null, outline_number: t?.outline_number || null,
-        congregation_name: text(v.congregation_name) || c?.name || null, opening_song: text(v.opening_song) || null, notes: text(v.notes) || null };
-      const q = existing ? client.from('speech_assignments').update(payload).eq('id', existing.id) : client.from('speech_assignments').insert(payload);
-      const { error } = await q; if (error) return toast(errorText(error), true);
-      closeModal(); await loadData(); refresh(); toast('Designação salva.');
+      try {
+        await saveAssignmentFromForm(form, existing);
+        closeModal();
+        await loadData();
+        refresh();
+        toast('Designação salva.');
+      } catch (err) {
+        toast(errorText(err), true);
+      }
     });
   }
 
@@ -203,6 +417,26 @@
     });
   }
 
+  function speakersTable(rows) {
+    if (!rows.length) return empty('Nenhum orador encontrado.');
+    return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table dp-table-speakers"><colgroup>
+      <col class="dp-sp-col-name"/><col class="dp-sp-col-congregation"/><col class="dp-sp-col-privilege"/><col class="dp-sp-col-phone"/><col class="dp-sp-col-email"/><col class="dp-sp-col-themes"/><col class="dp-sp-col-actions"/>
+    </colgroup><thead><tr><th>Nome</th><th>Congregação</th><th>Privilégio</th><th>Telefone</th><th>E-mail</th><th>Temas</th><th></th></tr></thead><tbody>${rows.map((s) => {
+      const congregation = s.speech_congregations?.name || '—';
+      const email = s.email || '—';
+      const name = `${s.full_name}${s.is_local ? ' (local)' : ''}`;
+      return `<tr>
+        <td class="dp-cell-truncate dp-cell-name" title="${escapeHtml(name)}">${escapeHtml(s.full_name)}${s.is_local ? ' <small>Local</small>' : ''}</td>
+        <td class="dp-cell-truncate" title="${escapeHtml(congregation)}">${escapeHtml(congregation)}</td>
+        <td class="dp-cell-truncate" title="${escapeHtml(PRIVILEGE[s.privilege] || '')}">${PRIVILEGE[s.privilege]}</td>
+        <td class="dp-cell-nowrap">${escapeHtml(s.phone || '—')}</td>
+        <td class="dp-cell-truncate dp-cell-email" title="${escapeHtml(email)}">${escapeHtml(email)}</td>
+        <td class="dp-cell-center">${s.speech_speaker_themes?.length || 0}</td>
+        <td class="dp-actions"><button type="button" data-dp-speaker-edit="${s.id}">Editar</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+  }
+
   function renderSpeakers() {
     const host = $('#dp-panel-oradores'); const q = host.dataset.query || '';
     const rows = speakers.filter((s) => `${s.full_name} ${s.phone} ${s.email}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -210,7 +444,7 @@
     host.innerHTML = `
       <div class="terr-catalog-stats dp-stats"><article><strong>${speakers.length}</strong><span>Total</span></article><article><strong>${count((s) => s.is_local)}</strong><span>Locais</span></article><article><strong>${count((s) => s.privilege === 'anciao')}</strong><span>Anciãos</span></article><article><strong>${count((s) => s.privilege === 'servo_ministerial')}</strong><span>Servos</span></article></div>
       <div class="terr-catalog-card"><div class="terr-sched-toolbar"><input data-dp-speaker-search placeholder="Buscar orador" value="${escapeHtml(q)}"><button class="btn-primary" type="button" data-dp-speaker-new>Novo orador</button></div>
-      ${rows.length ? `<div class="terr-table-wrap"><table class="terr-catalog-table"><thead><tr><th>Nome</th><th>Congregação</th><th>Privilégio</th><th>Telefone</th><th>E-mail</th><th>Temas</th><th></th></tr></thead><tbody>${rows.map((s) => `<tr><td>${escapeHtml(s.full_name)}${s.is_local ? ' <small>Local</small>' : ''}</td><td>${escapeHtml(s.speech_congregations?.name || '—')}</td><td>${PRIVILEGE[s.privilege]}</td><td>${escapeHtml(s.phone || '—')}</td><td>${escapeHtml(s.email || '—')}</td><td>${s.speech_speaker_themes?.length || 0}</td><td><button type="button" data-dp-speaker-edit="${s.id}">Editar</button></td></tr>`).join('')}</tbody></table></div>` : empty('Nenhum orador encontrado.')}</div>`;
+      ${rows.length ? speakersTable(rows) : empty('Nenhum orador encontrado.')}</div>`;
     host.querySelector('[data-dp-speaker-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderSpeakers(); });
     host.querySelector('[data-dp-speaker-new]').addEventListener('click', () => openSpeakerModal());
     host.querySelectorAll('[data-dp-speaker-edit]').forEach((b) => b.addEventListener('click', () => openSpeakerModal(getSpeaker(b.dataset.dpSpeakerEdit))));
@@ -221,16 +455,25 @@
     const selected = new Set((s.speech_speaker_themes || []).map((x) => x.theme_id));
     openModal(`${existing ? 'Editar' : 'Novo'} orador`, `<form class="dp-form" data-dp-speaker-form>
       <label class="dp-span-2">Nome completo<input required name="full_name" value="${escapeHtml(s.full_name || '')}"></label>
-      <label>Congregação<select name="congregation_id">${congregationOptions(s.congregation_id)}</select><input name="quick_congregation" placeholder="Nova congregação (rápido)"></label>
+      <label>Congregação<input data-dp-congregation-filter type="search" placeholder="Buscar congregação…"><select name="congregation_id">${congregationOptions(s.congregation_id)}</select><input name="quick_congregation" placeholder="Nova congregação (rápido)"></label>
       <label>Telefone<input name="phone" value="${escapeHtml(s.phone || '')}"></label><label>E-mail<input name="email" value="${escapeHtml(s.email || '')}"></label>
       <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
       <label><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}> Orador local</label><label><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}> Ativo</label>
       <label class="dp-span-2">Observações<textarea name="notes" rows="2">${escapeHtml(s.notes || '')}</textarea></label>
-      <div class="dp-span-2"><label>Temas preparados</label><input data-dp-theme-search placeholder="Filtrar por número ou título"><div class="dp-theme-checks" data-dp-theme-checks>${themeCheckboxes(selected)}</div></div>
+      <div class="dp-span-2"><label>Temas preparados</label><input data-dp-theme-search type="search" placeholder="Filtrar por número ou título…"><div class="dp-theme-checks" data-dp-theme-checks>${themeCheckboxes(selected)}</div></div>
       <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer></form>`);
-    const form = document.querySelector('[data-dp-speaker-form]');
-    form.querySelector('[data-dp-theme-search]').addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase(); form.querySelectorAll('[data-dp-theme-checks] label').forEach((l) => { l.hidden = !l.textContent.toLowerCase().includes(q); });
+    const form = modalRoot()?.querySelector('[data-dp-speaker-form]');
+    if (!form) return;
+    const themeChecks = form.querySelector('[data-dp-theme-checks]');
+    form.querySelector('[data-dp-theme-search]')?.addEventListener('input', (e) => {
+      filterThemeCheckboxLabels(themeChecks, e.target.value);
+    });
+    form.querySelector('[data-dp-congregation-filter]')?.addEventListener('input', (e) => {
+      const select = form.querySelector('[name="congregation_id"]');
+      if (!select) return;
+      const selected = select.value;
+      select.innerHTML = congregationOptions(selected, e.target.value);
+      if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
     });
     form.addEventListener('submit', async (e) => {
       e.preventDefault(); const v = Object.fromEntries(new FormData(form));
@@ -250,7 +493,10 @@
     });
   }
   function themeCheckboxes(selected) {
-    return themes.filter((t) => t.is_active).map((t) => `<label><input type="checkbox" name="theme_ids" value="${t.id}"${selected.has(t.id) ? ' checked' : ''}> ${t.outline_number} — ${escapeHtml(t.title)}</label>`).join('');
+    return themes.filter((t) => t.is_active).map((t) => {
+      const label = `${t.outline_number} — ${t.title}`;
+      return `<label data-dp-theme-item data-dp-theme-text="${escapeHtml(label)}"><input type="checkbox" name="theme_ids" value="${t.id}"${selected.has(t.id) ? ' checked' : ''}> ${t.outline_number} — ${escapeHtml(t.title)}</label>`;
+    }).join('');
   }
 
   function speakersForTheme(themeId) {
