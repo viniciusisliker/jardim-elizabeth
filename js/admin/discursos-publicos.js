@@ -384,6 +384,9 @@
     updateThemeComboBadge(combo, hidden.value);
     closeCombo(combo);
     const form = combo.closest('form');
+    if (combo.dataset.dpCombo === 'congregation' && hidden.value) {
+      fillCongregationDetailFields(form, hidden.value);
+    }
     if (combo.dataset.dpCombo === 'speaker' && hidden.value) {
       const speaker = getSpeaker(hidden.value);
       const congCombo = form?.querySelector('[data-dp-combo="congregation"]');
@@ -395,6 +398,7 @@
           congHidden.value = congregation.id;
           congInput.value = congregation.name;
           congCombo.querySelector('.dp-combo__clear')?.classList.remove('hidden');
+          fillCongregationDetailFields(form, congregation.id);
         }
       }
       const themeCombo = form?.querySelector('[data-dp-combo="theme"]');
@@ -635,6 +639,68 @@
     return data.id;
   }
 
+  function congregationForAssignment(a) {
+    const linked = a.speech_congregations;
+    const cached = getCongregation(a.congregation_id);
+    return {
+      name: a.congregation_name || linked?.name || cached?.name || '',
+      contact_name: linked?.contact_name ?? cached?.contact_name ?? '',
+      phone: linked?.phone ?? cached?.phone ?? '',
+      address: linked?.address ?? cached?.address ?? '',
+      city: linked?.city ?? cached?.city ?? ''
+    };
+  }
+
+  function congregationContactLine(cong) {
+    const parts = [text(cong.contact_name), text(cong.phone)].filter(Boolean);
+    return parts.length ? parts.join(' — ') : '—';
+  }
+
+  function congregationAddressLine(cong) {
+    return text(cong.address) || text(cong.city) || '—';
+  }
+
+  function congregationDetailsForAssignment(a) {
+    const c = congregationForAssignment(a || {});
+    return {
+      contact_name: c.contact_name || '',
+      phone: c.phone || '',
+      address: c.address || ''
+    };
+  }
+
+  function congregationDetailFieldsHtml(a) {
+    const d = congregationDetailsForAssignment(a);
+    return `
+      <label>Contato da congregação<input name="congregation_contact_name" autocomplete="off" value="${escapeHtml(d.contact_name)}" placeholder="Nome do contato"></label>
+      <label>Telefone do contato<input name="congregation_phone" type="tel" autocomplete="tel" value="${escapeHtml(d.phone)}" placeholder="Telefone"></label>
+      <label class="dp-span-3">Endereço<input name="congregation_address" autocomplete="off" value="${escapeHtml(d.address)}" placeholder="Endereço completo"></label>`;
+  }
+
+  function fillCongregationDetailFields(form, congregationId) {
+    const c = getCongregation(congregationId) || {};
+    const contact = form.querySelector('[name="congregation_contact_name"]');
+    const phone = form.querySelector('[name="congregation_phone"]');
+    const address = form.querySelector('[name="congregation_address"]');
+    if (contact) contact.value = c.contact_name || '';
+    if (phone) phone.value = c.phone || '';
+    if (address) address.value = c.address || '';
+  }
+
+  async function saveCongregationDetails(congregationId, formData) {
+    if (!congregationId) return;
+    const payload = {
+      contact_name: text(formData.congregation_contact_name) || null,
+      phone: text(formData.congregation_phone) || null,
+      address: text(formData.congregation_address) || null
+    };
+    const { data, error } = await client.from('speech_congregations').update(payload).eq('id', congregationId).select().single();
+    if (error) throw error;
+    const idx = congregations.findIndex((c) => c.id === congregationId);
+    if (idx >= 0) congregations[idx] = { ...congregations[idx], ...data };
+    else if (data) congregations.push(data);
+  }
+
   async function ensureSpeakerThemeLink(speakerId, themeId) {
     if (!speakerId || !themeId) return;
     const speaker = getSpeaker(speakerId);
@@ -672,6 +738,10 @@
       await ensureSpeakerThemeLink(speakerId, themeId);
     }
 
+    if (congregationId) {
+      await saveCongregationDetails(congregationId, v);
+    }
+
     const payload = {
       direction: v.direction,
       event_date: v.event_date,
@@ -705,6 +775,7 @@
         <label>Horário<input name="event_time" type="time" value="${escapeHtml((a.event_time || '').slice(0, 5))}"></label>
         ${comboFieldHtml('speaker', a, { label: 'Orador', span2: true })}
         ${comboFieldHtml('congregation', a, { label: 'Congregação' })}
+        ${congregationDetailFieldsHtml(a)}
         ${comboFieldHtml('theme', a, { label: 'Tema', span3: true })}
         <label>Cântico<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
         <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
@@ -748,7 +819,20 @@
   }
 
   function whatsappText(a) {
-    return `*DISCURSO PÚBLICO*\n*Data:* ${dateText(a.event_date)}\n*Horário:* ${a.event_time?.slice(0, 5) || '—'}\n*Direção:* ${DIRECTION[a.direction]}\n*Orador:* ${a.speaker_name || '—'}\n*Tema:* ${assignmentTheme(a)}\n*Congregação:* ${a.congregation_name || '—'}\n*Cântico:* ${a.opening_song || '—'}\n*Modalidade:* ${a.modality === 'online' ? 'Online' : 'Presencial'}\n*Status:* ${STATUS[a.confirmation_status]}`;
+    const cong = congregationForAssignment(a);
+    const congregationName = text(cong.name) || '—';
+    return [
+      '*DISCURSO PÚBLICO*',
+      `*Data:* ${dateText(a.event_date)}`,
+      `*Horário:* ${a.event_time?.slice(0, 5) || '—'}`,
+      `*Orador:* ${a.speaker_name || '—'}`,
+      `*Tema:* ${assignmentTheme(a)}`,
+      `*Congregação:* ${congregationName}`,
+      `*Contato da Congregação:* ${congregationContactLine(cong)}`,
+      `*Endereço:* ${congregationAddressLine(cong)}`,
+      `*Cântico:* ${text(a.opening_song) || '—'}`,
+      `*Status:* ${STATUS[a.confirmation_status] || '—'}`
+    ].join('\n');
   }
   function openWhatsapp(rows) {
     const message = rows.filter(Boolean).sort((a, b) => a.event_date.localeCompare(b.event_date)).map(whatsappText).join('\n\n');
@@ -987,7 +1071,7 @@
       client.from('speech_themes').select('*').order('outline_number'),
       client.from('speech_speakers').select('*, speech_congregations(name), speech_speaker_themes(theme_id)').order('full_name'),
       client.from('speech_congregations').select('*').order('name'),
-      client.from('speech_assignments').select('*, speech_speakers(full_name, phone), speech_themes(outline_number, title), speech_congregations(name)').order('event_date')
+      client.from('speech_assignments').select('*, speech_speakers(full_name, phone), speech_themes(outline_number, title), speech_congregations(name, contact_name, phone, address, city)').order('event_date')
     ]);
     const failure = [themeRes, speakerRes, congregationRes, assignmentRes].find((x) => x.error);
     if (failure) throw failure.error;

@@ -65,7 +65,7 @@
         'css/hub-sections/discursos.css?v=20260725173000'
       ],
       scripts: [
-        'js/admin/discursos-publicos.js?v=20260725173000'
+        'js/admin/discursos-publicos.js?v=20260725174000'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {
