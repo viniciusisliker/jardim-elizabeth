@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<!-- deploy-test: cloud-agent-pipeline-20260725 -->
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -389,10 +388,6 @@
         box-shadow: 0 8px 24px rgba(15, 52, 98, 0.1);
         transform: translateY(-2px);
       }
-      .je-home-shortcut:hover .je-home-shortcut-arrow {
-        color: #0f3462;
-        transform: translateX(2px);
-      }
       .je-home-news-item:hover { background: linear-gradient(90deg, rgba(200, 169, 110, 0.08) 0%, rgba(239, 246, 255, 0.65) 100%); }
       .je-home-news-item:hover .je-home-news-icon {
         border-color: rgba(200, 169, 110, 0.5);
@@ -442,17 +437,8 @@
       margin-top: 0.125rem;
       line-height: 1.35;
     }
-    .je-home-shortcut-arrow {
-      flex-shrink: 0;
-      font-size: 1rem !important;
-      color: #c3c6d0;
-      transition: color 0.15s, transform 0.15s;
-    }
     @media (max-width: 767px) {
       .je-home-shortcut--donativos { grid-column: auto; }
-      .je-home-shortcut-arrow { display: none; }
-    }
-    @media (max-width: 767px) {
       .je-home-shortcuts {
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 0.25rem;
@@ -845,7 +831,7 @@
       .je-home-news-item:nth-child(n+4) { display: none; }
     }
   </style>
-  <link href="css/je-theme-dark.css?v=20260724230000" rel="stylesheet"/>
+  <link href="css/je-theme-dark.css?v=20260725201500" rel="stylesheet"/>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
@@ -886,7 +872,6 @@
             <span class="je-home-shortcut-title">Agenda</span>
             <span class="je-home-shortcut-desc">Eventos e reuniões</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--agendamentos" href="agendamentos.html" aria-label="Agendamentos">
           <span class="je-home-shortcut-icon" aria-hidden="true">📋</span>
@@ -894,7 +879,6 @@
             <span class="je-home-shortcut-title">Agendamentos</span>
             <span class="je-home-shortcut-desc">Carrinhos e displays</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--anuncios" href="quadrodeanuncios.html" aria-label="Quadro de Anúncios">
           <span class="je-home-shortcut-icon" aria-hidden="true">🔔</span>
@@ -902,7 +886,6 @@
             <span class="je-home-shortcut-title">Quadro de Anúncios</span>
             <span class="je-home-shortcut-desc">Avisos da congregação</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--territorios" href="territorios.html" aria-label="Territórios">
           <span class="je-home-shortcut-icon" aria-hidden="true">🗺️</span>
@@ -910,7 +893,6 @@
             <span class="je-home-shortcut-title">Territórios</span>
             <span class="je-home-shortcut-desc">Mapas do serviço de campo</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--donativos" href="donativos.html" aria-label="Donativos">
           <span class="je-home-shortcut-icon" aria-hidden="true">🤲</span>
@@ -918,7 +900,6 @@
             <span class="je-home-shortcut-title">Donativos</span>
             <span class="je-home-shortcut-desc">Contribuições via PIX</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>
         </div>
       </div>

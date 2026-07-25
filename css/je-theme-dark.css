@@ -210,7 +210,6 @@ html.dark .je-home-shortcut {
 }
 html.dark .je-home-shortcut-title { color: var(--je-on-surface) !important; }
 html.dark .je-home-shortcut-desc { color: var(--je-on-surface-variant) !important; }
-html.dark .je-home-shortcut-arrow { color: #5a6278 !important; }
 @media (max-width: 767px) {
   html.dark .je-home-shortcut {
     background: transparent !important;
