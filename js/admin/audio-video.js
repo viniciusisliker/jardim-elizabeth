@@ -119,31 +119,41 @@
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
   }
 
-  function moveNavIndicator(tab) {
+  function moveNavIndicator(tab, pulse = true) {
     const nav = document.querySelector('.av-nav');
-    const indicator = nav?.querySelector('.av-nav-indicator');
-    if (!nav || !indicator || !tab) return;
-    indicator.style.width = `${tab.offsetWidth}px`;
-    indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
+    window.JEHuNav?.animateIndicator({
+      nav,
+      indicator: nav?.querySelector('.av-nav-indicator'),
+      activeBtn: tab,
+      pulse
+    });
   }
 
-  function switchTab(tabId) {
+  function switchTab(tabId, { animate = true } = {}) {
     if (!tabId) return;
     document.querySelectorAll('[data-av-tab]').forEach((tab) => {
       const on = tab.dataset.avTab === tabId;
       tab.classList.toggle('active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    document.querySelectorAll('.av-panel').forEach((panel) => {
-      panel.classList.toggle('active', panel.id === `av-panel-${tabId}`);
-    });
-    moveNavIndicator(document.querySelector(`[data-av-tab="${tabId}"]`));
+    window.JEHuNav?.activatePanels(
+      document.querySelectorAll('.av-panel'),
+      (panel) => panel.id === `av-panel-${tabId}`,
+      { animate }
+    );
+    moveNavIndicator(document.querySelector(`[data-av-tab="${tabId}"]`), animate);
   }
 
   function setupTabs() {
     document.querySelectorAll('[data-av-tab]').forEach((tab) => {
       tab.addEventListener('click', () => switchTab(tab.dataset.avTab));
     });
-    switchTab('inicio');
+    switchTab('inicio', { animate: false });
+    window.JEHuNav?.queueIndicatorRefresh(
+      () => document.querySelector('[data-av-tab].active'),
+      document.querySelector('.av-nav'),
+      document.querySelector('.av-nav-indicator')
+    );
     window.addEventListener('resize', () => {
       moveNavIndicator(document.querySelector('[data-av-tab].active'));
     });

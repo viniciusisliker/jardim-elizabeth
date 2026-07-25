@@ -371,11 +371,48 @@
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
   }
 
-  function moveNavIndicator(tab) {
-    const indicator = document.getElementById('eq-nav-indicator');
-    if (!indicator || !tab) return;
-    indicator.style.width = `${tab.offsetWidth}px`;
-    indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
+  function moveNavIndicator(tab, pulse = true) {
+    const nav = document.getElementById('eq-nav');
+    window.JEHuNav?.animateIndicator({
+      nav,
+      indicator: document.getElementById('eq-nav-indicator'),
+      activeBtn: tab,
+      pulse
+    });
+  }
+
+  function activateEqTab(tabId, tab, { animate = true } = {}) {
+    document.querySelectorAll('[data-eq-tab]').forEach((t) => t.classList.toggle('active', t === tab));
+    window.JEHuNav?.activatePanels(
+      document.querySelectorAll('.eq-panel'),
+      (panel) => panel.id === `eq-panel-${tabId}`,
+      { animate }
+    );
+    moveNavIndicator(tab, animate);
+  }
+
+  function setupTabs() {
+    const tabs = document.querySelectorAll('[data-eq-tab]');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.dataset.eqTab;
+        activateEqTab(tabId, tab);
+        ensureEqTabReady(tabId);
+      });
+    });
+    activateEqTab(
+      document.querySelector('[data-eq-tab].active')?.dataset.eqTab,
+      document.querySelector('[data-eq-tab].active'),
+      { animate: false }
+    );
+    window.JEHuNav?.queueIndicatorRefresh(
+      () => document.querySelector('[data-eq-tab].active'),
+      document.getElementById('eq-nav'),
+      document.getElementById('eq-nav-indicator')
+    );
+    window.addEventListener('resize', () => {
+      moveNavIndicator(document.querySelector('[data-eq-tab].active'), false);
+    });
   }
 
   function renderEquipmentSafe() {
@@ -451,25 +488,6 @@
         if (toast) showToast(toast, err.message || 'Erro ao carregar histórico.', true);
       });
     }
-  }
-
-  function setupTabs() {
-    const tabs = document.querySelectorAll('[data-eq-tab]');
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const tabId = tab.dataset.eqTab;
-        tabs.forEach((t) => t.classList.toggle('active', t === tab));
-        document.querySelectorAll('.eq-panel').forEach((panel) => {
-          panel.classList.toggle('active', panel.id === `eq-panel-${tabId}`);
-        });
-        moveNavIndicator(tab);
-        ensureEqTabReady(tabId);
-      });
-    });
-    moveNavIndicator(document.querySelector('[data-eq-tab].active'));
-    window.addEventListener('resize', () => {
-      moveNavIndicator(document.querySelector('[data-eq-tab].active'));
-    });
   }
 
   function buildDayCheckboxes(container, prefix, selectedDays) {

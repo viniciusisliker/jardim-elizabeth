@@ -62,11 +62,12 @@
     moduleKey: 'configuracoes',
     viewId: 'hub-view-configuracoes',
     partial: 'hub/sections/configuracoes.html',
-    styles: ['css/hub-sections/configuracoes.css?v=20260725310000'],
+    styles: ['css/hub-sections/configuracoes.css?v=20260725340000'],
     scripts: [
       'js/admin/table-xlf.js?v=2026061058',
       'js/admin/agendamentos.js?v=20260725310000',
-      'js/admin/configuracoes.js?v=20260725310000'
+      'js/admin/donativos.js?v=20260725330000',
+      'js/admin/configuracoes.js?v=20260725340000'
     ],
     initKey: 'JEAdminConfiguracoes'
   };
@@ -246,23 +247,13 @@
         showBack: true
       }
     },
-    donativos: {
-      id: 'donativos',
-      hash: 'donativos',
-      permission: 'donativos',
-      viewId: 'hub-view-donativos',
-      scripts: [
-        'js/admin/donativos.js?v=2026060902'
-      ],
-      initKey: 'JEAdminDonativos',
-      hero: {
-        kicker: 'Contribuições e sistema',
-        title: 'Donativos',
-        subtitle: 'Chave PIX, QR code e textos da página de donativos.',
-        showChangelog: false,
-        showBack: true
-      }
-    },
+    donativos: cfgSection(
+      'donativos',
+      'donativos',
+      'donativos',
+      'Donativos',
+      'Chave PIX, QR code e textos da página de donativos.'
+    ),
     secretario: secSection(
       'secretario',
       'secretario',
@@ -356,6 +347,13 @@
       'links',
       'Links de calendário',
       'URLs do Google Calendar — slugs carrinho-* e display-* nas páginas públicas.'
+    ),
+    'sistema-donativos': cfgSection(
+      'sistema-donativos',
+      'sistema-donativos',
+      'donativos',
+      'Donativos',
+      'Chave PIX, QR code e textos da página de donativos.'
     )
   };
 })();

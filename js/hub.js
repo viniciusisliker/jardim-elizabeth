@@ -226,6 +226,9 @@
       if (!allowed && perm === 'settings' && el.dataset.hubTab === 'sistema-links' && window.JEAuth.hasPermission(profile, 'agendamentos')) {
         allowed = true;
       }
+      if (!allowed && perm === 'settings' && el.dataset.hubTab === 'sistema-donativos' && window.JEAuth.hasPermission(profile, 'donativos')) {
+        allowed = true;
+      }
       el.classList.toggle('hidden', !allowed);
     });
 
@@ -423,7 +426,8 @@
       window.JEAdminAudioVideo?.switchTab?.(section.audioVideoTab);
     }
     if (section?.configuracoesTab) {
-      window.JEAdminConfiguracoes?.focusSection?.(section.configuracoesTab);
+      window.JEAdminConfiguracoes?.switchTab?.(section.configuracoesTab)
+        || window.JEAdminConfiguracoes?.focusSection?.(section.configuracoesTab);
     }
   }
 
@@ -516,6 +520,9 @@
       if (!allowed && sectionModuleKey(section) === 'configuracoes' && section.configuracoesTab === 'links' && window.JEAuth.hasPermission(currentProfile, 'agendamentos')) {
         allowed = true;
       }
+      if (!allowed && sectionModuleKey(section) === 'configuracoes' && section.configuracoesTab === 'donativos' && window.JEAuth.hasPermission(currentProfile, 'donativos')) {
+        allowed = true;
+      }
       if (!allowed) {
         window.JEToast?.show('Você não tem permissão para acessar esta área.', { error: true });
         if (targetId !== 'home') return navigateTo('home', { replaceHash: true });
@@ -554,9 +561,11 @@
     if (sectionModuleKey(section) === 'configuracoes' && currentProfile && hubClient) {
       window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
       window.JEPwaInstall?.bindTriggers?.();
+      window.JEPwaUpdate?.bindUpdateTriggers?.();
     }
     if (targetId === 'perfil') {
       window.JEPwaInstall?.bindTriggers?.();
+      window.JEPwaUpdate?.bindUpdateTriggers?.();
     }
 
     const modKey = sectionModuleKey(section);
@@ -607,6 +616,7 @@
     hubClient = await window.JEAuth.getClient();
     safeHubInit(() => window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' }));
     safeHubInit(() => window.JEPwaInstall?.bindTriggers?.());
+    safeHubInit(() => window.JEPwaUpdate?.bindUpdateTriggers?.());
     safeHubInit(() => window.JEHubNotificationsUi?.initBell?.(hubClient, currentProfile.id));
     safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile));
 
@@ -618,6 +628,7 @@
     hubClient = await window.JEAuth.getClient();
     safeHubInit(() => window.JEPwaInstall?.init?.({ bannerSlot: '#hub-install-banner-slot' }));
     safeHubInit(() => window.JEPwaInstall?.bindTriggers?.());
+    safeHubInit(() => window.JEPwaUpdate?.bindUpdateTriggers?.());
     safeHubInit(() => window.JEHubNotificationsUi?.initBell?.(hubClient, profile.id));
     safeHubInit(() => window.JEHubNotificationsUi?.initSendForm?.(hubClient, profile));
     prefetchAllowedSections(profile);

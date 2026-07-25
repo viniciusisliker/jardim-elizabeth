@@ -70,30 +70,12 @@
     badge.classList.toggle('sec-month-badge--closed', !!monthStatus.is_closed);
   }
 
-  function updateNavIndicator(activeBtn) {
-    const nav = document.getElementById('sec-nav');
-    const indicator = document.getElementById('sec-nav-indicator');
-    if (!nav || !indicator || !activeBtn) return;
-    const navRect = nav.getBoundingClientRect();
-    const btnRect = activeBtn.getBoundingClientRect();
-    if (!navRect.width || !btnRect.width) {
-      indicator.style.opacity = '0';
-      return;
-    }
-    indicator.style.opacity = '1';
-    indicator.style.width = `${btnRect.width}px`;
-    indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
-  }
-
   function queueNavIndicatorRefresh() {
-    const active = document.querySelector('[data-sec-tab].active');
-    if (!active) return;
-    const run = () => updateNavIndicator(active);
-    run();
-    requestAnimationFrame(() => {
-      run();
-      requestAnimationFrame(run);
-    });
+    window.JEHuNav?.queueIndicatorRefresh(
+      () => document.querySelector('[data-sec-tab].active'),
+      document.getElementById('sec-nav'),
+      document.getElementById('sec-nav-indicator')
+    );
   }
 
   function ageYears(dateStr) {
@@ -940,18 +922,25 @@
     renderAll();
   }
 
-  function switchTab(tab) {
+  function switchTab(tab, { animate = true } = {}) {
     activeTab = tab;
     document.querySelectorAll('[data-sec-tab]').forEach((el) => {
       const on = el.dataset.secTab === tab;
       el.classList.toggle('active', on);
       el.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    document.querySelectorAll('.sec-panel').forEach((el) => {
-      el.classList.toggle('active', el.id === `sec-panel-${tab}`);
-    });
+    window.JEHuNav?.activatePanels(
+      document.querySelectorAll('.sec-panel'),
+      (el) => el.id === `sec-panel-${tab}`,
+      { animate }
+    );
     const activeBtn = document.querySelector(`[data-sec-tab="${tab}"]`);
-    updateNavIndicator(activeBtn);
+    window.JEHuNav?.animateIndicator({
+      nav: document.getElementById('sec-nav'),
+      indicator: document.getElementById('sec-nav-indicator'),
+      activeBtn,
+      pulse: animate
+    });
     activeBtn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     if (tab === 'visita') window.JEAdminSecretarioVisit?.initVisit?.(client);
   }
@@ -1051,7 +1040,7 @@
       await syncPublishersFromProfiles();
       await loadData();
       renderAll();
-      switchTab('publicadores');
+      switchTab('publicadores', { animate: false });
       queueNavIndicatorRefresh();
       window.addEventListener('resize', queueNavIndicatorRefresh);
     } catch (err) {

@@ -1,0 +1,114 @@
+/* Hub section nav — indicator slide, tab feedback, panel enter */
+
+.cfg-nav-indicator,
+.sec-nav-indicator,
+.av-nav-indicator,
+.terr-nav-indicator,
+.eq-nav-indicator,
+.qa-board-nav-indicator {
+  transition:
+    transform 0.48s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.42s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.38s cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 0.22s ease;
+  will-change: transform, width;
+}
+
+.hub-nav-indicator--moving {
+  box-shadow:
+    0 4px 16px rgba(15, 52, 98, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.hub-nav-indicator--pulse {
+  animation: hub-nav-indicator-pulse 0.52s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+@keyframes hub-nav-indicator-pulse {
+  0% { filter: brightness(1); }
+  40% { filter: brightness(1.14); }
+  100% { filter: brightness(1); }
+}
+
+.cfg-tab,
+.sec-tab,
+.av-tab,
+.terr-tab,
+.eq-tab {
+  transition:
+    color 0.26s ease,
+    background-color 0.26s ease,
+    transform 0.2s cubic-bezier(0.34, 1.35, 0.64, 1);
+}
+
+.cfg-tab .material-symbols-outlined,
+.sec-tab .material-symbols-outlined,
+.av-tab .material-symbols-outlined {
+  transition: transform 0.28s cubic-bezier(0.34, 1.35, 0.64, 1), color 0.26s ease;
+}
+
+.cfg-tab:not(.active):hover,
+.sec-tab:not(.active):hover,
+.av-tab:not(.active):hover {
+  background: rgba(15, 52, 98, 0.05);
+}
+
+.cfg-tab:active,
+.sec-tab:active,
+.av-tab:active {
+  transform: scale(0.96);
+}
+
+.cfg-tab.active,
+.sec-tab.active,
+.av-tab.active {
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cfg-tab.active .material-symbols-outlined,
+.sec-tab.active .material-symbols-outlined,
+.av-tab.active .material-symbols-outlined {
+  transform: scale(1.08);
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.hub-panel--enter {
+  animation: hub-panel-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hub-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg-nav-indicator,
+  .sec-nav-indicator,
+  .av-nav-indicator,
+  .terr-nav-indicator,
+  .eq-nav-indicator,
+  .qa-board-nav-indicator {
+    transition: none !important;
+  }
+
+  .hub-nav-indicator--pulse,
+  .hub-panel--enter {
+    animation: none !important;
+  }
+
+  .cfg-tab,
+  .sec-tab,
+  .av-tab,
+  .terr-tab,
+  .eq-tab {
+    transition: none !important;
+  }
+}

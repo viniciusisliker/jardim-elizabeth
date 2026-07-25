@@ -43,28 +43,12 @@
   const ACCESS_NONE = '__none__';
   const ROLE_FILTER_OPTIONS = ROLES.map((r) => ({ value: r.value, label: r.label }));
 
-  let cfgFocusSection = null;
+  let cfgSwitchTab = null;
   let cfgFocusPending = null;
 
-  function scrollToCfgTarget(selector) {
-    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
   function focusSection(tab) {
-    if (cfgFocusSection) {
-      cfgFocusSection(tab);
-      return;
-    }
-    if (tab === 'notificacoes') {
-      scrollToCfgTarget('#hub-notif-send-root');
-      return;
-    }
-    if (tab === 'links') {
-      scrollToCfgTarget('#cfg-calendar-links');
-      return;
-    }
-    if (tab === 'app') {
-      scrollToCfgTarget('.hub-pwa-card');
+    if (cfgSwitchTab) {
+      cfgSwitchTab(tab);
       return;
     }
     if (tab) cfgFocusPending = tab;
@@ -132,7 +116,11 @@
       window.JEAuth.hasPermission(profile, 'settings')
       || window.JEAuth.hasPermission(profile, 'agendamentos')
     );
-    if (!profile || (!canSettings && !canNotify && !canLinks)) {
+    const canDonativos = profile && (
+      window.JEAuth.hasPermission(profile, 'settings')
+      || window.JEAuth.hasPermission(profile, 'donativos')
+    );
+    if (!profile || (!canSettings && !canNotify && !canLinks && !canDonativos)) {
       if (window.JEAdmin?.authDeny) window.JEAdmin.authDeny();
       else window.location.href = 'index.html';
       return false;
@@ -143,26 +131,80 @@
     const client = await getClient();
     const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
 
-    if (notifyOnly) {
-      document.querySelector('.cfg-stats')?.classList.add('hidden');
-      document.querySelector('.cfg-note')?.classList.add('hidden');
-      document.querySelector('.cfg-action-grid')?.classList.add('hidden');
+    function showCfgPanelOnly(panelId) {
+      document.getElementById('cfg-nav-wrap')?.classList.add('hidden');
       document.querySelector('.cfg-foot')?.classList.add('hidden');
-      document.getElementById('cfg-calendar-links')?.classList.add('hidden');
-      window.JEHubNotificationsUi?.initSendForm?.(client, profile);
-      window.JEPwaInstall?.bindTriggers?.();
-      return true;
+      document.querySelectorAll('.cfg-panel').forEach((panel) => {
+        const on = panel.id === panelId;
+        panel.classList.toggle('active', on);
+        panel.hidden = !on;
+      });
     }
 
-    if (linksOnly) {
-      document.querySelector('.cfg-stats')?.classList.add('hidden');
-      document.querySelector('.cfg-note')?.classList.add('hidden');
-      document.querySelector('.cfg-action-grid')?.classList.add('hidden');
+    function hideCfgTabsExcept(allowedTabs) {
+      document.querySelectorAll('[data-cfg-tab]').forEach((btn) => {
+        btn.classList.toggle('hidden', !allowedTabs.includes(btn.dataset.cfgTab));
+      });
+    }
+
+    async function initLimitedCfgPanels(allowedTabs) {
       document.querySelector('.cfg-foot')?.classList.add('hidden');
-      document.getElementById('hub-notif-send-root')?.classList.add('hidden');
-      document.querySelector('.hub-pwa-card')?.classList.add('hidden');
-      await window.JEAdminAgendamentos?.init?.();
-      return true;
+      if (allowedTabs.length === 1) {
+        showCfgPanelOnly(`cfg-panel-${allowedTabs[0]}`);
+      } else {
+        hideCfgTabsExcept(allowedTabs);
+      }
+      if (allowedTabs.includes('notificacoes')) {
+        window.JEHubNotificationsUi?.initSendForm?.(client, profile);
+        window.JEPwaInstall?.bindTriggers?.();
+      }
+      if (allowedTabs.includes('links')) await window.JEAdminAgendamentos?.init?.();
+      if (allowedTabs.includes('donativos')) await window.JEAdminDonativos?.init?.();
+    }
+
+    if (!canSettings) {
+      const limitedTabs = [];
+      if (canNotify) limitedTabs.push('notificacoes');
+      if (canLinks) limitedTabs.push('links');
+      if (canDonativos) limitedTabs.push('donativos');
+      if (limitedTabs.length) {
+        await initLimitedCfgPanels(limitedTabs);
+        if (limitedTabs.length === 1) {
+          if (cfgFocusPending && cfgFocusPending !== limitedTabs[0]) {
+            cfgFocusPending = limitedTabs[0];
+          }
+          cfgFocusPending = null;
+        } else if (limitedTabs.length > 1) {
+          let activeCfgTab = limitedTabs[0];
+          function switchTab(tab) {
+            if (!limitedTabs.includes(tab)) tab = limitedTabs[0];
+            activeCfgTab = tab;
+            document.querySelectorAll('[data-cfg-tab]').forEach((btn) => {
+              const on = btn.dataset.cfgTab === tab;
+              btn.classList.toggle('active', on);
+              btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            window.JEHuNav?.activatePanels(
+              document.querySelectorAll('.cfg-panel'),
+              (panel) => panel.id === `cfg-panel-${tab}`
+            );
+            const activeBtn = document.querySelector(`[data-cfg-tab="${tab}"]`);
+            window.JEHuNav?.animateIndicator({
+              nav: document.getElementById('cfg-nav'),
+              indicator: document.getElementById('cfg-nav-indicator'),
+              activeBtn
+            });
+            activeBtn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+          document.querySelectorAll('[data-cfg-tab]').forEach((btn) => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.cfgTab));
+          });
+          switchTab(cfgFocusPending && limitedTabs.includes(cfgFocusPending) ? cfgFocusPending : limitedTabs[0]);
+          cfgSwitchTab = switchTab;
+          cfgFocusPending = null;
+        }
+        return true;
+      }
     }
 
     const currentProfileId = profile.id;
@@ -184,7 +226,7 @@
       access: {}
     };
     let memberFilterSig = '';
-    let openCfgModalId = null;
+    let activeCfgTab = 'membros';
 
     document.getElementById('cfg-role-note').textContent = isSuper
       ? (isDev
@@ -195,24 +237,66 @@
         : 'Somente o SuperUser pode alterar designações e cargos. Você pode visualizar a equipe.');
 
     if (isSuper) {
-      document.getElementById('cfg-open-designations')?.classList.remove('hidden');
+      document.getElementById('cfg-tab-designacoes')?.classList.remove('hidden');
       document.getElementById('cfg-add-member')?.classList.remove('hidden');
       document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--super');
     }
     if (isDev) {
       document.querySelector('.cfg-members-panel')?.classList.add('cfg-members-panel--dev');
     }
+    if (!canNotify) {
+      document.querySelector('[data-cfg-tab="notificacoes"]')?.classList.add('hidden');
+    }
+    if (!canLinks) {
+      document.querySelector('[data-cfg-tab="links"]')?.classList.add('hidden');
+    }
+    if (!canDonativos) {
+      document.querySelector('[data-cfg-tab="donativos"]')?.classList.add('hidden');
+    }
 
-    function closeCfgModal() {
-      if (!openCfgModalId) return;
-      const modal = document.getElementById(openCfgModalId);
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-      document.body.classList.remove('cfg-modal-open');
-      openCfgModalId = null;
-      hideNewMemberPanel();
+    function queueCfgNavIndicatorRefresh() {
+      window.JEHuNav?.queueIndicatorRefresh(
+        () => document.querySelector('[data-cfg-tab].active:not(.hidden)'),
+        document.getElementById('cfg-nav'),
+        document.getElementById('cfg-nav-indicator')
+      );
+    }
+
+    function switchTab(tab, { animate = true } = {}) {
+      const tabs = ['membros', 'designacoes', 'notificacoes', 'links', 'donativos', 'app'];
+      if (!tab || !tabs.includes(tab)) tab = 'membros';
+      const tabBtn = document.querySelector(`[data-cfg-tab="${tab}"]`);
+      if (!tabBtn || tabBtn.classList.contains('hidden')) tab = 'membros';
+
+      activeCfgTab = tab;
+      document.querySelectorAll('[data-cfg-tab]').forEach((btn) => {
+        const on = btn.dataset.cfgTab === tab;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      window.JEHuNav?.activatePanels(
+        document.querySelectorAll('.cfg-panel'),
+        (panel) => panel.id === `cfg-panel-${tab}`,
+        { animate }
+      );
+
+      const activeBtn = document.querySelector(`[data-cfg-tab="${tab}"]`);
+      window.JEHuNav?.animateIndicator({
+        nav: document.getElementById('cfg-nav'),
+        indicator: document.getElementById('cfg-nav-indicator'),
+        activeBtn,
+        pulse: animate
+      });
+      activeBtn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      if (tab === 'membros') bindMemberFilters();
+    }
+
+    function setupCfgNav() {
+      document.querySelectorAll('[data-cfg-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.cfgTab));
+      });
+      window.addEventListener('resize', queueCfgNavIndicatorRefresh);
+      switchTab(activeCfgTab, { animate: false });
     }
 
     const newMemberPanel = document.getElementById('cfg-new-member-panel');
@@ -297,56 +381,15 @@
       }
     }
 
-    function openCfgModal(modalId, { focusSelector } = {}) {
-      const modal = document.getElementById(modalId);
-      if (!modal) return;
-      closeCfgModal();
-      modal.classList.remove('hidden');
-      modal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('cfg-modal-open');
-      openCfgModalId = modalId;
-      window.setTimeout(() => {
-        if (focusSelector) modal.querySelector(focusSelector)?.focus();
-        else modal.querySelector('.cfg-modal__close')?.focus();
-      }, 50);
-    }
-
-    function setupCfgModals() {
-      document.getElementById('cfg-open-designations')?.addEventListener('click', () => {
-        openCfgModal('cfg-modal-designations');
-      });
-
-      document.getElementById('cfg-open-members')?.addEventListener('click', () => {
-        openCfgModal('cfg-modal-members', { focusSelector: '#cfg-member-search' });
-        bindMemberFilters();
-      });
-
-      document.querySelectorAll('[data-cfg-modal-close]').forEach((el) => {
-        el.addEventListener('click', closeCfgModal);
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && openCfgModalId) closeCfgModal();
-      });
-    }
-
     function updateStats() {
       const activeDes = catalog.filter((d) => d.is_active).length;
       const adminCount = members.filter((m) => ADMIN_ROLES.has(m.role)).length;
       const statMembers = document.getElementById('cfg-stat-members');
       const statDes = document.getElementById('cfg-stat-designations');
       const statAdmins = document.getElementById('cfg-stat-admins');
-      const metaDes = document.getElementById('cfg-action-des-meta');
-      const metaMembers = document.getElementById('cfg-action-members-meta');
       if (statMembers) statMembers.textContent = String(members.length);
       if (statDes) statDes.textContent = String(activeDes);
       if (statAdmins) statAdmins.textContent = String(adminCount);
-      if (metaDes) {
-        metaDes.textContent = activeDes === 1 ? '1 designação ativa' : `${activeDes} designações ativas`;
-      }
-      if (metaMembers) {
-        metaMembers.textContent = members.length === 1 ? '1 membro cadastrado' : `${members.length} membros cadastrados`;
-      }
     }
 
     function memberRoleLabel(m) {
@@ -1219,38 +1262,15 @@
       else {
         expandedDesignationId = created?.id || null;
         showToast(toast, 'Designação criada. Ajuste as permissões e salve.');
-        openCfgModal('cfg-modal-designations');
+        switchTab('designacoes');
         await reloadCatalog();
       }
     });
 
-    setupCfgModals();
-
-    cfgFocusSection = (tab) => {
-      if (tab === 'membros') {
-        document.getElementById('cfg-open-members')?.click();
-        return;
-      }
-      if (tab === 'designacoes') {
-        const btn = document.getElementById('cfg-open-designations');
-        if (btn && !btn.classList.contains('hidden')) btn.click();
-        else scrollToCfgTarget('.cfg-action-grid');
-        return;
-      }
-      if (tab === 'notificacoes') {
-        scrollToCfgTarget('#hub-notif-send-root');
-        return;
-      }
-      if (tab === 'app') {
-        scrollToCfgTarget('.hub-pwa-card');
-        return;
-      }
-      if (tab === 'links') {
-        scrollToCfgTarget('#cfg-calendar-links');
-      }
-    };
+    setupCfgNav();
+    cfgSwitchTab = switchTab;
     if (cfgFocusPending) {
-      cfgFocusSection(cfgFocusPending);
+      switchTab(cfgFocusPending);
       cfgFocusPending = null;
     }
 
@@ -1258,10 +1278,15 @@
     await reloadMembers();
     window.JEHubNotificationsUi?.initSendForm?.(client, profile);
     await window.JEAdminAgendamentos?.init?.();
+    await window.JEAdminDonativos?.init?.();
     return true;
   }
 
-  window.JEAdminConfiguracoes = { init, focusSection };
+  window.JEAdminConfiguracoes = {
+    init,
+    focusSection,
+    switchTab: (tab) => cfgSwitchTab?.(tab)
+  };
 
   if (!window.JEHubRouter && document.getElementById('members-table')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

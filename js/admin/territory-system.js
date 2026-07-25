@@ -1096,41 +1096,39 @@
     return errors;
   }
 
-  function updateNavIndicator(activeBtn) {
-    const nav = document.getElementById('terr-nav');
-    const indicator = document.getElementById('terr-nav-indicator');
-    if (!nav || !indicator || !activeBtn) return;
-    const navRect = nav.getBoundingClientRect();
-    const btnRect = activeBtn.getBoundingClientRect();
-    if (!navRect.width || !btnRect.width) {
-      indicator.style.opacity = '0';
-      return;
-    }
-    indicator.style.opacity = '1';
-    indicator.style.width = `${btnRect.width}px`;
-    indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
+  function updateNavIndicator(activeBtn, pulse = true) {
+    window.JEHuNav?.animateIndicator({
+      nav: document.getElementById('terr-nav'),
+      indicator: document.getElementById('terr-nav-indicator'),
+      activeBtn,
+      pulse
+    });
   }
 
   function queueNavIndicatorRefresh() {
-    const active = document.querySelector('[data-terr-tab].active');
-    if (!active) return;
-    const run = () => updateNavIndicator(active);
-    run();
-    requestAnimationFrame(() => {
-      run();
-      requestAnimationFrame(run);
-    });
-    setTimeout(run, 120);
+    window.JEHuNav?.queueIndicatorRefresh(
+      () => document.querySelector('[data-terr-tab].active'),
+      document.getElementById('terr-nav'),
+      document.getElementById('terr-nav-indicator')
+    );
+  }
+
+  function activateTerrTab(tab, btn, { animate = true } = {}) {
+    document.querySelectorAll('[data-terr-tab]').forEach((b) => b.classList.toggle('active', b.dataset.terrTab === tab));
+    window.JEHuNav?.activatePanels(
+      document.querySelectorAll('.terr-panel'),
+      (p) => p.id === `panel-${tab}`,
+      { animate }
+    );
+    updateNavIndicator(btn, animate);
+    btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
   function setupTabs() {
     document.querySelectorAll('[data-terr-tab]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.terrTab;
-        document.querySelectorAll('[data-terr-tab]').forEach((b) => b.classList.toggle('active', b.dataset.terrTab === tab));
-        document.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `panel-${tab}`));
-        updateNavIndicator(btn);
-        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        activateTerrTab(tab, btn);
         ensureTabReady(tab).catch((err) => {
           console.error('Territory tab load:', err);
           if (toast) showToast(toast, err.message || 'Erro ao carregar aba.', true);

@@ -1,15 +1,28 @@
 (function () {
-  const { guardPermission, getClient, showToast } = window.JEAdmin;
+  const { getClient, showToast } = window.JEAdmin;
 
   function toastEl() {
     return document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
   }
 
+  function canManageDonativos(profile) {
+    return window.JEAuth.hasPermission(profile, 'settings')
+      || window.JEAuth.hasPermission(profile, 'donativos');
+  }
+
   async function init() {
-    if (window.__JEAdminDonativosInit) return;
-    window.__JEAdminDonativosInit = true;
-    const profile = await guardPermission('donativos');
-    if (!profile) return;
+    const form = document.getElementById('donations-form');
+    if (!form) return;
+
+    const profile = window.JEHubRouter?.getProfile?.() || await window.JEAuth.getCurrentProfile();
+    if (!profile || !canManageDonativos(profile)) {
+      document.getElementById('cfg-panel-donativos')?.classList.add('hidden');
+      return;
+    }
+
+    if (form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+
     const toast = toastEl();
     const client = await getClient();
 
@@ -22,10 +35,6 @@
     document.getElementById('bank').value = d.bank || '';
     document.getElementById('qr-url').value = d.qr_image_url || 'img/qrcode.jpg';
     document.getElementById('disclaimer').value = d.disclaimer || '';
-
-    const form = document.getElementById('donations-form');
-    if (form.dataset.bound === '1') return;
-    form.dataset.bound = '1';
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

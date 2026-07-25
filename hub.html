@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="js/je-theme-boot.js"></script>
   <link href="css/je-theme.css?v=20260725330000" rel="stylesheet"/>
+  <link href="css/hub-nav.css?v=20260725340000" rel="stylesheet"/>
   <script src="js/je-theme.js?v=20260724230000" defer></script>
 
 <title>Hub Administrativo – Jardim Elizabeth</title>
@@ -48,7 +49,7 @@
   </script>
 
   <link href="css/hub-notifications.css?v=20260725290000" rel="stylesheet"/>
-  <link href="css/je-pwa-install.css?v=2026061515" rel="stylesheet"/>
+  <link href="css/je-pwa-install.css?v=20260725400000" rel="stylesheet"/>
   <link rel="manifest" href="site.webmanifest"/>
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
@@ -113,7 +114,6 @@
     .hub-section-panel--wide{max-width:56rem}
     .hub-view--wide{width:100%;max-width:72rem;margin:0 auto}
     @media(max-width:767px){
-      #hub-view-donativos #donations-form button[type="submit"]{min-height:2.75rem}
     }
 
     .hub-hero{
@@ -784,20 +784,6 @@
           </section>
 
           <section class="hub-module-group">
-            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">volunteer_activism</span>Contribuições</h3>
-            <div class="hub-module-grid">
-              <button type="button" data-hub-tab="donativos" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
-                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span></span>
-                <div class="hub-module-body">
-                  <h4>Donativos</h4>
-                  <p>Chave PIX, QR code e textos da página de donativos.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </button>
-            </div>
-          </section>
-
-          <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">settings</span>Sistema</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="sistema-membros" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
@@ -837,6 +823,14 @@
                 <div class="hub-module-body">
                   <h4>Links de calendário</h4>
                   <p>URLs do Google Calendar para carrinhos e displays.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="sistema-donativos" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span></span>
+                <div class="hub-module-body">
+                  <h4>Donativos</h4>
+                  <p>Chave PIX, QR code e textos da página de donativos.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -881,20 +875,6 @@
       <div id="hub-view-carrinhos-displays" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-audio-video" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-secretario" class="hub-view hidden hub-view--wide"></div>
-
-      <div id="hub-view-donativos" class="hub-view hidden">
-        <div class="hub-section-panel mx-auto w-full">
-          <form id="donations-form" class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-            <label class="block text-sm font-semibold text-primary">Chave PIX<input id="pix-key" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Tipo da chave<input id="pix-type" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Titular<input id="holder" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Banco<input id="bank" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">URL do QR Code<input id="qr-url" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Aviso legal<textarea id="disclaimer" rows="3" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"></textarea></label>
-            <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg w-full sm:w-auto">Salvar alterações</button>
-          </form>
-        </div>
-      </div>
 
       <div id="hub-view-configuracoes" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-perfil" class="hub-view hidden hub-view--wide"></div>
@@ -1089,10 +1069,11 @@
   <script src="js/admin-core.js?v=2026060902"></script>
   <script src="js/hub-notifications.js?v=20260725280000"></script>
   <script src="js/hub-notifications-ui.js?v=20260725280000"></script>
-  <script src="js/je-pwa-install.js?v=2026061719"></script>
-  <script src="js/je-pwa-update.js?v=2026061719"></script>
+  <script src="js/je-pwa-install.js?v=20260725400000"></script>
+  <script src="js/je-pwa-update.js?v=20260725400000"></script>
   <script src="js/je-push.js?v=2026061719"></script>
   <script src="js/hub-superintendente-overview.js?v=20260725230000"></script>
-  <script src="js/hub.js?v=20260725310000"></script>
+  <script src="js/hub-nav.js?v=20260725340000"></script>
+  <script src="js/hub.js?v=20260725340000"></script>
 </body>
 </html>

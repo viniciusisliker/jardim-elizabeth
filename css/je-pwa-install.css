@@ -62,6 +62,25 @@ body.je-install-open{overflow:hidden}
 }
 .je-site-install-btn:hover{border-color:#3b5e97;background:#eff6ff}
 .je-site-install-btn__label{display:none;line-height:1}
+.je-site-update-btn{
+  width:auto!important;min-width:2.5rem;height:2.5rem;min-height:2.5rem;
+  padding:0 .65rem 0 .55rem;gap:.3rem;flex-shrink:0;
+  border-color:rgba(200,169,110,.45);background:linear-gradient(135deg,#fff9ef 0%,#fff 100%);
+  color:#984806;font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  white-space:nowrap
+}
+.je-site-update-btn:hover{border-color:#c8a96e;background:#fff4e0}
+.je-site-update-btn--pending{
+  border-color:#984806!important;background:linear-gradient(135deg,#fff4e0 0%,#fff9ef 100%)!important;
+  animation:je-update-pulse 2s ease-in-out infinite
+}
+@keyframes je-update-pulse{0%,100%{box-shadow:0 0 0 0 rgba(152,72,6,.25)}50%{box-shadow:0 0 0 4px rgba(152,72,6,0)}}
+.je-site-update-btn__label{display:none;line-height:1}
+.je-update-trigger--hidden{display:none!important}
+@media(min-width:1024px){
+  .je-site-install-btn__label{display:inline}
+  .je-site-update-btn__label{display:inline}
+}
 @media(min-width:1024px){
   .je-site-install-btn__label{display:inline}
 }
@@ -81,6 +100,13 @@ button.je-mobile-nav-item{
 }
 .je-mobile-nav-item--install .je-mobile-nav-icon{background:#0f3462;color:#fff}
 .je-mobile-nav-item--install .je-mobile-nav-chevron{color:#3b5e97}
+.je-mobile-nav-item--update{
+  margin-bottom:.75rem;
+  background:linear-gradient(135deg,#fff9ef 0%,#fff 100%);
+  border-color:rgba(200,169,110,.35)
+}
+.je-mobile-nav-item--update .je-mobile-nav-icon{background:#984806;color:#fff}
+.je-mobile-nav-item--update .je-mobile-nav-chevron{color:#984806}
 
 .je-install-intro{
   position:fixed;left:50%;bottom:max(1rem,env(safe-area-inset-bottom));transform:translateX(-50%);

@@ -144,6 +144,15 @@ html.dark .je-site-install-btn {
   background: linear-gradient(135deg, #1e2130 0%, #252836 100%) !important;
   color: var(--je-on-primary-container) !important;
 }
+html.dark .je-site-update-btn {
+  background: linear-gradient(135deg, #2a2218 0%, #1e2130 100%) !important;
+  border-color: rgba(212, 184, 122, 0.35) !important;
+  color: var(--je-accent-gold) !important;
+}
+html.dark .je-mobile-nav-item--update {
+  background: linear-gradient(135deg, #2a2218 0%, #1e2130 100%) !important;
+  border-color: rgba(212, 184, 122, 0.25) !important;
+}
 html.dark .je-profile-menu-avatar { background: #252836 !important; border-color: var(--je-outline-variant) !important; }
 html.dark #profile-dropdown {
   background: var(--je-surface-container-lowest) !important;
@@ -513,6 +522,7 @@ html.dark .hub-undo-btn:not(:disabled):hover {
 html.dark .terr-nav,
 html.dark .eq-nav,
 html.dark .av-nav,
+html.dark .cfg-nav,
 html.dark .qa-board-nav {
   background: rgba(30, 33, 48, 0.92) !important;
   border-color: var(--je-card-border) !important;
@@ -521,12 +531,14 @@ html.dark .qa-board-nav {
 html.dark .terr-tab:not(.active),
 html.dark .eq-tab:not(.active),
 html.dark .av-tab:not(.active),
+html.dark .cfg-tab:not(.active),
 html.dark .qa-board-nav-link:not(.is-active) {
   color: var(--je-on-surface-variant) !important;
 }
 html.dark .terr-tab:not(.active):hover,
 html.dark .eq-tab:not(.active):hover,
-html.dark .av-tab:not(.active):hover {
+html.dark .av-tab:not(.active):hover,
+html.dark .cfg-tab:not(.active):hover {
   color: var(--je-on-surface) !important;
   background: rgba(255, 255, 255, 0.05) !important;
 }

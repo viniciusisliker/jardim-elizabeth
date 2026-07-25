@@ -1,6 +1,14 @@
 (function () {
   let registration = null;
   let visible = false;
+  let updateAvailable = false;
+
+  function isStandalone() {
+    return window.JEPwaInstall?.isStandalone?.()
+      || window.matchMedia('(display-mode: standalone)').matches
+      || window.matchMedia('(display-mode: fullscreen)').matches
+      || window.navigator.standalone === true;
+  }
 
   function mountSlot() {
     let slot = document.getElementById('je-pwa-update-slot');
@@ -11,6 +19,28 @@
       host.insertBefore(slot, host.firstChild);
     }
     return slot;
+  }
+
+  function syncUpdateButtons() {
+    const show = 'serviceWorker' in navigator;
+    document.querySelectorAll('[data-update-trigger]').forEach((btn) => {
+      btn.hidden = !show;
+      btn.classList.toggle('je-update-trigger--hidden', !show);
+      btn.classList.toggle('je-site-update-btn--pending', updateAvailable);
+      btn.setAttribute('aria-hidden', show ? 'false' : 'true');
+    });
+  }
+
+  function bindUpdateTriggers() {
+    document.querySelectorAll('[data-update-trigger]').forEach((btn) => {
+      if (btn.dataset.updateBound === '1') return;
+      btn.dataset.updateBound = '1';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleUpdateClick();
+      });
+    });
+    syncUpdateButtons();
   }
 
   function render() {
@@ -31,7 +61,7 @@
       '<button type="button" class="je-pwa-update__ghost" id="je-pwa-update-later">Depois</button>' +
       '</div></div></div>';
 
-    document.getElementById('je-pwa-update-apply')?.addEventListener('click', applyUpdate);
+    document.getElementById('je-pwa-update-apply')?.addEventListener('click', handleUpdateClick);
     document.getElementById('je-pwa-update-later')?.addEventListener('click', () => {
       visible = false;
       render();
@@ -39,8 +69,10 @@
   }
 
   function showBanner() {
+    updateAvailable = true;
     visible = true;
     render();
+    syncUpdateButtons();
     document.getElementById('hub-pwa-apply-btn')?.classList.remove('hidden');
   }
 
@@ -48,6 +80,23 @@
     if (registration?.waiting) {
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       return;
+    }
+    window.location.reload();
+  }
+
+  async function handleUpdateClick() {
+    if (registration?.waiting) {
+      applyUpdate();
+      return;
+    }
+    if (registration) {
+      try {
+        await registration.update();
+        if (registration.waiting) {
+          applyUpdate();
+          return;
+        }
+      } catch { /* ignore */ }
     }
     window.location.reload();
   }
@@ -97,7 +146,7 @@
       }
     });
 
-    applyBtn?.addEventListener('click', applyUpdate);
+    applyBtn?.addEventListener('click', handleUpdateClick);
   }
 
   function init() {
@@ -117,9 +166,11 @@
     }
 
     initHubControls();
+    bindUpdateTriggers();
+    syncUpdateButtons();
   }
 
-  window.JEPwaUpdate = { init, showBanner, applyUpdate };
+  window.JEPwaUpdate = { init, showBanner, applyUpdate, bindUpdateTriggers, syncUpdateButtons };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

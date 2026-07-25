@@ -1,220 +1,253 @@
-    <div class="cfg-stats">
-      <div class="cfg-stat cfg-stat--people">
-        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
-        <div><p class="cfg-stat__label">Membros</p><p class="cfg-stat__val" id="cfg-stat-members">—</p></div>
-      </div>
-      <div class="cfg-stat cfg-stat--des">
-        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">badge</span></span>
-        <div><p class="cfg-stat__label">Designações</p><p class="cfg-stat__val" id="cfg-stat-designations">—</p></div>
-      </div>
-      <div class="cfg-stat cfg-stat--roles">
-        <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">shield_person</span></span>
-        <div><p class="cfg-stat__label">Com acesso admin</p><p class="cfg-stat__val" id="cfg-stat-admins">—</p></div>
-      </div>
-    </div>
-
     <p id="admin-toast" class="hidden text-sm mb-3"></p>
 
-    <div class="cfg-note">
-      <span class="material-symbols-outlined" aria-hidden="true">info</span>
-      <span id="cfg-role-note">Carregando permissões…</span>
-    </div>
-
-    <div class="cfg-action-grid">
-      <button type="button" id="cfg-open-designations" class="cfg-action-card cfg-action-card--des hidden" aria-haspopup="dialog" aria-controls="cfg-modal-designations">
-        <span class="cfg-action-card__icon" aria-hidden="true"><span class="material-symbols-outlined">workspace_premium</span></span>
-        <span class="cfg-action-card__body">
-          <span class="cfg-action-card__title">Designações de acesso</span>
-          <span class="cfg-action-card__meta" id="cfg-action-des-meta">Funções e permissões de módulo</span>
-        </span>
-        <span class="material-symbols-outlined cfg-action-card__chevron" aria-hidden="true">chevron_right</span>
-      </button>
-      <button type="button" id="cfg-open-members" class="cfg-action-card cfg-action-card--members" aria-haspopup="dialog" aria-controls="cfg-modal-members">
-        <span class="cfg-action-card__icon" aria-hidden="true"><span class="material-symbols-outlined">group</span></span>
-        <span class="cfg-action-card__body">
-          <span class="cfg-action-card__title">Membros da equipe</span>
-          <span class="cfg-action-card__meta" id="cfg-action-members-meta">Cargo, usuário, e-mail e acesso</span>
-        </span>
-        <span class="material-symbols-outlined cfg-action-card__chevron" aria-hidden="true">chevron_right</span>
-      </button>
-    </div>
-
-    <div id="cfg-modal-designations" class="cfg-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cfg-modal-designations-title" aria-hidden="true">
-      <button type="button" class="cfg-modal__backdrop" data-cfg-modal-close aria-label="Fechar"></button>
-      <div class="cfg-modal__panel">
-        <header class="cfg-modal__head">
-          <div class="cfg-modal__head-text">
-            <h2 class="cfg-modal__title" id="cfg-modal-designations-title">
-              <span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
-              Designações de acesso
-            </h2>
-            <p class="cfg-modal__subtitle">Funções com permissões de módulo — atribua aos membros.</p>
-          </div>
-          <button type="button" class="cfg-modal__close" data-cfg-modal-close aria-label="Fechar">
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    <div class="cfg-nav-stage" id="cfg-nav-wrap">
+      <div class="cfg-nav-glow" aria-hidden="true"></div>
+      <div class="cfg-nav-scroll">
+        <nav id="cfg-nav" class="cfg-nav" role="tablist" aria-label="Sistema">
+          <span id="cfg-nav-indicator" class="cfg-nav-indicator" aria-hidden="true"></span>
+          <button type="button" class="cfg-tab active" data-cfg-tab="membros" role="tab" aria-selected="true" title="Membros">
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>
+            <span class="cfg-tab-label">Membros</span>
           </button>
-        </header>
-        <div class="cfg-modal__body">
-          <div class="cfg-modal__toolbar">
-            <button type="button" id="cfg-add-designation" class="cfg-btn cfg-btn--primary">
-              <span class="material-symbols-outlined" aria-hidden="true">add</span>
-              Nova designação
-            </button>
-          </div>
-          <div id="designations-catalog" class="cfg-des-list"></div>
-        </div>
+          <button type="button" class="cfg-tab hidden" id="cfg-tab-designacoes" data-cfg-tab="designacoes" role="tab" aria-selected="false" title="Designações">
+            <span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+            <span class="cfg-tab-label">Designações</span>
+          </button>
+          <button type="button" class="cfg-tab" data-cfg-tab="notificacoes" role="tab" aria-selected="false" title="Notificações">
+            <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
+            <span class="cfg-tab-label">Notificações</span>
+          </button>
+          <button type="button" class="cfg-tab" data-cfg-tab="links" role="tab" aria-selected="false" title="Links">
+            <span class="material-symbols-outlined" aria-hidden="true">link</span>
+            <span class="cfg-tab-label">Links</span>
+          </button>
+          <button type="button" class="cfg-tab" data-cfg-tab="donativos" role="tab" aria-selected="false" title="Donativos">
+            <span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span>
+            <span class="cfg-tab-label">Donativos</span>
+          </button>
+          <button type="button" class="cfg-tab" data-cfg-tab="app" role="tab" aria-selected="false" title="App">
+            <span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>
+            <span class="cfg-tab-label">App</span>
+          </button>
+        </nav>
       </div>
     </div>
 
-    <div id="cfg-modal-members" class="cfg-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cfg-modal-members-title" aria-hidden="true">
-      <button type="button" class="cfg-modal__backdrop" data-cfg-modal-close aria-label="Fechar"></button>
-      <div class="cfg-modal__panel cfg-modal__panel--wide">
-        <header class="cfg-modal__head">
-          <div class="cfg-modal__head-text">
-            <h2 class="cfg-modal__title" id="cfg-modal-members-title">
-              <span class="material-symbols-outlined" aria-hidden="true">group</span>
-              Membros da equipe
-            </h2>
-            <p class="cfg-modal__subtitle">Cargo, sub-cargo, usuário, e-mail, foto, nota e acesso a módulos.</p>
-          </div>
-          <button type="button" class="cfg-modal__close" data-cfg-modal-close aria-label="Fechar">
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </header>
-        <div class="cfg-modal__body cfg-modal__body--flush">
-          <div class="cfg-modal__toolbar cfg-modal__toolbar--search">
-            <button type="button" id="cfg-add-member" class="cfg-btn cfg-btn--primary hidden">
-              <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-              Novo membro
+    <section id="cfg-panel-membros" class="cfg-panel active" role="tabpanel" aria-labelledby="cfg-tab-membros">
+      <div class="cfg-stats">
+        <div class="cfg-stat cfg-stat--people">
+          <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+          <div><p class="cfg-stat__label">Membros</p><p class="cfg-stat__val" id="cfg-stat-members">—</p></div>
+        </div>
+        <div class="cfg-stat cfg-stat--des">
+          <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">badge</span></span>
+          <div><p class="cfg-stat__label">Designações</p><p class="cfg-stat__val" id="cfg-stat-designations">—</p></div>
+        </div>
+        <div class="cfg-stat cfg-stat--roles">
+          <span class="cfg-stat__icon"><span class="material-symbols-outlined" aria-hidden="true">shield_person</span></span>
+          <div><p class="cfg-stat__label">Com acesso admin</p><p class="cfg-stat__val" id="cfg-stat-admins">—</p></div>
+        </div>
+      </div>
+
+      <div class="cfg-note">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        <span id="cfg-role-note">Carregando permissões…</span>
+      </div>
+
+      <div class="cfg-panel-toolbar">
+        <button type="button" id="cfg-add-member" class="cfg-btn cfg-btn--primary hidden">
+          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+          Novo membro
+        </button>
+        <label class="cfg-search-wrap cfg-search-wrap--panel">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar membro…" autocomplete="off"/>
+        </label>
+      </div>
+
+      <div id="cfg-new-member-panel" class="cfg-new-member hidden" aria-hidden="true">
+        <form id="cfg-new-member-form" class="cfg-new-member-form">
+          <label class="cfg-new-member-field">
+            <span class="cfg-new-member-label">Nome completo</span>
+            <input type="text" id="cfg-new-member-name" name="full_name" class="cfg-field" placeholder="Nome exibido no site" autocomplete="name" required/>
+          </label>
+          <label class="cfg-new-member-field">
+            <span class="cfg-new-member-label">Usuário</span>
+            <span class="cfg-member-user-edit">
+              <span class="cfg-member-user-prefix" aria-hidden="true">@</span>
+              <input type="text" id="cfg-new-member-username" name="username" class="cfg-field cfg-field--username" placeholder="usuario" autocomplete="off" spellcheck="false" required/>
+            </span>
+          </label>
+          <label class="cfg-new-member-field">
+            <span class="cfg-new-member-label">E-mail <span class="cfg-new-member-optional">(opcional)</span></span>
+            <input type="email" id="cfg-new-member-email" name="email" class="cfg-field cfg-field--email" placeholder="Deixe em branco para usar @usuario@jardimelizabeth.org" autocomplete="off"/>
+          </label>
+          <label class="cfg-new-member-field">
+            <span class="cfg-new-member-label">Senha inicial</span>
+            <input type="password" id="cfg-new-member-password" name="password" class="cfg-field" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required/>
+          </label>
+          <label class="cfg-new-member-field">
+            <span class="cfg-new-member-label">Cargo</span>
+            <select id="cfg-new-member-role" name="role" class="cfg-field">
+              <option value="publicador" selected>Publicador</option>
+              <option value="servo_ministerial">Servo Ministerial</option>
+              <option value="anciao">Ancião</option>
+              <option value="superintendente">Superintendente</option>
+              <option value="superuser">SuperUser</option>
+            </select>
+          </label>
+          <div class="cfg-new-member-form__actions">
+            <button type="button" id="cfg-new-member-cancel" class="cfg-btn cfg-btn--ghost">Cancelar</button>
+            <button type="submit" id="cfg-new-member-submit" class="cfg-btn cfg-btn--primary">
+              <span class="material-symbols-outlined" aria-hidden="true">check</span>
+              Criar membro
             </button>
-            <label class="cfg-search-wrap cfg-search-wrap--modal">
-              <span class="material-symbols-outlined" aria-hidden="true">search</span>
-              <input id="cfg-member-search" type="search" class="cfg-search" placeholder="Buscar membro…" autocomplete="off"/>
-            </label>
           </div>
-          <div id="cfg-new-member-panel" class="cfg-new-member hidden" aria-hidden="true">
-            <form id="cfg-new-member-form" class="cfg-new-member-form">
-              <label class="cfg-new-member-field">
-                <span class="cfg-new-member-label">Nome completo</span>
-                <input type="text" id="cfg-new-member-name" name="full_name" class="cfg-field" placeholder="Nome exibido no site" autocomplete="name" required/>
-              </label>
-              <label class="cfg-new-member-field">
-                <span class="cfg-new-member-label">Usuário</span>
-                <span class="cfg-member-user-edit">
-                  <span class="cfg-member-user-prefix" aria-hidden="true">@</span>
-                  <input type="text" id="cfg-new-member-username" name="username" class="cfg-field cfg-field--username" placeholder="usuario" autocomplete="off" spellcheck="false" required/>
-                </span>
-              </label>
-              <label class="cfg-new-member-field">
-                <span class="cfg-new-member-label">E-mail <span class="cfg-new-member-optional">(opcional)</span></span>
-                <input type="email" id="cfg-new-member-email" name="email" class="cfg-field cfg-field--email" placeholder="Deixe em branco para usar @usuario@jardimelizabeth.org" autocomplete="off"/>
-              </label>
-              <label class="cfg-new-member-field">
-                <span class="cfg-new-member-label">Senha inicial</span>
-                <input type="password" id="cfg-new-member-password" name="password" class="cfg-field" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required/>
-              </label>
-              <label class="cfg-new-member-field">
-                <span class="cfg-new-member-label">Cargo</span>
-                <select id="cfg-new-member-role" name="role" class="cfg-field">
-                  <option value="publicador" selected>Publicador</option>
-                  <option value="servo_ministerial">Servo Ministerial</option>
-                  <option value="anciao">Ancião</option>
-                  <option value="superintendente">Superintendente</option>
-                  <option value="superuser">SuperUser</option>
-                </select>
-              </label>
-              <div class="cfg-new-member-form__actions">
-                <button type="button" id="cfg-new-member-cancel" class="cfg-btn cfg-btn--ghost">Cancelar</button>
-                <button type="submit" id="cfg-new-member-submit" class="cfg-btn cfg-btn--primary">
-                  <span class="material-symbols-outlined" aria-hidden="true">check</span>
-                  Criar membro
-                </button>
-              </div>
-            </form>
+        </form>
+      </div>
+
+      <div class="cfg-card cfg-card--panel">
+        <div class="cfg-members-scroll">
+          <div class="cfg-members-panel">
+            <div class="cfg-member-row cfg-member-row--head" id="cfg-members-head"></div>
+            <div id="members-table"></div>
           </div>
-          <div class="cfg-card cfg-card--in-modal">
-            <div class="cfg-members-scroll">
-              <div class="cfg-members-panel">
-                <div class="cfg-member-row cfg-member-row--head" id="cfg-members-head"></div>
-                <div id="members-table"></div>
-              </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cfg-panel-designacoes" class="cfg-panel" role="tabpanel" hidden>
+      <div class="cfg-panel-toolbar">
+        <button type="button" id="cfg-add-designation" class="cfg-btn cfg-btn--primary">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Nova designação
+        </button>
+      </div>
+      <div class="cfg-card cfg-card--panel">
+        <div id="designations-catalog" class="cfg-des-list"></div>
+      </div>
+    </section>
+
+    <section id="cfg-panel-notificacoes" class="cfg-panel" role="tabpanel" hidden>
+      <div id="hub-notif-send-root"></div>
+    </section>
+
+    <section id="cfg-panel-links" class="cfg-panel" role="tabpanel" hidden>
+      <div id="cfg-calendar-links" class="cfg-card cfg-calendar-links cfg-card--panel">
+        <div class="cfg-section-head">
+          <div>
+            <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">link</span>Links de calendário</p>
+            <p class="cfg-section-desc">URLs do Google Calendar — slugs carrinho-* e display-* nas páginas públicas.</p>
+          </div>
+          <button id="btn-new" type="button" class="cfg-btn cfg-btn--primary">
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            Calendário
+          </button>
+        </div>
+        <div id="schedule-list" class="cfg-calendar-list"></div>
+        <form id="sched-form" class="hidden cfg-calendar-form">
+          <input type="hidden" id="sched-id"/>
+          <label class="cfg-calendar-field">
+            <span class="cfg-calendar-label">Slug</span>
+            <input id="sched-slug" required class="cfg-field" placeholder="carrinho-1"/>
+          </label>
+          <label class="cfg-calendar-field">
+            <span class="cfg-calendar-label">Título</span>
+            <input id="sched-title" required class="cfg-field"/>
+          </label>
+          <label class="cfg-calendar-field">
+            <span class="cfg-calendar-label">URL embed</span>
+            <input id="sched-url" required class="cfg-field"/>
+          </label>
+          <label class="cfg-calendar-field cfg-calendar-field--sm">
+            <span class="cfg-calendar-label">Ordem</span>
+            <input id="sched-sort" type="number" value="0" class="cfg-field"/>
+          </label>
+          <div class="cfg-calendar-form__actions">
+            <button type="submit" class="cfg-btn cfg-btn--primary">Salvar</button>
+            <button id="btn-cancel" type="button" class="cfg-btn cfg-btn--ghost">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="cfg-panel-donativos" class="cfg-panel" role="tabpanel" hidden>
+      <div class="cfg-card cfg-card--panel cfg-donations">
+        <div class="cfg-section-head">
+          <div>
+            <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span>Donativos</p>
+            <p class="cfg-section-desc">Chave PIX, QR code e textos exibidos em donativos.html.</p>
+          </div>
+        </div>
+        <form id="donations-form" class="cfg-donations-form">
+          <label class="cfg-donations-field">
+            <span class="cfg-donations-label">Chave PIX</span>
+            <input id="pix-key" required class="cfg-field"/>
+          </label>
+          <label class="cfg-donations-field">
+            <span class="cfg-donations-label">Tipo da chave</span>
+            <input id="pix-type" class="cfg-field" placeholder="E-mail"/>
+          </label>
+          <label class="cfg-donations-field">
+            <span class="cfg-donations-label">Titular</span>
+            <input id="holder" class="cfg-field"/>
+          </label>
+          <label class="cfg-donations-field">
+            <span class="cfg-donations-label">Banco</span>
+            <input id="bank" class="cfg-field"/>
+          </label>
+          <label class="cfg-donations-field cfg-donations-field--wide">
+            <span class="cfg-donations-label">URL do QR Code</span>
+            <input id="qr-url" class="cfg-field" placeholder="img/qrcode.jpg"/>
+          </label>
+          <label class="cfg-donations-field cfg-donations-field--wide">
+            <span class="cfg-donations-label">Aviso legal</span>
+            <textarea id="disclaimer" rows="3" class="cfg-field cfg-field--area"></textarea>
+          </label>
+          <div class="cfg-donations-form__actions">
+            <button type="submit" class="cfg-btn cfg-btn--primary">
+              <span class="material-symbols-outlined" aria-hidden="true">save</span>
+              Salvar alterações
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="cfg-panel-app" class="cfg-panel" role="tabpanel" hidden>
+      <section class="cfg-card hub-pwa-card cfg-card--panel">
+        <div class="cfg-section-head hub-pwa-card__head">
+          <div>
+            <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>App no celular</p>
+            <p class="cfg-section-desc">Instale na tela inicial — acesso rápido, sem loja de apps.</p>
+          </div>
+        </div>
+        <div class="hub-pwa-card__grid">
+          <div class="hub-pwa-card__block">
+            <p class="hub-pwa-card__label">Instalar</p>
+            <p class="hub-pwa-card__text">Cria um atalho na tela inicial. O Hub continua acessível pelo navegador.</p>
+            <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--primary" data-install-trigger>
+              <span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>
+              Baixar app
+            </button>
+          </div>
+          <div class="hub-pwa-card__block">
+            <p class="hub-pwa-card__label">Atualizações</p>
+            <p class="hub-pwa-card__text">Quando sair versão nova, atualize sem desinstalar.</p>
+            <div class="hub-pwa-card__actions">
+              <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--ghost" id="hub-pwa-check-btn">
+                <span class="material-symbols-outlined" aria-hidden="true">sync</span>
+                Verificar
+              </button>
+              <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--accent hidden" id="hub-pwa-apply-btn">
+                <span class="material-symbols-outlined" aria-hidden="true">upgrade</span>
+                Atualizar
+              </button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div id="hub-notif-send-root" class="hidden"></div>
-
-    <section id="cfg-calendar-links" class="cfg-card cfg-calendar-links">
-      <div class="cfg-section-head">
-        <div>
-          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">link</span>Links de calendário</p>
-          <p class="cfg-section-desc">URLs do Google Calendar — slugs carrinho-* e display-* nas páginas públicas.</p>
-        </div>
-        <button id="btn-new" type="button" class="cfg-btn cfg-btn--primary">
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
-          Calendário
-        </button>
-      </div>
-      <div id="schedule-list" class="cfg-calendar-list"></div>
-      <form id="sched-form" class="hidden cfg-calendar-form">
-        <input type="hidden" id="sched-id"/>
-        <label class="cfg-calendar-field">
-          <span class="cfg-calendar-label">Slug</span>
-          <input id="sched-slug" required class="cfg-field" placeholder="carrinho-1"/>
-        </label>
-        <label class="cfg-calendar-field">
-          <span class="cfg-calendar-label">Título</span>
-          <input id="sched-title" required class="cfg-field"/>
-        </label>
-        <label class="cfg-calendar-field">
-          <span class="cfg-calendar-label">URL embed</span>
-          <input id="sched-url" required class="cfg-field"/>
-        </label>
-        <label class="cfg-calendar-field cfg-calendar-field--sm">
-          <span class="cfg-calendar-label">Ordem</span>
-          <input id="sched-sort" type="number" value="0" class="cfg-field"/>
-        </label>
-        <div class="cfg-calendar-form__actions">
-          <button type="submit" class="cfg-btn cfg-btn--primary">Salvar</button>
-          <button id="btn-cancel" type="button" class="cfg-btn cfg-btn--ghost">Cancelar</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="cfg-card hub-pwa-card">
-      <div class="cfg-section-head hub-pwa-card__head">
-        <div>
-          <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>App no celular</p>
-          <p class="cfg-section-desc">Instale na tela inicial — acesso rápido, sem loja de apps.</p>
-        </div>
-      </div>
-      <div class="hub-pwa-card__grid">
-        <div class="hub-pwa-card__block">
-          <p class="hub-pwa-card__label">Instalar</p>
-          <p class="hub-pwa-card__text">Cria um atalho na tela inicial. O Hub continua acessível pelo navegador.</p>
-          <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--primary" data-install-trigger>
-            <span class="material-symbols-outlined" aria-hidden="true">install_mobile</span>
-            Baixar app
-          </button>
-        </div>
-        <div class="hub-pwa-card__block">
-          <p class="hub-pwa-card__label">Atualizações</p>
-          <p class="hub-pwa-card__text">Quando sair versão nova, atualize sem desinstalar.</p>
-          <div class="hub-pwa-card__actions">
-            <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--ghost" id="hub-pwa-check-btn">
-              <span class="material-symbols-outlined" aria-hidden="true">sync</span>
-              Verificar
-            </button>
-            <button type="button" class="hub-pwa-card__btn hub-pwa-card__btn--accent hidden" id="hub-pwa-apply-btn">
-              <span class="material-symbols-outlined" aria-hidden="true">upgrade</span>
-              Atualizar
-            </button>
-          </div>
-        </div>
-      </div>
-      <p class="hub-pwa-card__status" id="hub-pwa-update-status" aria-live="polite"></p>
+        <p class="hub-pwa-card__status" id="hub-pwa-update-status" aria-live="polite"></p>
+      </section>
     </section>
 
     <p class="cfg-foot">SuperUser, Ancião e Servo Ministerial mantêm acesso amplo. Superintendente vê a Visão Geral. Secretário gerencia a Visita do Superintendente. Publicadores entram no Hub somente com designação atribuída.</p>

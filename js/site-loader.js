@@ -994,7 +994,7 @@
 
   function ensurePwaAssets() {
     if (document.body?.classList.contains('hub-page')) return;
-    const cssHref = `${assetBase}/css/je-pwa-install.css?v=2026061515`;
+    const cssHref = `${assetBase}/css/je-pwa-install.css?v=20260725400000`;
     if (!document.querySelector(`link[href="${cssHref}"]`)) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -1002,8 +1002,8 @@
       document.head.appendChild(link);
     }
     Promise.all([
-      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=2026061719`),
-      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=2026061719`),
+      loadScriptOnce(`${assetBase}/js/je-pwa-install.js?v=20260725400000`),
+      loadScriptOnce(`${assetBase}/js/je-pwa-update.js?v=20260725400000`),
       loadScriptOnce(`${assetBase}/js/je-push.js?v=2026061719`)
     ]).catch((err) => console.warn('PWA assets:', err));
   }
@@ -1023,6 +1023,7 @@
       highlightActiveNav();
       if (window.initSiteHeader) window.initSiteHeader();
       window.JEPwaInstall?.bindTriggers?.();
+      window.JEPwaUpdate?.bindUpdateTriggers?.();
       window.JETheme?.bindToggles?.();
       window.JESiteConfig?.apply?.().catch((err) => console.warn('site config:', err));
     });
