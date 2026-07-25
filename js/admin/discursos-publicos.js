@@ -157,44 +157,304 @@
     bindAssignmentActions(host);
   }
 
-  function speakerOptions(selected, query = '') {
-    return `${option('', 'Digite ou selecione...', selected)}${activeSpeakers(query)
-      .map((s) => option(s.id, `${s.full_name}${s.is_local ? ' (local)' : ''}`, selected)).join('')}`;
-  }
-  function congregationOptions(selected, query = '') {
-    return `${option('', 'Digite ou selecione...', selected)}${activeCongregations(query)
-      .map((c) => option(c.id, c.name, selected)).join('')}`;
-  }
-  function themeOptions(selected, speakerId, query = '') {
-    const speaker = getSpeaker(speakerId);
-    const prepared = new Set((speaker?.speech_speaker_themes || []).map((x) => x.theme_id));
-    return `${option('', 'Digite ou selecione...', selected)}${activeThemes(query, speakerId)
-      .map((t) => option(t.id, `${prepared.has(t.id) ? '★ ' : ''}Esboço ${t.outline_number} — ${t.title}`, selected)).join('')}`;
+  const LOCAL_CONGREGATION = 'Jardim Elizabeth';
+
+  function isLocalCongregationName(name) {
+    return normalizeSearch(name) === normalizeSearch(LOCAL_CONGREGATION);
   }
 
-  function refreshAssignmentSpeakerSelect(form, query = '') {
-    const select = form.querySelector('[data-dp-speaker]');
-    if (!select) return;
-    const selected = select.value;
-    select.innerHTML = speakerOptions(selected, query);
-    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  const COMBO_FIELDS = {
+    speaker: { idName: 'speaker_id', textName: 'speaker_name', icon: 'person', placeholder: 'Buscar ou digitar orador…', createLabel: 'Novo orador' },
+    theme: { idName: 'theme_id', textName: 'theme_title', icon: 'menu_book', placeholder: 'Nº ou título do esboço…', createLabel: 'Texto livre' },
+    congregation: { idName: 'congregation_id', textName: 'congregation_name', icon: 'location_on', placeholder: 'Nome da congregação…', createLabel: 'Nova congregação' }
+  };
+
+  function themeDisplay(theme) {
+    if (!theme) return '';
+    return `${theme.outline_number} · ${theme.title}`;
   }
 
-  function refreshAssignmentThemeSelect(form, query = '') {
-    const select = form.querySelector('[data-dp-theme]');
-    const speakerSelect = form.querySelector('[data-dp-speaker]');
-    if (!select) return;
-    const selected = select.value;
-    select.innerHTML = themeOptions(selected, speakerSelect?.value, query);
-    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  function assignmentComboValue(kind, assignment) {
+    const a = assignment || {};
+    if (kind === 'speaker') {
+      const s = getSpeaker(a.speaker_id);
+      return { id: a.speaker_id || '', text: s?.full_name || a.speaker_name || '' };
+    }
+    if (kind === 'theme') {
+      const t = getTheme(a.theme_id);
+      return { id: a.theme_id || '', text: t ? themeDisplay(t) : (a.theme_title || '') };
+    }
+    const c = getCongregation(a.congregation_id);
+    return { id: a.congregation_id || '', text: c?.name || a.congregation_name || '' };
   }
 
-  function refreshAssignmentCongregationSelect(form, query = '') {
-    const select = form.querySelector('[data-dp-congregation]');
-    if (!select) return;
-    const selected = select.value;
-    select.innerHTML = congregationOptions(selected, query);
-    if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
+  function comboFieldHtml(kind, assignment, { label, span2 = false } = {}) {
+    const cfg = COMBO_FIELDS[kind];
+    const { id, text: textVal } = assignmentComboValue(kind, assignment);
+    const theme = kind === 'theme' ? getTheme(id) : null;
+    const leading = kind === 'theme'
+      ? `<span class="dp-combo__badge${theme ? '' : ' hidden'}" data-dp-combo-badge aria-hidden="true">${theme?.outline_number || ''}</span>
+         <span class="material-symbols-outlined dp-combo__icon${theme ? ' hidden' : ''}" aria-hidden="true">${cfg.icon}</span>`
+      : `<span class="material-symbols-outlined dp-combo__icon" aria-hidden="true">${cfg.icon}</span>`;
+    return `
+      <label class="${span2 ? 'dp-span-2' : ''}">${label}
+        <div class="dp-combo${kind === 'theme' ? ' dp-combo--theme' : ''}" data-dp-combo="${kind}">
+          ${leading}
+          <input class="dp-combo__input" type="text" name="${cfg.textName}" autocomplete="off" placeholder="${escapeHtml(cfg.placeholder)}" value="${escapeHtml(textVal)}">
+          <input type="hidden" name="${cfg.idName}" value="${escapeHtml(id)}">
+          <button type="button" class="dp-combo__btn dp-combo__clear${textVal ? '' : ' hidden'}" aria-label="Limpar" tabindex="-1">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+          <button type="button" class="dp-combo__btn dp-combo__toggle" aria-label="Abrir lista" tabindex="-1">
+            <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
+          <ul class="dp-combo__list" role="listbox" hidden></ul>
+        </div>
+      </label>`;
+  }
+
+  function mapCongregationItem(congregation) {
+    const local = isLocalCongregationName(congregation.name);
+    return {
+      id: congregation.id,
+      text: congregation.name,
+      display: congregation.name,
+      label: congregation.name,
+      meta: local ? 'Nossa congregação' : '',
+      local
+    };
+  }
+
+  function congregationComboGroups(query) {
+    const all = activeCongregations(query);
+    return {
+      local: all.filter((c) => isLocalCongregationName(c.name)).map(mapCongregationItem),
+      others: all.filter((c) => !isLocalCongregationName(c.name)).map(mapCongregationItem)
+    };
+  }
+
+  function congregationOptionHtml(item) {
+    return `<li class="dp-combo__option" role="option" tabindex="-1" data-id="${escapeHtml(item.id)}" data-text="${escapeHtml(item.text)}" data-display="${escapeHtml(item.display)}">
+      <span class="material-symbols-outlined dp-combo__opt-icon${item.local ? ' is-local' : ''}" aria-hidden="true">${item.local ? 'home_pin' : 'location_on'}</span>
+      <span class="dp-combo__opt-main">${escapeHtml(item.label)}</span>
+      ${item.meta ? `<span class="dp-combo__opt-meta">${escapeHtml(item.meta)}</span>` : ''}
+    </li>`;
+  }
+
+  function comboEmptyMessage(kind) {
+    if (kind === 'theme') return 'Nenhum esboço encontrado';
+    if (kind === 'congregation') return 'Nenhuma congregação encontrada';
+    if (kind === 'speaker') return 'Nenhum orador encontrado';
+    return 'Nenhum resultado';
+  }
+
+  function mapThemeComboItem(theme, prepared) {
+    return {
+      id: theme.id,
+      text: theme.title,
+      display: themeDisplay(theme),
+      label: `Esboço ${theme.outline_number}`,
+      meta: theme.title,
+      num: theme.outline_number,
+      prepared
+    };
+  }
+
+  function themeComboGroups(query, form) {
+    const speakerId = form.querySelector('[name="speaker_id"]')?.value || '';
+    const preparedSet = new Set((getSpeaker(speakerId)?.speech_speaker_themes || []).map((x) => x.theme_id));
+    const all = activeThemes(query, speakerId);
+    return {
+      speaker: getSpeaker(speakerId),
+      prepared: all.filter((t) => preparedSet.has(t.id)).map((t) => mapThemeComboItem(t, true)),
+      catalog: all.filter((t) => !preparedSet.has(t.id)).map((t) => mapThemeComboItem(t, false))
+    };
+  }
+
+  function themeOptionHtml(item) {
+    return `<li class="dp-combo__option" role="option" tabindex="-1" data-id="${escapeHtml(item.id)}" data-text="${escapeHtml(item.text)}" data-display="${escapeHtml(item.display)}">
+      <span class="dp-combo__num${item.prepared ? ' is-prepared' : ''}">${item.num}${item.prepared ? '★' : ''}</span>
+      <span class="dp-combo__opt-main">${escapeHtml(item.label)}</span>
+      <span class="dp-combo__opt-meta">${escapeHtml(item.meta)}</span>
+    </li>`;
+  }
+
+  function updateThemeComboBadge(combo, themeId) {
+    if (combo.dataset.dpCombo !== 'theme') return;
+    const badge = combo.querySelector('[data-dp-combo-badge]');
+    const icon = combo.querySelector('.dp-combo__icon');
+    const theme = getTheme(themeId);
+    badge?.classList.toggle('hidden', !theme);
+    icon?.classList.toggle('hidden', !!theme);
+    if (badge && theme) badge.textContent = theme.outline_number;
+  }
+
+  function comboItems(kind, query, form) {
+    if (kind === 'speaker') {
+      return activeSpeakers(query).slice(0, 14).map((s) => ({
+        id: s.id,
+        text: s.full_name,
+        display: s.full_name,
+        label: s.full_name,
+        meta: [s.speech_congregations?.name, s.is_local ? 'Local' : ''].filter(Boolean).join(' · ')
+      }));
+    }
+    if (kind === 'theme') {
+      const { prepared, catalog } = themeComboGroups(query, form);
+      return [...prepared, ...catalog].slice(0, 16);
+    }
+    const { local, others } = congregationComboGroups(query);
+    return [...local, ...others].slice(0, 16);
+  }
+
+  function comboHasExactMatch(kind, query, form) {
+    const q = normalizeSearch(query);
+    if (!q) return true;
+    const num = q.match(/^(\d{1,3})$/)?.[1];
+    return comboItems(kind, query, form).some((item) => {
+      if (num && item.num != null) return String(item.num) === num;
+      return normalizeSearch(item.text) === q
+        || normalizeSearch(item.display || '') === q
+        || normalizeSearch(item.label) === q;
+    });
+  }
+
+  function closeCombo(combo) {
+    combo.querySelector('.dp-combo__list').hidden = true;
+    combo.classList.remove('is-open');
+  }
+
+  function renderComboList(combo, query = '') {
+    const kind = combo.dataset.dpCombo;
+    const form = combo.closest('form');
+    const list = combo.querySelector('.dp-combo__list');
+    const cfg = COMBO_FIELDS[kind];
+    const q = text(query);
+    let html = '';
+
+    if (kind === 'theme') {
+      const { speaker, prepared, catalog } = themeComboGroups(query, form);
+      if (speaker && prepared.length) {
+        html += `<li class="dp-combo__heading"><span class="material-symbols-outlined" aria-hidden="true">star</span> Preparados · ${escapeHtml(speaker.full_name)}</li>`;
+        html += prepared.map(themeOptionHtml).join('');
+      }
+      if (catalog.length) {
+        if (prepared.length) html += `<li class="dp-combo__heading">Catálogo S-34</li>`;
+        html += catalog.map(themeOptionHtml).join('');
+      }
+    } else if (kind === 'congregation') {
+      const { local, others } = congregationComboGroups(query);
+      if (local.length) {
+        html += `<li class="dp-combo__heading"><span class="material-symbols-outlined" aria-hidden="true">home_pin</span> Nossa congregação</li>`;
+        html += local.map(congregationOptionHtml).join('');
+      }
+      if (others.length) {
+        if (local.length) html += `<li class="dp-combo__heading">Outras congregações</li>`;
+        html += others.slice(0, 12).map(congregationOptionHtml).join('');
+      }
+    } else {
+      html = comboItems(kind, query, form).map((item) => `<li class="dp-combo__option" role="option" tabindex="-1" data-id="${escapeHtml(item.id)}" data-text="${escapeHtml(item.text)}" data-display="${escapeHtml(item.display || item.text)}">
+        <span class="material-symbols-outlined dp-combo__opt-icon" aria-hidden="true">${cfg.icon}</span>
+        <span class="dp-combo__opt-main">${escapeHtml(item.label)}</span>
+        ${item.meta ? `<span class="dp-combo__opt-meta">${escapeHtml(item.meta)}</span>` : ''}
+      </li>`).join('');
+    }
+
+    if (q && !comboHasExactMatch(kind, q, form)) {
+      html += `<li class="dp-combo__option dp-combo__option--new" role="option" tabindex="-1" data-id="" data-text="${escapeHtml(q)}" data-display="${escapeHtml(q)}">
+        <span class="material-symbols-outlined dp-combo__opt-icon" aria-hidden="true">add</span>
+        <span class="dp-combo__opt-main">Usar “${escapeHtml(q)}”</span>
+        <span class="dp-combo__opt-meta">${cfg.createLabel}</span>
+      </li>`;
+    }
+
+    list.innerHTML = html || `<li class="dp-combo__empty">${comboEmptyMessage(kind)}</li>`;
+    list.hidden = false;
+    combo.classList.add('is-open');
+  }
+
+  function selectComboOption(combo, optionEl) {
+    const input = combo.querySelector('.dp-combo__input');
+    const hidden = combo.querySelector('input[type="hidden"]');
+    const clearBtn = combo.querySelector('.dp-combo__clear');
+    hidden.value = optionEl.dataset.id || '';
+    input.value = optionEl.dataset.display || optionEl.dataset.text || '';
+    clearBtn?.classList.toggle('hidden', !input.value);
+    updateThemeComboBadge(combo, hidden.value);
+    closeCombo(combo);
+    const form = combo.closest('form');
+    if (combo.dataset.dpCombo === 'speaker' && hidden.value) {
+      const speaker = getSpeaker(hidden.value);
+      const congCombo = form?.querySelector('[data-dp-combo="congregation"]');
+      const congHidden = congCombo?.querySelector('input[type="hidden"]');
+      const congInput = congCombo?.querySelector('.dp-combo__input');
+      if (speaker?.congregation_id && congCombo && !text(congHidden?.value) && !text(congInput?.value)) {
+        const congregation = getCongregation(speaker.congregation_id);
+        if (congregation) {
+          congHidden.value = congregation.id;
+          congInput.value = congregation.name;
+          congCombo.querySelector('.dp-combo__clear')?.classList.remove('hidden');
+        }
+      }
+      const themeCombo = form?.querySelector('[data-dp-combo="theme"]');
+      if (themeCombo?.classList.contains('is-open')) renderComboList(themeCombo, themeCombo.querySelector('.dp-combo__input')?.value || '');
+    }
+  }
+
+  function bindCombo(combo) {
+    const input = combo.querySelector('.dp-combo__input');
+    const hidden = combo.querySelector('input[type="hidden"]');
+    const clearBtn = combo.querySelector('.dp-combo__clear');
+    const toggleBtn = combo.querySelector('.dp-combo__toggle');
+    const list = combo.querySelector('.dp-combo__list');
+
+    const open = () => renderComboList(combo, input.value);
+    const close = () => closeCombo(combo);
+
+    input.addEventListener('focus', open);
+    input.addEventListener('input', () => {
+      hidden.value = '';
+      updateThemeComboBadge(combo, '');
+      clearBtn?.classList.toggle('hidden', !input.value);
+      open();
+    });
+    input.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (!combo.contains(document.activeElement)) close();
+      }, 120);
+    });
+
+    toggleBtn?.addEventListener('mousedown', (e) => e.preventDefault());
+    toggleBtn?.addEventListener('click', () => {
+      if (combo.classList.contains('is-open')) close();
+      else { input.focus(); open(); }
+    });
+
+    clearBtn?.addEventListener('mousedown', (e) => e.preventDefault());
+    clearBtn?.addEventListener('click', () => {
+      input.value = '';
+      hidden.value = '';
+      updateThemeComboBadge(combo, '');
+      clearBtn.classList.add('hidden');
+      close();
+      input.focus();
+    });
+
+    list.addEventListener('mousedown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => {
+      const opt = e.target.closest('.dp-combo__option');
+      if (!opt || opt.classList.contains('dp-combo__empty')) return;
+      selectComboOption(combo, opt);
+    });
+  }
+
+  function bindFormCombos(form) {
+    form.querySelectorAll('[data-dp-combo]').forEach(bindCombo);
+    modalRoot()?.addEventListener('click', (e) => {
+      if (!e.target.closest('.dp-combo')) {
+        modalRoot()?.querySelectorAll('.dp-combo.is-open').forEach(closeCombo);
+      }
+    });
   }
 
   function filterThemeCheckboxLabels(container, query) {
@@ -316,7 +576,7 @@
       speaker_id: speakerId,
       speaker_name: speakerName || s?.full_name || null,
       theme_id: themeId,
-      theme_title: themeTitle || t?.title || null,
+      theme_title: t?.title || themeTitle || null,
       outline_number: t?.outline_number || null,
       congregation_id: congregationId,
       congregation_name: congregationName || getCongregation(congregationId)?.name || null,
@@ -340,9 +600,9 @@
         <label>Direção<select name="direction">${option('receive', 'Recebemos', a.direction)}${option('send', 'Enviamos', a.direction)}</select></label>
         <label>Data<input required name="event_date" type="date" value="${escapeHtml(a.event_date || '')}"></label>
         <label>Horário<input name="event_time" type="time" value="${escapeHtml((a.event_time || '').slice(0, 5))}"></label>
-        <label>Orador<input data-dp-speaker-filter type="search" placeholder="Buscar orador…"><select name="speaker_id" data-dp-speaker>${speakerOptions(a.speaker_id)}</select><input name="speaker_name" placeholder="Ou informe o nome" value="${escapeHtml(a.speaker_name || '')}"></label>
-        <label class="dp-span-2">Tema<input data-dp-theme-filter type="search" placeholder="Buscar esboço ou título…"><select name="theme_id" data-dp-theme>${themeOptions(a.theme_id, a.speaker_id)}</select><input name="theme_title" placeholder="Ou informe o tema" value="${escapeHtml(a.theme_title || '')}"></label>
-        <label>Congregação<input data-dp-congregation-filter type="search" placeholder="Buscar congregação…"><select name="congregation_id" data-dp-congregation>${congregationOptions(a.congregation_id)}</select><input name="congregation_name" placeholder="Ou informe a congregação" value="${escapeHtml(a.congregation_name || '')}"></label>
+        ${comboFieldHtml('speaker', a, { label: 'Orador' })}
+        ${comboFieldHtml('theme', a, { label: 'Tema', span2: true })}
+        ${comboFieldHtml('congregation', a, { label: 'Congregação' })}
         <label>Cântico inicial<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
         <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
         <label>Status<select name="confirmation_status">${Object.entries(STATUS).map(([k, v]) => option(k, v, a.confirmation_status)).join('')}</select></label>
@@ -351,29 +611,7 @@
       </form>`);
     const form = modalRoot()?.querySelector('[data-dp-assignment-form]');
     if (!form) return;
-    form.querySelector('[data-dp-speaker-filter]')?.addEventListener('input', (e) => {
-      refreshAssignmentSpeakerSelect(form, e.target.value);
-    });
-    form.querySelector('[data-dp-theme-filter]')?.addEventListener('input', (e) => {
-      refreshAssignmentThemeSelect(form, e.target.value);
-    });
-    form.querySelector('[data-dp-congregation-filter]')?.addEventListener('input', (e) => {
-      refreshAssignmentCongregationSelect(form, e.target.value);
-    });
-    form.querySelector('[data-dp-speaker]')?.addEventListener('change', (e) => {
-      const themeFilter = form.querySelector('[data-dp-theme-filter]');
-      refreshAssignmentThemeSelect(form, themeFilter?.value || '');
-      const s = getSpeaker(e.target.value);
-      if (s && !form.speaker_name.value) form.speaker_name.value = s.full_name;
-    });
-    form.querySelector('[data-dp-theme]')?.addEventListener('change', (e) => {
-      const t = getTheme(e.target.value);
-      if (t && !form.theme_title.value) form.theme_title.value = t.title;
-    });
-    form.querySelector('[data-dp-congregation]')?.addEventListener('change', (e) => {
-      const c = getCongregation(e.target.value);
-      if (c && !form.congregation_name.value) form.congregation_name.value = c.name;
-    });
+    bindFormCombos(form);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
@@ -437,25 +675,55 @@
     }).join('')}</tbody></table></div>`;
   }
 
-  function renderSpeakers() {
-    const host = $('#dp-panel-oradores'); const q = host.dataset.query || '';
-    const rows = speakers.filter((s) => `${s.full_name} ${s.phone} ${s.email}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => a.full_name.localeCompare(b.full_name));
+  function speakerStatsHtml() {
     const count = (fn) => speakers.filter(fn).length;
-    host.innerHTML = `
-      <div class="terr-catalog-stats dp-stats"><article><strong>${speakers.length}</strong><span>Total</span></article><article><strong>${count((s) => s.is_local)}</strong><span>Locais</span></article><article><strong>${count((s) => s.privilege === 'anciao')}</strong><span>Anciãos</span></article><article><strong>${count((s) => s.privilege === 'servo_ministerial')}</strong><span>Servos</span></article></div>
-      <div class="terr-catalog-card"><div class="terr-sched-toolbar"><input data-dp-speaker-search placeholder="Buscar orador" value="${escapeHtml(q)}"><button class="btn-primary" type="button" data-dp-speaker-new>Novo orador</button></div>
-      ${rows.length ? speakersTable(rows) : empty('Nenhum orador encontrado.')}</div>`;
-    host.querySelector('[data-dp-speaker-search]').addEventListener('input', (e) => { host.dataset.query = e.target.value; renderSpeakers(); });
-    host.querySelector('[data-dp-speaker-new]').addEventListener('click', () => openSpeakerModal());
+    return `<article><strong>${speakers.length}</strong><span>Total</span></article><article><strong>${count((s) => s.is_local)}</strong><span>Locais</span></article><article><strong>${count((s) => s.privilege === 'anciao')}</strong><span>Anciãos</span></article><article><strong>${count((s) => s.privilege === 'servo_ministerial')}</strong><span>Servos</span></article>`;
+  }
+
+  function bindSpeakerListActions(host) {
     host.querySelectorAll('[data-dp-speaker-edit]').forEach((b) => b.addEventListener('click', () => openSpeakerModal(getSpeaker(b.dataset.dpSpeakerEdit))));
+  }
+
+  function renderSpeakers() {
+    const host = $('#dp-panel-oradores');
+    if (!host) return;
+    const q = host.dataset.query || '';
+    const rows = speakers
+      .filter((s) => matchesSearch(`${s.full_name} ${s.phone} ${s.email}`, q))
+      .sort((a, b) => a.full_name.localeCompare(b.full_name, 'pt-BR'));
+    const listHtml = rows.length ? speakersTable(rows) : empty('Nenhum orador encontrado.');
+
+    if (!host.querySelector('[data-dp-speaker-search]')) {
+      host.innerHTML = `
+        <div class="terr-catalog-stats dp-stats" data-dp-speaker-stats></div>
+        <div class="terr-catalog-card">
+          <div class="terr-sched-toolbar">
+            <input data-dp-speaker-search type="search" placeholder="Buscar orador" aria-label="Buscar orador">
+            <button class="btn-primary" type="button" data-dp-speaker-new>Novo orador</button>
+          </div>
+          <div data-dp-speaker-list></div>
+        </div>`;
+      host.querySelector('[data-dp-speaker-search]').addEventListener('input', (e) => {
+        host.dataset.query = e.target.value;
+        renderSpeakers();
+      });
+      host.querySelector('[data-dp-speaker-new]').addEventListener('click', () => openSpeakerModal());
+    }
+
+    host.querySelector('[data-dp-speaker-stats]').innerHTML = speakerStatsHtml();
+    const searchInput = host.querySelector('[data-dp-speaker-search]');
+    if (document.activeElement !== searchInput) searchInput.value = q;
+    host.querySelector('[data-dp-speaker-list]').innerHTML = listHtml;
+    bindSpeakerListActions(host);
   }
 
   function openSpeakerModal(existing) {
     const s = existing || { privilege: 'anciao', is_local: true, is_active: true };
     const selected = new Set((s.speech_speaker_themes || []).map((x) => x.theme_id));
+    const congregationValue = { congregation_id: s.congregation_id, congregation_name: s.speech_congregations?.name || '' };
     openModal(`${existing ? 'Editar' : 'Novo'} orador`, `<form class="dp-form" data-dp-speaker-form>
       <label class="dp-span-2">Nome completo<input required name="full_name" value="${escapeHtml(s.full_name || '')}"></label>
-      <label>Congregação<input data-dp-congregation-filter type="search" placeholder="Buscar congregação…"><select name="congregation_id">${congregationOptions(s.congregation_id)}</select><input name="quick_congregation" placeholder="Nova congregação (rápido)"></label>
+      ${comboFieldHtml('congregation', congregationValue, { label: 'Congregação' })}
       <label>Telefone<input name="phone" value="${escapeHtml(s.phone || '')}"></label><label>E-mail<input name="email" value="${escapeHtml(s.email || '')}"></label>
       <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
       <label><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}> Orador local</label><label><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}> Ativo</label>
@@ -464,23 +732,18 @@
       <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer></form>`);
     const form = modalRoot()?.querySelector('[data-dp-speaker-form]');
     if (!form) return;
+    bindFormCombos(form);
     const themeChecks = form.querySelector('[data-dp-theme-checks]');
     form.querySelector('[data-dp-theme-search]')?.addEventListener('input', (e) => {
       filterThemeCheckboxLabels(themeChecks, e.target.value);
     });
-    form.querySelector('[data-dp-congregation-filter]')?.addEventListener('input', (e) => {
-      const select = form.querySelector('[name="congregation_id"]');
-      if (!select) return;
-      const selected = select.value;
-      select.innerHTML = congregationOptions(selected, e.target.value);
-      if (selected && ![...select.options].some((opt) => opt.value === selected)) select.value = '';
-    });
     form.addEventListener('submit', async (e) => {
       e.preventDefault(); const v = Object.fromEntries(new FormData(form));
-      let congregationId = v.congregation_id || null;
-      if (text(v.quick_congregation)) {
-        const { data, error } = await client.from('speech_congregations').insert({ name: text(v.quick_congregation) }).select().single();
-        if (error) return toast(errorText(error), true); congregationId = data.id;
+      let congregationId;
+      try {
+        congregationId = await ensureCongregationId(v.congregation_id || null, v.congregation_name);
+      } catch (err) {
+        return toast(errorText(err), true);
       }
       const payload = { full_name: text(v.full_name), congregation_id: congregationId, phone: text(v.phone) || null, email: text(v.email) || null, privilege: v.privilege, is_local: form.is_local.checked, is_active: form.is_active.checked, notes: text(v.notes) || null };
       const result = existing ? await client.from('speech_speakers').update(payload).eq('id', existing.id).select().single() : await client.from('speech_speakers').insert(payload).select().single();
