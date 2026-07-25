@@ -188,16 +188,17 @@
     return { id: a.congregation_id || '', text: c?.name || a.congregation_name || '' };
   }
 
-  function comboFieldHtml(kind, assignment, { label, span2 = false } = {}) {
+  function comboFieldHtml(kind, assignment, { label, span2 = false, span3 = false } = {}) {
     const cfg = COMBO_FIELDS[kind];
     const { id, text: textVal } = assignmentComboValue(kind, assignment);
     const theme = kind === 'theme' ? getTheme(id) : null;
+    const spanClass = span3 ? 'dp-span-3' : span2 ? 'dp-span-2' : '';
     const leading = kind === 'theme'
       ? `<span class="dp-combo__badge${theme ? '' : ' hidden'}" data-dp-combo-badge aria-hidden="true">${theme?.outline_number || ''}</span>
          <span class="material-symbols-outlined dp-combo__icon${theme ? ' hidden' : ''}" aria-hidden="true">${cfg.icon}</span>`
       : `<span class="material-symbols-outlined dp-combo__icon" aria-hidden="true">${cfg.icon}</span>`;
     return `
-      <label class="${span2 ? 'dp-span-2' : ''}">${label}
+      <label class="${spanClass}">${label}
         <div class="dp-combo${kind === 'theme' ? ' dp-combo--theme' : ''}" data-dp-combo="${kind}">
           ${leading}
           <input class="dp-combo__input" type="text" name="${cfg.textName}" autocomplete="off" placeholder="${escapeHtml(cfg.placeholder)}" value="${escapeHtml(textVal)}">
@@ -458,45 +459,112 @@
   }
 
   function filterThemeCheckboxLabels(container, query) {
-    container?.querySelectorAll('[data-dp-theme-item], [data-dp-theme-pick]').forEach((el) => {
+    container?.querySelectorAll('[data-dp-theme-item]').forEach((el) => {
       const label = el.dataset.dpThemeText || el.textContent;
       el.classList.toggle('dp-filter-hidden', !matchesSearch(label, query));
     });
   }
 
-  function themePickerHtml(selected) {
-    return themes.filter((t) => t.is_active).map((t) => {
-      const label = `${t.outline_number} ${t.title}`;
-      const on = selected.has(t.id);
-      return `<button type="button" class="dp-theme-pick${on ? ' is-on' : ''}" data-dp-theme-pick="${t.id}" data-dp-theme-text="${escapeHtml(label)}">
-        <span class="dp-theme-pick__num">${t.outline_number}</span>
-        <span class="dp-theme-pick__title">${escapeHtml(t.title)}</span>
-        <span class="material-symbols-outlined dp-theme-pick__icon" aria-hidden="true">${on ? 'check_circle' : 'add_circle'}</span>
-      </button>`;
-    }).join('');
+  function themeChipsHtml(selectedIds) {
+    const ids = [...selectedIds];
+    if (!ids.length) {
+      return '<span class="dp-theme-chips__empty">Nenhum esboço — busque abaixo para adicionar.</span>';
+    }
+    return ids
+      .map((id) => getTheme(id))
+      .filter(Boolean)
+      .sort((a, b) => a.outline_number - b.outline_number)
+      .map((t) => `<span class="dp-theme-chip" data-dp-theme-chip="${t.id}">
+        <span class="dp-theme-chip__num">${t.outline_number}</span>
+        <span class="dp-theme-chip__title">${escapeHtml(t.title)}</span>
+        <button type="button" class="dp-theme-chip__remove" aria-label="Remover esboço ${t.outline_number}"><span class="material-symbols-outlined">close</span></button>
+      </span>`).join('');
   }
 
-  function updateThemePickCount(form) {
+  function updateThemeChipCount(form, selected) {
     const countEl = form.querySelector('[data-dp-theme-count]');
     if (!countEl) return;
-    const n = form.querySelectorAll('[data-dp-theme-pick].is-on').length;
+    const n = selected.size;
     countEl.textContent = `${n} selecionado${n === 1 ? '' : 's'}`;
   }
 
-  function bindThemePicker(form) {
-    const list = form.querySelector('[data-dp-theme-checks]');
-    list?.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-dp-theme-pick]');
+  function bindThemeAddCombo(form, selected, sync) {
+    const combo = form.querySelector('[data-dp-theme-add]');
+    if (!combo) return;
+    const input = combo.querySelector('.dp-combo__input');
+    const list = combo.querySelector('.dp-combo__list');
+    const toggle = combo.querySelector('.dp-combo__toggle');
+
+    const open = () => {
+      const items = activeThemes(input.value).filter((t) => !selected.has(t.id)).slice(0, 14);
+      list.innerHTML = items.length
+        ? items.map((t) => themeOptionHtml(mapThemeComboItem(t, false))).join('')
+        : '<li class="dp-combo__empty">Nenhum esboço encontrado</li>';
+      list.hidden = false;
+      combo.classList.add('is-open');
+    };
+    const close = () => closeCombo(combo);
+
+    input.addEventListener('focus', open);
+    input.addEventListener('input', open);
+    input.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (!combo.contains(document.activeElement)) close();
+      }, 120);
+    });
+    toggle?.addEventListener('mousedown', (e) => e.preventDefault());
+    toggle?.addEventListener('click', () => {
+      if (combo.classList.contains('is-open')) close();
+      else { input.focus(); open(); }
+    });
+    list.addEventListener('mousedown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => {
+      const opt = e.target.closest('.dp-combo__option');
+      if (!opt?.dataset.id) return;
+      selected.add(opt.dataset.id);
+      input.value = '';
+      sync();
+      close();
+    });
+  }
+
+  function bindThemeChipPicker(form, initialSelected) {
+    const selected = new Set(initialSelected);
+    const chipsHost = form.querySelector('[data-dp-theme-chips]');
+    const sync = () => {
+      if (chipsHost) chipsHost.innerHTML = themeChipsHtml(selected);
+      updateThemeChipCount(form, selected);
+    };
+    chipsHost?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.dp-theme-chip__remove');
       if (!btn) return;
-      btn.classList.toggle('is-on');
-      const icon = btn.querySelector('.dp-theme-pick__icon');
-      if (icon) icon.textContent = btn.classList.contains('is-on') ? 'check_circle' : 'add_circle';
-      updateThemePickCount(form);
+      const id = btn.closest('[data-dp-theme-chip]')?.dataset.dpThemeChip;
+      if (id) {
+        selected.delete(id);
+        sync();
+      }
     });
-    form.querySelector('[data-dp-theme-search]')?.addEventListener('input', (e) => {
-      filterThemeCheckboxLabels(list, e.target.value);
-    });
-    updateThemePickCount(form);
+    bindThemeAddCombo(form, selected, sync);
+    sync();
+    form.__themeSelected = selected;
+  }
+
+  function speakerThemeFieldHtml(selected) {
+    return `<div class="dp-span-3 dp-theme-chips-field">
+      <div class="dp-theme-picker__head">
+        <span class="dp-theme-picker__label">Temas preparados</span>
+        <span class="dp-theme-picker__count" data-dp-theme-count>0 selecionados</span>
+      </div>
+      <div class="dp-theme-chips" data-dp-theme-chips></div>
+      <div class="dp-combo dp-combo--theme-add" data-dp-theme-add>
+        <span class="material-symbols-outlined dp-combo__icon" aria-hidden="true">add</span>
+        <input class="dp-combo__input" type="text" autocomplete="off" placeholder="Adicionar esboço por nº ou título…">
+        <button type="button" class="dp-combo__btn dp-combo__toggle" aria-label="Abrir lista" tabindex="-1">
+          <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+        </button>
+        <ul class="dp-combo__list" role="listbox" hidden></ul>
+      </div>
+    </div>`;
   }
 
   function findSpeakerByName(name) {
@@ -631,19 +699,19 @@
   function openAssignmentModal(existing) {
     const a = existing || { direction: 'receive', event_date: today(), modality: 'presencial', confirmation_status: 'pendente' };
     openModal(`${existing ? 'Editar' : 'Nova'} designação`, `
-      <form class="dp-form" data-dp-assignment-form>
+      <form class="dp-form dp-form--assignment" data-dp-assignment-form>
         <label>Direção<select name="direction">${option('receive', 'Recebemos', a.direction)}${option('send', 'Enviamos', a.direction)}</select></label>
         <label>Data<input required name="event_date" type="date" value="${escapeHtml(a.event_date || '')}"></label>
         <label>Horário<input name="event_time" type="time" value="${escapeHtml((a.event_time || '').slice(0, 5))}"></label>
-        ${comboFieldHtml('speaker', a, { label: 'Orador' })}
-        ${comboFieldHtml('theme', a, { label: 'Tema', span2: true })}
+        ${comboFieldHtml('speaker', a, { label: 'Orador', span2: true })}
         ${comboFieldHtml('congregation', a, { label: 'Congregação' })}
-        <label>Cântico inicial<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
+        ${comboFieldHtml('theme', a, { label: 'Tema', span3: true })}
+        <label>Cântico<input name="opening_song" value="${escapeHtml(a.opening_song || '')}"></label>
         <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
         <label>Status<select name="confirmation_status">${Object.entries(STATUS).map(([k, v]) => option(k, v, a.confirmation_status)).join('')}</select></label>
-        <label class="dp-span-2">Observações<textarea name="notes" rows="3">${escapeHtml(a.notes || '')}</textarea></label>
+        <label class="dp-span-3">Observações<textarea name="notes" rows="1">${escapeHtml(a.notes || '')}</textarea></label>
         <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
-      </form>`);
+      </form>`, { wide: true });
     const form = modalRoot()?.querySelector('[data-dp-assignment-form]');
     if (!form) return;
     bindFormCombos(form);
@@ -684,7 +752,7 @@
   }
   function openWhatsapp(rows) {
     const message = rows.filter(Boolean).sort((a, b) => a.event_date.localeCompare(b.event_date)).map(whatsappText).join('\n\n');
-    openModal('Mensagem para WhatsApp', `<div class="dp-whatsapp"><textarea readonly rows="16">${escapeHtml(message || 'Nenhuma designação nesta semana.')}</textarea><footer><button type="button" data-dp-copy>Copiar mensagem</button><button type="button" data-dp-close>Fechar</button></footer></div>`);
+    openModal('Mensagem para WhatsApp', `<div class="dp-whatsapp"><textarea readonly>${escapeHtml(message || 'Nenhuma designação nesta semana.')}</textarea><footer><button type="button" data-dp-copy>Copiar mensagem</button><button type="button" data-dp-close>Fechar</button></footer></div>`, { wide: true });
     document.querySelector('[data-dp-copy]')?.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(message); toast('Mensagem copiada.'); } catch { toast('Não foi possível copiar automaticamente.', true); }
     });
@@ -758,13 +826,13 @@
     const congregationValue = { congregation_id: s.congregation_id, congregation_name: s.speech_congregations?.name || '' };
     openModal(`${existing ? 'Editar' : 'Novo'} orador`, `
       <form class="dp-form dp-form--speaker" data-dp-speaker-form>
-        <label class="dp-span-2">Nome completo
+        <label class="dp-span-3">Nome completo
           <div class="dp-input-icon">
             <span class="material-symbols-outlined" aria-hidden="true">person</span>
             <input required name="full_name" autocomplete="name" value="${escapeHtml(s.full_name || '')}">
           </div>
         </label>
-        ${comboFieldHtml('congregation', congregationValue, { label: 'Congregação' })}
+        ${comboFieldHtml('congregation', congregationValue, { label: 'Congregação', span3: true })}
         <label>Telefone
           <div class="dp-input-icon">
             <span class="material-symbols-outlined" aria-hidden="true">call</span>
@@ -778,28 +846,18 @@
           </div>
         </label>
         <label>Privilégio<select name="privilege">${Object.entries(PRIVILEGE).map(([k, v]) => option(k, v, s.privilege)).join('')}</select></label>
-        <div class="dp-form-toggles dp-span-2">
+        <div class="dp-form-toggles dp-span-3">
           <label class="dp-toggle"><input name="is_local" type="checkbox"${s.is_local ? ' checked' : ''}><span class="material-symbols-outlined" aria-hidden="true">home</span> Orador local</label>
           <label class="dp-toggle"><input name="is_active" type="checkbox"${s.is_active ? ' checked' : ''}><span class="material-symbols-outlined" aria-hidden="true">verified</span> Ativo</label>
         </div>
-        <label class="dp-span-2">Observações<textarea name="notes" rows="2">${escapeHtml(s.notes || '')}</textarea></label>
-        <div class="dp-span-2 dp-theme-picker">
-          <div class="dp-theme-picker__head">
-            <span class="dp-theme-picker__label">Temas preparados</span>
-            <span class="dp-theme-picker__count" data-dp-theme-count>0 selecionados</span>
-          </div>
-          <div class="dp-theme-picker__search">
-            <span class="material-symbols-outlined" aria-hidden="true">search</span>
-            <input data-dp-theme-search type="search" placeholder="Nº ou título do esboço…" autocomplete="off">
-          </div>
-          <div class="dp-theme-picker__list" data-dp-theme-checks>${themePickerHtml(selected)}</div>
-        </div>
+        <label class="dp-span-3">Observações<textarea name="notes" rows="1">${escapeHtml(s.notes || '')}</textarea></label>
+        ${speakerThemeFieldHtml(selected)}
         <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
       </form>`, { wide: true });
     const form = modalRoot()?.querySelector('[data-dp-speaker-form]');
     if (!form) return;
     bindFormCombos(form);
-    bindThemePicker(form);
+    bindThemeChipPicker(form, selected);
     form.addEventListener('submit', async (e) => {
       e.preventDefault(); const v = Object.fromEntries(new FormData(form));
       let congregationId;
@@ -811,7 +869,7 @@
       const payload = { full_name: text(v.full_name), congregation_id: congregationId, phone: text(v.phone) || null, email: text(v.email) || null, privilege: v.privilege, is_local: form.is_local.checked, is_active: form.is_active.checked, notes: text(v.notes) || null };
       const result = existing ? await client.from('speech_speakers').update(payload).eq('id', existing.id).select().single() : await client.from('speech_speakers').insert(payload).select().single();
       if (result.error) return toast(errorText(result.error), true);
-      const ids = [...form.querySelectorAll('[data-dp-theme-pick].is-on')].map((btn) => btn.dataset.dpThemePick);
+      const ids = form.__themeSelected ? [...form.__themeSelected] : [...form.querySelectorAll('[data-dp-theme-chip]')].map((el) => el.dataset.dpThemeChip);
       const { error: deleteError } = await client.from('speech_speaker_themes').delete().eq('speaker_id', result.data.id);
       if (deleteError) return toast(errorText(deleteError), true);
       if (ids.length) { const { error } = await client.from('speech_speaker_themes').insert(ids.map((theme_id) => ({ speaker_id: result.data.id, theme_id }))); if (error) return toast(errorText(error), true); }
