@@ -168,7 +168,7 @@
     const shortcuts = document.getElementById('je-site-home-shortcuts');
     if (shortcuts && Array.isArray(sc.items)) {
       shortcuts.innerHTML = sc.items.map((item) => `
-        <a class="je-home-shortcut je-home-shortcut--${esc(item.variant || 'default')}" href="${esc(item.href)}">
+        <a class="je-home-shortcut je-home-shortcut--${esc(item.variant || 'default')}" href="${esc(item.href)}" aria-label="${esc(item.title)}">
           <span class="je-home-shortcut-icon" aria-hidden="true">${esc(item.emoji || '')}</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">${esc(item.title)}</span>

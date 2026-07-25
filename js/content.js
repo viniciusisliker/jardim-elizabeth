@@ -602,15 +602,9 @@
         return;
       }
 
-      const groups = groupUpcomingAgendaByMonth(events);
-      const firstGroup = groups[0]?.[1];
-      if (!firstGroup) {
-        if (mesEl) mesEl.textContent = '';
-        renderProximosEmpty('Nenhum evento próximo no momento.');
-        return;
+      if (mesEl) {
+        mesEl.textContent = events.length === 1 ? '1 evento' : `${events.length} eventos`;
       }
-
-      if (mesEl) mesEl.textContent = '— ' + firstGroup.label;
 
       const variantClass = {
         gold: 'je-home-ev-date--gold',
@@ -618,7 +612,7 @@
         default: 'je-home-ev-date--default'
       };
 
-      lista.innerHTML = firstGroup.events.map((ev) => {
+      lista.innerHTML = events.map((ev) => {
         const chip = eventChip(ev);
         const dateCls = variantClass[ev.badge_variant] || variantClass.default;
         const isLong = isLongDate(chip.display) || isLongDate(chip.label);
