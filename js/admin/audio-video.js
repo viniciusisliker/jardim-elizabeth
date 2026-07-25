@@ -385,17 +385,53 @@
     }
   }
 
+  function setAttendanceModalCopy({ heading, subtitle, submit }) {
+    const headingEl = document.getElementById('av-attendance-modal-heading');
+    const subEl = document.getElementById('av-attendance-modal-sub');
+    const submitEl = document.getElementById('av-attendance-submit-label');
+    if (headingEl) headingEl.textContent = heading;
+    if (subEl) subEl.textContent = subtitle;
+    if (submitEl) submitEl.textContent = submit;
+  }
+
+  function openAttendanceModal() {
+    const modal = document.getElementById('av-attendance-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('av-modal-open');
+    window.setTimeout(() => {
+      document.getElementById('av-attendance-count')?.focus();
+    }, 40);
+  }
+
+  function closeAttendanceModal() {
+    const modal = document.getElementById('av-attendance-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('av-modal-open');
+  }
+
   function resetAttendanceForm() {
     editingAttendanceId = null;
-    document.getElementById('av-attendance-id').value = '';
-    document.getElementById('av-attendance-date').value = todayIsoDate();
-    document.getElementById('av-attendance-kind').value = 'midweek';
-    document.getElementById('av-attendance-count').value = '';
-    document.getElementById('av-attendance-zoom').value = '';
-    document.getElementById('av-attendance-remarks').value = '';
-    document.getElementById('av-attendance-submit-label').textContent = 'Registrar';
-    document.getElementById('av-attendance-cancel-edit')?.classList.add('hidden');
-    hideAttendanceWhatsAppPrompt();
+    const idEl = document.getElementById('av-attendance-id');
+    const dateEl = document.getElementById('av-attendance-date');
+    const kindEl = document.getElementById('av-attendance-kind');
+    const countEl = document.getElementById('av-attendance-count');
+    const zoomEl = document.getElementById('av-attendance-zoom');
+    const remarksEl = document.getElementById('av-attendance-remarks');
+    if (idEl) idEl.value = '';
+    if (dateEl) dateEl.value = todayIsoDate();
+    if (kindEl) kindEl.value = 'midweek';
+    if (countEl) countEl.value = '';
+    if (zoomEl) zoomEl.value = '';
+    if (remarksEl) remarksEl.value = '';
+    setAttendanceModalCopy({
+      heading: 'Novo registro',
+      subtitle: 'Preencha a assistência da reunião.',
+      submit: 'Registrar'
+    });
   }
 
   function fillAttendanceForm(row) {
@@ -406,10 +442,19 @@
     document.getElementById('av-attendance-count').value = row.attendance_count;
     document.getElementById('av-attendance-zoom').value = row.zoom_attendance_count ?? '';
     document.getElementById('av-attendance-remarks').value = row.remarks || '';
-    document.getElementById('av-attendance-submit-label').textContent = 'Salvar';
-    document.getElementById('av-attendance-cancel-edit')?.classList.remove('hidden');
+    setAttendanceModalCopy({
+      heading: 'Editar registro',
+      subtitle: `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind] || row.meeting_kind}`,
+      submit: 'Salvar'
+    });
     hideAttendanceWhatsAppPrompt();
-    document.getElementById('av-attendance-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    openAttendanceModal();
+  }
+
+  function openNewAttendanceModal() {
+    resetAttendanceForm();
+    hideAttendanceWhatsAppPrompt();
+    openAttendanceModal();
   }
 
   async function loadAttendanceLogs(client) {
@@ -431,11 +476,11 @@
     const root = document.getElementById('av-attendance-list');
     if (!root) return;
     if (!attendanceLogs.length) {
-      root.innerHTML = '<p class="av-hint">Nenhum registro ainda. Preencha o formulário acima após a reunião.</p>';
+      root.innerHTML = '<p class="av-hint">Nenhum registro ainda. Toque em <strong>Novo registro</strong> após a reunião.</p>';
       return;
     }
     root.innerHTML = attendanceLogs.map((row) => `
-      <article class="av-attendance-item">
+      <article class="av-attendance-item" data-av-att-open="${row.id}" tabindex="0" role="button" aria-label="Abrir registro de ${escapeHtml(fmtDate(row.meeting_date))}">
         <div class="av-attendance-item__top">
           <div class="av-attendance-item__main">
             <p class="av-attendance-item__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
@@ -500,22 +545,45 @@
       const wasEdit = !!editingAttendanceId;
       const message = buildAttendanceWhatsAppMessage(payload, profile.full_name || profile.username);
       showToast(toastEl(), wasEdit ? 'Registro atualizado.' : 'Assistência registrada.');
+      closeAttendanceModal();
       resetAttendanceForm();
       showAttendanceWhatsAppPrompt(message);
       await loadAttendanceLogs(client);
+    });
+
+    document.getElementById('av-attendance-open-new')?.addEventListener('click', openNewAttendanceModal);
+
+    document.getElementById('av-attendance-modal')?.querySelectorAll('[data-av-attendance-close]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        closeAttendanceModal();
+        resetAttendanceForm();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const modal = document.getElementById('av-attendance-modal');
+      if (!modal || modal.classList.contains('hidden')) return;
+      closeAttendanceModal();
+      resetAttendanceForm();
     });
 
     document.getElementById('av-attendance-whatsapp-btn')?.addEventListener('click', () => {
       openAttendanceWhatsApp();
     });
 
-    document.getElementById('av-attendance-cancel-edit')?.addEventListener('click', resetAttendanceForm);
+    const openRow = (id) => {
+      const row = attendanceLogs.find((item) => item.id === id);
+      if (row) fillAttendanceForm(row);
+    };
 
     document.getElementById('av-attendance-list')?.addEventListener('click', async (e) => {
       const waId = e.target.closest('[data-av-att-wa]')?.dataset.avAttWa;
       const editId = e.target.closest('[data-av-att-edit]')?.dataset.avAttEdit;
       const delId = e.target.closest('[data-av-att-del]')?.dataset.avAttDel;
+      const openId = e.target.closest('[data-av-att-open]')?.dataset.avAttOpen;
       if (waId) {
+        e.stopPropagation();
         const row = attendanceLogs.find((item) => item.id === waId);
         if (row) {
           openAttendanceWhatsApp(buildAttendanceWhatsAppMessage(row, row.profiles?.full_name || 'Equipe A/V'));
@@ -523,11 +591,12 @@
         return;
       }
       if (editId) {
-        const row = attendanceLogs.find((item) => item.id === editId);
-        if (row) fillAttendanceForm(row);
+        e.stopPropagation();
+        openRow(editId);
         return;
       }
       if (delId) {
+        e.stopPropagation();
         const row = attendanceLogs.find((item) => item.id === delId);
         const label = row ? `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind]}` : 'este registro';
         if (!window.confirm(`Excluir ${label}?`)) return;
@@ -537,9 +606,24 @@
           return;
         }
         showToast(toastEl(), 'Registro excluído.');
-        if (editingAttendanceId === delId) resetAttendanceForm();
+        if (editingAttendanceId === delId) {
+          closeAttendanceModal();
+          resetAttendanceForm();
+        }
         await loadAttendanceLogs(client);
+        return;
       }
+      if (openId && !e.target.closest('.av-attendance-item__actions')) {
+        openRow(openId);
+      }
+    });
+
+    document.getElementById('av-attendance-list')?.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const openId = e.target.closest('[data-av-att-open]')?.dataset.avAttOpen;
+      if (!openId || e.target.closest('.av-attendance-item__actions')) return;
+      e.preventDefault();
+      openRow(openId);
     });
   }
 

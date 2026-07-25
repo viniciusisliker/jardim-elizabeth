@@ -108,43 +108,11 @@
           <h2>Assistência</h2>
           <p>Registre a assistência ao final de cada reunião. O Secretário vê o histórico no painel dele.</p>
         </div>
+        <button type="button" id="av-attendance-open-new" class="av-toolbar-btn av-toolbar-btn--accent av-toolbar-btn--sm">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Novo registro
+        </button>
       </div>
-
-      <form id="av-attendance-form" class="av-attendance-form">
-        <input type="hidden" id="av-attendance-id"/>
-        <div class="av-attendance-form__grid">
-          <label class="av-field">
-            <span>Data</span>
-            <input type="date" id="av-attendance-date" class="av-input" required/>
-          </label>
-          <label class="av-field">
-            <span>Reunião</span>
-            <select id="av-attendance-kind" class="av-input" required>
-              <option value="midweek">Meio de semana</option>
-              <option value="weekend">Final de semana</option>
-            </select>
-          </label>
-          <label class="av-field">
-            <span>Assistência</span>
-            <input type="number" id="av-attendance-count" class="av-input" min="0" step="1" required placeholder="Quantidade"/>
-          </label>
-          <label class="av-field">
-            <span>Zoom</span>
-            <input type="number" id="av-attendance-zoom" class="av-input" min="0" step="1" placeholder="Quantidade"/>
-          </label>
-          <label class="av-field av-field--full">
-            <span>Observações</span>
-            <input type="text" id="av-attendance-remarks" class="av-input" placeholder="Opcional — ex.: microfone auxiliar, transmissão Zoom…"/>
-          </label>
-        </div>
-        <div class="av-attendance-form__foot">
-          <button type="button" id="av-attendance-cancel-edit" class="av-toolbar-btn av-toolbar-btn--ghost av-toolbar-btn--sm hidden">Cancelar</button>
-          <button type="submit" class="av-toolbar-btn av-toolbar-btn--accent av-toolbar-btn--sm">
-            <span class="material-symbols-outlined" aria-hidden="true">save</span>
-            <span id="av-attendance-submit-label">Registrar</span>
-          </button>
-        </div>
-      </form>
 
       <div id="av-attendance-whatsapp-wrap" class="av-attendance-whatsapp hidden" aria-live="polite">
         <p class="av-attendance-whatsapp__hint">Registro salvo. Envie ao Secretário ou ao grupo da equipe:</p>
@@ -157,6 +125,59 @@
       <div class="av-attendance-recent">
         <h3 class="av-attendance-recent__title">Registros recentes</h3>
         <div id="av-attendance-list" class="av-attendance-list"></div>
+      </div>
+
+      <div id="av-attendance-modal" class="av-modal hidden" role="dialog" aria-modal="true" aria-labelledby="av-attendance-modal-title" aria-hidden="true">
+        <button type="button" class="av-modal__backdrop" data-av-attendance-close aria-label="Fechar"></button>
+        <div class="av-modal__panel">
+          <header class="av-modal__head">
+            <div class="av-modal__head-text">
+              <h2 id="av-attendance-modal-title" class="av-modal__title">
+                <span class="material-symbols-outlined" aria-hidden="true">event_seat</span>
+                <span id="av-attendance-modal-heading">Novo registro</span>
+              </h2>
+              <p id="av-attendance-modal-sub" class="av-modal__subtitle">Preencha a assistência da reunião.</p>
+            </div>
+            <button type="button" class="av-modal__close" data-av-attendance-close aria-label="Fechar">
+              <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+          </header>
+          <form id="av-attendance-form" class="av-modal__body av-attendance-form">
+            <input type="hidden" id="av-attendance-id"/>
+            <div class="av-attendance-form__grid">
+              <label class="av-field">
+                <span>Data</span>
+                <input type="date" id="av-attendance-date" class="av-input" required/>
+              </label>
+              <label class="av-field">
+                <span>Reunião</span>
+                <select id="av-attendance-kind" class="av-input" required>
+                  <option value="midweek">Meio de semana</option>
+                  <option value="weekend">Final de semana</option>
+                </select>
+              </label>
+              <label class="av-field">
+                <span>Assistência</span>
+                <input type="number" id="av-attendance-count" class="av-input" min="0" step="1" required placeholder="Quantidade"/>
+              </label>
+              <label class="av-field">
+                <span>Zoom</span>
+                <input type="number" id="av-attendance-zoom" class="av-input" min="0" step="1" placeholder="Quantidade"/>
+              </label>
+              <label class="av-field av-field--full">
+                <span>Observações</span>
+                <input type="text" id="av-attendance-remarks" class="av-input" placeholder="Opcional — ex.: microfone auxiliar, transmissão Zoom…"/>
+              </label>
+            </div>
+            <div class="av-modal__foot">
+              <button type="button" class="av-toolbar-btn av-toolbar-btn--ghost av-toolbar-btn--sm" data-av-attendance-close>Cancelar</button>
+              <button type="submit" class="av-toolbar-btn av-toolbar-btn--accent av-toolbar-btn--sm">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                <span id="av-attendance-submit-label">Registrar</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
 

@@ -1266,6 +1266,29 @@ html.dark .av-attendance-item__btn--danger {
   border-color: rgba(248, 113, 113, 0.35) !important;
   color: #f87171 !important;
 }
+html.dark .av-modal__backdrop { background: rgba(0, 0, 0, 0.55) !important; }
+html.dark .av-modal__panel {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45) !important;
+}
+html.dark .av-modal__head {
+  background: linear-gradient(180deg, #252836 0%, var(--je-card) 100%) !important;
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .av-modal__title { color: var(--je-primary) !important; }
+html.dark .av-modal__subtitle { color: var(--je-outline) !important; }
+html.dark .av-modal__close { color: var(--je-outline) !important; }
+html.dark .av-modal__close:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .av-modal__foot { border-top-color: var(--je-card-border) !important; }
+html.dark .av-attendance-form .av-input {
+  background: var(--je-input-bg) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
 
 /* Perfil */
 html.dark .perf-card__head,

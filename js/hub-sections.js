@@ -33,10 +33,10 @@
     permission: 'audio_video',
     moduleKey: 'audio-video',
     viewId: 'hub-view-audio-video',
-    partial: 'hub/sections/audio-video.html',
-    styles: ['css/hub-sections/audio-video.css?v=20260725210000'],
+    partial: 'hub/sections/audio-video.html?v=20260725213000',
+    styles: ['css/hub-sections/audio-video.css?v=20260725213000'],
     scripts: [
-      'js/admin/audio-video.js?v=20260725210000'
+      'js/admin/audio-video.js?v=20260725213000'
     ],
     initKey: 'JEAdminAudioVideo'
   };
