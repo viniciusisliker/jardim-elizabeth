@@ -182,13 +182,17 @@
       permission: 'secretario',
       viewId: 'hub-view-secretario',
       partial: 'hub/sections/secretario.html',
-      styles: ['css/hub-sections/secretario.css?v=20260721280000'],
-      scripts: ['js/admin/secretario.js?v=20260721280000'],
+      styles: ['css/hub-sections/secretario.css?v=20260724100000'],
+      scripts: [
+        'js/admin/secretario-service.js?v=20260724100000',
+        'js/admin/secretario-visit.js?v=20260724100000',
+        'js/admin/secretario.js?v=20260724100000'
+      ],
       initKey: 'JEAdminSecretario',
       hero: {
         kicker: 'Secretário',
         title: 'Secretário',
-        subtitle: 'Visita do Superintendente — informações e documentos para a Visão Geral.',
+        subtitle: 'Relatórios de campo, assistência, formulário S-1 e visita do Superintendente.',
         showChangelog: false,
         showBack: true
       }

@@ -561,6 +561,91 @@ html.dark .sec-modal__title { color: var(--je-on-surface) !important; }
 html.dark .sec-modal__subtitle { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-modal__close { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-modal__foot { border-color: var(--je-card-border) !important; }
+html.dark .sec-app {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .sec-tabs { border-color: var(--je-card-border) !important; }
+html.dark .sec-tab { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-tab--active {
+  color: #6ee7b7 !important;
+  border-bottom-color: #6ee7b7 !important;
+  background: rgba(110, 231, 183, 0.06) !important;
+}
+html.dark .sec-subtab {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .sec-subtab--active {
+  background: rgba(110, 231, 183, 0.1) !important;
+  border-color: rgba(110, 231, 183, 0.35) !important;
+  color: #6ee7b7 !important;
+}
+html.dark .sec-stat-card,
+html.dark .sec-attendance-card {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .sec-stat-card__title,
+html.dark .sec-attendance-card__title,
+html.dark .sec-stat-row__total { color: var(--je-on-surface) !important; }
+html.dark .sec-stat-row__label,
+html.dark .sec-stat-row__avg { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-publisher-row {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .sec-publisher-row:hover {
+  border-color: rgba(110, 231, 183, 0.35) !important;
+  background: var(--je-surface-container) !important;
+}
+html.dark .sec-publisher-row__name { color: var(--je-on-surface) !important; }
+html.dark .sec-publisher-row__status,
+html.dark .sec-publisher-row__meta { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-publisher-group__title,
+html.dark .sec-settings-heading,
+html.dark .sec-analysis-section h3,
+html.dark .sec-adj-section h3 { color: #6ee7b7 !important; }
+html.dark .sec-s1-status { color: #6ee7b7 !important; }
+html.dark .sec-s1-status--closed { color: #fbbf24 !important; }
+html.dark .sec-s1-notes,
+html.dark .sec-s1-attendance { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-group-row {
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .sec-settings-section { border-color: var(--je-card-border) !important; }
+html.dark .sec-analysis-row { border-color: var(--je-card-border) !important; }
+html.dark .sec-analysis-row__name { color: var(--je-on-surface) !important; }
+html.dark .sec-card {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .sec-section-title { color: var(--je-on-surface) !important; }
+html.dark .sec-section-desc { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-label { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-input {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .sec-check { color: var(--je-on-surface) !important; }
+html.dark .sec-btn--ghost {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .sec-doc-row {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .sec-doc-name { color: var(--je-on-surface) !important; }
+html.dark .sec-doc-meta { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-empty {
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface-variant) !important;
+}
 html.dark .hub-super-action {
   background: rgba(255, 255, 255, 0.04) !important;
   border-color: var(--je-card-border) !important;

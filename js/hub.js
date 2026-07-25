@@ -380,7 +380,7 @@
       subtitle.textContent = isSuperHome
         ? 'Panorama da congregação — leitura apenas, atualizado pelo Secretário.'
         : (isSecHome
-          ? 'Visita do Superintendente e seus territórios de campo.'
+          ? 'Relatórios de campo, assistência, formulário S-1 e visita do Superintendente.'
           : meta.subtitle);
     }
 
