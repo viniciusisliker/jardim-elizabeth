@@ -233,6 +233,27 @@
         showChangelog: false,
         showBack: true
       }
+    },
+    'site-builder': {
+      id: 'site-builder',
+      hash: 'site-builder',
+      permission: 'site_builder',
+      viewId: 'hub-view-site-builder',
+      partial: 'hub/sections/site-builder.html',
+      styles: ['css/hub-sections/site-builder.css?v=20260725180000'],
+      scripts: [
+        'js/site-page-renderer.js?v=20260725180000',
+        'js/admin/site-builder.js?v=20260725180000'
+      ],
+      initKey: 'JEAdminSiteBuilder',
+      fullscreen: true,
+      hero: {
+        kicker: 'Desenvolvedor',
+        title: 'Editor de Site',
+        subtitle: 'Crie e publique páginas no estilo Google Sites.',
+        showChangelog: false,
+        showBack: true
+      }
     }
   };
 })();

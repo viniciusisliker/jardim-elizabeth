@@ -1,0 +1,99 @@
+<div id="sb-root" class="sb-root">
+  <header class="sb-topbar">
+    <div class="sb-topbar__left">
+      <button type="button" id="sb-back" class="sb-icon-btn" title="Voltar ao Hub">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </button>
+      <span class="sb-topbar__logo material-symbols-outlined" aria-hidden="true">web</span>
+      <input id="sb-site-title" class="sb-topbar__title" type="text" value="Site sem título" aria-label="Título da página"/>
+    </div>
+    <p id="sb-save-status" class="sb-topbar__status">Pronto</p>
+    <div class="sb-topbar__actions">
+      <button type="button" id="sb-preview" class="sb-icon-btn" title="Visualizar">
+        <span class="material-symbols-outlined" aria-hidden="true">devices</span>
+      </button>
+      <button type="button" id="sb-copy-link" class="sb-icon-btn" title="Copiar link">
+        <span class="material-symbols-outlined" aria-hidden="true">link</span>
+      </button>
+      <button type="button" id="sb-publish" class="sb-publish-btn">
+        Publicar
+        <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="sb-workspace">
+    <div class="sb-canvas-wrap">
+      <div id="sb-canvas" class="sb-canvas" aria-label="Área de edição"></div>
+    </div>
+
+    <aside class="sb-panel" aria-label="Ferramentas">
+      <div class="sb-panel__tabs" role="tablist">
+        <button type="button" class="sb-panel-tab active" data-sb-tab="insert" role="tab" aria-selected="true">Inserir</button>
+        <button type="button" class="sb-panel-tab" data-sb-tab="pages" role="tab">Páginas</button>
+        <button type="button" class="sb-panel-tab" data-sb-tab="themes" role="tab">Temas</button>
+        <button type="button" class="sb-panel-tab" data-sb-tab="block" role="tab">Bloco</button>
+      </div>
+
+      <div id="sb-tab-insert" class="sb-panel__body active" role="tabpanel">
+        <div class="sb-insert-row">
+          <button type="button" class="sb-insert-card" data-sb-add="embed">
+            <span class="material-symbols-outlined" aria-hidden="true">code</span>
+            <span>Incorporar</span>
+          </button>
+          <button type="button" class="sb-insert-card" data-sb-add="image">
+            <span class="material-symbols-outlined" aria-hidden="true">image</span>
+            <span>Imagem</span>
+          </button>
+        </div>
+        <ul class="sb-insert-list">
+          <li><button type="button" data-sb-add="hero"><span class="material-symbols-outlined">view_day</span> Hero</button></li>
+          <li><button type="button" data-sb-add="heading"><span class="material-symbols-outlined">title</span> Título</button></li>
+          <li><button type="button" data-sb-add="text"><span class="material-symbols-outlined">notes</span> Texto</button></li>
+          <li><button type="button" data-sb-add="button"><span class="material-symbols-outlined">smart_button</span> Botão</button></li>
+          <li><button type="button" data-sb-add="spacer"><span class="material-symbols-outlined">height</span> Espaço</button></li>
+          <li><button type="button" data-sb-add="divider"><span class="material-symbols-outlined">horizontal_rule</span> Divisor</button></li>
+        </ul>
+      </div>
+
+      <div id="sb-tab-pages" class="sb-panel__body" role="tabpanel" hidden>
+        <div class="sb-pages-head">
+          <p>Páginas do site</p>
+          <button type="button" id="sb-new-page" class="sb-mini-btn">+ Nova</button>
+        </div>
+        <ul id="sb-pages-list" class="sb-pages-list"></ul>
+      </div>
+
+      <div id="sb-tab-themes" class="sb-panel__body" role="tabpanel" hidden>
+        <div class="sb-theme-form">
+          <label>Cor de fundo<input type="color" id="sb-theme-bg" value="#141414"/></label>
+          <label>Cor do texto<input type="color" id="sb-theme-text" value="#f5f5f5"/></label>
+          <label>Cor de destaque<input type="color" id="sb-theme-accent" value="#c9a227"/></label>
+          <label>Fonte dos títulos
+            <select id="sb-theme-heading-font">
+              <option value='Georgia, "Times New Roman", serif'>Serifada (elegante)</option>
+              <option value="Inter, system-ui, sans-serif">Sans (Inter)</option>
+              <option value='"Plus Jakarta Sans", Inter, sans-serif'>Plus Jakarta Sans</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div id="sb-tab-block" class="sb-panel__body" role="tabpanel" hidden>
+        <p id="sb-block-empty" class="sb-block-empty">Selecione um bloco no canvas para editar.</p>
+        <div id="sb-block-editor" class="sb-block-editor hidden"></div>
+        <div id="sb-block-actions" class="sb-block-actions hidden">
+          <button type="button" id="sb-block-up" class="sb-mini-btn">↑ Subir</button>
+          <button type="button" id="sb-block-down" class="sb-mini-btn">↓ Descer</button>
+          <button type="button" id="sb-block-delete" class="sb-mini-btn sb-mini-btn--danger">Excluir bloco</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="sb-publish-menu" class="sb-publish-menu hidden" role="menu">
+  <button type="button" data-sb-action="publish">Publicar página</button>
+  <button type="button" data-sb-action="unpublish">Voltar para rascunho</button>
+  <button type="button" data-sb-action="delete-page" class="danger">Excluir página</button>
+</div>

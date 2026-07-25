@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="js/je-theme-boot.js"></script>
+  <link href="css/je-theme.css?v=2026061520" rel="stylesheet"/>
+  <script src="js/je-theme.js?v=2026061518" defer></script>
+  <title>Página – Jardim Elizabeth</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="css/hub-sections/site-builder.css?v=20260725180000" rel="stylesheet"/>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .je-sp-public-wrap { min-height: 50vh; }
+    .je-sp-public-loading { padding: 4rem 1.5rem; text-align: center; color: #5f6368; }
+    .je-sp-public-error { padding: 4rem 1.5rem; text-align: center; color: #c5221f; }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+  <div id="header"></div>
+  <main class="flex-1 je-sp-public-wrap">
+    <div id="je-sp-public-root" class="je-sp-public-loading">Carregando…</div>
+  </main>
+  <div id="footer"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js?v=20260725120000"></script>
+  <script src="js/header.js"></script>
+  <script src="js/site-loader.js"></script>
+  <script src="js/site-page-renderer.js?v=20260725180000"></script>
+  <script>
+    (async function () {
+      const root = document.getElementById('je-sp-public-root');
+      const params = new URLSearchParams(location.search);
+      const slug = (params.get('slug') || '').trim().toLowerCase();
+      if (!slug) {
+        root.className = 'je-sp-public-error';
+        root.textContent = 'Página não encontrada.';
+        return;
+      }
+      try {
+        const client = await window.JEAuth.getClient();
+        let query = client
+          .from('site_pages')
+          .select('title, layout, theme, status')
+          .eq('slug', slug);
+        const profile = await window.JEAuth.getCurrentProfile?.();
+        const canPreviewDraft = profile && window.JEAuth.hasPermission(profile, 'site_builder');
+        if (!canPreviewDraft) query = query.eq('status', 'published');
+        const { data, error } = await query.maybeSingle();
+        if (error) throw error;
+        if (!data) {
+          root.className = 'je-sp-public-error';
+          root.textContent = 'Esta página não existe ou ainda não foi publicada.';
+          return;
+        }
+        if (data.status === 'draft' && canPreviewDraft) {
+          const banner = document.createElement('p');
+          banner.textContent = 'Pré-visualização — rascunho (não publicado)';
+          banner.style.cssText = 'margin:0;padding:.65rem 1rem;text-align:center;font-size:.75rem;font-weight:700;background:#fef7e0;color:#b06000;';
+          root.before(banner);
+        }
+        document.title = `${data.title} – Jardim Elizabeth`;
+        root.className = '';
+        root.innerHTML = '';
+        window.JESitePageRenderer.renderPage(root, data);
+      } catch (err) {
+        console.error(err);
+        root.className = 'je-sp-public-error';
+        root.textContent = 'Não foi possível carregar a página.';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -401,10 +401,12 @@
   }
 
   function showViews(sectionId) {
+    const section = SECTIONS[sectionId];
     Object.values(SECTIONS).forEach((s) => {
       const el = document.getElementById(s.viewId);
       if (el) el.classList.toggle('hidden', s.id !== sectionId);
     });
+    document.body.classList.toggle('hub-site-builder-mode', !!section?.fullscreen);
   }
 
   async function mountSectionShell(section) {
