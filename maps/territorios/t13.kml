@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T13 · CDHU A</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Blocos 01–29 — subdivisão A; refine no Earth com o cartão satélite]]></description>
+      <description><![CDATA[Blocos 01-02, 09-16, 19-24, 27-29 (contornos azuis do cartão T13).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7751381,-23.6402393,0 -46.772338100000006,-23.6402393,0 -46.772338100000006,-23.6374393,0 -46.7751381,-23.6374393,0 -46.7751381,-23.6402393,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.63905,0 -46.77502,-23.63905,0 -46.77502,-23.64058,0 -46.77618,-23.64058,0 -46.77618,-23.63905,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77458,-23.63948,0 -46.77372,-23.63948,0 -46.77372,-23.64048,0 -46.77458,-23.64048,0 -46.77458,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77478,-23.64058,0 -46.77402,-23.64058,0 -46.77402,-23.64108,0 -46.77478,-23.64108,0 -46.77478,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
   </Document>
 </kml>

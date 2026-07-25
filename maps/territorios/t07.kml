@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T07 · Jardim Iracema A</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T07 - Jardim Iracema A</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua da Praia de Miramar x Rua Ramona Baptista Fern; Rua da Praia de Miramar x Rua Gustavo Doré; Rua Gustavo Doré x Rua Ramona Baptista Fern]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.783595,-23.639994,0 -46.781794999999995,-23.639994,0 -46.781794999999995,-23.638194,0 -46.783595,-23.638194,0 -46.783595,-23.639994,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.78411605,-23.6383001,0 -46.7831044,-23.6378605,0 -46.7835906,-23.64014085,0 -46.78411605,-23.6383001,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

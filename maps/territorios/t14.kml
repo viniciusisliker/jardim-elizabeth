@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T14 · CDHU B</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T14 - CDHU B</name>
-      <description><![CDATA[Subdivisão B do CDHU]]></description>
+      <description><![CDATA[Blocos 03–08 (fileira inferior direita no cartão T14).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7746881,-23.640489300000002,0 -46.771888100000005,-23.640489300000002,0 -46.771888100000005,-23.6376893,0 -46.7746881,-23.6376893,0 -46.7746881,-23.640489300000002,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.64108,0 -46.77618,-23.64108,0 -46.77618,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

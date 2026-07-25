@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T16 · Jardim Helga A</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T16 - Jardim Helga A</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Luis Gonzaga Freire x Rua Augusto de Moraes; Rua Augusto de Moraes x Rua Thomaz de Araújo; Rua Luis Gonzaga Freire x Rua Thomaz de Araújo]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721585,-23.6407932,0 -46.7723123,-23.6413834,0 -46.7721585,-23.6407932,0 -46.7721585,-23.6407932,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

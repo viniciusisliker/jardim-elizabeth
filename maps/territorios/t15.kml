@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T15 · CDHU C</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T15 - CDHU C</name>
-      <description><![CDATA[Subdivisão C do CDHU]]></description>
+      <description><![CDATA[Blocos 17–18, 25–26 + área Campo (cartão T15).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7742381,-23.6407393,0 -46.771438100000005,-23.6407393,0 -46.771438100000005,-23.6379393,0 -46.7742381,-23.6379393,0 -46.7742381,-23.6407393,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63948,0 -46.77418,-23.63948,0 -46.77418,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63982,0 -46.77432,-23.63982,0 -46.77432,-23.64028,0 -46.77502,-23.64028,0 -46.77502,-23.63982,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
   </Document>
 </kml>

@@ -2,10 +2,12 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T18 · Jardim Helga C</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T18 - Jardim Helga C</name>
-      <description><![CDATA[Perimetro OSM: Guerreiro/Ridel x Thomaz (Luisa Damon ausente no OSM)]]></description>
+      <description><![CDATA[OSM: Guerreiro/Ridel x Thomaz (Rua Luisa Damon ausente no OSM)]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

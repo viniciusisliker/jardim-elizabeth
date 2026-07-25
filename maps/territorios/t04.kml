@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T04 · Jardim Elizabeth C</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T04 - Jardim Elizabeth C</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Hermes Ribeiro de Fr x Estrada do Campo Limpo; Rua Hermes Ribeiro de Fr x Rua Aristides de Britto; Rua Humberto Benemeritti x Rua Aristides de Britto]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7741079,-23.6393291,0 -46.7762672,-23.6378561,0 -46.7655404,-23.6257362,0 -46.7741079,-23.6393291,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.775592950000004,-23.634909999999998,0 -46.7755897,-23.6374057,0 -46.7769447,-23.6383065,0 -46.775955350000004,-23.6351207,0 -46.775592950000004,-23.634909999999998,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

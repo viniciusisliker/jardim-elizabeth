@@ -2,10 +2,12 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T10 · Jd Leônidas Moreira A</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T10 - Jd Leônidas Moreira A</name>
-      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <description><![CDATA[Rua Atucupe x Rua Piaga; Rua Atucupe x Rua Mitim; Rua Cabaxi x Rua Piaga]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

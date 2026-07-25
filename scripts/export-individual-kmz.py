@@ -13,25 +13,39 @@ COMBINED_KML = ROOT / "maps" / "jardim-elizabeth-territorios.kml"
 COMBINED_KMZ = ROOT / "maps" / "jardim-elizabeth-territorios.kmz"
 
 
-def build_kml(features: list[dict], doc_name: str) -> str:
-    placemarks = []
-    for f in features:
-        coords = " ".join(f"{lon},{lat},0" for lon, lat in f["poly"])
-        lon0, lat0 = f["poly"][0]
-        coords += f" {lon0},{lat0},0"
-        desc = f.get("note") or "Perimetro por intersecoes"
-        placemarks.append(
-            f"""
+def placemark_kml(f: dict) -> str:
+    num = str(f["num"]).zfill(2)
+    polys = f.get("polys") or [f["poly"]]
+    note = f.get("note") or "Perimetro por intersecoes"
+    if len(polys) == 1:
+        poly = polys[0]
+        coords = " ".join(f"{lon},{lat},0" for lon, lat in poly)
+        coords += f" {poly[0][0]},{poly[0][1]},0"
+        geom = f"<Polygon><outerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>"
+    else:
+        parts = []
+        for poly in polys:
+            coords = " ".join(f"{lon},{lat},0" for lon, lat in poly)
+            coords += f" {poly[0][0]},{poly[0][1]},0"
+            parts.append(
+                f"<Polygon><outerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>"
+            )
+        geom = f"<MultiGeometry>{''.join(parts)}</MultiGeometry>"
+
+    return f"""
     <Placemark>
-      <name>T{f['num']} - {f['name']}</name>
-      <description><![CDATA[{desc}]]></description>
+      <name>T{num} - {f['name']}</name>
+      <description><![CDATA[{note}]]></description>
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      {geom}
     </Placemark>"""
-        )
+
+
+def build_kml(features: list[dict], doc_name: str) -> str:
+    placemarks = [placemark_kml(f) for f in features]
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>

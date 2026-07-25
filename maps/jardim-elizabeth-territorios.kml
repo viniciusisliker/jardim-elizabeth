@@ -1,56 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>Jardim Elizabeth — Territorios precisos</name>
+    <name>Jardim Elizabeth — Territorios (OSM Jul 2026)</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T01 - Campo Limpo</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Avenida Carlos Lacerda x Estrada Pirajussara; Estrada Pirajussara x Rua dos Milagres; Rua dos Milagres x Rua Paul Gauguin]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7792186,-23.6371807,0 -46.7841908,-23.6444804,0 -46.7780352,-23.6360298,0 -46.7760528,-23.6343185,0 -46.7756587,-23.6343615,0 -46.7792186,-23.6371807,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797947,-23.6390096,0 -46.7788148,-23.63769455,0 -46.777254150000005,-23.6348424,0 -46.77610545,-23.6339768,0 -46.7754232,-23.6347159,0 -46.7797947,-23.6390096,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T02 - Jardim Elizabeth A</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua José Cabral x Rua Hermes Ribeiro de Fr; Rua Hermes Ribeiro de Fr x Rua Januário da Cunha Ba; Rua Januário da Cunha Ba x Rua José Cabral]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7771835,-23.6389635,0 -46.7741079,-23.6393291,0 -46.7753079,-23.6404884,0 -46.7780731,-23.6368204,0 -46.7771835,-23.6389635,0 -46.7771835,-23.6389635,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7749016,-23.638302,0 -46.7734438,-23.6401531,0 -46.7763136,-23.6392158,0 -46.7765241,-23.638964100000003,0 -46.7749016,-23.638302,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T03 - Jardim Elizabeth B</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Hermes Ribeiro de Fr x Rua Aristides de Britto; Rua Aristides de Britto x Rua Humberto Benemeritti; Rua Humberto Benemeritti x Rua Januário da Cunha Ba]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7741079,-23.6393291,0 -46.7762672,-23.6378561,0 -46.7741079,-23.6393291,0 -46.7771835,-23.6389635,0 -46.7741079,-23.6393291,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7755897,-23.6374057,0 -46.7769447,-23.6383065,0 -46.77639295,-23.6389419,0 -46.7734438,-23.6401531,0 -46.7755897,-23.6374057,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T04 - Jardim Elizabeth C</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Hermes Ribeiro de Fr x Estrada do Campo Limpo; Rua Hermes Ribeiro de Fr x Rua Aristides de Britto; Rua Humberto Benemeritti x Rua Aristides de Britto]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7741079,-23.6393291,0 -46.7762672,-23.6378561,0 -46.7655404,-23.6257362,0 -46.7741079,-23.6393291,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.775592950000004,-23.634909999999998,0 -46.7755897,-23.6374057,0 -46.7769447,-23.6383065,0 -46.775955350000004,-23.6351207,0 -46.775592950000004,-23.634909999999998,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T05 - Jardim Elizabeth D</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Januário da Cunha Ba x Rua Piaga; Rua Piaga x Rua Taunã; Rua Taunã x Rua Cabaxi]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7753079,-23.6404884,0 -46.7758523,-23.6416551,0 -46.7778296,-23.6397888,0 -46.7753079,-23.6404884,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77626105,-23.640478,0 -46.77654405,-23.64100965,0 -46.7783415,-23.6405179,0 -46.77635275,-23.6419739,0 -46.77626105,-23.640478,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T06 - Vila Pirajussara</name>
-      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <description><![CDATA[Rua Martim da Costa Vile x Rua João Correia; Rua Martim da Costa Vile x Passagem 2; Rua Hermes Ribeiro de Fr x Passagem 2]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -59,34 +66,38 @@
     </Placemark>
     <Placemark>
       <name>T07 - Jardim Iracema A</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua da Praia de Miramar x Rua Ramona Baptista Fern; Rua da Praia de Miramar x Rua Gustavo Doré; Rua Gustavo Doré x Rua Ramona Baptista Fern]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.783595,-23.639994,0 -46.781794999999995,-23.639994,0 -46.781794999999995,-23.638194,0 -46.783595,-23.638194,0 -46.783595,-23.639994,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.78411605,-23.6383001,0 -46.7831044,-23.6378605,0 -46.7835906,-23.64014085,0 -46.78411605,-23.6383001,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T08 - Jardim Iracema B</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Avenida Augusto Barreto  x Rua Ramona Baptista Fern; Avenida Augusto Barreto  x Rua Doutor Dib Gebara; Rua Gustavo Doré x Rua Doutor Dib Gebara]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7846044,-23.6405552,0 -46.782804399999996,-23.6405552,0 -46.782804399999996,-23.6387552,0 -46.7846044,-23.6387552,0 -46.7846044,-23.6405552,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7838998,-23.6412884,0 -46.7833505,-23.6410674,0 -46.783305,-23.64007495,0 -46.7835906,-23.64014085,0 -46.7838998,-23.6412884,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T09 - Jardim Helga E</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Luis Gonzaga Freire x Rua Nelson Lomanto; Rua Nelson Lomanto x Rua Osvaldo de Arruda Re; Rua Luis Gonzaga Freire x Rua Osvaldo de Arruda Re]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721585,-23.6407932,0 -46.7731577,-23.6406147,0 -46.7721585,-23.6407932,0 -46.7721585,-23.6407932,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7734721,-23.640945,0 -46.7728525,-23.6402755,0 -46.7720594,-23.64059915,0 -46.7734721,-23.640945,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T10 - Jd Leônidas Moreira A</name>
-      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <description><![CDATA[Rua Atucupe x Rua Piaga; Rua Atucupe x Rua Mitim; Rua Cabaxi x Rua Piaga]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -95,7 +106,8 @@
     </Placemark>
     <Placemark>
       <name>T11 - Jd Leônidas Moreira B</name>
-      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <description><![CDATA[Avenida Carlos Lacerda x Rua Cabaxi; Avenida Carlos Lacerda x Rua Amacás; Rua Tabimã x Rua Amacás]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -104,61 +116,68 @@
     </Placemark>
     <Placemark>
       <name>T12 - Jd Leônidas Moreira C</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Avenida Carlos Lacerda x Rua Tabimã; Avenida Carlos Lacerda x Rua Crestins; Rua Ajuruetê x Rua Crestins]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7792186,-23.6371807,0 -46.7775314,-23.643941,0 -46.7777419,-23.642558,0 -46.7792186,-23.6371807,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7789329,-23.64311015,0 -46.7795099,-23.6444784,0 -46.7779509,-23.6435518,0 -46.7782094,-23.6431089,0 -46.7789329,-23.64311015,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Blocos 01–29 — subdivisão A; refine no Earth com o cartão satélite]]></description>
+      <description><![CDATA[Blocos 01-02, 09-16, 19-24, 27-29 (contornos azuis do cartão T13).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7751381,-23.6402393,0 -46.772338100000006,-23.6402393,0 -46.772338100000006,-23.6374393,0 -46.7751381,-23.6374393,0 -46.7751381,-23.6402393,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.63905,0 -46.77502,-23.63905,0 -46.77502,-23.64058,0 -46.77618,-23.64058,0 -46.77618,-23.63905,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77458,-23.63948,0 -46.77372,-23.63948,0 -46.77372,-23.64048,0 -46.77458,-23.64048,0 -46.77458,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77478,-23.64058,0 -46.77402,-23.64058,0 -46.77402,-23.64108,0 -46.77478,-23.64108,0 -46.77478,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
     <Placemark>
       <name>T14 - CDHU B</name>
-      <description><![CDATA[Subdivisão B do CDHU]]></description>
+      <description><![CDATA[Blocos 03–08 (fileira inferior direita no cartão T14).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7746881,-23.640489300000002,0 -46.771888100000005,-23.640489300000002,0 -46.771888100000005,-23.6376893,0 -46.7746881,-23.6376893,0 -46.7746881,-23.640489300000002,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.64108,0 -46.77618,-23.64108,0 -46.77618,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T15 - CDHU C</name>
-      <description><![CDATA[Subdivisão C do CDHU]]></description>
+      <description><![CDATA[Blocos 17–18, 25–26 + área Campo (cartão T15).]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7742381,-23.6407393,0 -46.771438100000005,-23.6407393,0 -46.771438100000005,-23.6379393,0 -46.7742381,-23.6379393,0 -46.7742381,-23.6407393,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63948,0 -46.77418,-23.63948,0 -46.77418,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63982,0 -46.77432,-23.63982,0 -46.77432,-23.64028,0 -46.77502,-23.64028,0 -46.77502,-23.63982,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
     <Placemark>
       <name>T16 - Jardim Helga A</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Luis Gonzaga Freire x Rua Augusto de Moraes; Rua Augusto de Moraes x Rua Thomaz de Araújo; Rua Luis Gonzaga Freire x Rua Thomaz de Araújo]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721585,-23.6407932,0 -46.7723123,-23.6413834,0 -46.7721585,-23.6407932,0 -46.7721585,-23.6407932,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T17 - Jardim Helga B</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Rua Augusto de Moraes x Rua Thomaz de Araújo; Rua Thomaz de Araújo x Rua Luis Gonzaga Freire; Rua Luis Gonzaga Freire x Rua Augusto de Moraes]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7723123,-23.6413834,0 -46.7724738,-23.6435203,0 -46.7721585,-23.6407932,0 -46.7723123,-23.6413834,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T18 - Jardim Helga C</name>
-      <description><![CDATA[Perimetro OSM: Guerreiro/Ridel x Thomaz (Luisa Damon ausente no OSM)]]></description>
+      <description><![CDATA[OSM: Guerreiro/Ridel x Thomaz (Rua Luisa Damon ausente no OSM)]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
@@ -167,7 +186,8 @@
     </Placemark>
     <Placemark>
       <name>T19 - Jardim Helga D</name>
-      <description><![CDATA[Perimetro OSM: Mitim/Guerreiro x Avenida Ibi]]></description>
+      <description><![CDATA[OSM: Mitim/Guerreiro x Avenida Ibi (Luisa Damon ausente no OSM)]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>

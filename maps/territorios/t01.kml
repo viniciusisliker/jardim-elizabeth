@@ -2,15 +2,17 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T01 · Campo Limpo</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T01 - Campo Limpo</name>
-      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <description><![CDATA[Avenida Carlos Lacerda x Estrada Pirajussara; Estrada Pirajussara x Rua dos Milagres; Rua dos Milagres x Rua Paul Gauguin]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
       </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7792186,-23.6371807,0 -46.7841908,-23.6444804,0 -46.7780352,-23.6360298,0 -46.7760528,-23.6343185,0 -46.7756587,-23.6343615,0 -46.7792186,-23.6371807,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797947,-23.6390096,0 -46.7788148,-23.63769455,0 -46.777254150000005,-23.6348424,0 -46.77610545,-23.6339768,0 -46.7754232,-23.6347159,0 -46.7797947,-23.6390096,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

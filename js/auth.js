@@ -202,14 +202,23 @@
     const role = typeof roleOrProfile === 'object' ? roleOrProfile?.role : roleOrProfile;
     const profile = typeof roleOrProfile === 'object' ? roleOrProfile : null;
     const extraParts = [];
-    if (profile?.sub_role) extraParts.push(SUB_ROLE_LABELS[profile.sub_role] || profile.sub_role);
+    const seen = new Set();
+    const pushExtra = (part) => {
+      const text = String(part || '').trim();
+      if (!text) return;
+      const key = text.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      extraParts.push(text);
+    };
+    if (profile?.sub_role) pushExtra(SUB_ROLE_LABELS[profile.sub_role] || profile.sub_role);
     if (profile) {
-      if (profile.designation) extraParts.push(profile.designation);
+      if (profile.designation) pushExtra(profile.designation);
       (profile.designations || []).forEach((d) => {
-        if (d.label) extraParts.push(d.label);
+        if (d.label) pushExtra(d.label);
       });
     } else if (designation) {
-      extraParts.push(designation);
+      pushExtra(designation);
     }
     const extra = extraParts.join(', ');
     const labelRole = profile?.display_role || role;

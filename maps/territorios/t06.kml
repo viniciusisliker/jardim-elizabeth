@@ -2,10 +2,12 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>T06 · Vila Pirajussara</name>
+    <description>Poligonos reconstruidos via intersecoes OSM (Jul 2026). CDHU requer ajuste fino no Earth.</description>
     
     <Placemark>
       <name>T06 - Vila Pirajussara</name>
-      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <description><![CDATA[Rua Martim da Costa Vile x Rua João Correia; Rua Martim da Costa Vile x Passagem 2; Rua Hermes Ribeiro de Fr x Passagem 2]]></description>
+      
       <Style>
         <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
         <PolyStyle><color>4600d6ff</color></PolyStyle>
