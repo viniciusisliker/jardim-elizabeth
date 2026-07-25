@@ -42,7 +42,7 @@
   let publishers = [];
   let reports = new Map();
   let monthStatus = { is_closed: false, observations: '' };
-  let attendance = { midweek: 0, weekend: 0, midweekExtra: null, weekendExtra: null };
+  let attendance = { midweek: 0, weekend: 0, midweekExtra: null, weekendExtra: null, midweekZoom: null, weekendZoom: null };
   let attendanceLogs = [];
   let adjustments = [];
   let settings = {};
@@ -480,16 +480,25 @@
     });
   }
 
-  function avgFromLogs(logs, kind) {
+  function avgFromLogs(logs, kind, field = 'attendance_count') {
     const items = logs.filter((row) => row.meeting_kind === kind);
     if (!items.length) return 0;
-    const sum = items.reduce((acc, row) => acc + (Number(row.attendance_count) || 0), 0);
+    const sum = items.reduce((acc, row) => acc + (Number(row[field]) || 0), 0);
+    return Math.round(sum / items.length);
+  }
+
+  function avgZoomFromLogs(logs, kind) {
+    const items = logs.filter((row) => row.meeting_kind === kind && row.zoom_attendance_count != null);
+    if (!items.length) return null;
+    const sum = items.reduce((acc, row) => acc + Number(row.zoom_attendance_count), 0);
     return Math.round(sum / items.length);
   }
 
   function applyAttendanceFromLogs(monthLogs) {
     attendance.midweek = avgFromLogs(monthLogs, 'midweek');
     attendance.weekend = avgFromLogs(monthLogs, 'weekend');
+    attendance.midweekZoom = avgZoomFromLogs(monthLogs, 'midweek');
+    attendance.weekendZoom = avgZoomFromLogs(monthLogs, 'weekend');
     const midExtra = monthLogs.filter((row) => row.meeting_kind === 'midweek' && row.extra_count != null);
     const weekExtra = monthLogs.filter((row) => row.meeting_kind === 'weekend' && row.extra_count != null);
     attendance.midweekExtra = midExtra.length
@@ -514,11 +523,13 @@
         <article class="sec-attendance-card sec-attendance-card--readonly">
           <h3 class="sec-attendance-card__title">Meio de semana</h3>
           <p class="sec-attendance-card__value">${attendance.midweek || '—'}</p>
+          ${attendance.midweekZoom != null ? `<p class="sec-attendance-card__zoom">Zoom: ${attendance.midweekZoom}</p>` : ''}
           <p class="sec-attendance-card__meta">${midCount} registro${midCount === 1 ? '' : 's'} · média do mês</p>
         </article>
         <article class="sec-attendance-card sec-attendance-card--readonly">
           <h3 class="sec-attendance-card__title">Final de semana</h3>
           <p class="sec-attendance-card__value">${attendance.weekend || '—'}</p>
+          ${attendance.weekendZoom != null ? `<p class="sec-attendance-card__zoom">Zoom: ${attendance.weekendZoom}</p>` : ''}
           <p class="sec-attendance-card__meta">${weekCount} registro${weekCount === 1 ? '' : 's'} · média do mês</p>
         </article>
       </div>`;
@@ -536,6 +547,7 @@
         </div>
         <div class="sec-attendance-log__counts">
           <span class="sec-attendance-log__count">${escapeHtml(String(row.attendance_count))}</span>
+          ${row.zoom_attendance_count != null ? `<span class="sec-attendance-log__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
           ${row.extra_count != null ? `<span class="sec-attendance-log__extra">+${escapeHtml(String(row.extra_count))} extra</span>` : ''}
         </div>
         <div class="sec-attendance-log__meta">
@@ -719,7 +731,7 @@
       client.from('secretary_month_status').select('*').eq('service_year', year).eq('service_month', month).maybeSingle(),
       client.from('secretary_meeting_attendance').select('*').eq('service_year', year).eq('service_month', month),
       client.from('secretary_attendance_logs').select(`
-        id, meeting_date, meeting_kind, attendance_count, extra_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, extra_count, remarks, created_at,
         profiles:submitted_by ( full_name )
       `).gte('meeting_date', monthStart).lte('meeting_date', monthEnd).order('meeting_date', { ascending: false }),
       client.from('secretary_month_adjustments').select('*').eq('service_year', year).eq('service_month', month),

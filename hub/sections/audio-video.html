@@ -128,6 +128,10 @@
             <span>Assistência</span>
             <input type="number" id="av-attendance-count" class="av-input" min="0" step="1" required placeholder="Ex.: 84"/>
           </label>
+          <label class="av-field">
+            <span>Assistência do Zoom</span>
+            <input type="number" id="av-attendance-zoom" class="av-input" min="0" step="1" placeholder="Ex.: 12"/>
+          </label>
           <label class="av-field av-attendance-extra hidden" id="av-attendance-extra-wrap">
             <span>Contagem extra</span>
             <input type="number" id="av-attendance-extra" class="av-input" min="0" step="1" placeholder="Opcional"/>
@@ -159,6 +163,27 @@
           <p>Informações compartilhadas entre os irmãos da mesa de som e vídeo.</p>
         </div>
       </div>
+
+      <section class="av-images-card" aria-labelledby="av-images-title">
+        <div class="av-images-head">
+          <div>
+            <h3 id="av-images-title" class="av-images-title">Imagens de referência</h3>
+            <p class="av-hint">Diagramas, fotos do equipamento, layout do salão e outras referências visuais.</p>
+          </div>
+          <label class="av-toolbar-btn av-toolbar-btn--accent av-upload-btn">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">add_photo_alternate</span>
+            Enviar imagem
+            <input type="file" id="av-image-upload" hidden accept="image/jpeg,image/png,image/webp,image/gif"/>
+          </label>
+        </div>
+        <label class="av-field av-images-caption-field" for="av-image-caption">
+          <span>Legenda (opcional)</span>
+          <input type="text" id="av-image-caption" class="av-input" placeholder="Ex.: conexões da mesa de som"/>
+        </label>
+        <p id="av-image-upload-status" class="av-hint hidden" role="status"></p>
+        <div id="av-images-grid" class="av-images-grid"></div>
+      </section>
+
       <form id="av-notes-form" class="av-notes-card">
         <label class="av-field" for="av-team-notes">
           <span>Observações gerais</span>

@@ -9,6 +9,11 @@
   let attendanceLogs = [];
   let extraAttendanceEnabled = false;
   let editingAttendanceId = null;
+  let avImages = [];
+
+  const IMAGE_BUCKET = 'audio-video';
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+  const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
   const CHECKLISTS = [
     {
@@ -326,6 +331,7 @@
     document.getElementById('av-attendance-date').value = todayIsoDate();
     document.getElementById('av-attendance-kind').value = 'midweek';
     document.getElementById('av-attendance-count').value = '';
+    document.getElementById('av-attendance-zoom').value = '';
     document.getElementById('av-attendance-extra').value = '';
     document.getElementById('av-attendance-remarks').value = '';
     document.getElementById('av-attendance-submit-label').textContent = 'Registrar assistência';
@@ -338,6 +344,7 @@
     document.getElementById('av-attendance-date').value = row.meeting_date;
     document.getElementById('av-attendance-kind').value = row.meeting_kind;
     document.getElementById('av-attendance-count').value = row.attendance_count;
+    document.getElementById('av-attendance-zoom').value = row.zoom_attendance_count ?? '';
     document.getElementById('av-attendance-extra').value = row.extra_count ?? '';
     document.getElementById('av-attendance-remarks').value = row.remarks || '';
     document.getElementById('av-attendance-submit-label').textContent = 'Salvar alterações';
@@ -355,7 +362,7 @@
     const { data, error } = await client
       .from('secretary_attendance_logs')
       .select(`
-        id, meeting_date, meeting_kind, attendance_count, extra_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, extra_count, remarks, created_at,
         profiles:submitted_by ( full_name )
       `)
       .order('meeting_date', { ascending: false })
@@ -381,6 +388,7 @@
         </div>
         <div class="av-attendance-item__counts">
           <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
+          ${row.zoom_attendance_count != null ? `<span class="av-attendance-item__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
           ${row.extra_count != null ? `<span class="av-attendance-item__extra">+${escapeHtml(String(row.extra_count))}</span>` : ''}
         </div>
         <div class="av-attendance-item__meta">
@@ -411,6 +419,9 @@
         meeting_date: document.getElementById('av-attendance-date').value,
         meeting_kind: document.getElementById('av-attendance-kind').value,
         attendance_count: Number(document.getElementById('av-attendance-count').value) || 0,
+        zoom_attendance_count: document.getElementById('av-attendance-zoom').value !== ''
+          ? Number(document.getElementById('av-attendance-zoom').value)
+          : null,
         extra_count: extraAttendanceEnabled && document.getElementById('av-attendance-extra').value !== ''
           ? Number(document.getElementById('av-attendance-extra').value)
           : null,
@@ -486,6 +497,142 @@
     });
   }
 
+  function setImageUploadStatus(message, isError = false) {
+    const el = document.getElementById('av-image-upload-status');
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('hidden', !message);
+    el.style.color = isError ? '#dc2626' : '';
+  }
+
+  async function loadImages(client) {
+    const { data, error } = await client
+      .from('audio_video_images')
+      .select('id, file_name, storage_path, caption, mime_type, size_bytes, created_at')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    avImages = data || [];
+    await renderImages(client);
+  }
+
+  async function signedImageUrl(client, storagePath) {
+    const { data, error } = await client.storage.from(IMAGE_BUCKET).createSignedUrl(storagePath, 3600);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  }
+
+  async function renderImages(client) {
+    const root = document.getElementById('av-images-grid');
+    if (!root) return;
+
+    if (!avImages.length) {
+      root.className = 'av-images-grid av-images-grid--empty';
+      root.innerHTML = '<p class="av-hint">Nenhuma imagem ainda. Envie fotos ou diagramas para a equipe consultar.</p>';
+      return;
+    }
+
+    root.className = 'av-images-grid';
+    const cards = await Promise.all(avImages.map(async (row) => {
+      const url = await signedImageUrl(client, row.storage_path);
+      const cap = row.caption || row.file_name;
+      const hasCap = !!row.caption;
+      return `
+        <article class="av-image-card${hasCap ? ' av-image-card--has-cap' : ''}" data-av-image-id="${row.id}">
+          ${url
+            ? `<a class="av-image-card__link" href="${url}" target="_blank" rel="noopener" title="Abrir imagem"><img class="av-image-card__img" src="${url}" alt="${escapeHtml(cap)}" loading="lazy"/></a>`
+            : '<div class="av-image-card__link av-hint" style="display:flex;align-items:center;justify-content:center;padding:.5rem">Indisponível</div>'}
+          ${hasCap ? `<p class="av-image-card__cap" title="${escapeHtml(cap)}">${escapeHtml(cap)}</p>` : ''}
+          <div class="av-image-card__actions">
+            <button type="button" class="av-image-card__btn av-image-card__btn--danger" data-av-image-del="${row.id}" title="Excluir">
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+            </button>
+          </div>
+        </article>`;
+    }));
+    root.innerHTML = cards.join('');
+  }
+
+  async function uploadImage(client, profile, file) {
+    if (!file) return;
+    if (!IMAGE_TYPES.has(file.type)) {
+      setImageUploadStatus('Use JPG, PNG, WebP ou GIF.', true);
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageUploadStatus('Imagem muito grande (máx. 5 MB).', true);
+      return;
+    }
+
+    setImageUploadStatus('Enviando…');
+    const ext = file.name.includes('.') ? file.name.split('.').pop().toLowerCase() : 'jpg';
+    const path = `${profile.id}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const caption = document.getElementById('av-image-caption')?.value.trim() || '';
+
+    const { error: upErr } = await client.storage.from(IMAGE_BUCKET).upload(path, file, {
+      upsert: false,
+      contentType: file.type
+    });
+    if (upErr) {
+      setImageUploadStatus(upErr.message, true);
+      return;
+    }
+
+    const { error: insErr } = await client.from('audio_video_images').insert({
+      file_name: file.name,
+      storage_path: path,
+      caption,
+      mime_type: file.type,
+      size_bytes: file.size,
+      uploaded_by: profile.id
+    });
+    if (insErr) {
+      await client.storage.from(IMAGE_BUCKET).remove([path]);
+      setImageUploadStatus(insErr.message, true);
+      return;
+    }
+
+    document.getElementById('av-image-caption').value = '';
+    document.getElementById('av-image-upload').value = '';
+    setImageUploadStatus('');
+    showToast(toastEl(), 'Imagem enviada.');
+    await loadImages(client);
+  }
+
+  async function deleteImage(client, imageId) {
+    const row = avImages.find((item) => item.id === imageId);
+    if (!row) return;
+    const label = row.caption || row.file_name;
+    if (!window.confirm(`Excluir a imagem "${label}"?`)) return;
+
+    if (row.storage_path) {
+      await client.storage.from(IMAGE_BUCKET).remove([row.storage_path]);
+    }
+    const { error } = await client.from('audio_video_images').delete().eq('id', imageId);
+    if (error) {
+      showToast(toastEl(), error.message, true);
+      return;
+    }
+    showToast(toastEl(), 'Imagem excluída.');
+    await loadImages(client);
+  }
+
+  function bindImageUpload(client, profile) {
+    const input = document.getElementById('av-image-upload');
+    if (!input || input.dataset.bound === '1') return;
+    input.dataset.bound = '1';
+
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      await uploadImage(client, profile, file);
+    });
+
+    document.getElementById('av-images-grid')?.addEventListener('click', async (e) => {
+      const delId = e.target.closest('[data-av-image-del]')?.dataset.avImageDel;
+      if (delId) await deleteImage(client, delId);
+    });
+  }
+
   async function init() {
     if (window.__JEAdminAudioVideoInit) return;
     window.__JEAdminAudioVideoInit = true;
@@ -505,6 +652,12 @@
     bindAttendanceForm(client, profile);
     await loadNotes(client);
     bindNotesForm(client);
+    try {
+      await loadImages(client);
+    } catch (err) {
+      showToast(toastEl(), err.message || 'Erro ao carregar imagens.', true);
+    }
+    bindImageUpload(client, profile);
     return true;
   }
 

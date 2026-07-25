@@ -8,15 +8,42 @@
     publicador: 'Publicador'
   };
 
-  const SUB_ROLE_LABELS = {
+  const ANCIO_SUB_ROLE_LABELS = {
     secretario: 'Secretário',
     coordenador: 'Coordenador',
     superintendente_servico: 'Superintendente de Serviço'
   };
 
-  /** Sub-cargos de ancião — servos ministeriais terão catálogo próprio no futuro. */
-  const ANCIO_SUB_ROLES = Object.entries(SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
-  const SUB_ROLES = ANCIO_SUB_ROLES;
+  const SERVO_SUB_ROLE_LABELS = {
+    audio_video: 'Áudio e Vídeo',
+    territorios: 'Territórios',
+    quadro_anuncios: 'Quadro de Anúncios',
+    publicacoes: 'Publicações'
+  };
+
+  const SUB_ROLE_LABELS = { ...ANCIO_SUB_ROLE_LABELS, ...SERVO_SUB_ROLE_LABELS };
+
+  const SERVO_SUB_ROLE_PERMISSIONS = {
+    audio_video: ['hub', 'audio_video'],
+    territorios: ['hub', 'territorios'],
+    quadro_anuncios: ['hub', 'announcements'],
+    publicacoes: ['hub', 'agenda']
+  };
+
+  const ANCIO_SUB_ROLES = Object.entries(ANCIO_SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+  const SERVO_SUB_ROLES = Object.entries(SERVO_SUB_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+  const SUB_ROLES = [...ANCIO_SUB_ROLES, ...SERVO_SUB_ROLES];
+
+  function getSubRolesForRole(role) {
+    if (role === 'anciao') return ANCIO_SUB_ROLES;
+    if (role === 'servo_ministerial') return SERVO_SUB_ROLES;
+    return [];
+  }
+
+  function getSubRolePermissions(profile) {
+    if (profile?.role !== 'servo_ministerial' || !profile.sub_role) return [];
+    return SERVO_SUB_ROLE_PERMISSIONS[profile.sub_role] || [];
+  }
 
   const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   const SESSION_TIMEOUT_MS = 4000;
@@ -275,6 +302,12 @@
       return false;
     }
 
+    if (profile.role === 'servo_ministerial' && profile.sub_role) {
+      if (getSubRolePermissions(profile).includes(permission)) return true;
+      if (permission === 'announcements' && profile.can_announcements) return true;
+      return false;
+    }
+
     if (permission !== 'settings' && isAdminRole(profile.role)) return true;
     if ((profile.permissions || []).includes(permission)) return true;
     if (permission === 'announcements' && profile.can_announcements) return true;
@@ -316,7 +349,13 @@
     if (isSuperUser(profile.role)) return true;
     if (isSuperintendente(profile)) return true;
 
-    if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) return true;
+    if (!hasAssignedDesignations(profile) && isAdminRole(profile.role)) {
+      if (profile.role === 'servo_ministerial' && profile.sub_role) {
+        return getSubRolePermissions(profile).includes('hub')
+          || window.JEAccess?.MODULE_PERMISSIONS?.some((p) => hasPermission(profile, p));
+      }
+      return true;
+    }
 
     if ((profile.permissions || []).includes('hub')) return true;
     if (window.JEAccess?.MODULE_PERMISSIONS?.some((p) => hasPermission(profile, p))) return true;
@@ -523,7 +562,11 @@
     applyRoleLabelEl,
     SUB_ROLE_LABELS,
     ANCIO_SUB_ROLES,
+    SERVO_SUB_ROLES,
+    SERVO_SUB_ROLE_PERMISSIONS,
     SUB_ROLES,
+    getSubRolesForRole,
+    getSubRolePermissions,
     hasDeveloperDesignation,
     renderAvatarHtml,
     isAdminRole,

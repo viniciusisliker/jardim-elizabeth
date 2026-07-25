@@ -212,13 +212,16 @@
   function resolveTerritoryMapUrl(url, num) {
     let raw = String(url || '').trim();
     if (!raw && num != null && num !== '') {
-      raw = `img/territorios-cards/${territoryMapFileName(num)}`;
+      raw = `img/territorios-ai/${territoryMapFileName(num)}`;
     }
     if (/^img\/territorios\/t\d{2}\.jpg$/i.test(raw)) {
-      raw = raw.replace(/^img\/territorios\//i, 'img/territorios-cards/');
+      raw = raw.replace(/^img\/territorios\//i, 'img/territorios-ai/');
+    }
+    if (/^img\/territorios-cards\/t\d{2}\.jpg$/i.test(raw)) {
+      raw = raw.replace(/^img\/territorios-cards\//i, 'img/territorios-ai/');
     }
     if (/^img\/territorios-enhanced\/t\d{2}\.jpg$/i.test(raw)) {
-      raw = raw.replace(/^img\/territorios-enhanced\//i, 'img/territorios-cards/');
+      raw = raw.replace(/^img\/territorios-enhanced\//i, 'img/territorios-ai/');
     }
     if (!raw) return null;
     if (/^https?:\/\//i.test(raw) || raw.startsWith('//')) return raw;
@@ -229,12 +232,19 @@
   function bindTerritoryMapImg(img, url, num) {
     if (!img) return;
     const primary = resolveTerritoryMapUrl(url, num);
+    const cards = `${siteRootPrefix()}img/territorios-cards/${territoryMapFileName(num)}`;
     const enhanced = `${siteRootPrefix()}img/territorios-enhanced/${territoryMapFileName(num)}`;
     const fallback = resolveTerritoryMapFallbackUrl(num);
     if (primary) img.src = primary;
     if (!primary && !fallback) return;
     img.onerror = function onTerritoryMapError() {
       const src = img.src || '';
+      if (src.includes('territorios-ai') && !img.dataset.fallbackCards) {
+        img.dataset.fallbackCards = '1';
+        img.onerror = onTerritoryMapError;
+        img.src = cards;
+        return;
+      }
       if (src.includes('territorios-cards') && !img.dataset.fallbackEnhanced) {
         img.dataset.fallbackEnhanced = '1';
         img.onerror = onTerritoryMapError;

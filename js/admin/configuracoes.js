@@ -10,11 +10,28 @@
     { value: 'publicador', label: 'Publicador' }
   ];
 
-  const SUB_ROLES = window.JEAuth?.ANCIO_SUB_ROLES || window.JEAuth?.SUB_ROLES || [
+  const SUB_ROLES = window.JEAuth?.SUB_ROLES || [
     { value: 'secretario', label: 'Secretário' },
     { value: 'coordenador', label: 'Coordenador' },
-    { value: 'superintendente_servico', label: 'Superintendente de Serviço' }
+    { value: 'superintendente_servico', label: 'Superintendente de Serviço' },
+    { value: 'audio_video', label: 'Áudio e Vídeo' },
+    { value: 'territorios', label: 'Territórios' },
+    { value: 'quadro_anuncios', label: 'Quadro de Anúncios' },
+    { value: 'publicacoes', label: 'Publicações' }
   ];
+
+  function subRolesForMember(role) {
+    return window.JEAuth?.getSubRolesForRole?.(role) || [];
+  }
+
+  function memberCanHaveSubRole(role) {
+    return role === 'anciao' || role === 'servo_ministerial';
+  }
+
+  function isSubRoleValidForRole(role, subRole) {
+    if (!subRole) return true;
+    return subRolesForMember(role).some((item) => item.value === subRole);
+  }
 
   const SUB_ROLE_LABELS = window.JEAuth?.SUB_ROLE_LABELS || Object.fromEntries(
     SUB_ROLES.map((r) => [r.value, r.label])
@@ -804,14 +821,15 @@
             ).join('')}</select>`
           : `<span class="cfg-role-label">${escapeHtml(window.JEAuth.getRoleLabel({ role: m.role, display_role: m.display_role, sub_role: m.sub_role, designation: m.designation, designations: [] }))}</span>`;
 
-        const canHaveSubRole = m.role === 'anciao';
+        const canHaveSubRole = memberCanHaveSubRole(m.role);
+        const roleSubRoles = subRolesForMember(m.role);
         const subRoleSelect = isSuper
           ? (canHaveSubRole
-            ? `<select data-member-sub-role="${m.id}" class="cfg-field"><option value="">—</option>${SUB_ROLES.map((r) =>
+            ? `<select data-member-sub-role="${m.id}" class="cfg-field"><option value="">—</option>${roleSubRoles.map((r) =>
                 `<option value="${r.value}" ${m.sub_role === r.value ? 'selected' : ''}>${r.label}</option>`
               ).join('')}</select>`
-            : `<span class="text-[11px] text-on-surface-variant italic">A definir</span>`)
-          : `<span class="text-[11px] text-on-surface-variant">${canHaveSubRole ? escapeHtml(memberSubRoleLabel(m)) : 'A definir'}</span>`;
+            : `<span class="text-[11px] text-on-surface-variant italic">—</span>`)
+          : `<span class="text-[11px] text-on-surface-variant">${canHaveSubRole ? escapeHtml(memberSubRoleLabel(m)) : '—'}</span>`;
 
         const designationInput = isSuper
           ? `<input type="text" value="${escapeHtml(m.designation || '')}" data-member-designation="${m.id}" placeholder="Ex.: Desenvolvedor" class="cfg-field"/>`
@@ -938,8 +956,10 @@
       root.querySelectorAll('[data-role]').forEach((sel) =>
         sel.addEventListener('change', async () => {
           const nextRole = sel.value;
+          const member = members.find((m) => m.id === sel.dataset.role);
           const payload = { role: nextRole };
-          if (nextRole !== 'anciao') payload.sub_role = null;
+          if (!memberCanHaveSubRole(nextRole)) payload.sub_role = null;
+          else if (member?.sub_role && !isSubRoleValidForRole(nextRole, member.sub_role)) payload.sub_role = null;
           const { error } = await client.from('profiles').update(payload).eq('id', sel.dataset.role);
           if (error) showToast(toast, error.message, true);
           else {
