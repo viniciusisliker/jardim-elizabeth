@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T08 · Jardim Iracema B</name>
+    
+    <Placemark>
+      <name>T08 - Jardim Iracema B</name>
+      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7846044,-23.6405552,0 -46.782804399999996,-23.6405552,0 -46.782804399999996,-23.6387552,0 -46.7846044,-23.6387552,0 -46.7846044,-23.6405552,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

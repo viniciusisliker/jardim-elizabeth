@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T12 · Jd Leônidas Moreira C</name>
+    
+    <Placemark>
+      <name>T12 - Jd Leônidas Moreira C</name>
+      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7792186,-23.6371807,0 -46.7775314,-23.643941,0 -46.7777419,-23.642558,0 -46.7792186,-23.6371807,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

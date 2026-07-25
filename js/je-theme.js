@@ -51,7 +51,7 @@
   }
 
   function ensureDarkStylesheet() {
-    const href = 'css/je-theme-dark.css?v=20260710200000';
+    const href = 'css/je-theme-dark.css?v=20260724230000';
     if (document.querySelector(`link[href*="${href.split('?')[0]}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';

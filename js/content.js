@@ -508,32 +508,31 @@
 
       if (mesEl) mesEl.textContent = '— ' + firstGroup.label;
 
-      const variantStyle = {
-        gold: { bg: 'rgba(200,169,110,0.12)', border: '1px solid #c8a96e', numColor: '#8a6a2a', lblColor: '#a07c35' },
-        primary: { bg: '#0f3462', border: 'none', numColor: '#ffffff', lblColor: 'rgba(255,255,255,0.7)' },
-        default: { bg: '#f5f3f3', border: '1px solid #c3c6d0', numColor: '#0f3462', lblColor: '#3b5e97' }
+      const variantClass = {
+        gold: 'je-home-ev-date--gold',
+        primary: 'je-home-ev-date--primary',
+        default: 'je-home-ev-date--default'
       };
 
       lista.innerHTML = firstGroup.events.map((ev) => {
         const chip = eventChip(ev);
-        const vs = variantStyle[ev.badge_variant] || variantStyle.default;
+        const dateCls = variantClass[ev.badge_variant] || variantClass.default;
         const isLong = isLongDate(chip.display) || isLongDate(chip.label);
-        const numSize = isLong ? '0.625rem' : '0.8125rem';
         const extras = [ev.event_time, ev.location].filter(Boolean).join(' · ');
         const catCls = ev.category === 'Reuniões' || ev.category === 'Escola'
-          ? 'color:#274d85;background:#d6e3ff80'
-          : 'color:#7a5200;background:rgba(200,169,110,0.15)';
+          ? 'je-home-ev-cat je-home-ev-cat--meetings'
+          : 'je-home-ev-cat je-home-ev-cat--special';
         return `
-        <div class="flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
-          <div style="flex-shrink:0;width:3rem;text-align:center;border-radius:0.5rem;padding:0.5rem 0.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:${vs.bg};border:${vs.border}">
-            <span style="font-size:${numSize};font-weight:800;line-height:1.2;color:${vs.numColor}">${esc(chip.display)}</span>
-            <span style="font-size:0.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${vs.lblColor}">${esc(chip.label)}</span>
+        <div class="je-home-ev-row flex gap-4 px-5 py-4 hover:bg-surface-container-low transition-colors">
+          <div class="je-home-ev-date ${dateCls}${isLong ? ' je-home-ev-date--long' : ''}">
+            <span class="je-home-ev-date-num">${esc(chip.display)}</span>
+            <span class="je-home-ev-date-lbl">${esc(chip.label)}</span>
           </div>
-          <div style="flex:1;min-width:0">
-            <span class="je-home-ev-cat" style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;${catCls};padding:1px 6px;border-radius:4px;margin-bottom:4px">${esc(ev.category)}</span>
-            <h3 style="font-weight:700;font-size:0.875rem;color:#1b1c1c;line-height:1.4">${esc(ev.title)}</h3>
-            ${ev.description ? `<p style="font-size:0.75rem;color:#43474f;margin-top:2px">${esc(ev.description)}</p>` : ''}
-            ${extras ? `<p style="font-size:0.75rem;color:#43474f;margin-top:4px">${esc(extras)}</p>` : ''}
+          <div class="je-home-ev-body">
+            <span class="${catCls}">${esc(ev.category)}</span>
+            <h3 class="je-home-ev-title">${esc(ev.title)}</h3>
+            ${ev.description ? `<p class="je-home-ev-desc">${esc(ev.description)}</p>` : ''}
+            ${extras ? `<p class="je-home-ev-meta">${esc(extras)}</p>` : ''}
           </div>
         </div>`;
       }).join('');

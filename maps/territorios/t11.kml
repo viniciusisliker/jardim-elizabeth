@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T11 · Jd Leônidas Moreira B</name>
+    
+    <Placemark>
+      <name>T11 - Jd Leônidas Moreira B</name>
+      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797443,-23.6382672,0 -46.77956355,-23.641766750000002,0 -46.7778238,-23.6426587,0 -46.7772857,-23.6419971,0 -46.7797443,-23.6382672,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

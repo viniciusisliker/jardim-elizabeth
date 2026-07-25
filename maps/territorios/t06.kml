@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T06 · Vila Pirajussara</name>
+    
+    <Placemark>
+      <name>T06 - Vila Pirajussara</name>
+      <description><![CDATA[Perimetro por intersecoes OSM das ruas do cartao]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7739305,-23.6384988,0 -46.7731344,-23.6403537,0 -46.7734163,-23.6404319,0 -46.774135349999995,-23.63876585,0 -46.7739305,-23.6384988,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

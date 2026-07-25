@@ -327,10 +327,43 @@ html.dark .je-sch-card-title,
 html.dark .je-eq-cal-head h2,
 html.dark .je-don-key-value { color: var(--je-on-surface) !important; }
 html.dark .je-sch-card-desc,
-html.dark .je-sch-intro,
-html.dark .je-eq-intro,
 html.dark .je-don-key-label { color: var(--je-on-surface-variant) !important; }
+html.dark .je-sch-intro,
+html.dark .je-eq-intro {
+  background: linear-gradient(135deg, #1a1d28 0%, var(--je-card) 100%) !important;
+  border-color: rgba(212, 184, 122, 0.25) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-sch-intro-icon,
+html.dark .je-eq-intro-icon {
+  background: rgba(157, 188, 242, 0.12) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .je-sch-intro strong,
+html.dark .je-eq-intro strong { color: var(--je-primary) !important; }
 html.dark .je-eq-cal-frame { background: #252836 !important; }
+html.dark .je-don-key-panel {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-don-key-holder { color: var(--je-on-surface-variant) !important; }
+html.dark .je-don-copy-btn {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .je-don-qr-panel {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-don-qr-caption { color: var(--je-on-surface-variant) !important; }
+html.dark .je-don-pix-icon {
+  background: var(--je-surface-container) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .je-don-pix-head h2,
+html.dark .je-don-pix-head .text-primary { color: var(--je-on-surface) !important; }
+html.dark .je-don-step { color: var(--je-on-surface-variant) !important; }
 
 html.dark .je-qa-card {
   background: var(--je-card) !important;
@@ -338,9 +371,28 @@ html.dark .je-qa-card {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
 html.dark .je-qa-intro {
+  background: linear-gradient(135deg, #1a1d28 0%, var(--je-card) 100%) !important;
+  border-color: rgba(212, 184, 122, 0.25) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .je-qa-intro-icon {
+  background: rgba(157, 188, 242, 0.12) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .je-qa-intro strong { color: var(--je-primary) !important; }
+html.dark .je-qa-history-head h2 { color: var(--je-on-surface) !important; }
+html.dark .je-qa-history-line { background: var(--je-card-border) !important; }
+html.dark .je-qa-history-card {
   background: var(--je-card) !important;
   border-color: var(--je-card-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
+html.dark .je-qa-drive-icon {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .je-qa-history-text h3 { color: var(--je-on-surface) !important; }
+html.dark .je-qa-history-text p { color: var(--je-on-surface-variant) !important; }
 html.dark .je-qa-card-title { color: var(--je-on-surface) !important; }
 html.dark .je-qa-card-desc { color: var(--je-on-surface-variant) !important; }
 
@@ -363,8 +415,15 @@ html.dark .hub-module-card:hover {
   border-color: #5a6a8a !important;
   background: var(--je-surface-container) !important;
 }
+html.dark .hub-module-group-title { color: var(--je-secondary) !important; }
+html.dark .hub-module-body h4,
 html.dark .hub-module-title { color: var(--je-on-surface) !important; }
+html.dark .hub-module-body p,
 html.dark .hub-module-desc { color: var(--je-on-surface-variant) !important; }
+html.dark .hub-module-chevron { color: var(--je-outline) !important; }
+html.dark .hub-module-card:hover .hub-module-chevron { color: var(--je-secondary) !important; }
+html.dark .hub-recent-modules__label { color: var(--je-secondary) !important; }
+html.dark .hub-module-search-icon { color: var(--je-secondary) !important; }
 html.dark .hub-recent-chip {
   background: #252836 !important;
   border-color: var(--je-card-border) !important;
@@ -1180,11 +1239,53 @@ html.dark .je-footer-map-btn:hover {
   background: var(--je-surface-container) !important;
   border-color: var(--je-secondary) !important;
 }
-html.dark .je-footer-schedule,
+html.dark .je-footer-title { color: var(--je-on-surface) !important; }
 html.dark .je-footer-schedule-item {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
   color: var(--je-on-surface-variant) !important;
 }
-html.dark .je-footer-schedule strong { color: var(--je-on-surface) !important; }
+html.dark .je-footer-schedule-detail { color: var(--je-on-surface) !important; }
+html.dark .je-footer-schedule-day {
+  background: var(--je-primary-container) !important;
+  color: var(--je-on-primary-container) !important;
+}
+html.dark .je-footer-card-icon {
+  background: var(--je-surface-container) !important;
+  color: var(--je-primary) !important;
+}
+
+/* Home — próximos eventos (classes em content.js) */
+html.dark .je-home-ev-row:hover { background: var(--je-surface-container-low) !important; }
+html.dark .je-home-ev-title { color: var(--je-on-surface) !important; }
+html.dark .je-home-ev-desc,
+html.dark .je-home-ev-meta { color: var(--je-on-surface-variant) !important; }
+html.dark .je-home-ev-date--default {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-outline-variant) !important;
+}
+html.dark .je-home-ev-date--default .je-home-ev-date-num { color: var(--je-on-surface) !important; }
+html.dark .je-home-ev-date--default .je-home-ev-date-lbl { color: var(--je-secondary) !important; }
+html.dark .je-home-ev-date--gold {
+  background: rgba(212, 184, 122, 0.12) !important;
+  border-color: rgba(212, 184, 122, 0.35) !important;
+}
+html.dark .je-home-ev-date--gold .je-home-ev-date-num { color: var(--je-accent-gold) !important; }
+html.dark .je-home-ev-date--gold .je-home-ev-date-lbl { color: rgba(212, 184, 122, 0.75) !important; }
+html.dark .je-home-ev-date--primary {
+  background: var(--je-primary-container) !important;
+  border-color: transparent !important;
+}
+html.dark .je-home-ev-date--primary .je-home-ev-date-num { color: #fff !important; }
+html.dark .je-home-ev-date--primary .je-home-ev-date-lbl { color: rgba(255, 255, 255, 0.72) !important; }
+html.dark .je-home-ev-cat--meetings {
+  color: var(--je-on-primary-container) !important;
+  background: rgba(59, 94, 151, 0.28) !important;
+}
+html.dark .je-home-ev-cat--special {
+  color: var(--je-accent-gold) !important;
+  background: rgba(212, 184, 122, 0.15) !important;
+}
 
 /* Utilitários Tailwind frequentes com cor fixa */
 html.dark .text-gray-500,
@@ -1225,5 +1326,39 @@ html.dark .hub-notif-send__feedback--err {
   background: #3b1515 !important;
   color: var(--je-error) !important;
   border-color: rgba(248, 113, 113, 0.2) !important;
+}
+
+/* Hub — changelog e complementos finais */
+html.dark .hub-changelog-item {
+  border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .hub-changelog-item-icon {
+  background: linear-gradient(135deg, #1a2438 0%, #252836 100%) !important;
+  color: var(--je-primary) !important;
+}
+html.dark .hub-changelog-tag {
+  background: var(--je-surface-container-low) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-changelog-item h4,
+html.dark .hub-changelog-item p { color: var(--je-on-surface) !important; }
+html.dark .hub-changelog-item time { color: var(--je-on-surface-variant) !important; }
+
+html.dark .je-qa-drive-btn {
+  background: var(--je-primary-container) !important;
+  color: var(--je-on-primary-container) !important;
+}
+html.dark .je-qa-drive-btn:hover { opacity: 0.92; }
+
+html.dark .je-sch-card-cta,
+html.dark .je-qa-card-cta { color: var(--je-secondary) !important; }
+
+html.dark .je-don-note-icon {
+  background: var(--je-surface-container) !important;
+  color: var(--je-primary) !important;
+}
+
+html.dark #proxeventos-lista > .je-home-ev-row + .je-home-ev-row {
+  border-top: 1px solid var(--je-card-border);
 }
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T18 · Jardim Helga C</name>
+    
+    <Placemark>
+      <name>T18 - Jardim Helga C</name>
+      <description><![CDATA[Perimetro OSM: Guerreiro/Ridel x Thomaz (Luisa Damon ausente no OSM)]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77349,-23.64614,0 -46.77343,-23.64438,0 -46.77396,-23.64573,0 -46.7726,-23.64644,0 -46.77349,-23.64614,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

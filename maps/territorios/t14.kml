@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T14 · CDHU B</name>
+    
+    <Placemark>
+      <name>T14 - CDHU B</name>
+      <description><![CDATA[Subdivisão B do CDHU]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7746881,-23.640489300000002,0 -46.771888100000005,-23.640489300000002,0 -46.771888100000005,-23.6376893,0 -46.7746881,-23.6376893,0 -46.7746881,-23.640489300000002,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>

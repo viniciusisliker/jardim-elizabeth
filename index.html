@@ -676,6 +676,76 @@
         padding-bottom: 1rem !important;
       }
     }
+    .je-home-ev-date {
+      flex-shrink: 0;
+      width: 3rem;
+      text-align: center;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .je-home-ev-date-num {
+      font-size: 0.8125rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .je-home-ev-date--long .je-home-ev-date-num { font-size: 0.625rem; }
+    .je-home-ev-date-lbl {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .je-home-ev-date--default {
+      background: #f5f3f3;
+      border: 1px solid #c3c6d0;
+    }
+    .je-home-ev-date--default .je-home-ev-date-num { color: #0f3462; }
+    .je-home-ev-date--default .je-home-ev-date-lbl { color: #3b5e97; }
+    .je-home-ev-date--gold {
+      background: rgba(200, 169, 110, 0.12);
+      border: 1px solid #c8a96e;
+    }
+    .je-home-ev-date--gold .je-home-ev-date-num { color: #8a6a2a; }
+    .je-home-ev-date--gold .je-home-ev-date-lbl { color: #a07c35; }
+    .je-home-ev-date--primary {
+      background: #0f3462;
+      border: none;
+    }
+    .je-home-ev-date--primary .je-home-ev-date-num { color: #fff; }
+    .je-home-ev-date--primary .je-home-ev-date-lbl { color: rgba(255, 255, 255, 0.7); }
+    .je-home-ev-body { flex: 1; min-width: 0; }
+    .je-home-ev-cat {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    .je-home-ev-cat--meetings { color: #274d85; background: rgba(214, 227, 255, 0.5); }
+    .je-home-ev-cat--special { color: #7a5200; background: rgba(200, 169, 110, 0.15); }
+    .je-home-ev-title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #1b1c1c;
+      line-height: 1.4;
+      margin: 0;
+    }
+    .je-home-ev-desc,
+    .je-home-ev-meta {
+      font-size: 0.75rem;
+      color: #43474f;
+      margin: 0;
+    }
+    .je-home-ev-desc { margin-top: 2px; }
+    .je-home-ev-meta { margin-top: 4px; }
     .je-home-news-item {
       display: flex;
       align-items: center;
@@ -730,7 +800,7 @@
       .je-home-news-item:nth-child(n+4) { display: none; }
     }
   </style>
-  <link href="css/je-theme-dark.css?v=2026061723" rel="stylesheet"/>
+  <link href="css/je-theme-dark.css?v=20260724230000" rel="stylesheet"/>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
@@ -935,7 +1005,7 @@
 <script src="js/header.js"></script>
 <script src="js/site-loader.js"></script>
   <script src="js/agenda-helpers.js"></script>
-  <script src="js/content.js?v=2026060933"></script>
+  <script src="js/content.js?v=20260724230000"></script>
 
 </body>
 </html>

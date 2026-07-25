@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>T03 · Jardim Elizabeth B</name>
+    
+    <Placemark>
+      <name>T03 - Jardim Elizabeth B</name>
+      <description><![CDATA[Cantos = intersecoes das ruas do cartao]]></description>
+      <Style>
+        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
+        <PolyStyle><color>4600d6ff</color></PolyStyle>
+      </Style>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7741079,-23.6393291,0 -46.7762672,-23.6378561,0 -46.7741079,-23.6393291,0 -46.7771835,-23.6389635,0 -46.7741079,-23.6393291,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+    </Placemark>
+  </Document>
+</kml>
