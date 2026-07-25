@@ -223,6 +223,9 @@
       if (!allowed && perm === 'settings' && window.JEHubNotifications?.canSend?.(profile)) {
         allowed = true;
       }
+      if (!allowed && perm === 'settings' && el.dataset.hubTab === 'sistema-links' && window.JEAuth.hasPermission(profile, 'agendamentos')) {
+        allowed = true;
+      }
       el.classList.toggle('hidden', !allowed);
     });
 
@@ -230,6 +233,14 @@
       const visibleCards = group.querySelectorAll('.hub-module-card:not(.hidden)');
       group.classList.toggle('hidden', visibleCards.length === 0);
     });
+
+    const hasSettings = window.JEAuth.hasPermission(profile, 'settings');
+    const canNotify = window.JEHubNotifications?.canSend?.(profile);
+    if (canNotify && !hasSettings) {
+      document.querySelectorAll(
+        '[data-hub-tab="sistema-membros"], [data-hub-tab="sistema-designacoes"], [data-hub-tab="sistema-app"], [data-hub-tab="configuracoes"]'
+      ).forEach((el) => el.classList.add('hidden'));
+    }
 
     applySuperintendenteHome(profile);
     applySecretarioHome(profile);
@@ -411,6 +422,9 @@
     if (section?.audioVideoTab) {
       window.JEAdminAudioVideo?.switchTab?.(section.audioVideoTab);
     }
+    if (section?.configuracoesTab) {
+      window.JEAdminConfiguracoes?.focusSection?.(section.configuracoesTab);
+    }
   }
 
   function showViews(sectionId) {
@@ -496,7 +510,10 @@
 
     if (section.permission && currentProfile) {
       let allowed = window.JEAuth.hasPermission(currentProfile, section.permission);
-      if (!allowed && section.id === 'configuracoes' && window.JEHubNotifications?.canSend?.(currentProfile)) {
+      if (!allowed && sectionModuleKey(section) === 'configuracoes' && window.JEHubNotifications?.canSend?.(currentProfile)) {
+        allowed = true;
+      }
+      if (!allowed && sectionModuleKey(section) === 'configuracoes' && section.configuracoesTab === 'links' && window.JEAuth.hasPermission(currentProfile, 'agendamentos')) {
         allowed = true;
       }
       if (!allowed) {
@@ -534,7 +551,7 @@
     }
 
     window.dispatchEvent(new CustomEvent('hub:section', { detail: { section: targetId } }));
-    if (targetId === 'configuracoes' && currentProfile && hubClient) {
+    if (sectionModuleKey(section) === 'configuracoes' && currentProfile && hubClient) {
       window.JEHubNotificationsUi?.initSendForm?.(hubClient, currentProfile);
       window.JEPwaInstall?.bindTriggers?.();
     }

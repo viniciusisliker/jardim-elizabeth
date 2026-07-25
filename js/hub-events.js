@@ -26,6 +26,94 @@
     if (!list || !form || !modal || !client) return;
 
     let events = [];
+    let filterQuery = '';
+    let filterCategory = '';
+
+    function renderFilters() {
+      const root = $('hub-ev-filters');
+      if (!root) return;
+      const cats = ['__all__', ...H.CATEGORIES];
+      const labels = { __all__: 'Todos' };
+      H.CATEGORIES.forEach((c) => { labels[c] = c; });
+      root.innerHTML = cats.map((cat) => {
+        const active = (cat === '__all__' ? !filterCategory : filterCategory === cat);
+        return `<button type="button" class="hub-ev-filter${active ? ' is-active' : ''}" data-cat="${esc(cat)}">${esc(labels[cat] || cat)}</button>`;
+      }).join('');
+      root.querySelectorAll('[data-cat]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterCategory = btn.dataset.cat === '__all__' ? '' : btn.dataset.cat;
+          renderFilters();
+          renderList();
+        });
+      });
+    }
+
+    function filteredEvents() {
+      const q = filterQuery.trim().toLowerCase();
+      return events.filter((ev) => {
+        if (filterCategory && ev.category !== filterCategory) return false;
+        if (!q) return true;
+        const hay = [
+          ev.title,
+          ev.category,
+          ev.month_label,
+          ev.event_time,
+          ev.location,
+          H.formatAdminListMeta(ev)
+        ].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function groupEvents(items) {
+      const groups = [];
+      const map = new Map();
+      items.forEach((ev) => {
+        const key = ev.month_key === 'futuros' ? '__futuros__' : (ev.month_label || 'Outros');
+        if (!map.has(key)) {
+          const group = { key, label: key === '__futuros__' ? 'Eventos futuros' : key, items: [] };
+          map.set(key, group);
+          groups.push(group);
+        }
+        map.get(key).items.push(ev);
+      });
+      return groups;
+    }
+
+    function renderEventRow(ev) {
+      const chip = H.eventDateChip(ev);
+      const tags = [];
+      if (ev.month_key === 'futuros') tags.push('<span class="hub-ev-tag hub-ev-tag--future">Futuro</span>');
+      if (ev.is_highlight) tags.push('<span class="hub-ev-tag hub-ev-tag--highlight">Destaque</span>');
+      return `
+        <div class="hub-ev-row">
+          <div class="hub-ev-row-main">
+            <div class="hub-ev-row-date">
+              <p class="hub-ev-row-date-num">${esc(chip.display)}</p>
+              <p class="hub-ev-row-date-lbl">${esc(chip.label)}</p>
+            </div>
+            <div class="hub-ev-row-body">
+              <div class="hub-ev-row-top">
+                <span class="hub-ev-cat-badge ${H.categoryBadgeClass(ev.category)}">${esc(ev.category)}</span>
+                <p class="hub-ev-row-title">${esc(ev.title)}</p>
+                ${tags.length ? `<div class="hub-ev-row-tags">${tags.join('')}</div>` : ''}
+              </div>
+              <p class="hub-ev-row-meta">${esc(H.formatAdminListMeta(ev))}</p>
+            </div>
+          </div>
+          <div class="hub-ev-row-actions">
+            <button type="button" data-copy="${ev.id}" class="hub-ev-action hub-ev-action--copy" aria-label="Copiar evento" title="Copiar">
+              <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+            </button>
+            <button type="button" data-edit="${ev.id}" class="hub-ev-action hub-ev-action--edit" aria-label="Editar evento" title="Editar">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            </button>
+            <button type="button" data-del="${ev.id}" class="hub-ev-action hub-ev-action--del" aria-label="Excluir evento" title="Excluir">
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+            </button>
+          </div>
+        </div>`;
+    }
 
     function getCategory() {
       const checked = form.querySelector('input[name="hub-ev-category"]:checked');
@@ -130,42 +218,43 @@
     function updateEventsCount() {
       const countEl = $('hub-events-count');
       if (!countEl) return;
-      const n = events.length;
-      countEl.textContent = n === 1 ? '1 evento publicado' : `${n} eventos publicados`;
+      const filtered = filteredEvents();
+      const total = events.length;
+      const shown = filtered.length;
+      if (!total) {
+        countEl.textContent = 'Nenhum evento';
+        return;
+      }
+      if (filterQuery || filterCategory) {
+        countEl.textContent = shown === total
+          ? `${total} eventos`
+          : `${shown} de ${total}`;
+        return;
+      }
+      countEl.textContent = total === 1 ? '1 evento' : `${total} eventos`;
     }
 
     function renderList() {
       updateEventsCount();
+      const filtered = filteredEvents();
       if (!events.length) {
-        list.innerHTML = '<p class="px-5 py-8 text-sm text-on-surface-variant">Nenhum evento cadastrado. Use <strong>Novo evento</strong> para começar.</p>';
+        list.innerHTML = '<p class="hub-ev-empty">Nenhum evento cadastrado. Use <strong>Novo evento</strong> para começar.</p>';
         return;
       }
-      list.innerHTML = events.map((ev) => {
-        const chip = H.eventDateChip(ev);
-        const tags = [];
-        if (ev.month_key === 'futuros') tags.push('<span class="hub-ev-tag hub-ev-tag--future">Futuro</span>');
-        if (ev.is_highlight) tags.push('<span class="hub-ev-tag hub-ev-tag--highlight">Destaque</span>');
-        return `
-        <div class="hub-ev-row">
-          <div class="hub-ev-row-main">
-            <div class="hub-ev-row-date">
-              <p class="hub-ev-row-date-num">${esc(chip.display)}</p>
-              <p class="hub-ev-row-date-lbl">${esc(chip.label)}</p>
-            </div>
-            <div class="hub-ev-row-body">
-              <span class="hub-ev-cat-badge ${H.categoryBadgeClass(ev.category)}">${esc(ev.category)}</span>
-              <p class="hub-ev-row-title">${esc(ev.title)}</p>
-              <p class="hub-ev-row-meta">${esc(H.formatAdminListMeta(ev))}</p>
-              ${tags.length ? `<div class="hub-ev-row-tags">${tags.join('')}</div>` : ''}
-            </div>
+      if (!filtered.length) {
+        list.innerHTML = '<p class="hub-ev-empty">Nenhum evento corresponde à busca ou filtro.</p>';
+        return;
+      }
+      const groups = groupEvents(filtered);
+      list.innerHTML = groups.map((group) => `
+        <div class="hub-ev-group">
+          <div class="hub-ev-group-head">
+            <p class="hub-ev-group-title">${esc(group.label)}</p>
+            <span class="hub-ev-group-count">${group.items.length}</span>
           </div>
-          <div class="hub-ev-row-actions">
-            <button type="button" data-copy="${ev.id}" class="hub-ev-action hub-ev-action--copy">Copiar</button>
-            <button type="button" data-edit="${ev.id}" class="hub-ev-action hub-ev-action--edit">Editar</button>
-            <button type="button" data-del="${ev.id}" class="hub-ev-action hub-ev-action--del">Excluir</button>
-          </div>
-        </div>`;
-      }).join('');
+          ${group.items.map((ev) => renderEventRow(ev)).join('')}
+        </div>
+      `).join('');
 
       list.querySelectorAll('[data-edit]').forEach((btn) => {
         btn.addEventListener('click', () => openForm(events.find((e) => e.id === btn.dataset.edit)));
@@ -237,6 +326,11 @@
     }
 
     $('hub-btn-new-event')?.addEventListener('click', () => openForm(null));
+    $('hub-ev-search')?.addEventListener('input', (e) => {
+      filterQuery = e.target.value;
+      renderList();
+    });
+    renderFilters();
     $('hub-btn-cancel-event')?.addEventListener('click', closeForm);
     $('hub-event-modal-close')?.addEventListener('click', closeForm);
     $('hub-event-modal-backdrop')?.addEventListener('click', closeForm);

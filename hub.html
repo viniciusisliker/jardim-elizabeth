@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="js/je-theme-boot.js"></script>
-  <link href="css/je-theme.css?v=2026061520" rel="stylesheet"/>
+  <link href="css/je-theme.css?v=20260725330000" rel="stylesheet"/>
   <script src="js/je-theme.js?v=20260724230000" defer></script>
 
 <title>Hub Administrativo – Jardim Elizabeth</title>
@@ -47,36 +47,60 @@
     }
   </script>
 
-  <link href="css/hub-notifications.css?v=2026061514" rel="stylesheet"/>
+  <link href="css/hub-notifications.css?v=20260725290000" rel="stylesheet"/>
   <link href="css/je-pwa-install.css?v=2026061515" rel="stylesheet"/>
   <link rel="manifest" href="site.webmanifest"/>
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .hub-ev-action{display:inline-flex;align-items:center;padding:0.375rem 0.625rem;border-radius:0.375rem;border:1px solid #c3c6d0;background:#fff;font-size:0.6875rem;font-weight:700;line-height:1;cursor:pointer;transition:all .15s}
-    .hub-ev-action:hover{border-color:#3b5e97;background:#f5f3f3}
-    .hub-ev-action--edit{color:#3b5e97}
-    .hub-ev-action--copy{color:#43474f}
-    .hub-ev-action--del{color:#ba1a1a;border-color:rgba(186,26,26,.25)}
-    .hub-ev-action--del:hover{background:#fff5f5;border-color:#ba1a1a}
-    .hub-ev-list-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;padding:0.875rem 1.25rem;border-bottom:1px solid #e2e6ef;background:#f8fafc}
-    .hub-ev-list-count{font-size:0.75rem;font-weight:700;color:#43474f}
-    .hub-ev-row{display:flex;flex-direction:column;gap:0.75rem;padding:1rem 1.25rem;border-bottom:1px solid #e2e6ef;transition:background .15s}
+    .hub-ev-action{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;border-radius:0.4375rem;border:1px solid #e2e6ef;background:#fff;color:#43474f;cursor:pointer;transition:all .15s}
+    .hub-ev-action .material-symbols-outlined{font-size:1rem}
+    .hub-ev-action:hover{border-color:#3b5e97;background:#f5f8fc;color:#3b5e97}
+    .hub-ev-action--edit{color:#3b5e97;border-color:rgba(59,94,151,.2)}
+    .hub-ev-action--copy:hover{color:#43474f}
+    .hub-ev-action--del{color:#ba1a1a;border-color:rgba(186,26,26,.2)}
+    .hub-ev-action--del:hover{background:#fff5f5;border-color:#ba1a1a;color:#ba1a1a}
+    .hub-ev-panel{background:#fff;border:1px solid #e2e6ef;border-radius:0.75rem;overflow:hidden}
+    .hub-ev-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:0.625rem;padding:0.75rem 1rem;border-bottom:1px solid #e2e6ef;background:linear-gradient(180deg,#f8fafc 0%,#fff 100%)}
+    .hub-ev-toolbar__main{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;flex:1;min-width:0}
+    .hub-ev-list-count{font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#3b5e97;white-space:nowrap}
+    .hub-ev-search{display:flex;align-items:center;gap:0.375rem;flex:1;min-width:10rem;max-width:16rem;padding:0.375rem 0.625rem;border:1px solid #e2e6ef;border-radius:0.4375rem;background:#fff}
+    .hub-ev-search .material-symbols-outlined{font-size:1rem;color:#6b7280;flex-shrink:0}
+    .hub-ev-search input{border:none;outline:none;background:transparent;font-size:0.8125rem;width:100%;color:#0f3462}
+    .hub-ev-search input::placeholder{color:#9ca3af}
+    .hub-ev-filters{display:flex;flex-wrap:wrap;gap:0.375rem}
+    .hub-ev-filter{padding:0.25rem 0.5625rem;border-radius:9999px;border:1px solid #e2e6ef;background:#fff;font-size:0.6875rem;font-weight:700;color:#43474f;cursor:pointer;transition:all .15s;line-height:1.2}
+    .hub-ev-filter:hover{border-color:#3b5e97;color:#3b5e97}
+    .hub-ev-filter.is-active{border-color:#0f3462;background:#0f3462;color:#fff}
+    .hub-ev-toolbar__actions{display:flex;flex-wrap:wrap;align-items:center;gap:0.375rem;margin-left:auto}
+    .hub-ev-toolbar__link{display:inline-flex;align-items:center;gap:0.25rem;padding:0.4375rem 0.75rem;border-radius:0.4375rem;border:1px solid #e2e6ef;background:#fff;font-size:0.6875rem;font-weight:700;color:#3b5e97;text-decoration:none;transition:all .15s}
+    .hub-ev-toolbar__link:hover{border-color:#3b5e97;background:#f5f8fc}
+    .hub-ev-toolbar__link .material-symbols-outlined{font-size:0.875rem}
+    .hub-ev-toolbar__new{display:inline-flex;align-items:center;gap:0.25rem;padding:0.4375rem 0.875rem;border-radius:0.4375rem;border:none;background:#0f3462;font-size:0.6875rem;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s}
+    .hub-ev-toolbar__new:hover{opacity:.92}
+    .hub-ev-toolbar__new .material-symbols-outlined{font-size:0.9375rem}
+    .hub-ev-group-head{display:flex;align-items:center;justify-content:space-between;gap:0.5rem;padding:0.4375rem 1rem;background:#f1f5f9;border-bottom:1px solid #e2e6ef;border-top:1px solid #e2e6ef}
+    .hub-ev-group-head:first-child{border-top:none}
+    .hub-ev-group-title{font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#3b5e97;margin:0}
+    .hub-ev-group-count{font-size:0.625rem;font-weight:700;color:#6b7280}
+    .hub-ev-row{display:flex;align-items:center;gap:0.625rem;padding:0.5625rem 1rem;border-bottom:1px solid #eef0f4;transition:background .15s}
     .hub-ev-row:last-child{border-bottom:0}
     .hub-ev-row:hover{background:#fafbfc}
-    @media(min-width:640px){.hub-ev-row{flex-direction:row;align-items:center;gap:1rem}}
-    .hub-ev-row-main{display:flex;align-items:flex-start;gap:0.875rem;flex:1;min-width:0}
-    .hub-ev-row-date{text-align:center;flex-shrink:0;width:3.25rem}
-    .hub-ev-row-date-num{font-size:1.125rem;font-weight:800;color:#0f3462;line-height:1.1}
-    .hub-ev-row-date-lbl{font-size:0.625rem;font-weight:700;color:#43474f;text-transform:uppercase;letter-spacing:.04em;line-height:1.2;margin-top:0.125rem}
+    .hub-ev-row-main{display:flex;align-items:center;gap:0.625rem;flex:1;min-width:0}
+    .hub-ev-row-date{text-align:center;flex-shrink:0;width:2.75rem;padding:0.3125rem 0.25rem;border-radius:0.4375rem;background:#f5f8fc;border:1px solid #e2e6ef}
+    .hub-ev-row-date-num{font-size:0.9375rem;font-weight:800;color:#0f3462;line-height:1.05}
+    .hub-ev-row-date-lbl{font-size:0.5625rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;line-height:1.15;margin-top:0.0625rem}
     .hub-ev-row-body{min-width:0;flex:1}
-    .hub-ev-row-title{font-size:0.9375rem;font-weight:700;color:#0f3462;line-height:1.35;margin:0.25rem 0 0}
-    .hub-ev-row-meta{font-size:0.75rem;color:#43474f;line-height:1.4;margin-top:0.25rem}
-    .hub-ev-row-tags{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.375rem}
-    .hub-ev-tag{display:inline-flex;align-items:center;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .hub-ev-row-top{display:flex;flex-wrap:wrap;align-items:center;gap:0.375rem}
+    .hub-ev-row-title{font-size:0.8125rem;font-weight:700;color:#0f3462;line-height:1.3;margin:0}
+    .hub-ev-row-meta{font-size:0.6875rem;color:#6b7280;line-height:1.35;margin-top:0.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hub-ev-row-tags{display:inline-flex;flex-wrap:wrap;gap:0.25rem;margin-left:0.125rem}
+    .hub-ev-tag{display:inline-flex;align-items:center;padding:0.0625rem 0.375rem;border-radius:9999px;font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;line-height:1.4}
     .hub-ev-tag--future{color:#7a5200;background:rgba(200,169,110,.18);border:1px solid rgba(200,169,110,.35)}
     .hub-ev-tag--highlight{color:#0f3462;background:#eff6ff;border:1px solid rgba(59,94,151,.2)}
-    .hub-ev-row-actions{display:flex;flex-wrap:wrap;gap:0.375rem;flex-shrink:0}
-    .hub-ev-cat-badge{display:inline-block;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:0.125rem 0.5rem;border-radius:0.25rem}
+    .hub-ev-row-actions{display:flex;align-items:center;gap:0.25rem;flex-shrink:0}
+    .hub-ev-cat-badge{display:inline-block;font-size:0.5625rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:0.0625rem 0.375rem;border-radius:0.25rem;line-height:1.4;flex-shrink:0}
+    .hub-ev-empty{padding:2rem 1rem;text-align:center;font-size:0.8125rem;color:#6b7280}
+    .hub-ev-empty strong{color:#0f3462}
     .hub-hero-back{
       display:inline-flex;align-items:center;gap:0.375rem;margin-top:1rem;
       padding:0.4375rem 0.875rem;border-radius:9999px;font-size:0.75rem;font-weight:700;
@@ -89,11 +113,7 @@
     .hub-section-panel--wide{max-width:56rem}
     .hub-view--wide{width:100%;max-width:72rem;margin:0 auto}
     @media(max-width:767px){
-      #hub-view-donativos #donations-form button[type="submit"],
-      #hub-view-agendamentos #btn-new,
-      #hub-view-agendamentos #sched-form button[type="submit"]{min-height:2.75rem}
-      #hub-view-agendamentos #schedule-list .flex{flex-direction:column;align-items:stretch;gap:0.75rem}
-      #hub-view-agendamentos #schedule-list button{min-height:2.75rem}
+      #hub-view-donativos #donations-form button[type="submit"]{min-height:2.75rem}
     }
 
     .hub-hero{
@@ -222,6 +242,8 @@
     .hub-module-card--donativos:hover{border-color:#f9a8d4}
     .hub-module-card--config .hub-module-icon{background:#f1f5f9;color:#475569}
     .hub-module-card--config:hover{border-color:#cbd5e1}
+    .hub-module-card--sistema .hub-module-icon{background:#f1f5f9;color:#475569}
+    .hub-module-card--sistema:hover{border-color:#cbd5e1}
 
     .hub-home-intro{
       padding:1rem 1.5rem;background:linear-gradient(180deg,#f5f8fc 0%,#fff 100%);
@@ -351,9 +373,12 @@
       #hub-hero-crumb-section{max-width:min(100%,14rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .hub-changelog-btn{min-height:2.75rem}
       .hub-module-card{min-height:3rem}
-      .hub-ev-action{min-height:2.75rem;padding:0.5rem 0.75rem}
-      #hub-btn-new-event,
-      #hub-view-agenda > .flex.flex-wrap.justify-end a{min-height:2.75rem;display:inline-flex;align-items:center}
+      .hub-ev-action{width:2.75rem;height:2.75rem}
+      .hub-ev-toolbar{padding:0.625rem 0.75rem}
+      .hub-ev-search{max-width:none;flex:1 1 100%}
+      .hub-ev-toolbar__actions{width:100%;justify-content:flex-end}
+      .hub-ev-toolbar__link,.hub-ev-toolbar__new{min-height:2.75rem}
+      .hub-ev-row-meta{white-space:normal}
     }
     @media(max-width:767px){
       .hub-user-chip{width:100%;min-width:0}
@@ -655,14 +680,6 @@
           <section class="hub-module-group">
             <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Organização e campo</h3>
             <div class="hub-module-grid">
-              <button type="button" data-hub-tab="agendamentos" data-hub-requires-permission="agendamentos" class="hub-module-card hub-module-card--agendamentos">
-                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></span>
-                <div class="hub-module-body">
-                  <h4>Agendamentos</h4>
-                  <p>Calendários Google nas páginas públicas.</p>
-                </div>
-                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
-              </button>
               <button type="button" data-hub-tab="territorios" data-hub-requires-permission="territorios" class="hub-module-card hub-module-card--territorios">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">map</span></span>
                 <div class="hub-module-body">
@@ -683,7 +700,7 @@
           </section>
 
           <section class="hub-module-group">
-            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Técnico e mídia</h3>
+            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">videocam</span>Áudio e Vídeo</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="audio-video" data-hub-requires-permission="audio_video" class="hub-module-card hub-module-card--av">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">home</span></span>
@@ -767,7 +784,7 @@
           </section>
 
           <section class="hub-module-group">
-            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">dashboard</span>Contribuições e sistema</h3>
+            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">volunteer_activism</span>Contribuições</h3>
             <div class="hub-module-grid">
               <button type="button" data-hub-tab="donativos" data-hub-requires-permission="donativos" class="hub-module-card hub-module-card--donativos">
                 <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">volunteer_activism</span></span>
@@ -777,11 +794,49 @@
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
-              <button type="button" data-hub-tab="configuracoes" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--config">
-                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></span>
+            </div>
+          </section>
+
+          <section class="hub-module-group">
+            <h3 class="hub-module-group-title"><span class="material-symbols-outlined hub-module-group-icon" aria-hidden="true">settings</span>Sistema</h3>
+            <div class="hub-module-grid">
+              <button type="button" data-hub-tab="sistema-membros" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></span>
                 <div class="hub-module-body">
-                  <h4>Configurações</h4>
-                  <p>Usuários, cargos, designações e permissões de acesso.</p>
+                  <h4>Membros da equipe</h4>
+                  <p>Cargo, usuário, e-mail, foto e acesso a módulos.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="sistema-designacoes" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span></span>
+                <div class="hub-module-body">
+                  <h4>Designações de acesso</h4>
+                  <p>Funções com permissões de módulo — atribua aos membros.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="sistema-notificacoes" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">notifications_active</span></span>
+                <div class="hub-module-body">
+                  <h4>Notificações da equipe</h4>
+                  <p>Envie aviso para um membro ou para toda a equipe.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="sistema-app" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">install_mobile</span></span>
+                <div class="hub-module-body">
+                  <h4>App no celular</h4>
+                  <p>Instale na tela inicial e gerencie atualizações.</p>
+                </div>
+                <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
+              </button>
+              <button type="button" data-hub-tab="sistema-links" data-hub-requires-permission="settings" class="hub-module-card hub-module-card--sistema">
+                <span class="hub-module-icon"><span class="material-symbols-outlined" aria-hidden="true">link</span></span>
+                <div class="hub-module-body">
+                  <h4>Links de calendário</h4>
+                  <p>URLs do Google Calendar para carrinhos e displays.</p>
                 </div>
                 <span class="material-symbols-outlined hub-module-chevron">chevron_right</span>
               </button>
@@ -793,25 +848,33 @@
       <div id="hub-view-anuncios" class="hub-view hidden hub-view--wide"></div>
       <div id="hub-view-discursos" class="hub-view hidden hub-view--wide"></div>
 
-      <div id="hub-view-agenda" class="hub-view hidden space-y-4">
-      <div class="flex flex-wrap justify-end gap-2 mb-2">
-          <a href="agenda.html" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-semibold text-secondary border border-outline-variant px-3 py-2 rounded-lg hover:bg-surface-container-low bg-white">
-            Ver página pública
-            <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>
-          </a>
-          <button type="button" id="hub-btn-new-event" class="bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg hover:opacity-90">Novo evento</button>
-      </div>
-
-      <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
-        <div class="hub-ev-list-head">
-          <p id="hub-events-count" class="hub-ev-list-count">Carregando…</p>
-          <p class="text-xs text-on-surface-variant">Clique em <strong>Editar</strong> para alterar ou em <strong>Novo evento</strong> para adicionar.</p>
+      <div id="hub-view-agenda" class="hub-view hidden hub-view--wide">
+        <div class="hub-ev-panel">
+          <div class="hub-ev-toolbar">
+            <div class="hub-ev-toolbar__main">
+              <p id="hub-events-count" class="hub-ev-list-count">Carregando…</p>
+              <label class="hub-ev-search">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input id="hub-ev-search" type="search" placeholder="Buscar evento…" autocomplete="off"/>
+              </label>
+            </div>
+            <div class="hub-ev-filters" id="hub-ev-filters" role="group" aria-label="Filtrar por tipo"></div>
+            <div class="hub-ev-toolbar__actions">
+              <a href="agenda.html" target="_blank" rel="noopener" class="hub-ev-toolbar__link">
+                Pública
+                <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+              </a>
+              <button type="button" id="hub-btn-new-event" class="hub-ev-toolbar__new">
+                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                Novo evento
+              </button>
+            </div>
+          </div>
+          <p id="hub-events-toast" class="hidden text-sm px-4 pt-2"></p>
+          <div id="hub-events-list">
+            <p class="hub-ev-empty">Carregando eventos…</p>
+          </div>
         </div>
-        <p id="hub-events-toast" class="hidden text-sm px-5 pt-3"></p>
-        <div id="hub-events-list">
-          <p class="px-4 py-6 text-sm text-on-surface-variant">Carregando eventos…</p>
-        </div>
-      </div>
       </div>
 
       <div id="hub-view-territorios" class="hub-view hidden hub-view--wide"></div>
@@ -829,23 +892,6 @@
             <label class="block text-sm font-semibold text-primary">URL do QR Code<input id="qr-url" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
             <label class="block text-sm font-semibold text-primary">Aviso legal<textarea id="disclaimer" rows="3" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"></textarea></label>
             <button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg w-full sm:w-auto">Salvar alterações</button>
-          </form>
-        </div>
-      </div>
-
-      <div id="hub-view-agendamentos" class="hub-view hidden">
-        <div class="hub-section-panel hub-section-panel--wide mx-auto w-full">
-          <div class="flex justify-end mb-3">
-            <button id="btn-new" type="button" class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg">+ Calendário</button>
-          </div>
-          <div class="bg-white border border-outline-variant rounded-xl mb-6"><div id="schedule-list"></div></div>
-          <form id="sched-form" class="hidden bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-            <input type="hidden" id="sched-id"/>
-            <label class="block text-sm font-semibold text-primary">Slug<input id="sched-slug" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm" placeholder="carrinho-1"/></label>
-            <label class="block text-sm font-semibold text-primary">Título<input id="sched-title" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">URL embed<input id="sched-url" required class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <label class="block text-sm font-semibold text-primary">Ordem<input id="sched-sort" type="number" value="0" class="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-sm"/></label>
-            <div class="flex gap-3"><button type="submit" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg">Salvar</button><button id="btn-cancel" type="button" class="text-sm">Cancelar</button></div>
           </form>
         </div>
       </div>
@@ -1020,8 +1066,8 @@
   <script src="js/agenda-helpers.js?v=2026060801"></script>
   <script src="js/je-toast.js?v=2026060301"></script>
   <script src="js/je-dialog.js?v=20260710200000"></script>
-  <script src="js/hub-sections.js?v=20260725270000"></script>
-  <script src="js/hub-events.js?v=2026060929"></script>
+  <script src="js/hub-sections.js?v=20260725310000"></script>
+  <script src="js/hub-events.js?v=20260725320000"></script>
   <script src="js/hub-changelog.js?v=2026062412"></script>
   <script src="js/week-input-helpers.js?v=2026060984"></script>
   <script src="js/territory-streets.js?v=2026061720"></script>
@@ -1041,12 +1087,12 @@
   </div>
   <script src="js/hub-territory-assignment.js?v=20260721143000"></script>
   <script src="js/admin-core.js?v=2026060902"></script>
-  <script src="js/hub-notifications.js?v=2026061514"></script>
-  <script src="js/hub-notifications-ui.js?v=2026061514"></script>
+  <script src="js/hub-notifications.js?v=20260725280000"></script>
+  <script src="js/hub-notifications-ui.js?v=20260725280000"></script>
   <script src="js/je-pwa-install.js?v=2026061719"></script>
   <script src="js/je-pwa-update.js?v=2026061719"></script>
   <script src="js/je-push.js?v=2026061719"></script>
   <script src="js/hub-superintendente-overview.js?v=20260725230000"></script>
-  <script src="js/hub.js?v=20260725210000"></script>
+  <script src="js/hub.js?v=20260725310000"></script>
 </body>
 </html>

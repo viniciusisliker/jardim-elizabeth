@@ -941,19 +941,46 @@ html.dark .hub-notif__empty,
 html.dark .hub-notif__item-body,
 html.dark .hub-notif__item-time,
 html.dark .hub-notif__push-text,
-html.dark .hub-pwa-card__lead,
-html.dark .hub-pwa-card__hint,
+html.dark .hub-pwa-card__block {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-pwa-card__label { color: var(--je-secondary) !important; }
+html.dark .hub-pwa-card__text,
 html.dark .hub-pwa-card__status {
   color: var(--je-on-surface-variant) !important;
 }
+html.dark .hub-pwa-card__btn--ghost {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-pwa-card__btn--primary {
+  background: var(--je-secondary) !important;
+  color: var(--je-on-secondary) !important;
+}
+html.dark .hub-pwa-card__btn--accent {
+  background: var(--je-secondary-fixed) !important;
+  color: var(--je-on-secondary-fixed) !important;
+}
 html.dark .hub-notif__mark-all,
 html.dark .hub-notif__item-meta,
-html.dark .hub-notif-send__dest legend,
 html.dark .hub-notif-send__field > span {
   color: var(--je-secondary) !important;
 }
-html.dark .hub-notif-send__dest,
-html.dark .hub-notif-send__radio { color: var(--je-on-surface) !important; }
+html.dark .hub-notif-send__dest-seg {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-notif-send__seg { color: var(--je-on-surface-variant) !important; }
+html.dark .hub-notif-send__seg--active {
+  background: var(--je-surface-container-lowest) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .hub-notif-send__submit {
+  background: var(--je-secondary) !important;
+  color: var(--je-on-secondary) !important;
+}
 html.dark .hub-notif__push {
   background: var(--je-surface-container-low) !important;
 }
@@ -964,9 +991,43 @@ html.dark .hub-notif__push-btn {
 }
 
 /* Hub — agenda / eventos (inline hub.html) */
+html.dark .hub-ev-panel {
+  background: var(--je-card) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-toolbar,
 html.dark .hub-ev-list-head {
   background: var(--je-surface-container-low) !important;
   border-bottom-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-search {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+}
+html.dark .hub-ev-search input { color: var(--je-on-surface) !important; }
+html.dark .hub-ev-filter {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-on-surface-variant) !important;
+}
+html.dark .hub-ev-filter.is-active {
+  background: var(--je-primary) !important;
+  border-color: var(--je-primary) !important;
+  color: #fff !important;
+}
+html.dark .hub-ev-toolbar__link {
+  background: var(--je-surface-container-lowest) !important;
+  border-color: var(--je-outline-variant) !important;
+  color: var(--je-secondary) !important;
+}
+html.dark .hub-ev-group-head {
+  background: var(--je-surface-container) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark .hub-ev-group-title { color: var(--je-secondary) !important; }
+html.dark .hub-ev-row-date {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-outline-variant) !important;
 }
 html.dark .hub-ev-list-count { color: var(--je-on-surface-variant) !important; }
 html.dark .hub-ev-row {

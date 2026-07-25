@@ -225,32 +225,46 @@
 
     root.innerHTML = `
       <section class="cfg-card hub-notif-send">
-        <div class="cfg-section-head">
+        <div class="cfg-section-head hub-notif-send__head">
           <div>
             <p class="cfg-section-title"><span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>Notificações da equipe</p>
-            <p class="cfg-section-desc">Envie aviso para um membro ou para toda a equipe com acesso ao Hub.</p>
+            <p class="cfg-section-desc">Aviso para um membro ou toda a equipe com acesso ao Hub.</p>
           </div>
         </div>
         <form id="hub-notif-send-form" class="hub-notif-send__form">
-          <fieldset class="hub-notif-send__dest">
-            <legend>Destino</legend>
-            <label class="hub-notif-send__radio"><input type="radio" name="hub-notif-dest" value="todos" checked/> Toda a equipe</label>
-            <label class="hub-notif-send__radio"><input type="radio" name="hub-notif-dest" value="usuario"/> Membro específico</label>
-          </fieldset>
+          <div class="hub-notif-send__dest-seg" role="radiogroup" aria-label="Destino">
+            <label class="hub-notif-send__seg hub-notif-send__seg--active">
+              <input type="radio" name="hub-notif-dest" value="todos" checked/>
+              <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+              Toda a equipe
+            </label>
+            <label class="hub-notif-send__seg">
+              <input type="radio" name="hub-notif-dest" value="usuario"/>
+              <span class="material-symbols-outlined" aria-hidden="true">person</span>
+              Membro
+            </label>
+          </div>
           <label class="hub-notif-send__field hidden" id="hub-notif-recipient-wrap">
             <span>Destinatário</span>
             <select id="hub-notif-recipient" class="cfg-search"></select>
           </label>
-          <label class="hub-notif-send__field">
-            <span>Título</span>
-            <input id="hub-notif-title" type="text" maxlength="120" required placeholder="Ex.: Manutenção programada"/>
-          </label>
-          <label class="hub-notif-send__field">
-            <span>Mensagem</span>
-            <textarea id="hub-notif-body" rows="4" maxlength="2000" required placeholder="Texto da notificação…"></textarea>
-          </label>
-          <p class="hub-notif-send__feedback hidden" id="hub-notif-send-feedback" role="status"></p>
-          <button type="submit" class="cfg-btn cfg-btn--primary" id="hub-notif-send-btn">Enviar notificação</button>
+          <div class="hub-notif-send__grid">
+            <label class="hub-notif-send__field">
+              <span>Título</span>
+              <input id="hub-notif-title" type="text" maxlength="120" required placeholder="Ex.: Manutenção programada"/>
+            </label>
+            <label class="hub-notif-send__field">
+              <span>Mensagem</span>
+              <textarea id="hub-notif-body" rows="2" maxlength="2000" required placeholder="Texto da notificação…"></textarea>
+            </label>
+          </div>
+          <div class="hub-notif-send__foot">
+            <p class="hub-notif-send__feedback hidden" id="hub-notif-send-feedback" role="status"></p>
+            <button type="submit" class="hub-notif-send__submit" id="hub-notif-send-btn">
+              <span class="material-symbols-outlined" aria-hidden="true">send</span>
+              Enviar
+            </button>
+          </div>
         </form>
       </section>`;
 
@@ -270,6 +284,10 @@
     function syncDestUi() {
       const dest = form.querySelector('input[name="hub-notif-dest"]:checked')?.value;
       recipientWrap.classList.toggle('hidden', dest !== 'usuario');
+      form.querySelectorAll('.hub-notif-send__seg').forEach((label) => {
+        const input = label.querySelector('input[type="radio"]');
+        label.classList.toggle('hub-notif-send__seg--active', !!input?.checked);
+      });
     }
 
     form.querySelectorAll('input[name="hub-notif-dest"]').forEach((el) => {
@@ -295,7 +313,7 @@
         return;
       }
       sendBtn.disabled = true;
-      sendBtn.textContent = 'Enviando…';
+      sendBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">hourglass_empty</span>Enviando…';
       try {
         const count = await api().send(client, title, body, recipientId);
         setFeedback(true, dest === 'usuario' ? 'Notificação enviada.' : `Notificação enviada para ${count} membro(s).`);
@@ -306,7 +324,7 @@
         setFeedback(false, err?.message || 'Falha ao enviar.');
       } finally {
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Enviar notificação';
+        sendBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">send</span>Enviar';
       }
     });
   }

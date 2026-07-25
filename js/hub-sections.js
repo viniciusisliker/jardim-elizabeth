@@ -48,7 +48,37 @@
       hash,
       audioVideoTab: tab,
       hero: {
-        kicker: 'Técnico e mídia',
+        kicker: 'Áudio e Vídeo',
+        title,
+        subtitle,
+        showChangelog: false,
+        showBack: true
+      }
+    };
+  }
+
+  const CONFIG_SHARED = {
+    permission: 'settings',
+    moduleKey: 'configuracoes',
+    viewId: 'hub-view-configuracoes',
+    partial: 'hub/sections/configuracoes.html',
+    styles: ['css/hub-sections/configuracoes.css?v=20260725310000'],
+    scripts: [
+      'js/admin/table-xlf.js?v=2026061058',
+      'js/admin/agendamentos.js?v=20260725310000',
+      'js/admin/configuracoes.js?v=20260725310000'
+    ],
+    initKey: 'JEAdminConfiguracoes'
+  };
+
+  function cfgSection(id, hash, tab, title, subtitle) {
+    return {
+      ...CONFIG_SHARED,
+      id,
+      hash,
+      configuracoesTab: tab,
+      hero: {
+        kicker: 'Sistema',
         title,
         subtitle,
         showChangelog: false,
@@ -134,23 +164,13 @@
         showBack: true
       }
     },
-    agendamentos: {
-      id: 'agendamentos',
-      hash: 'agendamentos',
-      permission: 'agendamentos',
-      viewId: 'hub-view-agendamentos',
-      scripts: [
-        'js/admin/agendamentos.js?v=2026060902'
-      ],
-      initKey: 'JEAdminAgendamentos',
-      hero: {
-        kicker: 'Organização e campo',
-        title: 'Agendamentos',
-        subtitle: 'Links de calendário Google — slugs carrinho-* e display-* nas páginas públicas.',
-        showChangelog: false,
-        showBack: true
-      }
-    },
+    agendamentos: cfgSection(
+      'agendamentos',
+      'agendamentos',
+      'links',
+      'Links de calendário',
+      'URLs do Google Calendar — slugs carrinho-* e display-* nas páginas públicas.'
+    ),
     'carrinhos-displays': {
       id: 'carrinhos-displays',
       hash: 'carrinhos-displays',
@@ -295,25 +315,47 @@
         showBack: true
       }
     },
-    configuracoes: {
-      id: 'configuracoes',
-      hash: 'configuracoes',
-      permission: 'settings',
-      viewId: 'hub-view-configuracoes',
-      partial: 'hub/sections/configuracoes.html',
-      styles: ['css/hub-sections/configuracoes.css?v=20260721150000'],
-      scripts: [
-        'js/admin/table-xlf.js?v=2026061058',
-        'js/admin/configuracoes.js?v=20260725120000'
-      ],
-      initKey: 'JEAdminConfiguracoes',
-      hero: {
-        kicker: 'Contribuições e sistema',
-        title: 'Equipe e Permissões',
-        subtitle: 'Cargos congregacionais, designações de acesso e módulos do Hub.',
-        showChangelog: false,
-        showBack: true
-      }
-    }
+    configuracoes: cfgSection(
+      'configuracoes',
+      'configuracoes',
+      null,
+      'Equipe e permissões',
+      'Visão geral de membros, designações e ferramentas do Hub.'
+    ),
+    'sistema-membros': cfgSection(
+      'sistema-membros',
+      'sistema-membros',
+      'membros',
+      'Membros da equipe',
+      'Cargo, usuário, e-mail, foto e acesso a módulos.'
+    ),
+    'sistema-designacoes': cfgSection(
+      'sistema-designacoes',
+      'sistema-designacoes',
+      'designacoes',
+      'Designações de acesso',
+      'Funções com permissões de módulo — atribua aos membros.'
+    ),
+    'sistema-notificacoes': cfgSection(
+      'sistema-notificacoes',
+      'sistema-notificacoes',
+      'notificacoes',
+      'Notificações da equipe',
+      'Envie aviso para um membro ou para toda a equipe.'
+    ),
+    'sistema-app': cfgSection(
+      'sistema-app',
+      'sistema-app',
+      'app',
+      'App no celular',
+      'Instale na tela inicial e gerencie atualizações.'
+    ),
+    'sistema-links': cfgSection(
+      'sistema-links',
+      'sistema-links',
+      'links',
+      'Links de calendário',
+      'URLs do Google Calendar — slugs carrinho-* e display-* nas páginas públicas.'
+    )
   };
 })();

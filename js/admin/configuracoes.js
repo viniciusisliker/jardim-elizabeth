@@ -43,6 +43,33 @@
   const ACCESS_NONE = '__none__';
   const ROLE_FILTER_OPTIONS = ROLES.map((r) => ({ value: r.value, label: r.label }));
 
+  let cfgFocusSection = null;
+  let cfgFocusPending = null;
+
+  function scrollToCfgTarget(selector) {
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function focusSection(tab) {
+    if (cfgFocusSection) {
+      cfgFocusSection(tab);
+      return;
+    }
+    if (tab === 'notificacoes') {
+      scrollToCfgTarget('#hub-notif-send-root');
+      return;
+    }
+    if (tab === 'links') {
+      scrollToCfgTarget('#cfg-calendar-links');
+      return;
+    }
+    if (tab === 'app') {
+      scrollToCfgTarget('.hub-pwa-card');
+      return;
+    }
+    if (tab) cfgFocusPending = tab;
+  }
+
   function slugify(text) {
     return String(text || '')
       .normalize('NFD')
@@ -101,13 +128,18 @@
     const profile = window.JEHubRouter?.getProfile?.() || await window.JEAuth.getCurrentProfile();
     const canSettings = profile && window.JEAuth.hasPermission(profile, 'settings');
     const canNotify = profile && window.JEHubNotifications?.canSend?.(profile);
-    if (!profile || (!canSettings && !canNotify)) {
+    const canLinks = profile && (
+      window.JEAuth.hasPermission(profile, 'settings')
+      || window.JEAuth.hasPermission(profile, 'agendamentos')
+    );
+    if (!profile || (!canSettings && !canNotify && !canLinks)) {
       if (window.JEAdmin?.authDeny) window.JEAdmin.authDeny();
       else window.location.href = 'index.html';
       return false;
     }
 
     const notifyOnly = canNotify && !canSettings;
+    const linksOnly = canLinks && !canSettings && !canNotify;
     const client = await getClient();
     const toast = document.getElementById('hub-admin-toast') || document.getElementById('admin-toast');
 
@@ -116,8 +148,20 @@
       document.querySelector('.cfg-note')?.classList.add('hidden');
       document.querySelector('.cfg-action-grid')?.classList.add('hidden');
       document.querySelector('.cfg-foot')?.classList.add('hidden');
+      document.getElementById('cfg-calendar-links')?.classList.add('hidden');
       window.JEHubNotificationsUi?.initSendForm?.(client, profile);
       window.JEPwaInstall?.bindTriggers?.();
+      return true;
+    }
+
+    if (linksOnly) {
+      document.querySelector('.cfg-stats')?.classList.add('hidden');
+      document.querySelector('.cfg-note')?.classList.add('hidden');
+      document.querySelector('.cfg-action-grid')?.classList.add('hidden');
+      document.querySelector('.cfg-foot')?.classList.add('hidden');
+      document.getElementById('hub-notif-send-root')?.classList.add('hidden');
+      document.querySelector('.hub-pwa-card')?.classList.add('hidden');
+      await window.JEAdminAgendamentos?.init?.();
       return true;
     }
 
@@ -1182,13 +1226,42 @@
 
     setupCfgModals();
 
+    cfgFocusSection = (tab) => {
+      if (tab === 'membros') {
+        document.getElementById('cfg-open-members')?.click();
+        return;
+      }
+      if (tab === 'designacoes') {
+        const btn = document.getElementById('cfg-open-designations');
+        if (btn && !btn.classList.contains('hidden')) btn.click();
+        else scrollToCfgTarget('.cfg-action-grid');
+        return;
+      }
+      if (tab === 'notificacoes') {
+        scrollToCfgTarget('#hub-notif-send-root');
+        return;
+      }
+      if (tab === 'app') {
+        scrollToCfgTarget('.hub-pwa-card');
+        return;
+      }
+      if (tab === 'links') {
+        scrollToCfgTarget('#cfg-calendar-links');
+      }
+    };
+    if (cfgFocusPending) {
+      cfgFocusSection(cfgFocusPending);
+      cfgFocusPending = null;
+    }
+
     await reloadCatalog();
     await reloadMembers();
     window.JEHubNotificationsUi?.initSendForm?.(client, profile);
+    await window.JEAdminAgendamentos?.init?.();
     return true;
   }
 
-  window.JEAdminConfiguracoes = { init };
+  window.JEAdminConfiguracoes = { init, focusSection };
 
   if (!window.JEHubRouter && document.getElementById('members-table')) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
