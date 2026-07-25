@@ -4,13 +4,15 @@
     <name>T13 · CDHU A</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[draft] Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.63905,0 -46.77502,-23.63905,0 -46.77502,-23.64058,0 -46.77618,-23.64058,0 -46.77618,-23.63905,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77458,-23.63948,0 -46.77372,-23.63948,0 -46.77372,-23.64048,0 -46.77458,-23.64048,0 -46.77458,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77478,-23.64058,0 -46.77402,-23.64058,0 -46.77402,-23.64108,0 -46.77478,-23.64108,0 -46.77478,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
   </Document>

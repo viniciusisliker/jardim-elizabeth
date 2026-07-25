@@ -4,14 +4,16 @@
     <name>T05 · Jardim Elizabeth D</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T05 - Jardim Elizabeth D</name>
-      <description><![CDATA[Importado de t05.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77626105,-23.640478,0 -46.77654405,-23.64100965,0 -46.7783415,-23.6405179,0 -46.77635275,-23.6419739,0 -46.77626105,-23.640478,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t05.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.776261,-23.640478,0 -46.776544,-23.64101,0 -46.778342,-23.640518,0 -46.776353,-23.641974,0 -46.776261,-23.640478,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

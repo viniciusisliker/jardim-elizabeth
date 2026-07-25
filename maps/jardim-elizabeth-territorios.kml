@@ -4,175 +4,123 @@
     <name>Jardim Elizabeth — Territorios</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T01 - Campo Limpo</name>
-      <description><![CDATA[Importado de t01.kml (1 poligono(s), 5 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797947,-23.6390096,0 -46.7788148,-23.63769455,0 -46.777254150000005,-23.6348424,0 -46.77610545,-23.6339768,0 -46.7754232,-23.6347159,0 -46.7797947,-23.6390096,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t01.kml (1 poligono(s), 5 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.779795,-23.63901,0 -46.778815,-23.637695,0 -46.777254,-23.634842,0 -46.776105,-23.633977,0 -46.775423,-23.634716,0 -46.779795,-23.63901,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T02 - Jardim Elizabeth A</name>
-      <description><![CDATA[Importado de t02.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7749016,-23.638302,0 -46.7734438,-23.6401531,0 -46.7763136,-23.6392158,0 -46.7765241,-23.638964100000003,0 -46.7749016,-23.638302,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t02.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.774902,-23.638302,0 -46.773444,-23.640153,0 -46.776314,-23.639216,0 -46.776524,-23.638964,0 -46.774902,-23.638302,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T03 - Jardim Elizabeth B</name>
-      <description><![CDATA[Importado de t03.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7755897,-23.6374057,0 -46.7769447,-23.6383065,0 -46.77639295,-23.6389419,0 -46.7734438,-23.6401531,0 -46.7755897,-23.6374057,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t03.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77559,-23.637406,0 -46.776945,-23.638306,0 -46.776393,-23.638942,0 -46.773444,-23.640153,0 -46.77559,-23.637406,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T04 - Jardim Elizabeth C</name>
-      <description><![CDATA[Importado de t04.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.775592950000004,-23.634909999999998,0 -46.7755897,-23.6374057,0 -46.7769447,-23.6383065,0 -46.775955350000004,-23.6351207,0 -46.775592950000004,-23.634909999999998,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t04.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.775593,-23.63491,0 -46.77559,-23.637406,0 -46.776945,-23.638306,0 -46.775955,-23.635121,0 -46.775593,-23.63491,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T05 - Jardim Elizabeth D</name>
-      <description><![CDATA[Importado de t05.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77626105,-23.640478,0 -46.77654405,-23.64100965,0 -46.7783415,-23.6405179,0 -46.77635275,-23.6419739,0 -46.77626105,-23.640478,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t05.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.776261,-23.640478,0 -46.776544,-23.64101,0 -46.778342,-23.640518,0 -46.776353,-23.641974,0 -46.776261,-23.640478,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T06 - Vila Pirajussara</name>
-      <description><![CDATA[Importado de t06.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7739305,-23.6384988,0 -46.7731344,-23.6403537,0 -46.7734163,-23.6404319,0 -46.774135349999995,-23.63876585,0 -46.7739305,-23.6384988,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t06.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77393,-23.638499,0 -46.773134,-23.640354,0 -46.773416,-23.640432,0 -46.774135,-23.638766,0 -46.77393,-23.638499,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T07 - Jardim Iracema A</name>
-      <description><![CDATA[Importado de t07.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.78411605,-23.6383001,0 -46.7831044,-23.6378605,0 -46.7835906,-23.64014085,0 -46.78411605,-23.6383001,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t07.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.784116,-23.6383,0 -46.783104,-23.63786,0 -46.783591,-23.640141,0 -46.784116,-23.6383,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T08 - Jardim Iracema B</name>
-      <description><![CDATA[Importado de t08.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7838998,-23.6412884,0 -46.7833505,-23.6410674,0 -46.783305,-23.64007495,0 -46.7835906,-23.64014085,0 -46.7838998,-23.6412884,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t08.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7839,-23.641288,0 -46.78335,-23.641067,0 -46.783305,-23.640075,0 -46.783591,-23.640141,0 -46.7839,-23.641288,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T09 - Jardim Helga E</name>
-      <description><![CDATA[Importado de t09.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7734721,-23.640945,0 -46.7728525,-23.6402755,0 -46.7720594,-23.64059915,0 -46.7734721,-23.640945,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t09.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.773472,-23.640945,0 -46.772852,-23.640276,0 -46.772059,-23.640599,0 -46.773472,-23.640945,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T10 - Jd Leônidas Moreira A</name>
-      <description><![CDATA[Importado de t10.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7765048,-23.64072,0 -46.7752131,-23.6426014,0 -46.7786485,-23.6388606,0 -46.7772857,-23.6419971,0 -46.7765048,-23.64072,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t10.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.776505,-23.64072,0 -46.775213,-23.642601,0 -46.778649,-23.638861,0 -46.777286,-23.641997,0 -46.776505,-23.64072,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T11 - Jd Leônidas Moreira B</name>
-      <description><![CDATA[Importado de t11.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797443,-23.6382672,0 -46.77956355,-23.641766750000002,0 -46.7778238,-23.6426587,0 -46.7772857,-23.6419971,0 -46.7797443,-23.6382672,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t11.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.779744,-23.638267,0 -46.779564,-23.641767,0 -46.777824,-23.642659,0 -46.777286,-23.641997,0 -46.779744,-23.638267,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T12 - Jd Leônidas Moreira C</name>
-      <description><![CDATA[Importado de t12.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7789329,-23.64311015,0 -46.7795099,-23.6444784,0 -46.7779509,-23.6435518,0 -46.7782094,-23.6431089,0 -46.7789329,-23.64311015,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t12.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.778933,-23.64311,0 -46.77951,-23.644478,0 -46.777951,-23.643552,0 -46.778209,-23.643109,0 -46.778933,-23.64311,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T13 - CDHU A</name>
-      <description><![CDATA[Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[draft] Importado de t13.kml (3 poligono(s), 12 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.63905,0 -46.77502,-23.63905,0 -46.77502,-23.64058,0 -46.77618,-23.64058,0 -46.77618,-23.63905,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77458,-23.63948,0 -46.77372,-23.63948,0 -46.77372,-23.64048,0 -46.77458,-23.64048,0 -46.77458,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77478,-23.64058,0 -46.77402,-23.64058,0 -46.77402,-23.64108,0 -46.77478,-23.64108,0 -46.77478,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
     <Placemark>
       <name>T14 - CDHU B</name>
-      <description><![CDATA[Importado de t14.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[needs_review] Importado de t14.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77618,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.64108,0 -46.77618,-23.64108,0 -46.77618,-23.64058,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T15 - CDHU C</name>
-      <description><![CDATA[Importado de t15.kml (2 poligono(s), 8 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[draft] Importado de t15.kml (2 poligono(s), 8 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63948,0 -46.77418,-23.63948,0 -46.77418,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63982,0 -46.77432,-23.63982,0 -46.77432,-23.64028,0 -46.77502,-23.64028,0 -46.77502,-23.63982,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
     <Placemark>
       <name>T16 - Jardim Helga A</name>
-      <description><![CDATA[Importado de t16.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t16.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.772109,-23.640797,0 -46.772244,-23.642071,0 -46.771476,-23.640893,0 -46.772109,-23.640797,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T17 - Jardim Helga B</name>
-      <description><![CDATA[Importado de t17.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t17.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.772244,-23.642071,0 -46.771476,-23.640893,0 -46.772109,-23.640797,0 -46.772244,-23.642071,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T18 - Jardim Helga C</name>
-      <description><![CDATA[Importado de t18.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[needs_review] Importado de t18.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77349,-23.64614,0 -46.77343,-23.64438,0 -46.77396,-23.64573,0 -46.7726,-23.64644,0 -46.77349,-23.64614,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
     <Placemark>
       <name>T19 - Jardim Helga D</name>
-      <description><![CDATA[Importado de t19.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[needs_review] Importado de t19.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77537,-23.64344,0 -46.77596,-23.64276,0 -46.77575,-23.64429,0 -46.77448,-23.64482,0 -46.77537,-23.64344,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>

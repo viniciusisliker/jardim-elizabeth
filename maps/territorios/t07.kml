@@ -4,14 +4,16 @@
     <name>T07 · Jardim Iracema A</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T07 - Jardim Iracema A</name>
-      <description><![CDATA[Importado de t07.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.78411605,-23.6383001,0 -46.7831044,-23.6378605,0 -46.7835906,-23.64014085,0 -46.78411605,-23.6383001,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t07.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.784116,-23.6383,0 -46.783104,-23.63786,0 -46.783591,-23.640141,0 -46.784116,-23.6383,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

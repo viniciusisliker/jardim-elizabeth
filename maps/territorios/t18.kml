@@ -4,13 +4,15 @@
     <name>T18 · Jardim Helga C</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T18 - Jardim Helga C</name>
-      <description><![CDATA[Importado de t18.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[needs_review] Importado de t18.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77349,-23.64614,0 -46.77343,-23.64438,0 -46.77396,-23.64573,0 -46.7726,-23.64644,0 -46.77349,-23.64614,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>

@@ -4,14 +4,16 @@
     <name>T06 · Vila Pirajussara</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T06 - Vila Pirajussara</name>
-      <description><![CDATA[Importado de t06.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7739305,-23.6384988,0 -46.7731344,-23.6403537,0 -46.7734163,-23.6404319,0 -46.774135349999995,-23.63876585,0 -46.7739305,-23.6384988,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t06.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77393,-23.638499,0 -46.773134,-23.640354,0 -46.773416,-23.640432,0 -46.774135,-23.638766,0 -46.77393,-23.638499,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

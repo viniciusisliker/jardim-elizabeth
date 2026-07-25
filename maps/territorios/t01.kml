@@ -4,14 +4,16 @@
     <name>T01 · Campo Limpo</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T01 - Campo Limpo</name>
-      <description><![CDATA[Importado de t01.kml (1 poligono(s), 5 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7797947,-23.6390096,0 -46.7788148,-23.63769455,0 -46.777254150000005,-23.6348424,0 -46.77610545,-23.6339768,0 -46.7754232,-23.6347159,0 -46.7797947,-23.6390096,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t01.kml (1 poligono(s), 5 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.779795,-23.63901,0 -46.778815,-23.637695,0 -46.777254,-23.634842,0 -46.776105,-23.633977,0 -46.775423,-23.634716,0 -46.779795,-23.63901,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

@@ -4,14 +4,16 @@
     <name>T17 · Jardim Helga B</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T17 - Jardim Helga B</name>
-      <description><![CDATA[Importado de t17.kml (1 poligono(s), 3 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77224445,-23.6420709,0 -46.7714757,-23.6408933,0 -46.7721087,-23.6407973,0 -46.77224445,-23.6420709,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t17.kml (1 poligono(s), 3 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.772244,-23.642071,0 -46.771476,-23.640893,0 -46.772109,-23.640797,0 -46.772244,-23.642071,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

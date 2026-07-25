@@ -7,28 +7,32 @@
       "paths": [
         [
           [
-            -46.7797947,
-            -23.6390096
+            -46.779795,
+            -23.63901
           ],
           [
-            -46.7788148,
-            -23.63769455
+            -46.778815,
+            -23.637695
           ],
           [
-            -46.777254150000005,
-            -23.6348424
+            -46.777254,
+            -23.634842
           ],
           [
-            -46.77610545,
-            -23.6339768
+            -46.776105,
+            -23.633977
           ],
           [
-            -46.7754232,
-            -23.6347159
+            -46.775423,
+            -23.634716
           ]
         ]
       ],
-      "note": "Importado de t01.kml (1 poligono(s), 5 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t01.kml (1 poligono(s), 5 pontos)",
+      "warnings": [
+        "apenas 5 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "02": {
       "name": "Jardim Elizabeth A",
@@ -36,24 +40,29 @@
       "paths": [
         [
           [
-            -46.7749016,
+            -46.774902,
             -23.638302
           ],
           [
-            -46.7734438,
-            -23.6401531
+            -46.773444,
+            -23.640153
           ],
           [
-            -46.7763136,
-            -23.6392158
+            -46.776314,
+            -23.639216
           ],
           [
-            -46.7765241,
-            -23.638964100000003
+            -46.776524,
+            -23.638964
           ]
         ]
       ],
-      "note": "Importado de t02.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t02.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth",
+        "esperado >= 6 pontos (Laço Nelson Spilman / Zamitti Mammana)"
+      ]
     },
     "03": {
       "name": "Jardim Elizabeth B",
@@ -61,24 +70,28 @@
       "paths": [
         [
           [
-            -46.7755897,
-            -23.6374057
+            -46.77559,
+            -23.637406
           ],
           [
-            -46.7769447,
-            -23.6383065
+            -46.776945,
+            -23.638306
           ],
           [
-            -46.77639295,
-            -23.6389419
+            -46.776393,
+            -23.638942
           ],
           [
-            -46.7734438,
-            -23.6401531
+            -46.773444,
+            -23.640153
           ]
         ]
       ],
-      "note": "Importado de t03.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t03.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "04": {
       "name": "Jardim Elizabeth C",
@@ -86,24 +99,28 @@
       "paths": [
         [
           [
-            -46.775592950000004,
-            -23.634909999999998
+            -46.775593,
+            -23.63491
           ],
           [
-            -46.7755897,
-            -23.6374057
+            -46.77559,
+            -23.637406
           ],
           [
-            -46.7769447,
-            -23.6383065
+            -46.776945,
+            -23.638306
           ],
           [
-            -46.775955350000004,
-            -23.6351207
+            -46.775955,
+            -23.635121
           ]
         ]
       ],
-      "note": "Importado de t04.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t04.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "05": {
       "name": "Jardim Elizabeth D",
@@ -111,24 +128,28 @@
       "paths": [
         [
           [
-            -46.77626105,
+            -46.776261,
             -23.640478
           ],
           [
-            -46.77654405,
-            -23.64100965
+            -46.776544,
+            -23.64101
           ],
           [
-            -46.7783415,
-            -23.6405179
+            -46.778342,
+            -23.640518
           ],
           [
-            -46.77635275,
-            -23.6419739
+            -46.776353,
+            -23.641974
           ]
         ]
       ],
-      "note": "Importado de t05.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t05.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "06": {
       "name": "Vila Pirajussara",
@@ -136,24 +157,28 @@
       "paths": [
         [
           [
-            -46.7739305,
-            -23.6384988
+            -46.77393,
+            -23.638499
           ],
           [
-            -46.7731344,
-            -23.6403537
+            -46.773134,
+            -23.640354
           ],
           [
-            -46.7734163,
-            -23.6404319
+            -46.773416,
+            -23.640432
           ],
           [
-            -46.774135349999995,
-            -23.63876585
+            -46.774135,
+            -23.638766
           ]
         ]
       ],
-      "note": "Importado de t06.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t06.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "07": {
       "name": "Jardim Iracema A",
@@ -161,20 +186,25 @@
       "paths": [
         [
           [
-            -46.78411605,
-            -23.6383001
+            -46.784116,
+            -23.6383
           ],
           [
-            -46.7831044,
-            -23.6378605
+            -46.783104,
+            -23.63786
           ],
           [
-            -46.7835906,
-            -23.64014085
+            -46.783591,
+            -23.640141
           ]
         ]
       ],
-      "note": "Importado de t07.kml (1 poligono(s), 3 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t07.kml (1 poligono(s), 3 pontos)",
+      "warnings": [
+        "apenas 3 pontos — provavel rascunho OSM; refazer no Earth",
+        "esperado >= 5 pontos (Borda leste irregular)"
+      ]
     },
     "08": {
       "name": "Jardim Iracema B",
@@ -182,24 +212,28 @@
       "paths": [
         [
           [
-            -46.7838998,
-            -23.6412884
+            -46.7839,
+            -23.641288
           ],
           [
-            -46.7833505,
-            -23.6410674
+            -46.78335,
+            -23.641067
           ],
           [
             -46.783305,
-            -23.64007495
+            -23.640075
           ],
           [
-            -46.7835906,
-            -23.64014085
+            -46.783591,
+            -23.640141
           ]
         ]
       ],
-      "note": "Importado de t08.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t08.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "09": {
       "name": "Jardim Helga E",
@@ -207,20 +241,24 @@
       "paths": [
         [
           [
-            -46.7734721,
+            -46.773472,
             -23.640945
           ],
           [
-            -46.7728525,
-            -23.6402755
+            -46.772852,
+            -23.640276
           ],
           [
-            -46.7720594,
-            -23.64059915
+            -46.772059,
+            -23.640599
           ]
         ]
       ],
-      "note": "Importado de t09.kml (1 poligono(s), 3 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t09.kml (1 poligono(s), 3 pontos)",
+      "warnings": [
+        "apenas 3 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "10": {
       "name": "Jd Leônidas Moreira A",
@@ -228,24 +266,30 @@
       "paths": [
         [
           [
-            -46.7765048,
+            -46.776505,
             -23.64072
           ],
           [
-            -46.7752131,
-            -23.6426014
+            -46.775213,
+            -23.642601
           ],
           [
-            -46.7786485,
-            -23.6388606
+            -46.778649,
+            -23.638861
           ],
           [
-            -46.7772857,
-            -23.6419971
+            -46.777286,
+            -23.641997
           ]
         ]
       ],
-      "note": "Importado de t10.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t10.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth",
+        "poligono 1 auto-intersecta (formato invalido)",
+        "esperado >= 3 poligonos (Três áreas verdes separadas)"
+      ]
     },
     "11": {
       "name": "Jd Leônidas Moreira B",
@@ -253,24 +297,28 @@
       "paths": [
         [
           [
-            -46.7797443,
-            -23.6382672
+            -46.779744,
+            -23.638267
           ],
           [
-            -46.77956355,
-            -23.641766750000002
+            -46.779564,
+            -23.641767
           ],
           [
-            -46.7778238,
-            -23.6426587
+            -46.777824,
+            -23.642659
           ],
           [
-            -46.7772857,
-            -23.6419971
+            -46.777286,
+            -23.641997
           ]
         ]
       ],
-      "note": "Importado de t11.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t11.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "12": {
       "name": "Jd Leônidas Moreira C",
@@ -278,24 +326,28 @@
       "paths": [
         [
           [
-            -46.7789329,
-            -23.64311015
+            -46.778933,
+            -23.64311
           ],
           [
-            -46.7795099,
-            -23.6444784
+            -46.77951,
+            -23.644478
           ],
           [
-            -46.7779509,
-            -23.6435518
+            -46.777951,
+            -23.643552
           ],
           [
-            -46.7782094,
-            -23.6431089
+            -46.778209,
+            -23.643109
           ]
         ]
       ],
-      "note": "Importado de t12.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t12.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "13": {
       "name": "CDHU A",
@@ -356,6 +408,7 @@
           ]
         ]
       ],
+      "quality": "draft",
       "note": "Importado de t13.kml (3 poligono(s), 12 pontos)"
     },
     "14": {
@@ -381,7 +434,11 @@
           ]
         ]
       ],
-      "note": "Importado de t14.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t14.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "15": {
       "name": "CDHU C",
@@ -424,6 +481,7 @@
           ]
         ]
       ],
+      "quality": "draft",
       "note": "Importado de t15.kml (2 poligono(s), 8 pontos)"
     },
     "16": {
@@ -432,20 +490,24 @@
       "paths": [
         [
           [
-            -46.7721087,
-            -23.6407973
+            -46.772109,
+            -23.640797
           ],
           [
-            -46.77224445,
-            -23.6420709
+            -46.772244,
+            -23.642071
           ],
           [
-            -46.7714757,
-            -23.6408933
+            -46.771476,
+            -23.640893
           ]
         ]
       ],
-      "note": "Importado de t16.kml (1 poligono(s), 3 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t16.kml (1 poligono(s), 3 pontos)",
+      "warnings": [
+        "apenas 3 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "17": {
       "name": "Jardim Helga B",
@@ -453,20 +515,24 @@
       "paths": [
         [
           [
-            -46.77224445,
-            -23.6420709
+            -46.772244,
+            -23.642071
           ],
           [
-            -46.7714757,
-            -23.6408933
+            -46.771476,
+            -23.640893
           ],
           [
-            -46.7721087,
-            -23.6407973
+            -46.772109,
+            -23.640797
           ]
         ]
       ],
-      "note": "Importado de t17.kml (1 poligono(s), 3 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t17.kml (1 poligono(s), 3 pontos)",
+      "warnings": [
+        "apenas 3 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     },
     "18": {
       "name": "Jardim Helga C",
@@ -491,7 +557,12 @@
           ]
         ]
       ],
-      "note": "Importado de t18.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t18.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth",
+        "poligono 1 auto-intersecta (formato invalido)"
+      ]
     },
     "19": {
       "name": "Jardim Helga D",
@@ -516,9 +587,13 @@
           ]
         ]
       ],
-      "note": "Importado de t19.kml (1 poligono(s), 4 pontos)"
+      "quality": "needs_review",
+      "note": "Importado de t19.kml (1 poligono(s), 4 pontos)",
+      "warnings": [
+        "apenas 4 pontos — provavel rascunho OSM; refazer no Earth"
+      ]
     }
   },
   "version": 1,
-  "updated": "2026-07-25T02:49:38Z"
+  "updated": "2026-07-25T02:51:54Z"
 }

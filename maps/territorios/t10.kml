@@ -4,14 +4,16 @@
     <name>T10 · Jd Leônidas Moreira A</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T10 - Jd Leônidas Moreira A</name>
-      <description><![CDATA[Importado de t10.kml (1 poligono(s), 4 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.7765048,-23.64072,0 -46.7752131,-23.6426014,0 -46.7786485,-23.6388606,0 -46.7772857,-23.6419971,0 -46.7765048,-23.64072,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      <description><![CDATA[[needs_review] Importado de t10.kml (1 poligono(s), 4 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.776505,-23.64072,0 -46.775213,-23.642601,0 -46.778649,-23.638861,0 -46.777286,-23.641997,0 -46.776505,-23.64072,0</coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
   </Document>
 </kml>

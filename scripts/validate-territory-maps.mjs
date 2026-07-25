@@ -52,4 +52,37 @@ if (missing) {
   process.exit(1);
 }
 console.log('Pronto para commit/deploy quando os JPGs forem atualizados.');
+
+const boundariesPath = join(root, 'maps', 'territory-boundaries.json');
+const kmzDir = join(root, 'maps', 'territorios');
+if (existsSync(boundariesPath)) {
+  const boundaries = JSON.parse(readFileSync(boundariesPath, 'utf8'));
+  const terrs = boundaries.territories || {};
+  let kmzMissing = 0;
+  let needsReview = 0;
+  console.log('\nKMZ (maps/territorios/):');
+  for (const t of checklist.territories) {
+    const num = t.num;
+    const kmz = join(kmzDir, `t${num}.kmz`);
+    const spec = terrs[num];
+    const quality = spec?.quality || '?';
+    if (!existsSync(kmz)) {
+      console.log(`  ✗ t${num}.kmz  AUSENTE`);
+      kmzMissing += 1;
+    } else if (quality === 'needs_review') {
+      console.log(`  ⚠ t${num}.kmz  ${quality}`);
+      needsReview += 1;
+    } else {
+      console.log(`  ✓ t${num}.kmz  ${quality}`);
+    }
+  }
+  if (kmzMissing) {
+    console.error('\nRode: python scripts/territory-boundaries.py export');
+    process.exit(1);
+  }
+  if (needsReview) {
+    console.log(`\n${needsReview} territorio(s) marcados needs_review — refazer no Earth (T02, T07, T10 prioritarios).`);
+  }
+}
+
 process.exit(0);

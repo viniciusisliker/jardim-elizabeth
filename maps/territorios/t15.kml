@@ -4,13 +4,15 @@
     <name>T15 · CDHU C</name>
     <description>Poligonos importados do Google Earth (territory-boundaries.json).</description>
     
+    <Style id="terrStyle">
+      <LineStyle><color>ffd600ff</color><width>3.5</width></LineStyle>
+      <PolyStyle><color>46ffd600</color></PolyStyle>
+    </Style>
+    
     <Placemark>
       <name>T15 - CDHU C</name>
-      <description><![CDATA[Importado de t15.kml (2 poligono(s), 8 pontos)]]></description>
-      <Style>
-        <LineStyle><color>ff00d6ff</color><width>3.5</width></LineStyle>
-        <PolyStyle><color>4600d6ff</color></PolyStyle>
-      </Style>
+      <description><![CDATA[[draft] Importado de t15.kml (2 poligono(s), 8 pontos)]]></description>
+      <styleUrl>#terrStyle</styleUrl>
       <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63948,0 -46.77418,-23.63948,0 -46.77418,-23.64058,0 -46.77502,-23.64058,0 -46.77502,-23.63948,0</coordinates></LinearRing></outerBoundaryIs></Polygon><Polygon><outerBoundaryIs><LinearRing><coordinates>-46.77502,-23.63982,0 -46.77432,-23.63982,0 -46.77432,-23.64028,0 -46.77502,-23.64028,0 -46.77502,-23.63982,0</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
     </Placemark>
   </Document>
