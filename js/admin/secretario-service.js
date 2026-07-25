@@ -42,7 +42,7 @@
   let publishers = [];
   let reports = new Map();
   let monthStatus = { is_closed: false, observations: '' };
-  let attendance = { midweek: 0, weekend: 0, midweekExtra: null, weekendExtra: null, midweekZoom: null, weekendZoom: null };
+  let attendance = { midweek: 0, weekend: 0, midweekZoom: null, weekendZoom: null };
   let attendanceLogs = [];
   let adjustments = [];
   let settings = {};
@@ -499,14 +499,6 @@
     attendance.weekend = avgFromLogs(monthLogs, 'weekend');
     attendance.midweekZoom = avgZoomFromLogs(monthLogs, 'midweek');
     attendance.weekendZoom = avgZoomFromLogs(monthLogs, 'weekend');
-    const midExtra = monthLogs.filter((row) => row.meeting_kind === 'midweek' && row.extra_count != null);
-    const weekExtra = monthLogs.filter((row) => row.meeting_kind === 'weekend' && row.extra_count != null);
-    attendance.midweekExtra = midExtra.length
-      ? Math.round(midExtra.reduce((acc, row) => acc + Number(row.extra_count), 0) / midExtra.length)
-      : null;
-    attendance.weekendExtra = weekExtra.length
-      ? Math.round(weekExtra.reduce((acc, row) => acc + Number(row.extra_count), 0) / weekExtra.length)
-      : null;
   }
 
   function renderAttendance() {
@@ -548,7 +540,6 @@
         <div class="sec-attendance-log__counts">
           <span class="sec-attendance-log__count">${escapeHtml(String(row.attendance_count))}</span>
           ${row.zoom_attendance_count != null ? `<span class="sec-attendance-log__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
-          ${row.extra_count != null ? `<span class="sec-attendance-log__extra">+${escapeHtml(String(row.extra_count))} extra</span>` : ''}
         </div>
         <div class="sec-attendance-log__meta">
           ${row.remarks ? `<p class="sec-attendance-log__remarks">${escapeHtml(row.remarks)}</p>` : ''}
@@ -607,7 +598,6 @@
   function fillSettingsForm() {
     document.getElementById('sec-setting-reminder').value = settings.reminder_message || '';
     document.getElementById('sec-setting-lastname-first').checked = !!settings.show_last_name_first;
-    document.getElementById('sec-setting-extra-attendance').checked = !!settings.extra_attendance_count;
     document.getElementById('sec-setting-sc-name').value = settings.circuit_overseer_name || '';
     renderGroupsList();
   }
@@ -731,7 +721,7 @@
       client.from('secretary_month_status').select('*').eq('service_year', year).eq('service_month', month).maybeSingle(),
       client.from('secretary_meeting_attendance').select('*').eq('service_year', year).eq('service_month', month),
       client.from('secretary_attendance_logs').select(`
-        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, extra_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks, created_at,
         profiles:submitted_by ( full_name )
       `).gte('meeting_date', monthStart).lte('meeting_date', monthEnd).order('meeting_date', { ascending: false }),
       client.from('secretary_month_adjustments').select('*').eq('service_year', year).eq('service_month', month),
@@ -772,8 +762,6 @@
       const att = aRes.data || [];
       attendance.midweek = att.find((a) => a.meeting_kind === 'midweek')?.attendance_count ?? 0;
       attendance.weekend = att.find((a) => a.meeting_kind === 'weekend')?.attendance_count ?? 0;
-      attendance.midweekExtra = att.find((a) => a.meeting_kind === 'midweek')?.extra_count ?? null;
-      attendance.weekendExtra = att.find((a) => a.meeting_kind === 'weekend')?.extra_count ?? null;
     }
   }
 
@@ -886,7 +874,6 @@
       id: true,
       reminder_message: document.getElementById('sec-setting-reminder').value.trim(),
       show_last_name_first: document.getElementById('sec-setting-lastname-first').checked,
-      extra_attendance_count: document.getElementById('sec-setting-extra-attendance').checked,
       circuit_overseer_name: document.getElementById('sec-setting-sc-name').value.trim(),
       updated_at: new Date().toISOString()
     };

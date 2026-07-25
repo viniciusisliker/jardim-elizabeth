@@ -7,7 +7,6 @@
   };
 
   let attendanceLogs = [];
-  let extraAttendanceEnabled = false;
   let editingAttendanceId = null;
   let avImages = [];
 
@@ -337,9 +336,8 @@
     document.getElementById('av-attendance-kind').value = 'midweek';
     document.getElementById('av-attendance-count').value = '';
     document.getElementById('av-attendance-zoom').value = '';
-    document.getElementById('av-attendance-extra').value = '';
     document.getElementById('av-attendance-remarks').value = '';
-    document.getElementById('av-attendance-submit-label').textContent = 'Registrar assistência';
+    document.getElementById('av-attendance-submit-label').textContent = 'Registrar';
     document.getElementById('av-attendance-cancel-edit')?.classList.add('hidden');
   }
 
@@ -350,24 +348,17 @@
     document.getElementById('av-attendance-kind').value = row.meeting_kind;
     document.getElementById('av-attendance-count').value = row.attendance_count;
     document.getElementById('av-attendance-zoom').value = row.zoom_attendance_count ?? '';
-    document.getElementById('av-attendance-extra').value = row.extra_count ?? '';
     document.getElementById('av-attendance-remarks').value = row.remarks || '';
-    document.getElementById('av-attendance-submit-label').textContent = 'Salvar alterações';
+    document.getElementById('av-attendance-submit-label').textContent = 'Salvar';
     document.getElementById('av-attendance-cancel-edit')?.classList.remove('hidden');
     document.getElementById('av-attendance-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  async function loadAttendanceSettings(client) {
-    const { data } = await client.from('secretary_settings').select('extra_attendance_count').eq('id', true).maybeSingle();
-    extraAttendanceEnabled = !!data?.extra_attendance_count;
-    document.getElementById('av-attendance-extra-wrap')?.classList.toggle('hidden', !extraAttendanceEnabled);
   }
 
   async function loadAttendanceLogs(client) {
     const { data, error } = await client
       .from('secretary_attendance_logs')
       .select(`
-        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, extra_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks, created_at,
         profiles:submitted_by ( full_name )
       `)
       .order('meeting_date', { ascending: false })
@@ -394,7 +385,6 @@
         <div class="av-attendance-item__counts">
           <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
           ${row.zoom_attendance_count != null ? `<span class="av-attendance-item__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
-          ${row.extra_count != null ? `<span class="av-attendance-item__extra">+${escapeHtml(String(row.extra_count))}</span>` : ''}
         </div>
         <div class="av-attendance-item__meta">
           ${row.remarks ? `<p class="av-attendance-item__remarks">${escapeHtml(row.remarks)}</p>` : ''}
@@ -426,9 +416,6 @@
         attendance_count: Number(document.getElementById('av-attendance-count').value) || 0,
         zoom_attendance_count: document.getElementById('av-attendance-zoom').value !== ''
           ? Number(document.getElementById('av-attendance-zoom').value)
-          : null,
-        extra_count: extraAttendanceEnabled && document.getElementById('av-attendance-extra').value !== ''
-          ? Number(document.getElementById('av-attendance-extra').value)
           : null,
         remarks: document.getElementById('av-attendance-remarks').value.trim(),
         submitted_by: profile.id,
@@ -652,7 +639,6 @@
     document.getElementById('av-btn-reset-checklists')?.addEventListener('click', resetChecklists);
 
     const client = await getClient();
-    await loadAttendanceSettings(client);
     await loadAttendanceLogs(client);
     bindAttendanceForm(client, profile);
     await loadNotes(client);

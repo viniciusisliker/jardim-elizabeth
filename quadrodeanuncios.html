@@ -145,6 +145,14 @@ gtag('config', 'G-PGXCZF9S9W');
       overflow: hidden;
       transition: transform .2s, box-shadow .2s, border-color .2s;
     }
+    button.je-qa-card {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
     .je-qa-card::before {
       content: '';
       position: absolute;
@@ -230,6 +238,114 @@ gtag('config', 'G-PGXCZF9S9W');
       color: #3b5e97;
       transition: gap .2s;
     }
+
+    .je-qa-pdf-modal.hidden { display: none; }
+    .je-qa-pdf-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 1rem;
+    }
+    @media (min-width: 640px) {
+      .je-qa-pdf-modal { align-items: center; padding: 1.5rem; }
+    }
+    .je-qa-pdf-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      border: none;
+      background: rgba(15,52,98,.45);
+      backdrop-filter: blur(2px);
+      cursor: pointer;
+    }
+    .je-qa-pdf-modal__panel {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: min(100%, 56rem);
+      max-height: min(92vh, 52rem);
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 24px 64px rgba(15,52,98,.22);
+      overflow: hidden;
+    }
+    .je-qa-pdf-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1rem 0.875rem;
+      border-bottom: 1px solid rgba(15,52,98,.08);
+    }
+    .je-qa-pdf-modal__title {
+      margin: 0;
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: #0f3462;
+      line-height: 1.25;
+    }
+    .je-qa-pdf-modal__subtitle {
+      margin: 0.25rem 0 0;
+      font-size: 0.75rem;
+      color: #43474f;
+    }
+    .je-qa-pdf-modal__close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+    }
+    .je-qa-pdf-modal__close:hover { background: #f5f8fc; color: #0f3462; }
+    .je-qa-pdf-modal__frame {
+      flex: 1;
+      width: 100%;
+      min-height: 50vh;
+      border: 0;
+      background: #f5f8fc;
+    }
+    @media (min-width: 640px) { .je-qa-pdf-modal__frame { min-height: 60vh; } }
+    .je-qa-pdf-modal__foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.875rem 1rem 1rem;
+      border-top: 1px solid rgba(15,52,98,.08);
+    }
+    .je-qa-pdf-modal__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      padding: 0.5625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .je-qa-pdf-modal__btn--ghost {
+      border: 1px solid rgba(15,52,98,.14);
+      background: #fff;
+      color: #0f3462;
+    }
+    .je-qa-pdf-modal__btn--ghost:hover { background: #f5f8fc; }
+    .je-qa-pdf-modal__btn--primary {
+      flex: 1;
+      border: none;
+      background: #0f3462;
+      color: #fff;
+    }
+    .je-qa-pdf-modal__btn--primary:hover { opacity: 0.92; }
 
     .je-qa-history-head {
       display: flex;
@@ -351,12 +467,12 @@ gtag('config', 'G-PGXCZF9S9W');
         <span class="je-qa-intro-icon" aria-hidden="true">
           <span class="material-symbols-outlined" style="font-size:20px">touch_app</span>
         </span>
-        <p data-je-page-intro="text"><strong class="text-primary">Escolha uma seção</strong> abaixo para abrir o PDF do mês corrente no Google Drive.</p>
+        <p data-je-page-intro="text"><strong class="text-primary">Escolha uma seção</strong> abaixo para visualizar o PDF do mês corrente.</p>
       </div>
 
       <div id="je-announcement-cards" class="je-qa-grid">
 
-        <a href="https://drive.google.com/file/d/1nkm7A_A-EkdH4OFHf5HiNISZLqni2PmY/view?usp=sharing"
+        <button type="button" data-je-qa-pdf-url="https://drive.google.com/file/d/1nkm7A_A-EkdH4OFHf5HiNISZLqni2PmY/view?usp=sharing" data-je-qa-pdf-title="Designações Mecânicas"
            class="je-qa-card je-qa-card--org group">
           <div class="je-qa-card-top">
             <div class="je-qa-card-icon">
@@ -372,9 +488,9 @@ gtag('config', 'G-PGXCZF9S9W');
             Abrir PDF
             <span class="material-symbols-outlined" style="font-size:16px">picture_as_pdf</span>
           </span>
-        </a>
+        </button>
 
-        <a href="https://drive.google.com/file/d/17bi2jq430dhs5Xt_6Ulzju5g_W37yvvS/view?usp=drive_link" target="_blank" rel="noopener"
+        <button type="button" data-je-qa-pdf-url="https://drive.google.com/file/d/17bi2jq430dhs5Xt_6Ulzju5g_W37yvvS/view?usp=drive_link" data-je-qa-pdf-title="Reunião de Meio de Semana"
            class="je-qa-card je-qa-card--midweek group">
           <div class="je-qa-card-top">
             <div class="je-qa-card-icon">
@@ -388,11 +504,11 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
           <span class="je-qa-card-cta">
             Abrir PDF
-            <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+            <span class="material-symbols-outlined" style="font-size:16px">picture_as_pdf</span>
           </span>
-        </a>
+        </button>
 
-        <a href="https://drive.google.com/file/d/1Dp0jOiiEM-d8flH4ahJD3l9osuH_RZ-l/view?usp=drive_link" target="_blank" rel="noopener"
+        <button type="button" data-je-qa-pdf-url="https://drive.google.com/file/d/1Dp0jOiiEM-d8flH4ahJD3l9osuH_RZ-l/view?usp=drive_link" data-je-qa-pdf-title="Reunião de Final de Semana"
            class="je-qa-card je-qa-card--weekend group">
           <div class="je-qa-card-top">
             <div class="je-qa-card-icon">
@@ -406,9 +522,9 @@ gtag('config', 'G-PGXCZF9S9W');
           </div>
           <span class="je-qa-card-cta">
             Abrir PDF
-            <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+            <span class="material-symbols-outlined" style="font-size:16px">picture_as_pdf</span>
           </span>
-        </a>
+        </button>
 
       </div>
 
@@ -451,13 +567,36 @@ gtag('config', 'G-PGXCZF9S9W');
 
   </main>
 
+  <div id="je-qa-pdf-modal" class="je-qa-pdf-modal hidden" role="dialog" aria-modal="true" aria-labelledby="je-qa-pdf-title">
+    <button type="button" id="je-qa-pdf-backdrop" class="je-qa-pdf-modal__backdrop" aria-label="Fechar"></button>
+    <div class="je-qa-pdf-modal__panel">
+      <div class="je-qa-pdf-modal__head">
+        <div>
+          <h2 id="je-qa-pdf-title" class="je-qa-pdf-modal__title">PDF</h2>
+          <p class="je-qa-pdf-modal__subtitle">Visualize aqui ou abra em outra aba se preferir.</p>
+        </div>
+        <button type="button" id="je-qa-pdf-close" class="je-qa-pdf-modal__close" aria-label="Fechar">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <iframe id="je-qa-pdf-frame" class="je-qa-pdf-modal__frame" title="Visualização do PDF"></iframe>
+      <div class="je-qa-pdf-modal__foot">
+        <button type="button" id="je-qa-pdf-close-btn" class="je-qa-pdf-modal__btn je-qa-pdf-modal__btn--ghost">Fechar</button>
+        <a id="je-qa-pdf-open-tab" href="#" target="_blank" rel="noopener" class="je-qa-pdf-modal__btn je-qa-pdf-modal__btn--primary">
+          <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">open_in_new</span>
+          Abrir em nova aba
+        </a>
+      </div>
+    </div>
+  </div>
+
   <div id="footer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
-  <script src="js/content.js?v=20260725230000"></script>
+  <script src="js/content.js?v=20260725260000"></script>
 
 </body>
 </html>

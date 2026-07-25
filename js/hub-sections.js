@@ -6,7 +6,7 @@
     partial: 'hub/sections/secretario.html',
     styles: ['css/hub-sections/secretario.css?v=20260725210000'],
     scripts: [
-      'js/admin/secretario-service.js?v=20260725210000',
+      'js/admin/secretario-service.js?v=20260725240000',
       'js/admin/secretario-visit.js?v=20260724234500',
       'js/admin/secretario.js?v=20260724234500'
     ],
@@ -34,9 +34,9 @@
     moduleKey: 'audio-video',
     viewId: 'hub-view-audio-video',
     partial: 'hub/sections/audio-video.html',
-    styles: ['css/hub-sections/audio-video.css?v=20260725220000'],
+    styles: ['css/hub-sections/audio-video.css?v=20260725250000'],
     scripts: [
-      'js/admin/audio-video.js?v=20260725220000'
+      'js/admin/audio-video.js?v=20260725250000'
     ],
     initKey: 'JEAdminAudioVideo'
   };
@@ -267,9 +267,9 @@
     'secretario-s1': secSection(
       'secretario-s1',
       'secretario-s1',
-      's1',
-      'Formulário S-1',
-      'Resumo mensal, ajustes, fechamento do mês e exportação CSV.'
+      'formularios',
+      'Formulários',
+      'Formulário S-1 — resumo mensal, ajustes, fechamento e exportação CSV.'
     ),
     'secretario-visita': secSection(
       'secretario-visita',

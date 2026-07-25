@@ -267,14 +267,66 @@
     return 'default';
   }
 
+  function pdfEmbedUrl(url) {
+    if (!url) return '';
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes('drive.google.com')) {
+        const match = parsed.pathname.match(/\/file\/d\/([^/]+)/);
+        if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
+      }
+    } catch (_) { /* ignore invalid URLs */ }
+    return url;
+  }
+
+  function closeAnnouncementPdfModal() {
+    const modal = document.getElementById('je-qa-pdf-modal');
+    const frame = document.getElementById('je-qa-pdf-frame');
+    modal?.classList.add('hidden');
+    if (frame) frame.src = 'about:blank';
+    document.body.style.overflow = '';
+  }
+
+  function openAnnouncementPdfModal(url, title) {
+    const modal = document.getElementById('je-qa-pdf-modal');
+    const frame = document.getElementById('je-qa-pdf-frame');
+    const titleEl = document.getElementById('je-qa-pdf-title');
+    const openTab = document.getElementById('je-qa-pdf-open-tab');
+    if (!modal || !frame || !url) return;
+    if (titleEl) titleEl.textContent = title || 'PDF';
+    frame.src = pdfEmbedUrl(url);
+    if (openTab) openTab.href = url;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('je-qa-pdf-close')?.focus();
+  }
+
+  function initAnnouncementPdfModal() {
+    const modal = document.getElementById('je-qa-pdf-modal');
+    if (!modal || modal.dataset.bound === '1') return;
+    modal.dataset.bound = '1';
+
+    document.getElementById('je-announcement-cards')?.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-je-qa-pdf-url]');
+      if (!card) return;
+      openAnnouncementPdfModal(card.dataset.jeQaPdfUrl, card.dataset.jeQaPdfTitle);
+    });
+
+    ['je-qa-pdf-close', 'je-qa-pdf-close-btn', 'je-qa-pdf-backdrop'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('click', closeAnnouncementPdfModal);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeAnnouncementPdfModal();
+    });
+  }
+
   function renderAnnouncementCard(s) {
     const mod = announcementCardModifier(s.slug);
-    const sameTab = s.slug === 'designacoes-mecanicas';
-    const targetAttr = sameTab ? '' : ' target="_blank" rel="noopener"';
-    const ctaIcon = sameTab ? 'picture_as_pdf' : 'open_in_new';
     return `
-      <a href="${esc(s.document_url)}"${targetAttr}
-         class="je-qa-card je-qa-card--${mod} group">
+      <button type="button" class="je-qa-card je-qa-card--${mod} group"
+        data-je-qa-pdf-url="${esc(s.document_url)}"
+        data-je-qa-pdf-title="${esc(s.title)}">
         <div class="je-qa-card-top">
           <div class="je-qa-card-icon">
             <span class="material-symbols-outlined">${esc(s.icon || 'description')}</span>
@@ -287,9 +339,9 @@
         </div>
         <span class="je-qa-card-cta">
           Abrir PDF
-          <span class="material-symbols-outlined" style="font-size:16px">${ctaIcon}</span>
+          <span class="material-symbols-outlined" style="font-size:16px">picture_as_pdf</span>
         </span>
-      </a>`;
+      </button>`;
   }
 
   async function loadAnnouncements() {
@@ -658,6 +710,7 @@
   function boot() {
     initTerritoriesPage();
     initAgendaPage();
+    initAnnouncementPdfModal();
 
     const hasHomeEvents = !!document.getElementById('proxeventos-lista');
     if (hasHomeEvents) {
