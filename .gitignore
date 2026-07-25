@@ -8,3 +8,4 @@ maps/original-cards/
 maps/osm-streets.json
 maps/osm-streets-by-name.json
 maps/precise-boundaries.json
+maps/.render-cache/

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = join(root, 'img', 'territorios');
+const enhancedDir = join(root, 'img', 'territorios-enhanced');
 const checklistPath = join(root, 'scripts', 'territory-map-checklist.json');
 const maxBytes = 1.5 * 1024 * 1024;
 
@@ -82,6 +83,26 @@ if (existsSync(boundariesPath)) {
   }
   if (needsReview) {
     console.log(`\n${needsReview} territorio(s) marcados needs_review — refazer no Earth (T02, T07, T10 prioritarios).`);
+  }
+}
+
+if (existsSync(enhancedDir)) {
+  let enhancedMissing = 0;
+  console.log('\nImagens aprimoradas (img/territorios-enhanced/):');
+  for (const t of checklist.territories) {
+    const num = t.num;
+    const file = join(enhancedDir, `t${num}.jpg`);
+    if (!existsSync(file)) {
+      console.log(`  ✗ t${num}.jpg  AUSENTE`);
+      enhancedMissing += 1;
+    } else {
+      const { size } = statSync(file);
+      const kb = Math.round(size / 1024);
+      console.log(`  ✓ t${num}.jpg  ${kb} KB`);
+    }
+  }
+  if (enhancedMissing) {
+    console.log('\nGere com: python scripts/render-territory-images.py');
   }
 }
 
