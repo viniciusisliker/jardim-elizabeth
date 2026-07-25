@@ -174,7 +174,6 @@
             <span class="je-home-shortcut-title">${esc(item.title)}</span>
             <span class="je-home-shortcut-desc">${esc(item.desc || '')}</span>
           </span>
-          <span class="material-symbols-outlined je-home-shortcut-arrow" aria-hidden="true">arrow_forward</span>
         </a>`).join('');
     }
 
