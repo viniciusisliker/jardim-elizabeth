@@ -830,8 +830,7 @@
       `*Congregação:* ${congregationName}`,
       `*Contato da Congregação:* ${congregationContactLine(cong)}`,
       `*Endereço:* ${congregationAddressLine(cong)}`,
-      `*Cântico:* ${text(a.opening_song) || '—'}`,
-      `*Status:* ${STATUS[a.confirmation_status] || '—'}`
+      `*Cântico:* ${text(a.opening_song) || '—'}`
     ].join('\n');
   }
   function openWhatsapp(rows) {
