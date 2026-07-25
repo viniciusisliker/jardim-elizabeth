@@ -182,11 +182,11 @@
       permission: 'secretario',
       viewId: 'hub-view-secretario',
       partial: 'hub/sections/secretario.html',
-      styles: ['css/hub-sections/secretario.css?v=20260724100000'],
+      styles: ['css/hub-sections/secretario.css?v=20260724220000'],
       scripts: [
-        'js/admin/secretario-service.js?v=20260724100000',
-        'js/admin/secretario-visit.js?v=20260724100000',
-        'js/admin/secretario.js?v=20260724100000'
+        'js/admin/secretario-service.js?v=20260724220000',
+        'js/admin/secretario-visit.js?v=20260724220000',
+        'js/admin/secretario.js?v=20260724220000'
       ],
       initKey: 'JEAdminSecretario',
       hero: {

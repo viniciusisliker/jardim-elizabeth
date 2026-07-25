@@ -95,8 +95,8 @@
           <p class="sec-doc-meta">${escapeHtml(doc.file_name)} · ${fmtSize(doc.size_bytes)}</p>
         </div>
         <div class="sec-doc-actions">
-          <button type="button" class="sec-btn sec-btn--ghost" data-sec-doc-download="${doc.id}">Baixar</button>
-          <button type="button" class="sec-btn sec-btn--danger" data-sec-doc-delete="${doc.id}">Excluir</button>
+          <button type="button" class="sec-toolbar-btn sec-toolbar-btn--ghost sec-toolbar-btn--sm" data-sec-doc-download="${doc.id}">Baixar</button>
+          <button type="button" class="sec-toolbar-btn sec-toolbar-btn--danger sec-toolbar-btn--sm" data-sec-doc-delete="${doc.id}">Excluir</button>
         </div>
       </article>`).join('');
   }
@@ -118,7 +118,7 @@
     });
     document.getElementById('sec-visit-visible')?.toggleAttribute('disabled', !enabled);
     document.getElementById('sec-visit-upload')?.toggleAttribute('disabled', !enabled);
-    document.querySelector('.sec-upload-btn')?.classList.toggle('sec-btn--disabled', !enabled);
+    document.querySelector('.sec-upload-btn')?.classList.toggle('sec-toolbar-btn--disabled', !enabled);
   }
 
   function openNewVisitModal() {

@@ -14,6 +14,11 @@
     reintegrado: 'Readmitidos',
     primeiro_relatorio: 'Primeiro registro de relatório'
   };
+  const STAT_ICONS = {
+    'Publicadores': 'groups',
+    'Pioneiros auxiliares': 'star',
+    'Pioneiros regulares': 'military_tech'
+  };
 
   let client = null;
   let toast = null;
@@ -40,9 +45,42 @@
   function updateMonthLabel() {
     const el = document.getElementById('sec-month-label');
     if (el) el.textContent = monthLabel(year, month);
-    document.getElementById('sec-adj-month-label')?.replaceChildren?.();
     const adj = document.getElementById('sec-adj-month-label');
     if (adj) adj.textContent = monthLabel(year, month);
+    updateMonthBadge();
+  }
+
+  function updateMonthBadge() {
+    const badge = document.getElementById('sec-month-badge');
+    if (!badge) return;
+    badge.textContent = monthStatus.is_closed ? 'Mês fechado' : 'Mês aberto';
+    badge.classList.toggle('sec-month-badge--closed', !!monthStatus.is_closed);
+  }
+
+  function updateNavIndicator(activeBtn) {
+    const nav = document.getElementById('sec-nav');
+    const indicator = document.getElementById('sec-nav-indicator');
+    if (!nav || !indicator || !activeBtn) return;
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    if (!navRect.width || !btnRect.width) {
+      indicator.style.opacity = '0';
+      return;
+    }
+    indicator.style.opacity = '1';
+    indicator.style.width = `${btnRect.width}px`;
+    indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
+  }
+
+  function queueNavIndicatorRefresh() {
+    const active = document.querySelector('[data-sec-tab].active');
+    if (!active) return;
+    const run = () => updateNavIndicator(active);
+    run();
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
   }
 
   function ageYears(dateStr) {
@@ -94,6 +132,7 @@
   }
 
   function renderStatCard(title, rows, mod = '') {
+    const icon = STAT_ICONS[title] || 'bar_chart';
     const body = rows.map((row) => `
       <div class="sec-stat-row">
         <span class="sec-stat-row__label">${escapeHtml(row.label)}</span>
@@ -102,7 +141,43 @@
           ${row.avg != null ? `<span class="sec-stat-row__avg">${escapeHtml(String(row.avg))}</span>` : ''}
         </span>
       </div>`).join('');
-    return `<article class="sec-stat-card ${mod}"><h3 class="sec-stat-card__title">${escapeHtml(title)}</h3>${body}</article>`;
+    return `<article class="sec-stat-card ${mod}">
+      <div class="sec-stat-card__head">
+        <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
+        <h3>${escapeHtml(title)}</h3>
+      </div>
+      <div class="sec-stat-card__body">${body}</div>
+    </article>`;
+  }
+
+  function renderKpiStrip() {
+    const root = document.getElementById('sec-kpi-strip');
+    if (!root) return;
+    const active = publishers.filter((p) => p.status === 'ativo');
+    const submitted = active.filter((p) => hasReport(p.profile_id)).length;
+    const missing = Math.max(0, active.length - submitted);
+    root.innerHTML = `
+      <article class="sec-kpi">
+        <span class="sec-kpi__icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></span>
+        <div>
+          <span class="sec-kpi__val">${active.length}</span>
+          <span class="sec-kpi__label">Publicadores ativos</span>
+        </div>
+      </article>
+      <article class="sec-kpi sec-kpi--ok">
+        <span class="sec-kpi__icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></span>
+        <div>
+          <span class="sec-kpi__val">${submitted}</span>
+          <span class="sec-kpi__label">Relatórios recebidos</span>
+        </div>
+      </article>
+      <article class="sec-kpi ${missing ? 'sec-kpi--warn' : 'sec-kpi--gold'}">
+        <span class="sec-kpi__icon"><span class="material-symbols-outlined" aria-hidden="true">${missing ? 'warning' : 'celebration'}</span></span>
+        <div>
+          <span class="sec-kpi__val">${missing}</span>
+          <span class="sec-kpi__label">${missing ? 'Sem relatório' : 'Todos entregues'}</span>
+        </div>
+      </article>`;
   }
 
   function renderPubStats() {
@@ -212,7 +287,7 @@
           <span class="sec-label">Contagem extra</span>
           <input type="number" min="0" class="sec-input" data-sec-att-extra="${kind}" value="${extraVal ?? ''}"/>
         </label>` : ''}
-        <button type="button" class="sec-btn sec-btn--primary sec-attendance-save" data-sec-att-save="${kind}">Salvar</button>
+        <button type="button" class="sec-toolbar-btn sec-toolbar-btn--accent sec-attendance-save" data-sec-att-save="${kind}">Salvar</button>
       </article>`;
     }).join('');
   }
@@ -257,7 +332,7 @@
     root.innerHTML = groups.map((g) => `
       <div class="sec-group-row">
         <span>${escapeHtml(g.name)}</span>
-        <button type="button" class="sec-btn sec-btn--danger sec-btn--xs" data-sec-del-group="${g.id}">Excluir</button>
+        <button type="button" class="sec-toolbar-btn sec-toolbar-btn--danger sec-toolbar-btn--sm" data-sec-del-group="${g.id}">Excluir</button>
       </div>`).join('') || '<p class="sec-empty">Nenhum grupo cadastrado.</p>';
   }
 
@@ -368,7 +443,7 @@
         <textarea id="sec-month-observations" class="sec-input sec-textarea" rows="3">${escapeHtml(monthStatus.observations || '')}</textarea>
       </label>
       <div class="sec-modal__foot">
-        <button type="button" class="sec-btn sec-btn--primary" id="sec-adj-save">Salvar ajustes</button>
+        <button type="button" class="sec-toolbar-btn sec-toolbar-btn--accent" id="sec-adj-save">Salvar ajustes</button>
       </div>`;
   }
 
@@ -431,6 +506,7 @@
 
   function renderAll() {
     updateMonthLabel();
+    renderKpiStrip();
     renderPubStats();
     renderReportList();
     renderAttendance();
@@ -615,14 +691,17 @@
 
   function switchTab(tab) {
     activeTab = tab;
-    document.querySelectorAll('.sec-tab').forEach((el) => {
+    document.querySelectorAll('[data-sec-tab]').forEach((el) => {
       const on = el.dataset.secTab === tab;
-      el.classList.toggle('sec-tab--active', on);
+      el.classList.toggle('active', on);
       el.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     document.querySelectorAll('.sec-panel').forEach((el) => {
-      el.classList.toggle('hidden', el.id !== `sec-panel-${tab}`);
+      el.classList.toggle('active', el.id === `sec-panel-${tab}`);
     });
+    const activeBtn = document.querySelector(`[data-sec-tab="${tab}"]`);
+    updateNavIndicator(activeBtn);
+    activeBtn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     if (tab === 'visita') window.JEAdminSecretarioVisit?.initVisit?.(client);
   }
 
@@ -637,7 +716,7 @@
     document.querySelectorAll('[data-sec-pub-view]').forEach((btn) => {
       btn.addEventListener('click', () => {
         pubView = btn.dataset.secPubView;
-        document.querySelectorAll('[data-sec-pub-view]').forEach((b) => b.classList.toggle('sec-subtab--active', b === btn));
+        document.querySelectorAll('[data-sec-pub-view]').forEach((b) => b.classList.toggle('sec-segment__btn--active', b === btn));
         renderPubStats();
       });
     });
@@ -716,6 +795,8 @@
       await loadData();
       renderAll();
       switchTab('publicadores');
+      queueNavIndicatorRefresh();
+      window.addEventListener('resize', queueNavIndicatorRefresh);
     } catch (err) {
       showToast(toast, err?.message || 'Erro ao carregar dados do Secretário.', true);
     }

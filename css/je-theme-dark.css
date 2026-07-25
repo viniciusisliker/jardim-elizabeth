@@ -561,57 +561,54 @@ html.dark .sec-modal__title { color: var(--je-on-surface) !important; }
 html.dark .sec-modal__subtitle { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-modal__close { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-modal__foot { border-color: var(--je-card-border) !important; }
-html.dark .sec-app {
+html.dark #hub-view-secretario .sec-nav {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--je-card-border) !important;
+}
+html.dark #hub-view-secretario .sec-tab:not(.active) { color: var(--je-on-surface-variant) !important; }
+html.dark #hub-view-secretario .sec-settings-btn {
+  background: var(--je-surface-container-low) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
+html.dark .sec-kpi,
+html.dark .sec-list-card,
+html.dark .sec-stat-card,
+html.dark .sec-attendance-card {
   background: var(--je-card) !important;
   border-color: var(--je-card-border) !important;
 }
-html.dark .sec-tabs { border-color: var(--je-card-border) !important; }
-html.dark .sec-tab { color: var(--je-on-surface-variant) !important; }
-html.dark .sec-tab--active {
-  color: #6ee7b7 !important;
-  border-bottom-color: #6ee7b7 !important;
-  background: rgba(110, 231, 183, 0.06) !important;
-}
-html.dark .sec-subtab {
-  background: var(--je-surface-container-low) !important;
-  border-color: var(--je-card-border) !important;
-  color: var(--je-on-surface-variant) !important;
-}
-html.dark .sec-subtab--active {
-  background: rgba(110, 231, 183, 0.1) !important;
-  border-color: rgba(110, 231, 183, 0.35) !important;
-  color: #6ee7b7 !important;
-}
-html.dark .sec-stat-card,
-html.dark .sec-attendance-card {
-  background: var(--je-surface-container-low) !important;
-  border-color: var(--je-card-border) !important;
-}
-html.dark .sec-stat-card__title,
-html.dark .sec-attendance-card__title,
-html.dark .sec-stat-row__total { color: var(--je-on-surface) !important; }
+html.dark .sec-kpi__val,
+html.dark .sec-stat-card__head,
+html.dark .sec-stat-row__total,
+html.dark .sec-attendance-card__title { color: var(--je-on-surface) !important; }
+html.dark .sec-kpi__label,
 html.dark .sec-stat-row__label,
 html.dark .sec-stat-row__avg { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-kpi__icon { background: var(--je-surface-container-low) !important; color: var(--je-on-surface) !important; }
+html.dark .sec-stat-card__head { background: var(--je-surface-container-low) !important; border-color: var(--je-card-border) !important; }
+html.dark .sec-list-card__toolbar { background: var(--je-surface-container-low) !important; border-color: var(--je-card-border) !important; }
+html.dark .sec-segment { background: var(--je-surface-container-low) !important; border-color: var(--je-card-border) !important; }
+html.dark .sec-segment__btn--active { background: var(--je-card) !important; color: var(--je-on-surface) !important; }
 html.dark .sec-publisher-row {
   background: var(--je-surface-container-low) !important;
-  border-color: var(--je-card-border) !important;
 }
 html.dark .sec-publisher-row:hover {
-  border-color: rgba(110, 231, 183, 0.35) !important;
+  border-color: var(--je-card-border) !important;
   background: var(--je-surface-container) !important;
 }
+html.dark .sec-publisher-row__avatar { background: var(--je-surface-container) !important; }
 html.dark .sec-publisher-row__name { color: var(--je-on-surface) !important; }
 html.dark .sec-publisher-row__status,
 html.dark .sec-publisher-row__meta { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-publisher-group__title,
 html.dark .sec-settings-heading,
 html.dark .sec-analysis-section h3,
-html.dark .sec-adj-section h3 { color: #6ee7b7 !important; }
-html.dark .sec-s1-status { color: #6ee7b7 !important; }
-html.dark .sec-s1-status--closed { color: #fbbf24 !important; }
-html.dark .sec-s1-notes,
-html.dark .sec-s1-attendance { color: var(--je-on-surface-variant) !important; }
+html.dark .sec-adj-section h3 { color: #93c5fd !important; }
+html.dark .sec-s1-attendance { background: var(--je-surface-container-low) !important; border-color: var(--je-card-border) !important; }
+html.dark .sec-s1-notes { color: var(--je-on-surface-variant) !important; }
 html.dark .sec-group-row {
+  background: var(--je-surface-container-low) !important;
   border-color: var(--je-card-border) !important;
   color: var(--je-on-surface) !important;
 }
@@ -631,7 +628,15 @@ html.dark .sec-input {
   color: var(--je-on-surface) !important;
 }
 html.dark .sec-check { color: var(--je-on-surface) !important; }
-html.dark .sec-btn--ghost {
+html.dark .sec-toolbar .sec-toolbar-btn--ghost {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+html.dark .sec-card .sec-toolbar-btn--ghost,
+html.dark .sec-panel-actions .sec-toolbar-btn--ghost,
+html.dark .sec-list-card__toolbar .sec-toolbar-btn--ghost,
+html.dark .sec-panel-head__actions .sec-toolbar-btn--ghost {
   background: var(--je-surface-container-low) !important;
   border-color: var(--je-card-border) !important;
   color: var(--je-on-surface) !important;
