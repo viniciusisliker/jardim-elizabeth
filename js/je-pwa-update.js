@@ -22,11 +22,11 @@
   }
 
   function syncUpdateButtons() {
-    const show = 'serviceWorker' in navigator;
+    const show = updateAvailable && 'serviceWorker' in navigator;
     document.querySelectorAll('[data-update-trigger]').forEach((btn) => {
       btn.hidden = !show;
       btn.classList.toggle('je-update-trigger--hidden', !show);
-      btn.classList.toggle('je-site-update-btn--pending', updateAvailable);
+      btn.classList.toggle('je-site-update-btn--pending', show);
       btn.setAttribute('aria-hidden', show ? 'false' : 'true');
     });
   }
