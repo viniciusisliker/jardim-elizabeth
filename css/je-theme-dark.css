@@ -1296,6 +1296,11 @@ html.dark .av-modal__foot .av-toolbar-btn--accent {
   background: #6d28d9 !important;
   color: #fff !important;
 }
+html.dark .av-modal__foot .av-toolbar-btn--update {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%) !important;
+  color: #fff !important;
+  border-color: #3b82f6 !important;
+}
 html.dark .av-modal__close {
   background: rgba(109, 40, 217, 0.18) !important;
   color: #c4b5fd !important;

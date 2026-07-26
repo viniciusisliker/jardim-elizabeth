@@ -145,8 +145,15 @@
   background:#fff;color:#0f3462;border:1px solid #dbe3ef
 }
 .av-modal__foot .av-toolbar-btn--ghost:hover{background:#f5f3ff;border-color:#c4b5fd}
-.av-modal__foot .av-toolbar-btn--accent{background:#6d28d9;color:#fff}
+.av-modal__foot .av-toolbar-btn--accent{background:#6d28d9;color:#fff;border:1px solid #5b21b6}
 .av-modal__foot .av-toolbar-btn--accent:hover{background:#5b21b6}
+.av-modal__foot .av-toolbar-btn--update{
+  background:linear-gradient(135deg,#0f3462 0%,#1d4ed8 100%);color:#fff;border:1px solid #1e40af
+}
+.av-modal__foot .av-toolbar-btn--update:hover{background:linear-gradient(135deg,#0b2a52 0%,#1e40af 100%)}
+.av-modal__foot .av-toolbar-btn--update .material-symbols-outlined{
+  font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24
+}
 .av-modal__foot .av-toolbar-btn .material-symbols-outlined{font-size:1.125rem}
 body.av-modal-open{overflow:hidden;touch-action:none}
 @media(max-width:639px){

@@ -385,13 +385,20 @@
     }
   }
 
-  function setAttendanceModalCopy({ heading, subtitle, submit }) {
+  function setAttendanceModalCopy({ heading, subtitle, submit, mode = 'create' }) {
     const headingEl = document.getElementById('av-attendance-modal-heading');
     const subEl = document.getElementById('av-attendance-modal-sub');
     const submitEl = document.getElementById('av-attendance-submit-label');
+    const submitBtn = document.getElementById('av-attendance-submit');
+    const submitIcon = document.getElementById('av-attendance-submit-icon');
     if (headingEl) headingEl.textContent = heading;
     if (subEl) subEl.textContent = subtitle;
     if (submitEl) submitEl.textContent = submit;
+    if (submitIcon) submitIcon.textContent = mode === 'edit' ? 'sync' : 'add';
+    if (submitBtn) {
+      submitBtn.classList.toggle('av-toolbar-btn--update', mode === 'edit');
+      submitBtn.classList.toggle('av-toolbar-btn--accent', mode !== 'edit');
+    }
   }
 
   function mountAttendanceModal() {
@@ -441,7 +448,8 @@
     setAttendanceModalCopy({
       heading: 'Novo registro',
       subtitle: 'Preencha a assistência da reunião.',
-      submit: 'Registrar'
+      submit: 'Registrar',
+      mode: 'create'
     });
   }
 
@@ -456,7 +464,8 @@
     setAttendanceModalCopy({
       heading: 'Editar registro',
       subtitle: `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind] || row.meeting_kind}`,
-      submit: 'Salvar'
+      submit: 'Atualizar',
+      mode: 'edit'
     });
     hideAttendanceWhatsAppPrompt();
     openAttendanceModal();
