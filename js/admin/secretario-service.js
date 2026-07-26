@@ -483,7 +483,14 @@
     attendance.weekendZoom = avgZoomFromLogs(monthLogs, 'weekend');
   }
 
-  function renderAttendance() {
+  async function signedAttendanceImageUrl(path) {
+    if (!path || !client) return null;
+    const { data, error } = await client.storage.from('audio-video').createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  }
+
+  async function renderAttendance() {
     const summaryRoot = document.getElementById('sec-attendance-summary');
     const historyRoot = document.getElementById('sec-attendance-history');
     if (!summaryRoot || !historyRoot) return;
@@ -513,7 +520,7 @@
       return;
     }
 
-    historyRoot.innerHTML = monthLogs.map((row) => {
+    const cards = await Promise.all(monthLogs.map(async (row) => {
       const presencial = Number(row.attendance_count) || 0;
       const hasZoom = row.zoom_attendance_count != null && row.zoom_attendance_count !== '';
       const zoom = hasZoom ? Number(row.zoom_attendance_count) || 0 : 0;
@@ -521,6 +528,7 @@
       const breakdown = hasZoom
         ? `Presencial ${presencial} · Zoom ${zoom}`
         : `Presencial ${presencial}`;
+      const imageUrl = await signedAttendanceImageUrl(row.image_path);
       return `
       <article class="sec-attendance-log">
         <div class="sec-attendance-log__main">
@@ -531,6 +539,10 @@
           <span class="sec-attendance-log__count">${escapeHtml(String(total))}</span>
           <span class="sec-attendance-log__breakdown">${escapeHtml(breakdown)}</span>
         </div>
+        ${imageUrl ? `
+        <a class="sec-attendance-log__photo" href="${imageUrl}" target="_blank" rel="noopener" title="Ver foto">
+          <img src="${imageUrl}" alt="Foto da assistência" loading="lazy"/>
+        </a>` : ''}
         <div class="sec-attendance-log__meta">
           ${row.remarks ? `<p class="sec-attendance-log__remarks">${escapeHtml(row.remarks)}</p>` : ''}
           <p class="sec-attendance-log__by">
@@ -539,7 +551,8 @@
           </p>
         </div>
       </article>`;
-    }).join('');
+    }));
+    historyRoot.innerHTML = cards.join('');
   }
 
   function renderS1Summary() {
@@ -712,7 +725,8 @@
       client.from('secretary_month_status').select('*').eq('service_year', year).eq('service_month', month).maybeSingle(),
       client.from('secretary_meeting_attendance').select('*').eq('service_year', year).eq('service_month', month),
       client.from('secretary_attendance_logs').select(`
-        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks,
+        image_path, image_name, created_at,
         profiles:submitted_by ( full_name )
       `).gte('meeting_date', monthStart).lte('meeting_date', monthEnd).order('meeting_date', { ascending: false }),
       client.from('secretary_month_adjustments').select('*').eq('service_year', year).eq('service_month', month),
@@ -772,7 +786,7 @@
     renderPubStats();
     renderPublisherList();
     renderReportList();
-    renderAttendance();
+    void renderAttendance();
     renderS1Summary();
     fillSettingsForm();
   }

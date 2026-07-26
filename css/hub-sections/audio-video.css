@@ -188,9 +188,33 @@ body.av-modal-open{overflow:hidden;touch-action:none}
 .av-attendance-item__counts{display:flex;flex-direction:column;align-items:flex-end;gap:.1875rem;flex-shrink:0;text-align:right}
 .av-attendance-item__count{font-size:1.25rem;font-weight:800;color:#4c1d95;line-height:1}
 .av-attendance-item__breakdown{font-size:.625rem;font-weight:700;color:#6b7280;line-height:1.3;max-width:9.5rem}
+.av-attendance-item__photo{
+  display:block;border-radius:.625rem;overflow:hidden;border:1px solid #e2e6ef;
+  max-height:8rem;background:#f5f3ff
+}
+.av-attendance-item__photo img{display:block;width:100%;height:8rem;object-fit:cover}
 .av-attendance-item__meta{display:grid;gap:.125rem}
 .av-attendance-item__remarks{margin:0;font-size:.6875rem;color:#43474f;line-height:1.4}
 .av-attendance-item__by{margin:0;font-size:.5625rem;color:#9ca3af}
+.av-attendance-image{display:grid;gap:.5rem}
+.av-attendance-image__pick{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:3rem;
+  padding:.75rem 1rem;border:1.5px dashed #c4b5fd;border-radius:.75rem;background:#faf8ff;
+  color:#6d28d9;font-size:.8125rem;font-weight:700;cursor:pointer
+}
+.av-attendance-image__pick:hover{background:#f5f3ff;border-color:#a78bfa}
+.av-attendance-image__pick .material-symbols-outlined{font-size:1.375rem}
+.av-attendance-image__hint{margin:0;font-size:.625rem;color:#9ca3af;line-height:1.35}
+.av-attendance-image__preview{
+  position:relative;border-radius:.75rem;overflow:hidden;border:1px solid #e2e6ef;background:#f7f9fc
+}
+.av-attendance-image__preview.hidden{display:none!important}
+.av-attendance-image__preview img{display:block;width:100%;max-height:12rem;object-fit:cover}
+.av-attendance-image__clear{
+  position:absolute;top:.5rem;right:.5rem;display:inline-flex;align-items:center;justify-content:center;
+  width:2rem;height:2rem;border:none;border-radius:.5rem;background:rgba(15,52,98,.72);color:#fff;cursor:pointer
+}
+.av-attendance-image__clear .material-symbols-outlined{font-size:1.125rem}
 .av-attendance-item__actions{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.375rem;padding-top:.5rem;
   border-top:1px solid #eef0f4

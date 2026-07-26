@@ -10,6 +10,11 @@
   let editingAttendanceId = null;
   let pendingAttendanceWhatsApp = '';
   let avImages = [];
+  let pendingAttendanceImageFile = null;
+  let existingAttendanceImagePath = '';
+  let existingAttendanceImageName = '';
+  let removeAttendanceImage = false;
+  let attendanceImagePreviewUrl = '';
 
   const IMAGE_BUCKET = 'audio-video';
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -371,6 +376,9 @@
     if (totals.hasZoom) {
       lines.push(`💻 Zoom: ${totals.zoom}`);
     }
+    if (row.image_path || row.image_name) {
+      lines.push('📷 Foto anexada no Hub');
+    }
     if (row.remarks) {
       lines.push(`📝 Obs.: ${row.remarks}`);
     }
@@ -455,6 +463,42 @@
     document.body.classList.remove('av-modal-open');
   }
 
+  function clearAttendanceImagePreviewUrl() {
+    if (attendanceImagePreviewUrl) {
+      URL.revokeObjectURL(attendanceImagePreviewUrl);
+      attendanceImagePreviewUrl = '';
+    }
+  }
+
+  function setAttendanceImagePreview(src, { hasImage = !!src } = {}) {
+    const preview = document.getElementById('av-attendance-image-preview');
+    const img = document.getElementById('av-attendance-image-img');
+    const label = document.getElementById('av-attendance-image-label');
+    if (img) img.src = src || '';
+    preview?.classList.toggle('hidden', !hasImage);
+    if (label) label.textContent = hasImage ? 'Trocar foto' : 'Adicionar foto';
+  }
+
+  function resetAttendanceImageState() {
+    pendingAttendanceImageFile = null;
+    existingAttendanceImagePath = '';
+    existingAttendanceImageName = '';
+    removeAttendanceImage = false;
+    clearAttendanceImagePreviewUrl();
+    const input = document.getElementById('av-attendance-image-input');
+    if (input) input.value = '';
+    setAttendanceImagePreview('', { hasImage: false });
+  }
+
+  async function showExistingAttendanceImage(client, path) {
+    if (!path) {
+      setAttendanceImagePreview('', { hasImage: false });
+      return;
+    }
+    const url = await signedImageUrl(client, path);
+    setAttendanceImagePreview(url || '', { hasImage: !!url });
+  }
+
   function resetAttendanceForm() {
     editingAttendanceId = null;
     const idEl = document.getElementById('av-attendance-id');
@@ -469,6 +513,7 @@
     if (countEl) countEl.value = '';
     if (zoomEl) zoomEl.value = '';
     if (remarksEl) remarksEl.value = '';
+    resetAttendanceImageState();
     setAttendanceModalCopy({
       heading: 'Novo registro',
       subtitle: 'Preencha a assistência da reunião.',
@@ -477,7 +522,7 @@
     });
   }
 
-  function fillAttendanceForm(row) {
+  async function fillAttendanceForm(row, client) {
     editingAttendanceId = row.id;
     document.getElementById('av-attendance-id').value = row.id;
     document.getElementById('av-attendance-date').value = row.meeting_date;
@@ -485,6 +530,13 @@
     document.getElementById('av-attendance-count').value = row.attendance_count;
     document.getElementById('av-attendance-zoom').value = row.zoom_attendance_count ?? '';
     document.getElementById('av-attendance-remarks').value = row.remarks || '';
+    pendingAttendanceImageFile = null;
+    removeAttendanceImage = false;
+    clearAttendanceImagePreviewUrl();
+    const input = document.getElementById('av-attendance-image-input');
+    if (input) input.value = '';
+    existingAttendanceImagePath = row.image_path || '';
+    existingAttendanceImageName = row.image_name || '';
     setAttendanceModalCopy({
       heading: 'Editar registro',
       subtitle: `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind] || row.meeting_kind}`,
@@ -493,6 +545,11 @@
     });
     hideAttendanceWhatsAppPrompt();
     openAttendanceModal();
+    if (client && existingAttendanceImagePath) {
+      await showExistingAttendanceImage(client, existingAttendanceImagePath);
+    } else {
+      setAttendanceImagePreview('', { hasImage: false });
+    }
   }
 
   function openNewAttendanceModal() {
@@ -505,7 +562,8 @@
     const { data, error } = await client
       .from('secretary_attendance_logs')
       .select(`
-        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks, created_at,
+        id, meeting_date, meeting_kind, attendance_count, zoom_attendance_count, remarks,
+        image_path, image_name, created_at,
         profiles:submitted_by ( full_name )
       `)
       .order('meeting_date', { ascending: false })
@@ -513,18 +571,21 @@
       .limit(24);
     if (error) throw error;
     attendanceLogs = data || [];
-    renderAttendanceList();
+    await renderAttendanceList(client);
   }
 
-  function renderAttendanceList() {
+  async function renderAttendanceList(client) {
     const root = document.getElementById('av-attendance-list');
     if (!root) return;
     if (!attendanceLogs.length) {
       root.innerHTML = '<p class="av-hint">Nenhum registro ainda. Toque em <strong>Novo registro</strong> após a reunião.</p>';
       return;
     }
-    root.innerHTML = attendanceLogs.map((row) => {
+    const cards = await Promise.all(attendanceLogs.map(async (row) => {
       const totals = attendanceTotals(row);
+      const imageUrl = row.image_path && client
+        ? await signedImageUrl(client, row.image_path)
+        : null;
       return `
       <article class="av-attendance-item" data-av-att-open="${row.id}" tabindex="0" role="button" aria-label="Abrir registro de ${escapeHtml(fmtDate(row.meeting_date))}">
         <div class="av-attendance-item__top">
@@ -537,6 +598,10 @@
             <span class="av-attendance-item__breakdown">${escapeHtml(attendanceBreakdownLabel(totals))}</span>
           </div>
         </div>
+        ${imageUrl ? `
+        <a class="av-attendance-item__photo" href="${imageUrl}" target="_blank" rel="noopener" data-av-att-photo title="Ver foto">
+          <img src="${imageUrl}" alt="Foto da assistência" loading="lazy"/>
+        </a>` : ''}
         <div class="av-attendance-item__meta">
           ${row.remarks ? `<p class="av-attendance-item__remarks">${escapeHtml(row.remarks)}</p>` : ''}
           <p class="av-attendance-item__by">${escapeHtml(row.profiles?.full_name || 'Equipe A/V')}</p>
@@ -553,7 +618,8 @@
           </button>
         </div>
       </article>`;
-    }).join('');
+    }));
+    root.innerHTML = cards.join('');
   }
 
   function bindAttendanceForm(client, profile) {
@@ -564,8 +630,33 @@
 
     resetAttendanceForm();
 
+    async function uploadAttendanceImage(file) {
+      if (!IMAGE_TYPES.has(file.type)) {
+        showToast(toastEl(), 'Use JPG, PNG, WebP ou GIF.', true);
+        return null;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        showToast(toastEl(), 'Imagem muito grande (máx. 5 MB).', true);
+        return null;
+      }
+      const ext = file.name.includes('.') ? file.name.split('.').pop().toLowerCase() : 'jpg';
+      const path = `attendance/${profile.id}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await client.storage.from(IMAGE_BUCKET).upload(path, file, {
+        upsert: false,
+        contentType: file.type
+      });
+      if (error) {
+        showToast(toastEl(), error.message, true);
+        return null;
+      }
+      return { path, name: file.name };
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = document.getElementById('av-attendance-submit');
+      if (submitBtn) submitBtn.disabled = true;
+
       const payload = {
         meeting_date: document.getElementById('av-attendance-date').value,
         meeting_kind: document.getElementById('av-attendance-kind').value,
@@ -578,25 +669,84 @@
         updated_at: new Date().toISOString()
       };
 
-      let error;
-      if (editingAttendanceId) {
-        ({ error } = await client.from('secretary_attendance_logs').update(payload).eq('id', editingAttendanceId));
-      } else {
-        ({ error } = await client.from('secretary_attendance_logs').insert(payload));
-      }
+      let uploadedPath = null;
+      try {
+        if (pendingAttendanceImageFile) {
+          const uploaded = await uploadAttendanceImage(pendingAttendanceImageFile);
+          if (!uploaded) return;
+          uploadedPath = uploaded.path;
+          payload.image_path = uploaded.path;
+          payload.image_name = uploaded.name;
+          if (existingAttendanceImagePath && existingAttendanceImagePath !== uploaded.path) {
+            await client.storage.from(IMAGE_BUCKET).remove([existingAttendanceImagePath]);
+          }
+        } else if (removeAttendanceImage) {
+          payload.image_path = null;
+          payload.image_name = null;
+          if (existingAttendanceImagePath) {
+            await client.storage.from(IMAGE_BUCKET).remove([existingAttendanceImagePath]);
+          }
+        }
 
-      if (error) {
-        showToast(toastEl(), error.message, true);
+        let error;
+        if (editingAttendanceId) {
+          ({ error } = await client.from('secretary_attendance_logs').update(payload).eq('id', editingAttendanceId));
+        } else {
+          ({ error } = await client.from('secretary_attendance_logs').insert(payload));
+        }
+
+        if (error) {
+          if (uploadedPath) await client.storage.from(IMAGE_BUCKET).remove([uploadedPath]);
+          showToast(toastEl(), error.message, true);
+          return;
+        }
+
+        const wasEdit = !!editingAttendanceId;
+        const message = buildAttendanceWhatsAppMessage({
+          ...payload,
+          image_path: payload.image_path ?? (removeAttendanceImage ? null : existingAttendanceImagePath)
+        }, profile.full_name || profile.username);
+        showToast(toastEl(), wasEdit ? 'Registro atualizado.' : 'Assistência registrada.');
+        closeAttendanceModal();
+        resetAttendanceForm();
+        showAttendanceWhatsAppPrompt(message);
+        await loadAttendanceLogs(client);
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('av-attendance-image-input')?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!IMAGE_TYPES.has(file.type)) {
+        showToast(toastEl(), 'Use JPG, PNG, WebP ou GIF.', true);
+        e.target.value = '';
         return;
       }
+      if (file.size > MAX_IMAGE_BYTES) {
+        showToast(toastEl(), 'Imagem muito grande (máx. 5 MB).', true);
+        e.target.value = '';
+        return;
+      }
+      pendingAttendanceImageFile = file;
+      removeAttendanceImage = false;
+      clearAttendanceImagePreviewUrl();
+      attendanceImagePreviewUrl = URL.createObjectURL(file);
+      setAttendanceImagePreview(attendanceImagePreviewUrl, { hasImage: true });
+    });
 
-      const wasEdit = !!editingAttendanceId;
-      const message = buildAttendanceWhatsAppMessage(payload, profile.full_name || profile.username);
-      showToast(toastEl(), wasEdit ? 'Registro atualizado.' : 'Assistência registrada.');
-      closeAttendanceModal();
-      resetAttendanceForm();
-      showAttendanceWhatsAppPrompt(message);
-      await loadAttendanceLogs(client);
+    document.getElementById('av-attendance-image-clear')?.addEventListener('click', () => {
+      pendingAttendanceImageFile = null;
+      clearAttendanceImagePreviewUrl();
+      const input = document.getElementById('av-attendance-image-input');
+      if (input) input.value = '';
+      if (existingAttendanceImagePath) {
+        removeAttendanceImage = true;
+        existingAttendanceImagePath = '';
+        existingAttendanceImageName = '';
+      }
+      setAttendanceImagePreview('', { hasImage: false });
     });
 
     document.getElementById('av-attendance-open-new')?.addEventListener('click', openNewAttendanceModal);
@@ -622,10 +772,14 @@
 
     const openRow = (id) => {
       const row = attendanceLogs.find((item) => item.id === id);
-      if (row) fillAttendanceForm(row);
+      if (row) fillAttendanceForm(row, client);
     };
 
     document.getElementById('av-attendance-list')?.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-av-att-photo]')) {
+        e.stopPropagation();
+        return;
+      }
       const waId = e.target.closest('[data-av-att-wa]')?.dataset.avAttWa;
       const editId = e.target.closest('[data-av-att-edit]')?.dataset.avAttEdit;
       const delId = e.target.closest('[data-av-att-del]')?.dataset.avAttDel;
@@ -648,6 +802,9 @@
         const row = attendanceLogs.find((item) => item.id === delId);
         const label = row ? `${fmtDate(row.meeting_date)} · ${MEETING_LABELS[row.meeting_kind]}` : 'este registro';
         if (!window.confirm(`Excluir ${label}?`)) return;
+        if (row?.image_path) {
+          await client.storage.from(IMAGE_BUCKET).remove([row.image_path]);
+        }
         const { error } = await client.from('secretary_attendance_logs').delete().eq('id', delId);
         if (error) {
           showToast(toastEl(), error.message, true);

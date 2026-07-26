@@ -1317,6 +1317,17 @@ html.dark .av-attendance-form .av-input {
   border-color: var(--je-outline-variant) !important;
   color: var(--je-on-surface) !important;
 }
+html.dark .av-attendance-image__pick {
+  background: rgba(109, 40, 217, 0.12) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+  color: #c4b5fd !important;
+}
+html.dark .av-attendance-image__preview,
+html.dark .av-attendance-item__photo,
+html.dark .sec-attendance-log__photo {
+  border-color: var(--je-card-border) !important;
+  background: var(--je-surface-container-low) !important;
+}
 
 /* Perfil */
 html.dark .perf-card__head,

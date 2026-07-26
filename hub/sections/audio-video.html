@@ -171,6 +171,23 @@
                 <span>Observações</span>
                 <input type="text" id="av-attendance-remarks" class="av-input" placeholder="Opcional"/>
               </label>
+              <div class="av-field av-field--full">
+                <span>Foto</span>
+                <div class="av-attendance-image">
+                  <div id="av-attendance-image-preview" class="av-attendance-image__preview hidden">
+                    <img id="av-attendance-image-img" alt="Prévia da foto da assistência"/>
+                    <button type="button" id="av-attendance-image-clear" class="av-attendance-image__clear" aria-label="Remover foto">
+                      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                  </div>
+                  <label class="av-attendance-image__pick" for="av-attendance-image-input">
+                    <input type="file" id="av-attendance-image-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden/>
+                    <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                    <span id="av-attendance-image-label">Adicionar foto</span>
+                  </label>
+                  <p class="av-attendance-image__hint">Opcional · JPG, PNG, WebP ou GIF · máx. 5 MB</p>
+                </div>
+              </div>
             </div>
           </div>
           <div class="av-modal__foot">
