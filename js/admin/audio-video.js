@@ -388,16 +388,21 @@
   function setAttendanceModalCopy({ heading, subtitle, submit, mode = 'create' }) {
     const headingEl = document.getElementById('av-attendance-modal-heading');
     const subEl = document.getElementById('av-attendance-modal-sub');
-    const submitEl = document.getElementById('av-attendance-submit-label');
-    const submitBtn = document.getElementById('av-attendance-submit');
-    const submitIcon = document.getElementById('av-attendance-submit-icon');
+    const submitBtn = document.getElementById('av-attendance-submit')
+      || document.querySelector('#av-attendance-form button[type="submit"]');
+    const submitEl = document.getElementById('av-attendance-submit-label')
+      || submitBtn?.querySelector('span:not(.material-symbols-outlined)');
+    const submitIcon = document.getElementById('av-attendance-submit-icon')
+      || submitBtn?.querySelector('.material-symbols-outlined');
+    const isEdit = mode === 'edit';
     if (headingEl) headingEl.textContent = heading;
     if (subEl) subEl.textContent = subtitle;
     if (submitEl) submitEl.textContent = submit;
-    if (submitIcon) submitIcon.textContent = mode === 'edit' ? 'sync' : 'add';
+    if (submitIcon) submitIcon.textContent = isEdit ? 'refresh' : 'add';
     if (submitBtn) {
-      submitBtn.classList.toggle('av-toolbar-btn--update', mode === 'edit');
-      submitBtn.classList.toggle('av-toolbar-btn--accent', mode !== 'edit');
+      submitBtn.classList.remove('av-toolbar-btn--accent', 'av-toolbar-btn--update');
+      submitBtn.classList.add(isEdit ? 'av-toolbar-btn--update' : 'av-toolbar-btn--accent');
+      submitBtn.setAttribute('data-av-submit-mode', isEdit ? 'update' : 'create');
     }
   }
 
@@ -519,8 +524,8 @@
           <button type="button" class="av-attendance-item__btn av-attendance-item__btn--wa" data-av-att-wa="${row.id}" aria-label="Enviar no WhatsApp" title="Enviar no WhatsApp">
             <span class="material-symbols-outlined" aria-hidden="true">chat</span>
           </button>
-          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--edit" data-av-att-edit="${row.id}" aria-label="Editar registro" title="Editar">
-            <span class="material-symbols-outlined" aria-hidden="true">edit_square</span>
+          <button type="button" class="av-attendance-item__btn av-attendance-item__btn--edit" data-av-att-edit="${row.id}" aria-label="Atualizar registro" title="Atualizar">
+            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
           </button>
           <button type="button" class="av-attendance-item__btn av-attendance-item__btn--danger" data-av-att-del="${row.id}" aria-label="Excluir registro" title="Excluir">
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>

@@ -147,12 +147,16 @@
 .av-modal__foot .av-toolbar-btn--ghost:hover{background:#f5f3ff;border-color:#c4b5fd}
 .av-modal__foot .av-toolbar-btn--accent{background:#6d28d9;color:#fff;border:1px solid #5b21b6}
 .av-modal__foot .av-toolbar-btn--accent:hover{background:#5b21b6}
-.av-modal__foot .av-toolbar-btn--update{
-  background:linear-gradient(135deg,#0f3462 0%,#1d4ed8 100%);color:#fff;border:1px solid #1e40af
+.av-modal__foot .av-toolbar-btn--update,
+.av-modal__foot .av-toolbar-btn[data-av-submit-mode="update"]{
+  background:#0ea5e9;color:#fff;border:1px solid #0284c7;
+  box-shadow:0 2px 10px rgba(14,165,233,.35);font-weight:800;letter-spacing:.01em
 }
-.av-modal__foot .av-toolbar-btn--update:hover{background:linear-gradient(135deg,#0b2a52 0%,#1e40af 100%)}
-.av-modal__foot .av-toolbar-btn--update .material-symbols-outlined{
-  font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24
+.av-modal__foot .av-toolbar-btn--update:hover,
+.av-modal__foot .av-toolbar-btn[data-av-submit-mode="update"]:hover{background:#0284c7;border-color:#0369a1}
+.av-modal__foot .av-toolbar-btn--update .material-symbols-outlined,
+.av-modal__foot .av-toolbar-btn[data-av-submit-mode="update"] .material-symbols-outlined{
+  font-size:1.25rem!important;font-variation-settings:'FILL' 1,'wght' 700,'GRAD' 0,'opsz' 24
 }
 .av-modal__foot .av-toolbar-btn .material-symbols-outlined{font-size:1.125rem}
 body.av-modal-open{overflow:hidden;touch-action:none}
@@ -199,8 +203,8 @@ body.av-modal-open{overflow:hidden;touch-action:none}
 .av-attendance-item__btn:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(15,52,98,.08)}
 .av-attendance-item__btn:active{transform:translateY(0);box-shadow:none}
 .av-attendance-item__btn:focus-visible{outline:2px solid rgba(109,40,217,.35);outline-offset:2px}
-.av-attendance-item__btn--edit{background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9}
-.av-attendance-item__btn--edit:hover{background:#ede9fe;border-color:#c4b5fd}
+.av-attendance-item__btn--edit{background:#e0f2fe;border-color:#7dd3fc;color:#0369a1}
+.av-attendance-item__btn--edit:hover{background:#bae6fd;border-color:#38bdf8}
 .av-attendance-item__btn--danger{background:#fef2f2;border-color:#fecaca;color:#dc2626}
 .av-attendance-item__btn--danger:hover{background:#fee2e2;border-color:#fca5a5}
 .av-attendance-item__btn--wa{background:#ecfdf5;border-color:#a7f3d0;color:#059669}
