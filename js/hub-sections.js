@@ -4,9 +4,9 @@
     moduleKey: 'secretario',
     viewId: 'hub-view-secretario',
     partial: 'hub/sections/secretario.html',
-    styles: ['css/hub-sections/secretario.css?v=20260725210000'],
+    styles: ['css/hub-sections/secretario.css?v=20260726103000'],
     scripts: [
-      'js/admin/secretario-service.js?v=20260725240000',
+      'js/admin/secretario-service.js?v=20260726103000',
       'js/admin/secretario-visit.js?v=20260724234500',
       'js/admin/secretario.js?v=20260724234500'
     ],
@@ -34,9 +34,9 @@
     moduleKey: 'audio-video',
     viewId: 'hub-view-audio-video',
     partial: 'hub/sections/audio-video.html?v=20260725223000',
-    styles: ['css/hub-sections/audio-video.css?v=20260726083000'],
+    styles: ['css/hub-sections/audio-video.css?v=20260726103000'],
     scripts: [
-      'js/admin/audio-video.js?v=20260725223000'
+      'js/admin/audio-video.js?v=20260726103000'
     ],
     initKey: 'JEAdminAudioVideo'
   };

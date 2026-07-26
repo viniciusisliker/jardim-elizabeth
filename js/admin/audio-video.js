@@ -340,17 +340,36 @@
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  function attendanceTotals(row) {
+    const presencial = Number(row.attendance_count) || 0;
+    const hasZoom = row.zoom_attendance_count != null && row.zoom_attendance_count !== '';
+    const zoom = hasZoom ? Number(row.zoom_attendance_count) || 0 : 0;
+    return {
+      presencial,
+      zoom,
+      hasZoom,
+      total: presencial + (hasZoom ? zoom : 0)
+    };
+  }
+
+  function attendanceBreakdownLabel({ presencial, zoom, hasZoom }) {
+    if (hasZoom) return `Presencial ${presencial} · Zoom ${zoom}`;
+    return `Presencial ${presencial}`;
+  }
+
   function buildAttendanceWhatsAppMessage(row, submitterName) {
     const kind = MEETING_LABELS[row.meeting_kind] || row.meeting_kind;
+    const totals = attendanceTotals(row);
     const lines = [
       '📊 *Assistência — Jardim Elizabeth*',
       '',
       `📅 Data: ${fmtDate(row.meeting_date)}`,
       `🏛 Reunião: ${kind}`,
-      `👥 Presencial: ${row.attendance_count}`
+      `👥 Total: ${totals.total}`,
+      `🏠 Presencial: ${totals.presencial}`
     ];
-    if (row.zoom_attendance_count != null && row.zoom_attendance_count !== '') {
-      lines.push(`💻 Zoom: ${row.zoom_attendance_count}`);
+    if (totals.hasZoom) {
+      lines.push(`💻 Zoom: ${totals.zoom}`);
     }
     if (row.remarks) {
       lines.push(`📝 Obs.: ${row.remarks}`);
@@ -504,7 +523,9 @@
       root.innerHTML = '<p class="av-hint">Nenhum registro ainda. Toque em <strong>Novo registro</strong> após a reunião.</p>';
       return;
     }
-    root.innerHTML = attendanceLogs.map((row) => `
+    root.innerHTML = attendanceLogs.map((row) => {
+      const totals = attendanceTotals(row);
+      return `
       <article class="av-attendance-item" data-av-att-open="${row.id}" tabindex="0" role="button" aria-label="Abrir registro de ${escapeHtml(fmtDate(row.meeting_date))}">
         <div class="av-attendance-item__top">
           <div class="av-attendance-item__main">
@@ -512,8 +533,8 @@
             <p class="av-attendance-item__kind">${escapeHtml(MEETING_LABELS[row.meeting_kind] || row.meeting_kind)}</p>
           </div>
           <div class="av-attendance-item__counts">
-            <span class="av-attendance-item__count">${escapeHtml(String(row.attendance_count))}</span>
-            ${row.zoom_attendance_count != null ? `<span class="av-attendance-item__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
+            <span class="av-attendance-item__count">${escapeHtml(String(totals.total))}</span>
+            <span class="av-attendance-item__breakdown">${escapeHtml(attendanceBreakdownLabel(totals))}</span>
           </div>
         </div>
         <div class="av-attendance-item__meta">
@@ -531,7 +552,8 @@
             <span class="material-symbols-outlined" aria-hidden="true">delete</span>
           </button>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
   }
 
   function bindAttendanceForm(client, profile) {

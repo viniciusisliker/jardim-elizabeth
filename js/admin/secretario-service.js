@@ -513,15 +513,23 @@
       return;
     }
 
-    historyRoot.innerHTML = monthLogs.map((row) => `
+    historyRoot.innerHTML = monthLogs.map((row) => {
+      const presencial = Number(row.attendance_count) || 0;
+      const hasZoom = row.zoom_attendance_count != null && row.zoom_attendance_count !== '';
+      const zoom = hasZoom ? Number(row.zoom_attendance_count) || 0 : 0;
+      const total = presencial + (hasZoom ? zoom : 0);
+      const breakdown = hasZoom
+        ? `Presencial ${presencial} · Zoom ${zoom}`
+        : `Presencial ${presencial}`;
+      return `
       <article class="sec-attendance-log">
         <div class="sec-attendance-log__main">
           <p class="sec-attendance-log__date">${escapeHtml(fmtDate(row.meeting_date))}</p>
           <p class="sec-attendance-log__kind">${escapeHtml(meetingKindLabel(row.meeting_kind))}</p>
         </div>
         <div class="sec-attendance-log__counts">
-          <span class="sec-attendance-log__count">${escapeHtml(String(row.attendance_count))}</span>
-          ${row.zoom_attendance_count != null ? `<span class="sec-attendance-log__zoom">Zoom ${escapeHtml(String(row.zoom_attendance_count))}</span>` : ''}
+          <span class="sec-attendance-log__count">${escapeHtml(String(total))}</span>
+          <span class="sec-attendance-log__breakdown">${escapeHtml(breakdown)}</span>
         </div>
         <div class="sec-attendance-log__meta">
           ${row.remarks ? `<p class="sec-attendance-log__remarks">${escapeHtml(row.remarks)}</p>` : ''}
@@ -530,7 +538,8 @@
             · ${escapeHtml(fmtDateTime(row.created_at))}
           </p>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
   }
 
   function renderS1Summary() {
