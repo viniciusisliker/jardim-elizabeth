@@ -257,7 +257,11 @@
       .order('published_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (error || !data?.pdf_full_url) return null;
+    if (error) {
+      console.warn('fetchPublishedBoardPdfOnly:', error.message);
+      return null;
+    }
+    if (!data?.pdf_full_url) return null;
     return data;
   }
 

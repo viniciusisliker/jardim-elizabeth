@@ -686,16 +686,28 @@
     });
   }
 
+  function formatUploadError(err, fallback) {
+    if (!err) return fallback;
+    const msg = err.message || err.error || String(err);
+    if (msg === 'HTTP 400' || msg === '400') {
+      return `${fallback} (requisição inválida — recarregue a página e tente de novo)`;
+    }
+    return msg;
+  }
+
+  async function uploadAnnouncementPdf(path, blob) {
+    const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
+      contentType: 'application/pdf',
+      cacheControl: '3600'
+    });
+    if (upErr) throw new Error(formatUploadError(upErr, 'Erro ao enviar PDF'));
+    const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
+    return pub.publicUrl;
+  }
+
   async function uploadPdfToStorage(block, blob) {
     const path = `${board.id}/${block}-${Date.now()}.pdf`;
-    const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
-      upsert: true,
-      contentType: 'application/pdf'
-    });
-    if (upErr) throw new Error(upErr.message);
-
-    const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
-    const pdfUrl = pub.publicUrl;
+    const pdfUrl = await uploadAnnouncementPdf(path, blob);
 
     const col = block === 'mecanicas' ? 'pdf_mecanicas_url' : block === 'midweek' ? 'pdf_midweek_url' : 'pdf_weekend_url';
     const boardUpdate = {
@@ -721,14 +733,7 @@
 
   async function uploadFullBoardPdf(blob) {
     const path = `${board.id}/full-${Date.now()}.pdf`;
-    const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
-      upsert: true,
-      contentType: 'application/pdf'
-    });
-    if (upErr) throw new Error(upErr.message);
-
-    const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
-    const pdfUrl = pub.publicUrl;
+    const pdfUrl = await uploadAnnouncementPdf(path, blob);
     const boardUpdate = {
       pdf_full_url: pdfUrl,
       publish_mode: 'pdf_only',
@@ -1086,12 +1091,24 @@
   }
 
   async function loadPublishedList() {
-    const { data, error } = await client
+    const selectWithMode = 'id, reference_label, reference_month, status, published_at, updated_at, publish_mode, pdf_full_url, pdf_mecanicas_url, pdf_midweek_url, pdf_weekend_url';
+    const selectLegacy = 'id, reference_label, reference_month, status, published_at, updated_at, pdf_mecanicas_url, pdf_midweek_url, pdf_weekend_url';
+
+    let { data, error } = await client
       .from('announcement_boards')
-      .select('id, reference_label, reference_month, status, published_at, updated_at, publish_mode, pdf_full_url, pdf_mecanicas_url, pdf_midweek_url, pdf_weekend_url')
+      .select(selectWithMode)
       .neq('status', 'archived')
       .order('reference_month', { ascending: false })
       .limit(24);
+
+    if (error?.code === '42703' || /publish_mode|pdf_full_url/.test(error?.message || '')) {
+      ({ data, error } = await client
+        .from('announcement_boards')
+        .select(selectLegacy)
+        .neq('status', 'archived')
+        .order('reference_month', { ascending: false })
+        .limit(24));
+    }
     if (error) {
       const list = $('published-list');
       if (list) list.innerHTML = `<p class="text-error text-sm px-4 py-6">${escapeHtml(error.message)}</p>`;
