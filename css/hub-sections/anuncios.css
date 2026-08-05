@@ -171,3 +171,7 @@
     .pdf-upload-row__input{font-size:0.8125rem;color:#43474f}
     .pdf-upload-row__name{font-size:0.75rem;color:#43474f;word-break:break-all}
     .pdf-upload-row:has(.pdf-upload-row__input:focus){border-color:#002060;box-shadow:0 0 0 3px rgba(0,32,96,.1)}
+    .pdf-upload-mode-tabs{display:flex;gap:.375rem;padding:.25rem;border-radius:.75rem;background:#F7F6F2;border:1px solid rgba(31,73,125,.15)}
+    .pdf-upload-mode-tab{flex:1;padding:.5rem .75rem;border:none;border-radius:.5rem;background:transparent;font-size:.8125rem;font-weight:700;color:#43474f;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
+    .pdf-upload-mode-tab:hover{color:#002060;background:rgba(255,255,255,.7)}
+    .pdf-upload-mode-tab.is-active{background:#fff;color:#002060;box-shadow:0 1px 4px rgba(0,32,96,.12)}

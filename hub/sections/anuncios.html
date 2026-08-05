@@ -6,7 +6,7 @@
           </div>
           <div class="board-month-toolbar__field">
             <label for="board-month">Mês do quadro</label>
-            <p class="board-month-toolbar__hint">Escolha o mês. Use <strong>Enviar PDFs</strong> para publicar os arquivos prontos, ou carregue o quadro para editar no site.</p>
+            <p class="board-month-toolbar__hint">Escolha o mês. Em <strong>Enviar PDFs → PDF único</strong>, publique o arquivo pronto direto no site. Ou carregue o quadro para editar seção por seção.</p>
             <div class="board-month-input-wrap">
               <input type="month" id="board-month" aria-describedby="board-label"/>
             </div>
@@ -230,7 +230,21 @@
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="px-5 py-4 space-y-3 overflow-y-auto">
+      <div class="px-5 py-4 border-b border-outline-variant shrink-0">
+        <div class="pdf-upload-mode-tabs" role="tablist" aria-label="Modo de envio">
+          <button type="button" role="tab" data-upload-mode="full" class="pdf-upload-mode-tab is-active" aria-selected="true">PDF único</button>
+          <button type="button" role="tab" data-upload-mode="split" class="pdf-upload-mode-tab" aria-selected="false">3 PDFs separados</button>
+        </div>
+      </div>
+      <div id="pdf-upload-panel-full" class="px-5 py-4 space-y-3 overflow-y-auto">
+        <p class="text-sm text-on-surface-variant">O PDF aparece direto na página pública — sem montar no editor.</p>
+        <label class="pdf-upload-row">
+          <span class="pdf-upload-row__label">Quadro do mês (PDF completo)</span>
+          <input type="file" accept="application/pdf" id="pdf-upload-full-input" class="pdf-upload-row__input"/>
+          <span class="pdf-upload-row__name" id="pdf-upload-full-name">Nenhum arquivo</span>
+        </label>
+      </div>
+      <div id="pdf-upload-panel-split" class="px-5 py-4 space-y-3 overflow-y-auto hidden">
         <label class="pdf-upload-row">
           <span class="pdf-upload-row__label">Designações Mecânicas</span>
           <input type="file" accept="application/pdf" data-bulk-upload="mecanicas" class="pdf-upload-row__input"/>

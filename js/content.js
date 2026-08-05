@@ -243,6 +243,24 @@
     if (window.JEAgendaRefresh) window.JEAgendaRefresh();
   }
 
+  async function fetchPublishedBoardPdfOnly() {
+    const client = await getClient();
+    if (!client) return null;
+    const now = new Date();
+    const refMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const { data, error } = await client
+      .from('announcement_boards')
+      .select('pdf_full_url, reference_label, publish_mode, published_at')
+      .eq('reference_month', refMonth)
+      .eq('status', 'published')
+      .eq('publish_mode', 'pdf_only')
+      .order('published_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data?.pdf_full_url) return null;
+    return data;
+  }
+
   async function fetchAnnouncements() {
     const client = await getClient();
     if (!client) return null;
@@ -344,10 +362,56 @@
       </button>`;
   }
 
+  function renderFullBoardPdf(board) {
+    const cardsEl = document.getElementById('je-announcement-cards');
+    const fullEl = document.getElementById('je-announcement-full-pdf');
+    const introEl = document.querySelector('[data-je-page-intro="text"]');
+    if (!fullEl) return;
+
+    cardsEl?.classList.add('hidden');
+    fullEl.classList.remove('hidden');
+
+    const frame = document.getElementById('je-announcement-full-frame');
+    const openTab = document.getElementById('je-announcement-full-open');
+    const labelEl = document.getElementById('je-announcement-full-label');
+    const url = board.pdf_full_url;
+
+    if (frame) frame.src = pdfEmbedUrl(url);
+    if (openTab) openTab.href = url;
+    if (labelEl) labelEl.textContent = board.reference_label || 'Quadro do mês';
+    if (introEl) {
+      introEl.innerHTML = `<strong class="text-primary">Quadro de ${esc(board.reference_label || 'mês corrente')}</strong> — visualização direta do PDF publicado.`;
+    }
+  }
+
   async function loadAnnouncements() {
     const cardsEl = document.getElementById('je-announcement-cards');
+    const fullEl = document.getElementById('je-announcement-full-pdf');
     const historyEl = document.getElementById('je-announcement-history');
     if (!cardsEl) return;
+
+    const fullBoard = await fetchPublishedBoardPdfOnly();
+    if (fullBoard?.pdf_full_url) {
+      renderFullBoardPdf(fullBoard);
+      const data = await fetchAnnouncements();
+      if (historyEl && data?.settings?.history_folder_url) {
+        historyEl.href = data.settings.history_folder_url;
+        if (data.settings.history_description) {
+          const desc = document.querySelector('[data-je-history-desc]');
+          if (desc) desc.textContent = data.settings.history_description;
+        }
+      }
+      initAnnouncementPdfModal();
+      return;
+    }
+
+    fullEl?.classList.add('hidden');
+    cardsEl.classList.remove('hidden');
+    const introEl = document.querySelector('[data-je-page-intro="text"]');
+    if (introEl) {
+      introEl.innerHTML = '<strong class="text-primary">Escolha uma seção</strong> abaixo para visualizar o PDF do mês corrente.';
+    }
+
     const data = await fetchAnnouncements();
     if (!data) return;
     cardsEl.innerHTML = data.sections.map(renderAnnouncementCard).join('');

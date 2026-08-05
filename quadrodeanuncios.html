@@ -126,8 +126,61 @@ gtag('config', 'G-PGXCZF9S9W');
       gap: 1rem;
       margin-bottom: 2.5rem;
     }
+    .je-qa-grid.hidden { display: none; }
     @media (min-width: 768px) {
       .je-qa-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    }
+
+    .je-qa-full-pdf {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      margin-bottom: 2.5rem;
+      border-radius: 1.25rem;
+      border: 1px solid rgba(15,52,98,.1);
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+      overflow: hidden;
+    }
+    .je-qa-full-pdf.hidden { display: none; }
+    .je-qa-full-pdf__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.125rem;
+      border-bottom: 1px solid rgba(15,52,98,.08);
+      background: linear-gradient(180deg, #faf6ef 0%, #fff 100%);
+    }
+    .je-qa-full-pdf__title {
+      margin: 0;
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: #0f3462;
+    }
+    .je-qa-full-pdf__open {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(15,52,98,.14);
+      background: #fff;
+      color: #0f3462;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .je-qa-full-pdf__open:hover { background: #f5f8fc; }
+    .je-qa-full-pdf__frame {
+      width: 100%;
+      min-height: 70vh;
+      border: 0;
+      background: #f5f8fc;
+    }
+    @media (min-width: 768px) {
+      .je-qa-full-pdf__frame { min-height: 78vh; }
     }
 
     .je-qa-card {
@@ -469,6 +522,17 @@ gtag('config', 'G-PGXCZF9S9W');
         </span>
         <p data-je-page-intro="text"><strong class="text-primary">Escolha uma seção</strong> abaixo para visualizar o PDF do mês corrente.</p>
       </div>
+
+      <section id="je-announcement-full-pdf" class="je-qa-full-pdf hidden" aria-label="Quadro de anúncios em PDF">
+        <div class="je-qa-full-pdf__head">
+          <h2 id="je-announcement-full-label" class="je-qa-full-pdf__title">Quadro do mês</h2>
+          <a id="je-announcement-full-open" href="#" target="_blank" rel="noopener" class="je-qa-full-pdf__open">
+            Abrir em nova aba
+            <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
+          </a>
+        </div>
+        <iframe id="je-announcement-full-frame" class="je-qa-full-pdf__frame" title="Quadro de anúncios"></iframe>
+      </section>
 
       <div id="je-announcement-cards" class="je-qa-grid">
 
