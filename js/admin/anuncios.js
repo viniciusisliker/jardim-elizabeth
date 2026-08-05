@@ -682,8 +682,153 @@
       const block = btn.dataset.publishBlock;
       const ready = !!pendingPdfs[block]?.blob;
       btn.disabled = !ready;
-      btn.title = ready ? 'Publica o PDF revisado no site' : 'Gere o PDF antes de publicar';
+      btn.title = ready ? 'Publica o PDF revisado no site' : 'Gere ou envie o PDF antes de publicar';
     });
+  }
+
+  async function uploadPdfToStorage(block, blob) {
+    const path = `${board.id}/${block}-${Date.now()}.pdf`;
+    const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
+      upsert: true,
+      contentType: 'application/pdf'
+    });
+    if (upErr) throw new Error(upErr.message);
+
+    const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
+    const pdfUrl = pub.publicUrl;
+
+    const col = block === 'mecanicas' ? 'pdf_mecanicas_url' : block === 'midweek' ? 'pdf_midweek_url' : 'pdf_weekend_url';
+    const boardUpdate = {
+      [col]: pdfUrl,
+      updated_at: new Date().toISOString(),
+      status: 'published',
+      published_at: board.published_at || new Date().toISOString()
+    };
+    const { error: boardErr } = await client.from('announcement_boards').update(boardUpdate).eq('id', board.id);
+    if (boardErr) throw new Error(boardErr.message);
+
+    const slug = Schemas.SECTION_SLUGS[block];
+    const { error: sectionErr } = await client.from('announcement_sections').update({ document_url: pdfUrl, updated_at: new Date().toISOString() }).eq('slug', slug);
+    if (sectionErr) throw new Error(sectionErr.message);
+
+    board[col] = pdfUrl;
+    board.status = 'published';
+    board.published_at = boardUpdate.published_at;
+    return pdfUrl;
+  }
+
+  function selectedReferenceMonth() {
+    const monthInput = $('board-month')?.value;
+    if (!monthInput) return null;
+    const [y, m] = monthInput.split('-').map(Number);
+    return `${y}-${String(m).padStart(2, '0')}-01`;
+  }
+
+  async function ensureBoardForSelectedMonth() {
+    const ref = selectedReferenceMonth();
+    if (!ref) {
+      showToast(toastEl, 'Selecione um mês.', true);
+      return false;
+    }
+    if (!board || board.reference_month !== ref) {
+      await loadOrCreateBoard();
+    }
+    return !!board;
+  }
+
+  function stageUploadedPdf(block, file) {
+    if (!file || file.type !== 'application/pdf') {
+      showToast(toastEl, 'Selecione um arquivo PDF.', true);
+      return false;
+    }
+    if (!board) {
+      showToast(toastEl, 'Carregue um quadro primeiro.', true);
+      return false;
+    }
+    revokePendingPdf(block);
+    const objectUrl = URL.createObjectURL(file);
+    pendingPdfs[block] = { blob: file, objectUrl, fileName: file.name };
+    updatePublishButtonsState();
+    return true;
+  }
+
+  async function handleUploadPdfFile(block, file) {
+    if (!(await ensureBoardForSelectedMonth())) return;
+    if (!stageUploadedPdf(block, file)) return;
+    openPdfPreviewModal(block);
+    showToast(toastEl, `${Schemas.SECTION_TITLES[block]} — PDF carregado. Revise e publique.`);
+  }
+
+  const bulkUploadFiles = {};
+
+  function resetBulkUploadModal() {
+    ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
+      bulkUploadFiles[block] = null;
+      const input = document.querySelector(`[data-bulk-upload="${block}"]`);
+      const nameEl = document.querySelector(`[data-bulk-upload-name="${block}"]`);
+      if (input) input.value = '';
+      if (nameEl) nameEl.textContent = 'Nenhum arquivo';
+    });
+    updateBulkUploadPublishButton();
+  }
+
+  function updateBulkUploadPublishButton() {
+    const btn = $('pdf-upload-publish');
+    if (!btn) return;
+    const hasAny = ['mecanicas', 'midweek', 'weekend'].some((b) => bulkUploadFiles[b]);
+    btn.disabled = !hasAny;
+  }
+
+  function openPdfUploadModal() {
+    if (!$('board-month')?.value) {
+      showToast(toastEl, 'Selecione um mês antes de enviar PDFs.', true);
+      return;
+    }
+    resetBulkUploadModal();
+    $('pdf-upload-modal')?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePdfUploadModal() {
+    $('pdf-upload-modal')?.classList.add('hidden');
+    document.body.style.overflow = '';
+    resetBulkUploadModal();
+  }
+
+  async function publishBulkUploadedPdfs() {
+    const blocks = ['mecanicas', 'midweek', 'weekend'].filter((b) => bulkUploadFiles[b]);
+    if (!blocks.length) {
+      showToast(toastEl, 'Selecione ao menos um PDF.', true);
+      return;
+    }
+
+    const publishBtn = $('pdf-upload-publish');
+    try {
+      if (!(await ensureBoardForSelectedMonth())) return;
+
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Publicando…';
+      }
+      showToast(toastEl, 'Publicando PDFs…');
+
+      for (const block of blocks) {
+        await uploadPdfToStorage(block, bulkUploadFiles[block]);
+      }
+
+      closePdfUploadModal();
+      updateBoardLabel();
+      loadPublishedList();
+      showToast(toastEl, `${blocks.length} PDF(s) publicado(s) no site.`);
+    } catch (err) {
+      showToast(toastEl, err.message || 'Erro ao publicar PDFs.', true);
+      console.error(err);
+    } finally {
+      if (publishBtn) {
+        publishBtn.disabled = !blocks.length;
+        publishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">publish</span> Publicar no site';
+      }
+    }
   }
 
   function openPdfPreviewModal(block) {
@@ -739,7 +884,7 @@
     try {
       const pending = pendingPdfs[block];
       if (!pending?.blob) {
-        showToast(toastEl, 'Gere e revise o PDF antes de publicar.', true);
+        showToast(toastEl, 'Gere ou envie o PDF antes de publicar.', true);
         return;
       }
       if (!board) { showToast(toastEl, 'Carregue um quadro primeiro.', true); return; }
@@ -747,35 +892,7 @@
       readFormIntoEntries();
       await persistEntries();
 
-      const blob = pending.blob;
-      const path = `${board.id}/${block}-${Date.now()}.pdf`;
-
-      const { error: upErr } = await client.storage.from('announcements').upload(path, blob, {
-        upsert: true,
-        contentType: 'application/pdf'
-      });
-      if (upErr) throw new Error(upErr.message);
-
-      const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
-      const pdfUrl = pub.publicUrl;
-
-      const col = block === 'mecanicas' ? 'pdf_mecanicas_url' : block === 'midweek' ? 'pdf_midweek_url' : 'pdf_weekend_url';
-      const boardUpdate = {
-        [col]: pdfUrl,
-        updated_at: new Date().toISOString(),
-        status: 'published',
-        published_at: board.published_at || new Date().toISOString()
-      };
-      const { error: boardErr } = await client.from('announcement_boards').update(boardUpdate).eq('id', board.id);
-      if (boardErr) throw new Error(boardErr.message);
-
-      const slug = Schemas.SECTION_SLUGS[block];
-      const { error: sectionErr } = await client.from('announcement_sections').update({ document_url: pdfUrl, updated_at: new Date().toISOString() }).eq('slug', slug);
-      if (sectionErr) throw new Error(sectionErr.message);
-
-      board[col] = pdfUrl;
-      board.status = 'published';
-      board.published_at = boardUpdate.published_at;
+      await uploadPdfToStorage(block, pending.blob);
       revokePendingPdf(block);
       closePdfPreviewModal();
       updateBoardLabel();
@@ -1009,6 +1126,46 @@
     document.querySelectorAll('.btn-generate-pdf').forEach((b) => b.addEventListener('click', () => generatePdfBlock(b.dataset.generatePdf)));
     document.querySelectorAll('.btn-publish-block').forEach((b) => b.addEventListener('click', () => publishBlock(b.dataset.publishBlock)));
 
+    document.querySelectorAll('[data-upload-pdf-btn]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const block = btn.dataset.uploadPdfBtn;
+        document.querySelector(`[data-upload-pdf="${block}"]`)?.click();
+      });
+    });
+    document.querySelectorAll('[data-upload-pdf]').forEach((input) => {
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        input.value = '';
+        if (file) await handleUploadPdfFile(input.dataset.uploadPdf, file);
+      });
+    });
+
+    $('btn-open-pdf-upload')?.addEventListener('click', openPdfUploadModal);
+    $('pdf-upload-close')?.addEventListener('click', closePdfUploadModal);
+    $('pdf-upload-backdrop')?.addEventListener('click', closePdfUploadModal);
+    $('pdf-upload-cancel')?.addEventListener('click', closePdfUploadModal);
+    $('pdf-upload-publish')?.addEventListener('click', publishBulkUploadedPdfs);
+    document.querySelectorAll('[data-bulk-upload]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const block = input.dataset.bulkUpload;
+        const file = input.files?.[0];
+        const nameEl = document.querySelector(`[data-bulk-upload-name="${block}"]`);
+        if (!file) {
+          bulkUploadFiles[block] = null;
+          if (nameEl) nameEl.textContent = 'Nenhum arquivo';
+        } else if (file.type !== 'application/pdf') {
+          showToast(toastEl, 'Selecione um arquivo PDF.', true);
+          input.value = '';
+          bulkUploadFiles[block] = null;
+          if (nameEl) nameEl.textContent = 'Nenhum arquivo';
+        } else {
+          bulkUploadFiles[block] = file;
+          if (nameEl) nameEl.textContent = file.name;
+        }
+        updateBulkUploadPublishButton();
+      });
+    });
+
     $('pdf-preview-close')?.addEventListener('click', closePdfPreviewModal);
     $('pdf-preview-backdrop')?.addEventListener('click', closePdfPreviewModal);
     $('pdf-preview-open-tab')?.addEventListener('click', (e) => {
@@ -1058,6 +1215,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       if (!$('gcal-export-modal')?.classList.contains('hidden')) closeGcalExportModal();
+      else if (!$('pdf-upload-modal')?.classList.contains('hidden')) closePdfUploadModal();
       else if (!$('pdf-preview-modal')?.classList.contains('hidden')) closePdfPreviewModal();
     });
 

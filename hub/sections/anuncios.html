@@ -6,7 +6,7 @@
           </div>
           <div class="board-month-toolbar__field">
             <label for="board-month">Mês do quadro</label>
-            <p class="board-month-toolbar__hint">Escolha o mês e clique em carregar para abrir ou criar o rascunho.</p>
+            <p class="board-month-toolbar__hint">Escolha o mês. Use <strong>Enviar PDFs</strong> para publicar os arquivos prontos, ou carregue o quadro para editar no site.</p>
             <div class="board-month-input-wrap">
               <input type="month" id="board-month" aria-describedby="board-label"/>
             </div>
@@ -15,6 +15,10 @@
             <button type="button" id="btn-new-board" class="board-load-btn">
               <span class="material-symbols-outlined" aria-hidden="true">folder_open</span>
               Carregar quadro
+            </button>
+            <button type="button" id="btn-open-pdf-upload" class="board-upload-btn" title="Enviar PDFs prontos e publicar no site">
+              <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+              Enviar PDFs
             </button>
             <button type="button" id="btn-open-gcal-export" class="board-gcal-btn" title="Exportar designações para importar no Google Agenda">
               <svg class="gcal-product-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -83,8 +87,10 @@
         </div>
         <div class="flex gap-2">
           <button type="button" id="btn-save-draft" class="text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <input type="file" accept="application/pdf" data-upload-pdf="mecanicas" hidden/>
+          <button type="button" data-upload-pdf-btn="mecanicas" class="btn-upload-pdf text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg hover:bg-background" title="Enviar PDF pronto">Enviar PDF</button>
           <button type="button" data-generate-pdf="mecanicas" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
-          <button type="button" data-publish-block="mecanicas" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+          <button type="button" data-publish-block="mecanicas" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere ou envie o PDF antes de publicar">Publicar no site</button>
         </div>
       </div>
       <div id="editor-mecanicas" class="space-y-4"></div>
@@ -106,8 +112,10 @@
         </div>
         <div class="flex gap-2">
           <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <input type="file" accept="application/pdf" data-upload-pdf="midweek" hidden/>
+          <button type="button" data-upload-pdf-btn="midweek" class="btn-upload-pdf text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg hover:bg-background" title="Enviar PDF pronto">Enviar PDF</button>
           <button type="button" data-generate-pdf="midweek" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
-          <button type="button" data-publish-block="midweek" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+          <button type="button" data-publish-block="midweek" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere ou envie o PDF antes de publicar">Publicar no site</button>
         </div>
       </div>
       <div id="editor-midweek" class="space-y-4"></div>
@@ -121,8 +129,10 @@
         </div>
         <div class="flex gap-2">
           <button type="button" class="btn-save-draft text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Salvar rascunho</button>
+          <input type="file" accept="application/pdf" data-upload-pdf="weekend" hidden/>
+          <button type="button" data-upload-pdf-btn="weekend" class="btn-upload-pdf text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg hover:bg-background" title="Enviar PDF pronto">Enviar PDF</button>
           <button type="button" data-generate-pdf="weekend" class="btn-generate-pdf text-sm font-semibold border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-secondary/5">Gerar PDF</button>
-          <button type="button" data-publish-block="weekend" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere o PDF antes de publicar">Publicar no site</button>
+          <button type="button" data-publish-block="weekend" class="btn-publish-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled title="Gere ou envie o PDF antes de publicar">Publicar no site</button>
         </div>
       </div>
       <div id="editor-weekend" class="space-y-4"></div>
@@ -204,6 +214,45 @@
             <span class="material-symbols-outlined" style="font-size:16px">open_in_new</span>
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdf-upload-modal" class="hidden fixed inset-0 z-[75] flex items-end sm:items-center justify-center p-4 sm:p-6" role="dialog" aria-labelledby="pdf-upload-title" aria-modal="true">
+    <button type="button" id="pdf-upload-backdrop" class="absolute inset-0 bg-primary/45 backdrop-blur-[2px]" aria-label="Fechar"></button>
+    <div class="relative w-full max-w-lg max-h-[92vh] flex flex-col bg-white rounded-2xl border border-outline-variant shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-3 shrink-0">
+        <div>
+          <h2 id="pdf-upload-title" class="font-bold text-primary text-lg leading-tight">Enviar PDFs do mês</h2>
+          <p class="text-sm text-on-surface-variant mt-0.5">Selecione os PDFs prontos e publique direto no site. O mês é o escolhido acima.</p>
+        </div>
+        <button type="button" id="pdf-upload-close" class="text-on-surface-variant hover:text-primary p-1 rounded-lg" aria-label="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="px-5 py-4 space-y-3 overflow-y-auto">
+        <label class="pdf-upload-row">
+          <span class="pdf-upload-row__label">Designações Mecânicas</span>
+          <input type="file" accept="application/pdf" data-bulk-upload="mecanicas" class="pdf-upload-row__input"/>
+          <span class="pdf-upload-row__name" data-bulk-upload-name="mecanicas">Nenhum arquivo</span>
+        </label>
+        <label class="pdf-upload-row">
+          <span class="pdf-upload-row__label">Meio de Semana</span>
+          <input type="file" accept="application/pdf" data-bulk-upload="midweek" class="pdf-upload-row__input"/>
+          <span class="pdf-upload-row__name" data-bulk-upload-name="midweek">Nenhum arquivo</span>
+        </label>
+        <label class="pdf-upload-row">
+          <span class="pdf-upload-row__label">Final de Semana</span>
+          <input type="file" accept="application/pdf" data-bulk-upload="weekend" class="pdf-upload-row__input"/>
+          <span class="pdf-upload-row__name" data-bulk-upload-name="weekend">Nenhum arquivo</span>
+        </label>
+      </div>
+      <div class="px-5 py-4 border-t border-outline-variant flex flex-col sm:flex-row gap-2 shrink-0 bg-surface-container-low/50">
+        <button type="button" id="pdf-upload-cancel" class="text-sm font-semibold text-on-surface-variant border border-outline-variant px-4 py-2.5 rounded-lg hover:bg-white">Cancelar</button>
+        <button type="button" id="pdf-upload-publish" class="flex-1 inline-flex items-center justify-center gap-2 bg-secondary text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 disabled:opacity-50" disabled>
+          <span class="material-symbols-outlined" style="font-size:18px">publish</span>
+          Publicar no site
+        </button>
       </div>
     </div>
   </div>
