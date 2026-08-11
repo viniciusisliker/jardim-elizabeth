@@ -190,7 +190,7 @@ def render_s13_document(by_territory):
     lines.append("# REGISTRO DE DESIGNAÇÃO DE TERRITÓRIO")
     lines.append("## Ano de Serviço 2026 · Congregação Jardim Elizabeth")
     lines.append("")
-    lines.append("Documento gerado a partir dos cronogramas semanais (**23/03/2026 – 19/07/2026**).")
+    lines.append("Documento gerado a partir dos cronogramas semanais (**23/03/2026 – 02/08/2026**).")
     lines.append("")
     lines.append("### Critérios aplicados")
     lines.append("")

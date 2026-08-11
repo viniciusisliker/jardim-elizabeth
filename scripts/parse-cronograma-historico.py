@@ -372,6 +372,24 @@ HISTORICO = r"""
 🔹*SEXTA | CONGRESSO*
 🔹*SÁBADO | CONGRESSO*
 🔹*DOMINGO | CONGRESSO*
+
+🗓 *TERRITÓRIOS - CRONOGRAMA SEMANAL*
+*_Semana: 27/07 → 02/08_*
+🔹*TERÇA*
+*Dirigente:* _Alexsezar Tenório_
+*Território:* _T09 - Jardim Helga E_
+🔹*QUARTA*
+*Dirigente:* _Fábio Souza_
+*Território:* _T04 - Jardim Elizabeth C_
+🔹*QUINTA*
+*Dirigente:* _João Neves_
+*Território:* _T11 - Jd Leônidas Moreira B_
+🔹*SEXTA*
+*Dirigente:* _João Neves_
+*Território:* _T11 - Jd Leônidas Moreira B_
+🔹*SÁBADO*
+*Dirigente:* _Rikael_
+*Território:* _T12 - Jd Leônidas Moreira C_
 """
 
 DAY_OFFSET = {
@@ -528,7 +546,7 @@ def build_s13_table(merged):
 def print_markdown(rows):
     print("# Registro de Designação de Território — Ano de Serviço 2026")
     print()
-    print("Período consolidado: **23/03/2026 a 19/07/2026** (cronogramas semanais)")
+    print("Período consolidado: **23/03/2026 a 02/08/2026** (cronogramas semanais)")
     print()
     print("| Terr. | Última concluída | Designação 1 | Designação 2 | Designação 3 | Designação 4+ |")
     print("|------:|------------------|--------------|--------------|--------------|---------------|")
