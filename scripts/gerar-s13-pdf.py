@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Gera uma única folha A4 do S-13-T definitivo."""
 import importlib.util
+import shutil
 from pathlib import Path
 
 from fpdf import FPDF
@@ -238,6 +239,9 @@ def generate_pdf(out_path: Path):
 
 if __name__ == "__main__":
     out = ROOT / "registro-territorios-2026-S13-DEFINITIVO.pdf"
+    alias = ROOT / "S-13.pdf"
     path, total = generate_pdf(out)
+    shutil.copy2(out, alias)
     print(f"Gerado: {path}")
+    print(f"Gerado: {alias}")
     print(f"Total de saídas: {total}")
