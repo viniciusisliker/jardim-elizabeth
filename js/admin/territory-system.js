@@ -1818,13 +1818,6 @@
 
   function scheduleDomingoPairAssignment(row) {
     if (!H().isSundayCronogramaDay(row?.weekday_label)) return null;
-    const terrId = resolveScheduleTerritoryId(row);
-
-    if (terrId) {
-      const direct = activeAssignmentForTerritoryId(terrId);
-      if (direct?.id && H().isDomingoPairContextAssignment(direct, profiles)) return direct;
-    }
-
     const pairName = String(row?.dirigente_name || '').trim() || H().domingoDirigenteName(row);
     if (!pairName) return null;
     const members = H().profilesInDomingoPair(pairName, profiles);
@@ -1836,6 +1829,8 @@
         && members.some((m) => m.id === a.profile_id)
     );
     if (!matches.length) return null;
+
+    const terrId = resolveScheduleTerritoryId(row);
     if (terrId) {
       const onTerr = matches.find((a) => a.territory_id === terrId);
       if (onTerr) return onTerr;
@@ -1975,6 +1970,7 @@
       if (!H().isSundayCronogramaDay(row.weekday_label)) return false;
       const rowPair = String(row.dirigente_name || '').trim();
       if (!rowPair) return false;
+      // Só a linha desta dupla — nunca as demais linhas de domingo.
       return H().domingoPairNumForDirigenteName(rowPair) === pairNum;
     });
     const updates = rows.filter(
@@ -1985,7 +1981,8 @@
       updates.map((row) => client.from('territory_week_schedule').update({
         territory_id: territoryId,
         territory_code: territoryCode,
-        profile_id: null
+        profile_id: null,
+        dirigente_name: pairName
       }).eq('id', row.id))
     );
     const failed = results.find((r) => r.status === 'rejected' || r.value?.error);
@@ -2388,17 +2385,27 @@
 
     if (H().isSundayCronogramaDay(row?.weekday_label)) {
       const domingoAssignment = assignment || scheduleDomingoPairAssignment(row);
-      if (domingoAssignment?.id) {
-        const terr = domingoAssignment.territories
-          || (domingoAssignment.territory_id && territories.find((t) => t.id === domingoAssignment.territory_id))
-          || resolveScheduleTerritory(row);
-        const label = terr ? H().territoryLabel(terr) : scheduleTerritory(row);
-        const terrNum = terr?.num ?? scheduleTerritoryNum(row);
-        const mapUrl = terr
-          ? H().resolveTerritoryMapUrl(terr.map_image_url, terrNum)
-          : scheduleTerritoryMapUrl(row, domingoAssignment);
-        const title = `Designado · ${scheduleAssignmentTitle(domingoAssignment)}`;
-        return scheduleTerritoryInnerHtml(terr, label, terrNum, mapUrl, ' terr-sched-cell--assigned', title);
+      const scheduledTerr = resolveScheduleTerritory(row);
+      const terr = scheduledTerr
+        || (domingoAssignment?.territories)
+        || (domingoAssignment?.territory_id && territories.find((t) => t.id === domingoAssignment.territory_id))
+        || null;
+      if (terr) {
+        const label = H().territoryLabel(terr);
+        const terrNum = terr.num ?? scheduleTerritoryNum(row);
+        const mapUrl = H().resolveTerritoryMapUrl(terr.map_image_url, terrNum);
+        const assigned = !!(domingoAssignment?.id && domingoAssignment.territory_id === terr.id);
+        const title = assigned
+          ? `Designado · ${scheduleAssignmentTitle(domingoAssignment)}`
+          : label;
+        return scheduleTerritoryInnerHtml(
+          terr,
+          label,
+          terrNum,
+          mapUrl,
+          assigned ? ' terr-sched-cell--assigned' : '',
+          title
+        );
       }
       if (scheduleDirigente(row) && scheduleDirigente(row) !== '—') {
         return scheduleEmptyTerritoryCell(row);
@@ -4903,7 +4910,8 @@
               Nos <strong>domingos</strong> o cronograma usa a <strong>dupla</strong>
               ${sundayPairName ? `(${escapeHtml(sundayPairName)})` : ''}.
               Ao salvar, designa a dupla no território escolhido no Painel.
-            </p>` : ''}
+            </p>
+            <input type="hidden" name="dirigente_name" value="${escapeHtml(sundayPairName || row?.dirigente_name || '')}"/>` : ''}
             <p class="terr-sched-modal__preview-label">Prévia da linha</p>
             <div class="terr-sched-modal__preview-wrap">
               <div id="sched-modal-preview"></div>
