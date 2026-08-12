@@ -1293,7 +1293,7 @@
         );
         const selected = selectedValue === value;
         const suffix = existing?.id ? ' (designado)' : (!selectable && !selected ? ' (indisponível)' : '');
-        return `<option value="${escapeHtml(value)}"${selected ? ' selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)} · Dupla${escapeHtml(suffix)}</option>`;
+        return `<option value="${escapeHtml(value)}"${selected ? ' selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)}${pair.location_name ? ` · ${escapeHtml(pair.location_name)}` : ' · Dupla'}${escapeHtml(suffix)}</option>`;
       })
       .join('');
 
@@ -4220,7 +4220,7 @@
           homeTerritoryId
         );
         const selected = selectedPairId === value;
-        return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)}${!selectable && !selected ? ' (ocupado)' : ''}</option>`;
+        return `<option value="${escapeHtml(value)}" ${selected ? 'selected' : ''}${!selectable && !selected ? ' disabled' : ''}>${escapeHtml(pair.dirigente_name)}${pair.location_name ? ` · ${escapeHtml(pair.location_name)}` : ''}${!selectable && !selected ? ' (ocupado)' : ''}</option>`;
       })
       .join('');
   }

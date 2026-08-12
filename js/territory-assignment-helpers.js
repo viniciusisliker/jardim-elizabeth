@@ -17,9 +17,8 @@
   const MIDWEEK_DAYS = ['Terça', 'Quarta', 'Quinta', 'Sexta'];
   const WEEKEND_DAYS = ['Sábado', 'Domingo'];
   const DOMINGO_FIXED_DIRIGENTES = [
-    { territory_num: '12', dirigente_name: 'Marcelo Freire e Edvan' },
-    { territory_num: '18', dirigente_name: 'Marcelo Almeida e João' },
-    { territory_num: '07', dirigente_name: 'Denison e Arnaldo' }
+    { territory_num: '18', dirigente_name: 'João Neves e Marcelo Almeida', location_name: 'Casa da Natividade Aguiar' },
+    { territory_num: '12', dirigente_name: 'Edvan e Denison', location_name: 'Casa da Lúcia Duarte' }
   ];
   const SITE_TERRITORIES_URL = 'https://jardimelizabeth.vercel.app/territorios.html';
 
@@ -370,9 +369,20 @@
     return DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name;
   }
 
+  function domingoPairIndexFromRow(row) {
+    const stored = String(row?.dirigente_name || '').trim();
+    if (stored) {
+      const byName = DOMINGO_FIXED_DIRIGENTES.findIndex(
+        (p) => p.dirigente_name.trim().toLowerCase() === stored.toLowerCase()
+      );
+      if (byName >= 0) return byName;
+    }
+    return domingoFixedIndex(row);
+  }
+
   function compareDomingoRows(a, b) {
-    const ia = domingoFixedIndex(a);
-    const ib = domingoFixedIndex(b);
+    const ia = domingoPairIndexFromRow(a);
+    const ib = domingoPairIndexFromRow(b);
     return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
   }
 
@@ -583,13 +593,23 @@
       const idx = domingoFixedIndex(row);
       const fixedName = !knownPair && idx >= 0 ? DOMINGO_FIXED_DIRIGENTES[idx].dirigente_name : '';
       const pairName = knownPair ? stored : (fixedName || stored);
+      const pairMeta = knownPair
+        ? DOMINGO_FIXED_DIRIGENTES.find(
+          (p) => p.dirigente_name.trim().toLowerCase() === pairName.trim().toLowerCase()
+        )
+        : (idx >= 0 ? DOMINGO_FIXED_DIRIGENTES[idx] : null);
       return {
         ...row,
         dirigente_name: pairName || row.dirigente_name,
+        location_name: pairMeta?.location_name || row.location_name,
         profile_id: null,
         profiles: null,
         domingo_pair: true,
-        sort_order: idx >= 0 ? 6 + idx : row.sort_order
+        sort_order: idx >= 0 ? 6 + idx : (knownPair
+          ? 6 + DOMINGO_FIXED_DIRIGENTES.findIndex(
+            (p) => p.dirigente_name.trim().toLowerCase() === pairName.trim().toLowerCase()
+          )
+          : row.sort_order)
       };
     });
 
