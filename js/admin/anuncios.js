@@ -6,10 +6,20 @@
 
   function pdfApi() {
     const api = window.JEAnnouncementPdf;
-    if (!api?.blockToPdfBlob) {
-      throw new Error('Módulo de PDF não carregou. Recarregue a página (Ctrl+F5).');
+    if (!api?.blockToPdfBlob || !api?.boardToPdfBlob) {
+      throw new Error('Não foi possível gerar o PDF. Recarregue a página (Ctrl+F5) e tente de novo.');
     }
     return api;
+  }
+
+  function friendlyError(err, fallback) {
+    console.error(err);
+    const msg = String(err?.message || err || '');
+    if (/PGRST|column |relation |row-level|duplicate key|permission denied|postgres|supabase|violates/i.test(msg)) {
+      return fallback;
+    }
+    if (/Não foi possível|Recarregue a página|Ctrl\+F5|Selecione |Carregue /i.test(msg)) return msg;
+    return fallback;
   }
   const Sync = window.JEWeekendDiscursosSync;
 
@@ -538,7 +548,7 @@
     })) return;
 
     const { error } = await client.from('announcement_boards').delete().eq('id', boardId);
-    if (error) throw new Error(error.message);
+    if (error) throw new Error('Não foi possível excluir o quadro. Tente de novo.');
 
     if (board?.id === boardId) {
       board = null;
@@ -593,7 +603,7 @@
         reference_label: referenceLabel,
         status: 'draft'
       }).select().single();
-      if (error) { showToast(toastEl, error.message, true); return; }
+      if (error) { showToast(toastEl, 'Não foi possível criar o quadro. Tente de novo.', true); return; }
       board = created;
       ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
         Dates.generateEntriesForBoard(block, referenceMonth).forEach((g, i) => {
@@ -624,7 +634,7 @@
     }
     await loadPublishedList();
     } catch (err) {
-      showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
+      showToast(toastEl, friendlyError(err, 'Não foi possível carregar o quadro. Tente de novo.'), true);
       throw err;
     }
   }
@@ -634,7 +644,7 @@
     if (!board?.id) return;
 
     const { error: delErr } = await client.from('announcement_entries').delete().eq('board_id', board.id);
-    if (delErr) throw new Error(delErr.message);
+    if (delErr) throw new Error('Não foi possível salvar as designações. Tente de novo.');
 
     const payload = entries.map((e, idx) => ({
       board_id: board.id,
@@ -647,7 +657,7 @@
     }));
 
     const { data: saved, error } = await client.from('announcement_entries').insert(payload).select();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error('Não foi possível salvar as designações. Tente de novo.');
 
     entries = (saved || []).map((r) => ({ ...r, data: r.data || {} }));
     await client.from('announcement_boards').update({ updated_at: new Date().toISOString() }).eq('id', board.id);
@@ -661,7 +671,7 @@
       clearAllPendingPdfs();
       showToast(toastEl, 'Rascunho salvo.');
     } catch (err) {
-      showToast(toastEl, err.message, true);
+      showToast(toastEl, friendlyError(err, 'Não foi possível salvar. Tente de novo.'), true);
     }
   }
 
@@ -688,11 +698,11 @@
 
   function formatUploadError(err, fallback) {
     if (!err) return fallback;
-    const msg = err.message || err.error || String(err);
+    const msg = String(err.message || err.error || err);
     if (msg === 'HTTP 400' || msg === '400') {
-      return `${fallback} (requisição inválida — recarregue a página e tente de novo)`;
+      return `${fallback} Recarregue a página e tente de novo.`;
     }
-    return msg;
+    return fallback;
   }
 
   async function uploadAnnouncementPdf(path, blob) {
@@ -700,7 +710,7 @@
       contentType: 'application/pdf',
       cacheControl: '3600'
     });
-    if (upErr) throw new Error(formatUploadError(upErr, 'Erro ao enviar PDF'));
+    if (upErr) throw new Error(formatUploadError(upErr, 'Não foi possível enviar o PDF. Tente de novo.'));
     const { data: pub } = client.storage.from('announcements').getPublicUrl(path);
     return pub.publicUrl;
   }
@@ -718,11 +728,11 @@
       published_at: board.published_at || new Date().toISOString()
     };
     const { error: boardErr } = await client.from('announcement_boards').update(boardUpdate).eq('id', board.id);
-    if (boardErr) throw new Error(boardErr.message);
+    if (boardErr) throw new Error('Não foi possível publicar o PDF. Tente de novo.');
 
     const slug = Schemas.SECTION_SLUGS[block];
     const { error: sectionErr } = await client.from('announcement_sections').update({ document_url: pdfUrl, updated_at: new Date().toISOString() }).eq('slug', slug);
-    if (sectionErr) throw new Error(sectionErr.message);
+    if (sectionErr) throw new Error('Não foi possível atualizar a seção no site. Tente de novo.');
 
     board[col] = pdfUrl;
     board.status = 'published';
@@ -742,7 +752,7 @@
       published_at: board.published_at || new Date().toISOString()
     };
     const { error: boardErr } = await client.from('announcement_boards').update(boardUpdate).eq('id', board.id);
-    if (boardErr) throw new Error(boardErr.message);
+    if (boardErr) throw new Error('Não foi possível publicar o PDF. Tente de novo.');
 
     board.pdf_full_url = pdfUrl;
     board.publish_mode = 'pdf_only';
@@ -893,10 +903,9 @@
       closePdfUploadModal();
       updateBoardLabel();
       loadPublishedList();
-      showToast(toastEl, `${blocks.length} PDF(s) publicado(s) no site.`);
+        showToast(toastEl, `${blocks.length} PDF(s) publicado(s) no site.`);
     } catch (err) {
-      showToast(toastEl, err.message || 'Erro ao publicar PDFs.', true);
-      console.error(err);
+      showToast(toastEl, friendlyError(err, 'Não foi possível publicar os PDFs. Tente de novo.'), true);
     } finally {
       if (publishBtn) {
         updateBulkUploadPublishButton();
@@ -912,7 +921,8 @@
     const frame = $('pdf-preview-frame');
     const title = $('pdf-preview-title');
     const openTab = $('pdf-preview-open-tab');
-    if (title) title.textContent = `Prévia — ${Schemas.SECTION_TITLES[block]}`;
+    const titles = { ...Schemas.SECTION_TITLES, full: 'Quadro completo' };
+    if (title) title.textContent = `Prévia — ${titles[block] || 'PDF'}`;
     if (frame) frame.src = pending.objectUrl;
     if (openTab) openTab.href = pending.objectUrl;
     $('pdf-preview-modal')?.classList.remove('hidden');
@@ -949,8 +959,28 @@
       openPdfPreviewModal(block);
       showToast(toastEl, `${Schemas.SECTION_TITLES[block]} — PDF pronto para revisão.`);
     } catch (err) {
-      showToast(toastEl, err.message || 'Erro ao gerar PDF.', true);
-      console.error(err);
+      showToast(toastEl, friendlyError(err, 'Não foi possível gerar o PDF. Tente de novo.'), true);
+    }
+  }
+
+  async function generateFullBoardPdf() {
+    try {
+      if (!(await ensureBoardForSelectedMonth())) return;
+      readFormIntoEntries();
+      showToast(toastEl, 'Gerando PDF completo…');
+      const pdfEntries = Sync.mergeWeekendEntries(entries, receiveSpeechesByDate);
+      const blob = await pdfApi().boardToPdfBlob(board, pdfEntries);
+      if (entries.some((e) => String(e.id).startsWith('local-'))) {
+        await persistEntries(true);
+      }
+      revokePendingPdf('full');
+      const objectUrl = URL.createObjectURL(blob);
+      pendingPdfs.full = { blob, objectUrl };
+      updatePublishButtonsState();
+      openPdfPreviewModal('full');
+      showToast(toastEl, 'Quadro completo — PDF pronto para revisão.');
+    } catch (err) {
+      showToast(toastEl, friendlyError(err, 'Não foi possível gerar o PDF. Tente de novo.'), true);
     }
   }
 
@@ -966,6 +996,16 @@
       readFormIntoEntries();
       await persistEntries();
 
+      if (block === 'full') {
+        await uploadFullBoardPdf(pending.blob);
+        revokePendingPdf(block);
+        closePdfPreviewModal();
+        updateBoardLabel();
+        showToast(toastEl, 'Quadro publicado no site como PDF único.');
+        loadPublishedList();
+        return;
+      }
+
       await uploadPdfToStorage(block, pending.blob);
       revokePendingPdf(block);
       closePdfPreviewModal();
@@ -973,8 +1013,7 @@
       showToast(toastEl, `${Schemas.SECTION_TITLES[block]} publicado no site.`);
       loadPublishedList();
     } catch (err) {
-      showToast(toastEl, err.message || 'Erro ao publicar.', true);
-      console.error(err);
+      showToast(toastEl, friendlyError(err, 'Não foi possível publicar. Tente de novo.'), true);
     }
   }
 
@@ -1074,7 +1113,7 @@
           await loadBoardById(btn.dataset.boardEdit);
           showToast(toastEl, 'Quadro aberto para edição.');
         } catch (err) {
-          showToast(toastEl, err.message || 'Erro ao abrir quadro.', true);
+          showToast(toastEl, friendlyError(err, 'Não foi possível abrir o quadro. Tente de novo.'), true);
         }
       });
     });
@@ -1084,7 +1123,7 @@
         try {
           await deleteBoard(btn.dataset.boardDelete);
         } catch (err) {
-          showToast(toastEl, err.message || 'Erro ao excluir.', true);
+          showToast(toastEl, friendlyError(err, 'Não foi possível excluir. Tente de novo.'), true);
         }
       });
     });
@@ -1111,7 +1150,7 @@
     }
     if (error) {
       const list = $('published-list');
-      if (list) list.innerHTML = `<p class="text-error text-sm px-4 py-6">${escapeHtml(error.message)}</p>`;
+      if (list) list.innerHTML = '<p class="text-error text-sm px-4 py-6">Não foi possível carregar os quadros. Tente de novo.</p>';
       return;
     }
     savedBoards = data || [];
@@ -1228,6 +1267,7 @@
       });
     });
 
+    $('btn-generate-full-pdf')?.addEventListener('click', generateFullBoardPdf);
     $('btn-open-pdf-upload')?.addEventListener('click', openPdfUploadModal);
     $('pdf-upload-close')?.addEventListener('click', closePdfUploadModal);
     $('pdf-upload-backdrop')?.addEventListener('click', closePdfUploadModal);
@@ -1335,7 +1375,7 @@
         history_folder_url: $('history-url').value.trim(),
         history_description: $('history-desc').value.trim()
       });
-      if (error) showToast(toastEl, error.message, true);
+      if (error) showToast(toastEl, 'Não foi possível salvar. Tente de novo.', true);
       else showToast(toastEl, 'Histórico salvo.');
     });
 
@@ -1344,7 +1384,7 @@
         await loadOrCreateBoard();
         updatePublishButtonsState();
       } catch (err) {
-        showToast(toastEl, err.message || 'Erro ao carregar quadro.', true);
+        showToast(toastEl, friendlyError(err, 'Não foi possível carregar o quadro. Tente de novo.'), true);
         console.error(err);
       }
     };

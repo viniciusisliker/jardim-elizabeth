@@ -123,7 +123,7 @@
       partial: 'hub/sections/anuncios.html',
       styles: [
         'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/anuncios.css?v=2026060977'
+        'css/hub-sections/anuncios.css?v=2026081501'
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
@@ -132,14 +132,14 @@
         'js/admin/weekend-discursos-sync.js?v=20260710220000',
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
-        'js/admin/anuncios-pdf.js?v=2026061051',
-        'js/admin/anuncios.js?v=2026061051'
+        'js/admin/anuncios-pdf.js?v=2026081501',
+        'js/admin/anuncios.js?v=2026081501'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
         kicker: 'Publicação',
         title: 'Quadro de Anúncios',
-        subtitle: 'Preencha, gere o PDF, revise e publique no site — uma seção por vez.',
+        subtitle: 'Preencha, gere o PDF do quadro, revise e publique no site.',
         showChangelog: false,
         showBack: true
       }

@@ -6,7 +6,7 @@
           </div>
           <div class="board-month-toolbar__field">
             <label for="board-month">Mês do quadro</label>
-            <p class="board-month-toolbar__hint">Escolha o mês. Em <strong>Enviar PDFs → PDF único</strong>, publique o arquivo pronto direto no site. Ou carregue o quadro para editar seção por seção.</p>
+            <p class="board-month-toolbar__hint">Escolha o mês. <strong>Gerar PDF completo</strong> monta as três seções num arquivo só. Ou envie um PDF pronto / edite seção por seção.</p>
             <div class="board-month-input-wrap">
               <input type="month" id="board-month" aria-describedby="board-label"/>
             </div>
@@ -15,6 +15,10 @@
             <button type="button" id="btn-new-board" class="board-load-btn">
               <span class="material-symbols-outlined" aria-hidden="true">folder_open</span>
               Carregar quadro
+            </button>
+            <button type="button" id="btn-generate-full-pdf" class="board-pdf-btn" title="Gerar PDF único com as três seções do mês">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              Gerar PDF completo
             </button>
             <button type="button" id="btn-open-pdf-upload" class="board-upload-btn" title="Enviar PDFs prontos e publicar no site">
               <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
