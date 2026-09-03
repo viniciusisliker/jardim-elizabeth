@@ -175,7 +175,7 @@
     'carrinhos-displays': {
       id: 'carrinhos-displays',
       hash: 'carrinhos-displays',
-      permission: 'agendamentos',
+      permission: 'carrinhos_displays',
       viewId: 'hub-view-carrinhos-displays',
       partial: 'hub/sections/carrinhos-displays.html',
       styles: ['css/hub-sections/carrinhos-displays.css?v=20260618140000'],

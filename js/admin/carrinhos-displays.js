@@ -3156,7 +3156,7 @@
       return true;
     }
 
-    const profile = await guardPermission('agendamentos');
+    const profile = await guardPermission('carrinhos_displays');
     if (!profile) return false;
 
     if (!helpers) throw new Error('Módulo de cronograma não carregou. Recarregue a página.');
