@@ -8,7 +8,7 @@ ALTER TABLE public.access_designations
     permissions <@ ARRAY[
       'hub', 'agenda', 'announcements', 'agendamentos', 'carrinhos_displays',
       'territorios', 'donativos', 'settings', 'public_speeches', 'audio_video',
-      'secretario'
+      'secretario', 'site_builder'
     ]::text[]
   );
 
