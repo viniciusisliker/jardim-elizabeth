@@ -1938,12 +1938,30 @@
     const eligibleNorm = new Set(eligible.map((row) => normalizePubName(publisherName(row))));
     const extras = [...previouslySelected].filter((name) => !eligibleNorm.has(name));
 
-    if (hint) {
-      const typeLabel = helpers.EQUIPMENT_TYPES[equipmentType] || equipmentType;
-      hint.textContent = `${typeLabel} · ${day} · ${eligible.length} apto${eligible.length === 1 ? '' : 's'}`;
+    // Busca manual: enquanto o campo de busca estiver preenchido, também procura entre
+    // TODOS os publicadores ativos (sem filtrar por dia/equipamento), permitindo achar e
+    // marcar qualquer irmão mesmo sem a flag de disponibilidade habilitada — útil pra
+    // cobrir uma exceção pontual no cronograma.
+    let searchOverrides = [];
+    if (search) {
+      const extrasNorm = new Set(extras.map(normalizePubName));
+      searchOverrides = publishers
+        .filter((row) => row.is_active !== false)
+        .filter((row) => {
+          const norm = normalizePubName(publisherName(row));
+          return !eligibleNorm.has(norm) && !extrasNorm.has(norm);
+        })
+        .filter((row) => publisherName(row).toLowerCase().includes(search))
+        .sort((a, b) => publisherName(a).localeCompare(publisherName(b), 'pt-BR', { sensitivity: 'base' }));
     }
 
-    if (!eligible.length && !extras.length) {
+    if (hint) {
+      const typeLabel = helpers.EQUIPMENT_TYPES[equipmentType] || equipmentType;
+      hint.textContent = `${typeLabel} · ${day} · ${eligible.length} apto${eligible.length === 1 ? '' : 's'}`
+        + (searchOverrides.length ? ` · +${searchOverrides.length} fora do dia/equipamento` : '');
+    }
+
+    if (!eligible.length && !extras.length && !searchOverrides.length) {
       container.innerHTML = '<p class="eq-slot-pub-picker__empty">Nenhum publicador apto para este dia e equipamento. Cadastre na aba Publicadores.</p>';
       updateSlotPublisherSummary(prefix);
       return;
@@ -1963,6 +1981,15 @@
           <label class="eq-slot-pub-pick">
             <input type="checkbox" name="${prefix}-pub" value="${escapeHtml(name)}" ${checked ? 'checked' : ''}/>
             <span>${escapeHtml(name)}</span>
+          </label>`;
+      }),
+      ...searchOverrides.map((row) => {
+        const name = publisherName(row);
+        return `
+          <label class="eq-slot-pub-pick eq-slot-pub-pick--extra">
+            <input type="checkbox" name="${prefix}-pub" value="${escapeHtml(name)}"/>
+            <span>${escapeHtml(name)}</span>
+            <span class="eq-slot-pub-pick__tag">fora do dia</span>
           </label>`;
       })
     ].join('');
