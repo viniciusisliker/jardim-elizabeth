@@ -338,8 +338,8 @@
 
     container.innerHTML = `
       <div class="space-y-3">
-        <div class="flex flex-wrap gap-2">${tabs}</div>
-        <div class="qa-table-block" data-entry-id="${entry.id}">
+        <div class="qa-limpeza-tabs flex flex-wrap gap-2">${tabs}</div>
+        <div class="qa-table-block qa-table-block--limpeza" data-entry-id="${entry.id}">
           <div class="qa-table-head"><span>Fim de semana</span><span>Grupo</span><span></span></div>
           <div class="qa-table-row">
             <div class="qa-cell"><label>Fim de semana</label>
@@ -349,7 +349,7 @@
                 <option value=""></option>
                 ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
               </select></div>
-            <div class="qa-cell" aria-hidden="true"></div>
+            <div class="qa-cell qa-cell--spacer" aria-hidden="true"></div>
           </div>
         </div>
         ${window.JEHubDocFooter.renderDocEntryFooter({
