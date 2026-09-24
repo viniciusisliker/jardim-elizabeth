@@ -30,13 +30,20 @@ Abra [http://localhost:3000](http://localhost:3000). O Supabase Auth exige servi
 
 ### Fluxo
 
+Push na `main` publica direto em produção. Por isso, **não commite direto na `main`**: trabalhe numa branch e abra um PR.
+
 ```bash
+git checkout -b fix/descricao-curta
 git add .
-git commit -m "sua mensagem"
-git push origin main
+git commit -m "fix: sua mensagem"
+git push -u origin fix/descricao-curta
 ```
 
-A Vercel detecta o push, faz o deploy e atualiza a produção em ~1 minuto.
+1. Abra o PR para `main` no GitHub.
+2. A Vercel gera uma **URL de preview** (aparece nos checks/comentários do PR): teste ali.
+3. Com o CI (smoke) verde e o preview ok, faça o merge. A produção atualiza em ~1 minuto.
+
+Mudanças no banco vão em `supabase/migrations/` (não em `supabase/manual/`). Veja o [CLAUDE.md](CLAUDE.md).
 
 ## Hub Administrativo
 
