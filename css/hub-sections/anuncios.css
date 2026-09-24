@@ -174,17 +174,17 @@
     .board-status-bar__label{font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#43474f}
     #board-label{font-size:0.875rem;font-weight:700;color:#002060;margin:0}
     @media(max-width:639px){
-      .board-month-toolbar{padding:.875rem;border-radius:.875rem}
-      .board-month-toolbar__pick{flex-direction:column;align-items:stretch;gap:.75rem}
-      .board-month-toolbar__icon{display:none}
-      .board-month-toolbar__field{min-width:0}
-      .board-month-toolbar__hint{display:none}
-      #board-month{min-width:0;font-size:1rem}
+      #hub-view-anuncios .board-month-toolbar{padding:.875rem;border-radius:.875rem}
+      #hub-view-anuncios .board-month-toolbar__pick{flex-direction:column;align-items:stretch;gap:.75rem}
+      #hub-view-anuncios .board-month-toolbar__icon{display:none}
+      #hub-view-anuncios .board-month-toolbar__field{min-width:0}
+      #hub-view-anuncios .board-month-toolbar__hint{display:none}
+      #hub-view-anuncios #board-month{min-width:0;font-size:1rem}
       /* Carregar quadro ocupa a linha; as 3 ações secundárias viram tiles ícone + rótulo */
-      .board-month-toolbar__actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;width:100%}
-      .board-load-btn{grid-column:1/-1;width:100%;box-shadow:none}
-      .board-gcal-btn,.board-upload-btn,.board-pdf-btn{flex-direction:column;gap:.25rem;height:auto;min-height:4rem;padding:.5rem .25rem;font-size:.6875rem;line-height:1.15;white-space:normal;text-align:center;min-width:0}
-      .board-gcal-btn .gcal-product-icon{width:1.125rem;height:1.125rem}
+      #hub-view-anuncios .board-month-toolbar__actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;width:100%}
+      #hub-view-anuncios .board-load-btn{grid-column:1/-1;width:100%;box-shadow:none}
+      #hub-view-anuncios .board-gcal-btn,#hub-view-anuncios .board-upload-btn,#hub-view-anuncios .board-pdf-btn{flex-direction:column;gap:.25rem;height:auto;min-height:4rem;padding:.5rem .25rem;font-size:.6875rem;line-height:1.15;white-space:normal;text-align:center;min-width:0}
+      #hub-view-anuncios .board-gcal-btn .gcal-product-icon{width:1.125rem;height:1.125rem}
       .board-status-bar{margin-top:.75rem;padding-top:.75rem;gap:.25rem .5rem}
       #board-label{font-size:.8125rem}
       /* Abas das seções ocupam a largura toda, ícone sobre rótulo curto */

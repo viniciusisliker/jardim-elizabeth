@@ -123,7 +123,7 @@
       partial: 'hub/sections/anuncios.html',
       styles: [
         'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/anuncios.css?v=2026092401'
+        'css/hub-sections/anuncios.css?v=2026092402'
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
