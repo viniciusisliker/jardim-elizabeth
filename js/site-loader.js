@@ -879,9 +879,27 @@
       .je-footer-kicker { text-align: center; }
       .je-footer-card { border-radius: 0.875rem; padding: 1rem 1.125rem; }
       .je-footer-text { font-size: 0.8125rem; line-height: 1.55; margin-bottom: 0.875rem; }
-      .je-footer-map-links { grid-template-columns: 1fr; }
+      .je-footer-map-links { display: flex; justify-content: center; gap: 0.75rem; }
+      .je-footer-map-btn {
+        flex: 0 0 auto;
+        width: 3.25rem;
+        height: 3.25rem;
+        min-height: 3.25rem;
+        padding: 0;
+        position: relative;
+      }
       .je-footer-map-btn:last-child { grid-column: auto; }
-      .je-footer-map-btn-label { white-space: normal; text-align: center; line-height: 1.2; }
+      .je-footer-map-btn svg,
+      .je-footer-map-btn-icon { width: 1.5rem; height: 1.5rem; }
+      .je-footer-map-btn-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
       .je-footer-schedule { gap: 0.5rem; }
       .je-footer-schedule-detail { font-size: 0.8125rem; }
       .je-footer-email {
