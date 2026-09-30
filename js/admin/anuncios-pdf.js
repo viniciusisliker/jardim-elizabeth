@@ -311,22 +311,38 @@
     return content;
   }
 
+  const MIDWEEK_ICONS = {
+    tesouros: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M7.5 6.5h9l3 3.6L12 19 4.5 10.1z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.5 10.1h15M9.6 6.5 8.3 10.1 12 19l3.7-8.9-1.3-3.6" fill="none" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>',
+    ministerio: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M12 20V5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><g fill="#fff"><ellipse cx="12" cy="5" rx="1.3" ry="2"/><ellipse cx="9.6" cy="8.6" rx="1.2" ry="2" transform="rotate(-35 9.6 8.6)"/><ellipse cx="14.4" cy="8.6" rx="1.2" ry="2" transform="rotate(35 14.4 8.6)"/><ellipse cx="9.6" cy="12.2" rx="1.2" ry="2" transform="rotate(-35 9.6 12.2)"/><ellipse cx="14.4" cy="12.2" rx="1.2" ry="2" transform="rotate(35 14.4 12.2)"/><ellipse cx="9.6" cy="15.8" rx="1.2" ry="2" transform="rotate(-35 9.6 15.8)"/><ellipse cx="14.4" cy="15.8" rx="1.2" ry="2" transform="rotate(35 14.4 15.8)"/></g></svg>',
+    vida: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><g fill="#fff"><circle cx="8" cy="11" r="2.6"/><circle cx="11" cy="9.6" r="2.8"/><circle cx="14.2" cy="10.2" r="2.6"/><circle cx="9.4" cy="13.4" r="2.6"/><circle cx="13" cy="13.6" r="2.7"/><circle cx="15.6" cy="12.8" r="2.2"/><rect x="8.6" y="15" width="1.4" height="4" rx="0.6"/><rect x="13.4" y="15" width="1.4" height="4" rx="0.6"/></g><ellipse cx="18" cy="10.6" rx="1.9" ry="1.5" fill="#fff" stroke="{c}" stroke-width="0.8"/><circle cx="18.5" cy="10.3" r="0.35" fill="{c}"/></svg>'
+  };
+
+  const CALENDAR_ICON = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#5B6573"/><rect x="6" y="7.5" width="12" height="10.5" rx="1.4" fill="#fff"/><rect x="6" y="7.5" width="12" height="3" rx="1" fill="#C9D3DF"/><rect x="8.6" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><rect x="14.1" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><g fill="#5B6573"><rect x="8" y="12.3" width="1.8" height="1.5"/><rect x="11.1" y="12.3" width="1.8" height="1.5"/><rect x="14.2" y="12.3" width="1.8" height="1.5"/><rect x="8" y="15" width="1.8" height="1.5"/><rect x="11.1" y="15" width="1.8" height="1.5"/></g></svg>';
+
   function pmAssigneeText(assignee) {
     if (hasValue(assignee)) return { text: val(assignee), bold: true, color: T.text };
     return { text: 'a designar', color: MUTED, italics: true };
   }
 
+  function pmSideLine(label, value, color) {
+    return { text: [{ text: `${label}  `, bold: true, color }, { text: val(value), color: T.text }] };
+  }
+
   function pmMidweekRow(num, label, assignee, sideStack, opts) {
     const required = opts?.required;
+    const color = opts?.color || T.headerAlt;
     const title = val(label);
     if (!required && !title && !hasValue(assignee) && !sideStack) return null;
+    const titleRuns = [
+      { text: `${num}.  `, bold: true, color, fontSize: 8.5 },
+      { text: title || 'Parte', bold: true, color, fontSize: 8.5 }
+    ];
+    if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, color, fontSize: 7.5 });
+    titleRuns.push({ text: '  –  ', color: MUTED, fontSize: 8.5 }, pmAssigneeText(assignee));
     const main = {
       width: sideStack ? '*' : '100%',
-      text: [
-        { text: `${num}  `, bold: true, color: T.headerAlt, fontSize: 8 },
-        { text: `${title || 'Parte'}  `, fontSize: 8.5 },
-        pmAssigneeText(assignee)
-      ],
+      text: titleRuns,
+      fontSize: 8.5,
       margin: [0, 1.5, 0, 1.5]
     };
     if (!sideStack) return { columns: [main] };
@@ -334,12 +350,11 @@
       columns: [
         main,
         {
-          width: '34%',
+          width: '38%',
           stack: sideStack,
-          fontSize: 7,
+          fontSize: 8,
           alignment: 'right',
-          color: '#4B5563',
-          margin: [4, 1, 0, 0]
+          margin: [4, 1.5, 0, 0]
         }
       ],
       columnGap: 6
@@ -356,13 +371,21 @@
         widths: ['*'],
         body: [
           [{
-            text: theme.title.toUpperCase(),
-            bold: true,
-            fontSize: 7,
-            color: theme.color,
+            columns: [
+              { svg: MIDWEEK_ICONS[themeKey].replace(/\{c\}/g, theme.color), width: 11, height: 11 },
+              {
+                width: '*',
+                text: theme.title.toUpperCase(),
+                bold: true,
+                fontSize: 7.5,
+                color: theme.color,
+                characterSpacing: 0.4,
+                margin: [0, 1.5, 0, 0]
+              }
+            ],
+            columnGap: 6,
             fillColor: theme.bg,
-            characterSpacing: 0.4,
-            margin: [8, 4, 8, 4]
+            margin: [8, 3.5, 8, 3.5]
           }],
           [{ stack: filtered, margin: [8, 3, 8, 5] }]
         ]
@@ -382,19 +405,19 @@
     const weekday = val(entry.weekday_label);
     const reading = val(d.leitura_biblica);
     const weekTitle = reading ? `${datePart}  ·  ${reading}` : datePart;
+    const cT = MIDWEEK_THEME.tesouros.color;
+    const cM = MIDWEEK_THEME.ministerio.color;
+    const cV = MIDWEEK_THEME.vida.color;
 
     const salaB3 = [];
-    if (hasValue(d.dirigente_sala_b)) {
-      salaB3.push({ text: [{ text: 'Dir. Sala B  ', bold: true }, val(d.dirigente_sala_b)] });
-    }
-    if (hasValue(d.leitura_biblia_sala_b)) {
-      salaB3.push({ text: [{ text: 'Leitura B  ', bold: true }, val(d.leitura_biblia_sala_b)] });
-    }
+    if (hasValue(d.dirigente_sala_b)) salaB3.push(pmSideLine('Dirigente Sala B', d.dirigente_sala_b, cT));
+    if (hasValue(d.leitura_biblia_sala_b)) salaB3.push(pmSideLine('Sala B', d.leitura_biblia_sala_b, cT));
+    const hasSalaB = salaB3.length > 0;
 
     const tesouros = [
-      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true }),
-      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true }),
-      pmMidweekRow(3, 'Leitura da Bíblia', d.leitura_biblia, salaB3.length ? salaB3 : null, { required: true })
+      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
+      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true, color: cT, duration: '10 min' }),
+      pmMidweekRow(3, hasValue(d.leitura_biblia_sala_b) ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, hasSalaB ? salaB3 : null, { required: true, color: cT })
     ];
 
     const ministerio = [1, 2, 3, 4].map((i) => {
@@ -402,35 +425,39 @@
       const people = d[`ministerio_${i}_designados`];
       const salaB = d[`ministerio_${i}_sala_b`];
       if (!tipo && !hasValue(people) && !hasValue(salaB)) return null;
-      const side = hasValue(salaB)
-        ? [{ text: [{ text: 'Sala B  ', bold: true }, val(salaB)] }]
-        : null;
-      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, side);
+      const side = hasValue(salaB) ? [pmSideLine('Sala B', salaB, cM)] : null;
+      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, side, { color: cM });
     });
 
     const vidaNum = 4 + Math.max(3, ministerio.reduce((last, row, idx) => (row ? idx + 1 : last), 0));
-    const estudoParts = [];
-    if (hasValue(d.estudo_dirigente)) estudoParts.push(val(d.estudo_dirigente));
-    if (hasValue(d.leitor_sentinela)) estudoParts.push(`Leitor: ${val(d.leitor_sentinela)}`);
     const vidaRows = [
-      pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true }),
-      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', estudoParts.join(' · '), null, { required: true })
+      pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true, color: cV }),
+      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente, null, { required: true, color: cV })
     ];
 
     const metaBits = [];
-    if (hasValue(d.cantico)) metaBits.push({ text: [{ text: 'Cântico  ', bold: true, color: T.headerAlt }, val(d.cantico)], fontSize: 8 });
-    if (hasValue(d.presidente)) metaBits.push({ text: [{ text: 'Presidente  ', bold: true, color: T.headerAlt }, val(d.presidente)], fontSize: 8 });
+    if (hasValue(d.cantico)) metaBits.push({ text: [{ text: 'Cântico  ', bold: true, color: T.headerAlt }, val(d.cantico)], fontSize: 8.5 });
+    if (hasValue(d.presidente)) metaBits.push({ text: [{ text: 'Presidente  ', bold: true, color: T.headerAlt }, val(d.presidente)], fontSize: 8.5 });
 
-    const footer = hasValue(d.oracao_final)
+    const closing = [];
+    if (hasValue(d.leitor_sentinela)) {
+      closing.push({ width: '*', text: [{ text: 'Leitor  ', bold: true, color: cV }, val(d.leitor_sentinela)] });
+    }
+    if (hasValue(d.oracao_final)) {
+      closing.push({ width: '*', text: [{ text: 'Oração final  ', bold: true, color: cV }, val(d.oracao_final)], alignment: closing.length ? 'right' : 'center' });
+    }
+    if (closing.length === 1 && closing[0].alignment !== 'center') closing[0].alignment = 'center';
+
+    const footer = closing.length
       ? {
         margin: [0, 5, 0, 0],
         table: {
           widths: ['*'],
           body: [[{
-            text: [{ text: 'Oração final  ', bold: true, color: '#8A3D3D' }, val(d.oracao_final)],
+            columns: closing,
+            columnGap: 16,
             fontSize: 8.5,
-            alignment: 'right',
-            fillColor: '#FAF0F0',
+            fillColor: MIDWEEK_THEME.vida.bg,
             margin: [8, 4, 8, 4]
           }]]
         },
@@ -444,17 +471,21 @@
           widths: ['*'],
           body: [[{
             columns: [
+              { svg: CALENDAR_ICON, width: 22, height: 22, margin: [0, weekday ? 1 : -2, 0, 0] },
               {
+                width: '*',
                 stack: [
                   { text: weekTitle, fontSize: 11, bold: true, color: T.header },
                   weekday
                     ? { text: `Meio de semana  ·  ${weekday}`, fontSize: 7, color: T.headerAlt, margin: [0, 2, 0, 0] }
                     : null
-                ].filter(Boolean)
+                ].filter(Boolean),
+                margin: [0, weekday ? 0 : 3, 0, 0]
               }
             ],
+            columnGap: 8,
             fillColor: '#EEF3F8',
-            margin: [10, 7, 10, 7]
+            margin: [8, 6, 10, 6]
           }]]
         },
         layout: 'noBorders',
