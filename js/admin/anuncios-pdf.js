@@ -341,6 +341,21 @@
     vida: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><g fill="#fff"><circle cx="8" cy="11" r="2.6"/><circle cx="11" cy="9.6" r="2.8"/><circle cx="14.2" cy="10.2" r="2.6"/><circle cx="9.4" cy="13.4" r="2.6"/><circle cx="13" cy="13.6" r="2.7"/><circle cx="15.6" cy="12.8" r="2.2"/><rect x="8.6" y="15" width="1.4" height="4" rx="0.6"/><rect x="13.4" y="15" width="1.4" height="4" rx="0.6"/></g><ellipse cx="18" cy="10.6" rx="1.9" ry="1.5" fill="#fff" stroke="{c}" stroke-width="0.8"/><circle cx="18.5" cy="10.3" r="0.35" fill="{c}"/></svg>'
   };
 
+  const WEEKEND_THEME = {
+    territorio: { color: '#8A5A2B', bg: '#FAF3EA', fallback: 'Trabalho de campo' },
+    discurso: { color: '#2F5D8A', bg: '#EDF3FA', fallback: 'Discurso público' },
+    sentinela: { color: '#3E7650', bg: '#EEF6F0', fallback: 'Estudo da Sentinela' }
+  };
+
+  const WEEKEND_ICONS = {
+    // Mapa dobrado (saída de campo).
+    territorio: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M4.5 7.2 9.3 5.5l5.4 1.9 4.8-1.7v11.1l-4.8 1.7-5.4-1.9-4.8 1.7z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M9.3 5.5v11.1M14.7 7.4v11.1" stroke="#fff" stroke-width="1.2"/></svg>',
+    // Microfone (discurso).
+    discurso: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><rect x="9.5" y="4.5" width="5" height="9" rx="2.5" fill="#fff"/><path d="M7 11.5a5 5 0 0 0 10 0M12 16.5v3M9.2 19.5h5.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    // Livro aberto (estudo).
+    sentinela: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M12 7.3C10.3 6 7.8 5.6 5 5.9v11.2c2.8-.3 5.3.1 7 1.4 1.7-1.3 4.2-1.7 7-1.4V5.9c-2.8-.3-5.3.1-7 1.4zM12 7.3v11.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>'
+  };
+
   const CALENDAR_ICON = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#5B6573"/><rect x="6" y="7.5" width="12" height="10.5" rx="1.4" fill="#fff"/><rect x="6" y="7.5" width="12" height="3" rx="1" fill="#C9D3DF"/><rect x="8.6" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><rect x="14.1" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><g fill="#5B6573"><rect x="8" y="12.3" width="1.8" height="1.5"/><rect x="11.1" y="12.3" width="1.8" height="1.5"/><rect x="14.2" y="12.3" width="1.8" height="1.5"/><rect x="8" y="15" width="1.8" height="1.5"/><rect x="11.1" y="15" width="1.8" height="1.5"/></g></svg>';
 
   function pmAssigneeText(assignee) {
@@ -660,7 +675,7 @@
     const extra = opts.extra && hasValue(opts.extra.value)
       ? {
         text: [
-          { text: `${opts.extra.label}  `, bold: true, color: T.headerAlt, fontSize: 8 },
+          { text: `${opts.extra.label}  `, bold: true, color: '#5B6B80', fontSize: 8 },
           { text: val(opts.extra.value) }
         ],
         alignment: 'right',
@@ -674,12 +689,65 @@
     ];
   }
 
-  function pmWeekendSectionRow(title) {
-    return [
-      { text: title.toUpperCase(), style: 'sectionTitle', colSpan: 3, margin: [0, 3, 0, 0] },
-      {},
-      {}
-    ];
+  // Seção do quadro: faixa colorida com ícone + linhas rótulo | valor | complemento.
+  function pmWeekendSection(key, rows) {
+    const filtered = rows.filter(Boolean);
+    if (!filtered.length) return null;
+    const theme = WEEKEND_THEME[key];
+    const title = weekendGroups()[key]?.title || theme.fallback;
+    return {
+      margin: [0, 0, 0, 3],
+      table: {
+        widths: [2.5, '*'],
+        body: [
+          [
+            { text: '', fillColor: theme.color, rowSpan: 2 },
+            {
+              columns: [
+                { svg: WEEKEND_ICONS[key].replace(/\{c\}/g, theme.color), width: 11, height: 11 },
+                {
+                  width: '*',
+                  text: title.toUpperCase(),
+                  bold: true,
+                  fontSize: 7.5,
+                  color: theme.color,
+                  characterSpacing: 0.4,
+                  margin: [0, 1.5, 0, 0]
+                }
+              ],
+              columnGap: 6,
+              fillColor: theme.bg,
+              margin: [7, 2.5, 8, 2.5]
+            }
+          ],
+          [
+            {},
+            {
+              table: { widths: [62, '*', 'auto'], body: filtered },
+              layout: {
+                hLineWidth: () => 0,
+                vLineWidth: () => 0,
+                paddingLeft: (i) => (i === 0 ? 0 : 6),
+                paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 6),
+                paddingTop: () => 0.4,
+                paddingBottom: () => 0.4
+              },
+              margin: [7, 2, 8, 2]
+            }
+          ]
+        ]
+      },
+      layout: {
+        hLineWidth: (i) => (i === 0 || i === 2 ? 0.5 : 0),
+        vLineWidth: (i) => (i === 2 ? 0.5 : 0),
+        hLineColor: () => LINE,
+        vLineColor: () => LINE,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0
+      }
+    };
   }
 
   function pmWeekendCard(entry) {
@@ -713,55 +781,41 @@
     // Leitor e oração final dividem a linha; sem leitor, a oração ganha linha própria.
     const hasLeitor = hasValue(d.leitor_sentinela);
     const sections = [
-      {
-        title: weekendGroups().territorio?.title || 'Trabalho de campo',
-        rows: [pmWeekendRow('Dirigente', d.dirigente_sabado)]
-      },
-      {
-        title: weekendGroups().discurso?.title || 'Discurso público',
-        rows: [
-          pmWeekendRow('Presidente', d.presidente),
-          pmWeekendRow('Tema', d.tema_discurso, { strong: true }),
-          pmWeekendRow('Orador', d.orador, { extra: { label: 'Congregação:', value: d.congregacao_orador } })
-        ]
-      },
-      {
-        title: weekendGroups().sentinela?.title || 'Estudo da Sentinela',
-        rows: [
-          pmWeekendRow('Tema', d.estudo_sentinela_tema, { strong: true }),
-          pmWeekendRow('Cântico', d.cantico_sentinela),
-          pmWeekendRow('Leitor', d.leitor_sentinela, hasLeitor ? { extra: { label: 'Oração final:', value: d.oracao_final } } : {}),
-          pmWeekendRow('Cântico final', d.cantico_final),
-          hasLeitor ? null : pmWeekendRow('Oração final', d.oracao_final)
-        ]
-      }
-    ].map((sec) => ({ ...sec, rows: sec.rows.filter(Boolean) })).filter((sec) => sec.rows.length);
+      pmWeekendSection('territorio', [pmWeekendRow('Dirigente', d.dirigente_sabado)]),
+      pmWeekendSection('discurso', [
+        pmWeekendRow('Presidente', d.presidente),
+        pmWeekendRow('Tema', d.tema_discurso, { strong: true }),
+        pmWeekendRow('Orador', d.orador, { extra: { label: 'Congregação:', value: d.congregacao_orador } })
+      ]),
+      pmWeekendSection('sentinela', [
+        pmWeekendRow('Tema', d.estudo_sentinela_tema, { strong: true }),
+        pmWeekendRow('Cântico', d.cantico_sentinela),
+        pmWeekendRow('Leitor', d.leitor_sentinela, hasLeitor ? { extra: { label: 'Oração final:', value: d.oracao_final } } : {}),
+        pmWeekendRow('Cântico final', d.cantico_final),
+        hasLeitor ? null : pmWeekendRow('Oração final', d.oracao_final)
+      ])
+    ].filter(Boolean);
 
     const body = sections.length
-      ? {
-        table: {
-          widths: [62, '*', 'auto'],
-          body: sections.flatMap((sec) => [pmWeekendSectionRow(sec.title), ...sec.rows])
-        },
-        layout: {
-          hLineWidth: () => 0,
-          vLineWidth: () => 0,
-          paddingLeft: (i) => (i === 0 ? 0 : 6),
-          paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 6),
-          paddingTop: () => 0.8,
-          paddingBottom: () => 0.8
-        }
-      }
+      ? { stack: sections }
       : { text: 'Sem designações preenchidas', color: MUTED, italics: true, fontSize: 8 };
 
     return {
       unbreakable: true,
-      margin: [0, 0, 0, 8],
+      margin: [0, 0, 0, 6],
       table: {
         widths: ['*'],
         body: [
-          [{ text: title, style: 'liteBanner', fillColor: '#EEF3F8', margin: [10, 4, 10, 4] }],
-          [{ ...body, margin: [10, 1, 10, 5] }]
+          [{
+            columns: [
+              { svg: CALENDAR_ICON, width: 15, height: 15 },
+              { width: '*', text: title, style: 'liteBanner', margin: [0, 1.5, 0, 0] }
+            ],
+            columnGap: 7,
+            fillColor: '#F3F5F8',
+            margin: [8, 3, 10, 3]
+          }],
+          [{ ...body, margin: [8, 5, 8, 2] }]
         ]
       },
       layout: hairlineLayout()
