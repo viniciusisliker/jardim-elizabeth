@@ -694,7 +694,7 @@
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
     const theme = WEEKEND_THEME[key];
-    const title = weekendGroups()[key]?.title || theme.fallback;
+    const title = opts.title || weekendGroups()[key]?.title || theme.fallback;
     return {
       margin: [0, 0, 0, 3],
       table: {
@@ -838,7 +838,7 @@
       e.data?.dirigente_sabado,
       { strong: true }
     ));
-    const campo = pmWeekendSection('territorio', campoRows, { labelWidth: 78 });
+    const campo = pmWeekendSection('territorio', campoRows, { labelWidth: 78, title: 'Dirigentes de Campo' });
     if (campo) content.push({ ...campo, unbreakable: true, margin: [0, 4, 0, 0] });
     return content;
   }
