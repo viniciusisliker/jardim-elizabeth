@@ -133,7 +133,7 @@
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
         'js/admin/anuncios-pdf.js?v=2026081501',
-        'js/admin/anuncios.js?v=2026092401'
+        'js/admin/anuncios.js?v=2026093001'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
