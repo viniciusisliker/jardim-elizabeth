@@ -21,6 +21,8 @@
     document.querySelectorAll('#editor-rodizio [data-rod-slug]').forEach((card) => {
       const list = lists.find((l) => l.slug === card.dataset.rodSlug);
       if (!list) return;
+      const title = card.querySelector('input[data-rod-title]');
+      if (title) list.title = title.value;
       list.items = [...card.querySelectorAll('input[data-rod-item]')].map((input) => input.value);
     });
   }
@@ -51,7 +53,10 @@
     }
     container.innerHTML = lists.map((list) => `
       <article class="qa-rod-card" data-rod-slug="${escapeHtml(list.slug)}">
-        <h3 class="qa-rod-title">${escapeHtml(list.title)}</h3>
+        <h3 class="qa-rod-title">
+          <input type="text" data-rod-title value="${escapeHtml(list.title)}" aria-label="Nome da lista" placeholder="Nome da lista" maxlength="60"/>
+          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+        </h3>
         <ol class="qa-rod-list">${list.items.map((item, i) => itemRow(item, i, list.items.length)).join('')}</ol>
         <button type="button" class="qa-rod-add" data-rod-add>
           <span class="material-symbols-outlined" aria-hidden="true">add</span>
@@ -116,10 +121,16 @@
 
   async function save() {
     readForm();
+    const untitled = lists.find((list) => !list.title.trim());
+    if (untitled) {
+      showToast(toastEl, 'Toda lista precisa de um nome.', true);
+      document.querySelector(`#editor-rodizio [data-rod-slug="${CSS.escape(untitled.slug)}"] input[data-rod-title]`)?.focus();
+      return;
+    }
     const now = new Date().toISOString();
     const payload = lists.map((list) => ({
       slug: list.slug,
-      title: list.title,
+      title: list.title.trim(),
       sort_order: list.sort_order,
       items: list.items.map((v) => v.trim()).filter(Boolean),
       updated_at: now
@@ -145,7 +156,7 @@
     const container = $('editor-rodizio');
     container?.addEventListener('click', onClick);
     container?.addEventListener('input', (e) => {
-      if (e.target.matches('input[data-rod-item]')) setDirty(true);
+      if (e.target.matches('input[data-rod-item], input[data-rod-title]')) setDirty(true);
     });
     $('btn-save-rodizio')?.addEventListener('click', save);
     $('btn-reload-rodizio')?.addEventListener('click', async () => {
