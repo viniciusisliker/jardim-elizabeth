@@ -150,6 +150,82 @@
     showToast(toastEl, 'Rodízio salvo.');
   }
 
+  // Pop-up somente leitura aberto pelo ícone ao lado dos campos do quadro
+  // (Presidente, Leitor, Oração final, Dirigente de campo, Limpeza).
+  let popup = null;
+
+  function closePopup() {
+    if (!popup) return;
+    const { overlay, previousOverflow, opener } = popup;
+    popup = null;
+    overlay.remove();
+    document.body.style.overflow = previousOverflow;
+    opener?.focus();
+  }
+
+  async function openPopup(slug, opener) {
+    if (loaded) readForm();
+    else await load();
+    if (!loaded) {
+      showToast(toastEl, 'Não foi possível carregar o rodízio. Tente de novo mais tarde.', true);
+      return;
+    }
+    const list = lists.find((l) => l.slug === slug);
+    if (!list) {
+      showToast(toastEl, 'Lista de rodízio não encontrada.', true);
+      return;
+    }
+    closePopup();
+
+    const names = list.items.map((v) => v.trim()).filter(Boolean);
+    const body = names.length
+      ? `<ol class="qa-rod-popup__list">${names.map((name, i) => `
+          <li><span class="qa-rod-num" aria-hidden="true">${i + 1}</span>${escapeHtml(name)}</li>`).join('')}</ol>`
+      : '<p class="qa-limpeza-empty">Lista vazia. Adicione nomes na aba Rodízio.</p>';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'qa-rod-popup-overlay';
+    overlay.innerHTML = `
+      <div class="qa-rod-popup" role="dialog" aria-modal="true" aria-labelledby="qa-rod-popup-title">
+        <div class="qa-rod-popup__head">
+          <span class="material-symbols-outlined" aria-hidden="true">autorenew</span>
+          <h2 id="qa-rod-popup-title">${escapeHtml(list.title)}</h2>
+          <button type="button" class="qa-rod-btn" data-rod-popup-close title="Fechar" aria-label="Fechar">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="qa-rod-popup__body">${body}</div>
+        <div class="qa-rod-popup__actions">
+          ${dirty ? '<span class="qa-rod-popup__note">Com alterações não salvas</span>' : ''}
+          <button type="button" class="qa-rod-popup__edit" data-rod-popup-edit>
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+            Editar lista
+          </button>
+        </div>
+      </div>`;
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay || e.target.closest('[data-rod-popup-close]')) {
+        closePopup();
+      } else if (e.target.closest('[data-rod-popup-edit]')) {
+        closePopup();
+        document.querySelector('[data-tab="rodizio"]')?.click();
+        document.querySelector(`#editor-rodizio [data-rod-slug="${CSS.escape(slug)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    overlay.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closePopup();
+      }
+    });
+
+    popup = { overlay, previousOverflow: document.body.style.overflow, opener };
+    document.body.style.overflow = 'hidden';
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-rod-popup-close]')?.focus();
+  }
+
   function init(opts) {
     client = opts.client;
     toastEl = opts.toastEl;
@@ -159,6 +235,11 @@
       if (e.target.matches('input[data-rod-item], input[data-rod-title]')) setDirty(true);
     });
     $('btn-save-rodizio')?.addEventListener('click', save);
+    // Os campos do quadro são re-renderizados a cada troca de data: delegação no document.
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-rotation-slug]');
+      if (btn) openPopup(btn.dataset.rotationSlug, btn);
+    });
     $('btn-reload-rodizio')?.addEventListener('click', async () => {
       if (dirty && !await window.JEDialog.confirm({
         title: 'Descartar alterações',
@@ -174,5 +255,5 @@
     });
   }
 
-  window.JEAnnouncementRotation = { init, load };
+  window.JEAnnouncementRotation = { init, load, openPopup };
 })();

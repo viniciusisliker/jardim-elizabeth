@@ -201,6 +201,7 @@
     const filled = trim(val) ? ' is-filled' : '';
     const spanClass = extraClass || (field.fullWidth ? ' span-2' : '');
     const badge = field.optional ? '<span class="qa-field-badge">Opcional</span>' : '';
+    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label) : '';
     // Origem do valor vai dentro do campo, não no rótulo: evita que o selo
     // quebre linha e desalinhe os inputs vizinhos.
     const discursosBadge = o.fromDiscursos
@@ -224,10 +225,18 @@
         <div class="qa-field-head">
           <span class="qa-field-tag">${escapeHtml(field.label)}</span>
           ${badge}
+          ${rotationBtn}
         </div>
         ${discursosBadge ? `<div class="qa-field-control-wrap">${control}${discursosBadge}</div>` : control}
         ${hint}
       </div>`;
+  }
+
+  // Ícone ao lado do campo que abre a lista de rodízio (aba Rodízio) num pop-up.
+  function rotationButton(slug, label) {
+    return `<button type="button" class="qa-rotation-btn" data-rotation-slug="${escapeHtml(slug)}" title="Ver lista de rodízio" aria-label="Ver lista de rodízio — ${escapeHtml(label)}">
+      <span class="material-symbols-outlined" aria-hidden="true">autorenew</span>
+    </button>`;
   }
 
   function trim(val) {
