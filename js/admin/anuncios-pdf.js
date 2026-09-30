@@ -325,39 +325,50 @@
   }
 
   function pmSideLine(label, value, color) {
-    return { text: [{ text: `${label}  `, bold: true, color }, { text: val(value), color: T.text }] };
+    return { label, value: val(value), color };
   }
 
+  // Largura fixa do título: os nomes alinham também entre seções (título longo quebra linha).
+  const PM_TITLE_WIDTH = 132;
+
+  // Cada linha vira uma linha de tabela: nº | parte | designados | rótulo Sala B | nome Sala B.
+  // Assim os nomes ficam alinhados em coluna dentro da seção.
   function pmMidweekRow(num, label, assignee, sideStack, opts) {
     const required = opts?.required;
     const color = opts?.color || T.headerAlt;
     const title = val(label);
     if (!required && !title && !hasValue(assignee) && !sideStack) return null;
-    const titleRuns = [
-      { text: `${num}.  `, bold: true, color, fontSize: 8.5 },
-      { text: title || 'Parte', bold: true, color, fontSize: 8.5 }
-    ];
-    if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, color, fontSize: 7.5 });
-    titleRuns.push({ text: '  –  ', color: MUTED, fontSize: 8.5 }, pmAssigneeText(assignee));
-    const main = {
-      width: sideStack ? '*' : '100%',
-      text: titleRuns,
-      fontSize: 8.5,
-      margin: [0, 1.5, 0, 1.5]
-    };
-    if (!sideStack) return { columns: [main] };
+    const titleRuns = [{ text: title || 'Parte', bold: true, color }];
+    if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, bold: false, color, fontSize: 7.5 });
+    const side = sideStack || [];
     return {
-      columns: [
-        main,
-        {
-          width: '38%',
-          stack: sideStack,
-          fontSize: 8,
-          alignment: 'right',
-          margin: [4, 1.5, 0, 0]
-        }
-      ],
-      columnGap: 6
+      hasSide: side.length > 0,
+      cells: [
+        { text: `${num}.`, bold: true, color, alignment: 'right' },
+        { text: titleRuns },
+        { text: [pmAssigneeText(assignee)] },
+        { stack: side.map((s) => ({ text: s.label, bold: true, color: s.color })), alignment: 'right', fontSize: 8 },
+        { stack: side.map((s) => ({ text: s.value, color: T.text })), fontSize: 8 }
+      ]
+    };
+  }
+
+  function pmRowsTable(rows) {
+    const withSide = rows.some((r) => r.hasSide);
+    return {
+      table: {
+        widths: withSide ? [12, PM_TITLE_WIDTH, '*', 'auto', 'auto'] : [12, PM_TITLE_WIDTH, '*'],
+        body: rows.map((r) => (withSide ? r.cells : r.cells.slice(0, 3)))
+      },
+      fontSize: 8.5,
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 6 : 4),
+        paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
+        paddingTop: () => 2,
+        paddingBottom: () => 2
+      }
     };
   }
 
@@ -387,7 +398,7 @@
             fillColor: theme.bg,
             margin: [8, 3.5, 8, 3.5]
           }],
-          [{ stack: filtered, margin: [8, 3, 8, 5] }]
+          [{ stack: [pmRowsTable(filtered)], margin: [8, 1, 8, 3] }]
         ]
       },
       layout: {
@@ -402,7 +413,6 @@
   function pmMidweekMeeting(entry) {
     const d = entry.data || {};
     const datePart = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
-    const weekday = val(entry.weekday_label);
     const reading = val(d.leitura_biblica);
     const weekTitle = reading ? `${datePart}  ·  ${reading}` : datePart;
     const cT = MIDWEEK_THEME.tesouros.color;
@@ -471,16 +481,14 @@
           widths: ['*'],
           body: [[{
             columns: [
-              { svg: CALENDAR_ICON, width: 22, height: 22, margin: [0, weekday ? 1 : -2, 0, 0] },
+              { svg: CALENDAR_ICON, width: 22, height: 22, margin: [0, -2, 0, 0] },
               {
                 width: '*',
-                stack: [
-                  { text: weekTitle, fontSize: 11, bold: true, color: T.header },
-                  weekday
-                    ? { text: `Meio de semana  ·  ${weekday}`, fontSize: 7, color: T.headerAlt, margin: [0, 2, 0, 0] }
-                    : null
-                ].filter(Boolean),
-                margin: [0, weekday ? 0 : 3, 0, 0]
+                text: weekTitle,
+                fontSize: 11,
+                bold: true,
+                color: T.header,
+                margin: [0, 3, 0, 0]
               }
             ],
             columnGap: 8,
