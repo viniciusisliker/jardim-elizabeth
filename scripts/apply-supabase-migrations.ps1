@@ -5,8 +5,8 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
-Write-Host "Projeto: prhijmkvsgqusivmnqzx" -ForegroundColor Cyan
-npx supabase link --project-ref prhijmkvsgqusivmnqzx 2>$null
+Write-Host "Projeto: zvjtzvvmndqxbmjvbgvp" -ForegroundColor Cyan
+npx supabase link --project-ref zvjtzvvmndqxbmjvbgvp 2>$null
 
 Write-Host "Aplicando SQL (idempotente)..." -ForegroundColor Cyan
 npx supabase db query --linked -f "supabase/manual/apply_territory_system.sql"
