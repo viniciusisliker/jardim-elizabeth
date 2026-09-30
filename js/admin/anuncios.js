@@ -1127,6 +1127,13 @@
     }
   }
 
+  /** Nome do arquivo ao baixar: URL blob: não carrega nome, então o Chrome salvaria com o UUID. */
+  function pdfDownloadName(block, pending) {
+    if (pending.fileName) return pending.fileName;
+    const title = window.JEAnnouncementPdf?.fileTitle?.(block, board) || 'Quadro de Anúncios';
+    return `${title.replace(/[\\/:*?"<>|]/g, '').trim()}.pdf`;
+  }
+
   function openPdfPreviewModal(block) {
     const pending = pendingPdfs[block];
     if (!pending?.objectUrl) return;
@@ -1138,6 +1145,11 @@
     if (title) title.textContent = `Prévia — ${titles[block] || 'PDF'}`;
     if (frame) frame.src = pending.objectUrl;
     if (openTab) openTab.href = pending.objectUrl;
+    const download = $('pdf-preview-download');
+    if (download) {
+      download.href = pending.objectUrl;
+      download.download = pdfDownloadName(block, pending);
+    }
     $('pdf-preview-modal')?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -1530,6 +1542,10 @@
 
     $('pdf-preview-close')?.addEventListener('click', closePdfPreviewModal);
     $('pdf-preview-backdrop')?.addEventListener('click', closePdfPreviewModal);
+    $('pdf-preview-download')?.addEventListener('click', (e) => {
+      const pending = pdfPreviewBlock && pendingPdfs[pdfPreviewBlock];
+      if (!pending?.objectUrl) e.preventDefault();
+    });
     $('pdf-preview-open-tab')?.addEventListener('click', (e) => {
       const pending = pdfPreviewBlock && pendingPdfs[pdfPreviewBlock];
       if (!pending?.objectUrl) e.preventDefault();
