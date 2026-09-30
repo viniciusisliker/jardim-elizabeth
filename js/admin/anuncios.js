@@ -45,6 +45,85 @@
 
   function $(id) { return document.getElementById(id); }
 
+  // Recarregar a página não pode perder o que está sendo editado: guardamos
+  // qual quadro estava aberto e um backup local das alterações ainda não salvas.
+  const LAST_BOARD_KEY = 'je.anuncios.lastBoardId';
+  const UNSAVED_PREFIX = 'je.anuncios.unsaved.';
+  let dirty = false;
+  let backupTimer = null;
+
+  function storageGet(key) {
+    try { return localStorage.getItem(key); } catch { return null; }
+  }
+  function storageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch { /* storage cheio ou bloqueado */ }
+  }
+  function storageRemove(key) {
+    try { localStorage.removeItem(key); } catch { /* ignore */ }
+  }
+
+  function rememberBoard(boardId) {
+    if (boardId) storageSet(LAST_BOARD_KEY, boardId);
+    else storageRemove(LAST_BOARD_KEY);
+  }
+
+  function writeUnsavedBackup() {
+    clearTimeout(backupTimer);
+    backupTimer = null;
+    if (!board?.id || !dirty) return;
+    readFormIntoEntries();
+    storageSet(UNSAVED_PREFIX + board.id, JSON.stringify({
+      entries,
+      baseUpdatedAt: board.updated_at || null,
+      savedAt: new Date().toISOString()
+    }));
+  }
+
+  function markDirty() {
+    if (!board?.id) return;
+    dirty = true;
+    clearTimeout(backupTimer);
+    backupTimer = setTimeout(writeUnsavedBackup, 400);
+  }
+
+  function clearUnsavedBackup(boardId) {
+    clearTimeout(backupTimer);
+    backupTimer = null;
+    dirty = false;
+    if (boardId) storageRemove(UNSAVED_PREFIX + boardId);
+  }
+
+  function readUnsavedBackup(boardId) {
+    const raw = storageGet(UNSAVED_PREFIX + boardId);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed?.entries) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function restoreUnsavedBackup(backup, dbUpdatedAt) {
+    if (!backup) return false;
+    const changedElsewhere = backup.baseUpdatedAt && dbUpdatedAt && backup.baseUpdatedAt !== dbUpdatedAt;
+    if (changedElsewhere) {
+      const when = new Date(backup.savedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+      const keep = await window.JEDialog.confirm({
+        title: 'Alterações não salvas',
+        message: `Há alterações deste quadro não salvas neste navegador (${when}), mas o quadro foi salvo depois disso. Restaurar suas alterações locais? Se escolher não, elas serão descartadas.`,
+        confirmLabel: 'Restaurar'
+      });
+      if (!keep) {
+        clearUnsavedBackup(board.id);
+        return false;
+      }
+    }
+    entries = backup.entries.map((e) => ({ ...e, data: e.data || {}, board_id: board.id }));
+    dirty = true;
+    return true;
+  }
+
   function entriesFor(block) {
     return entries.filter((e) => e.block === block).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   }
@@ -293,6 +372,7 @@
       entries = entries.filter((e) => e.id !== entry.id);
       blockSelection[block] = Math.min(blockSelection[block], entriesFor(block).length - 1);
       renderBlockEditorOnly(block);
+      markDirty();
     });
     container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
     container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
@@ -463,6 +543,7 @@
         })) return;
         entries = entries.filter((e) => e.id !== entry.id);
         renderLimpezaEditor();
+        markDirty();
       });
     });
   }
@@ -506,6 +587,7 @@
     entries.push(entry);
     blockSelection[block] = entriesFor(block).length - 1;
     renderBlockEditorOnly(block);
+    markDirty();
   }
 
   async function regenerateBlock(block) {
@@ -525,6 +607,7 @@
     blockSelection[block] = 0;
     revokePendingPdf(block);
     renderBlockEditorOnly(block);
+    markDirty();
   }
 
   function resetBlockSelection() {
@@ -592,6 +675,11 @@
     board = existing;
     entries = [];
     resetBlockSelection();
+    rememberBoard(board.id);
+    dirty = false;
+    // Lido antes de qualquer persistEntries abaixo, que limparia o backup.
+    const unsavedBackup = readUnsavedBackup(board.id);
+    const dbUpdatedAt = board.updated_at || null;
 
     const { data: rows } = await client.from('announcement_entries').select('*').eq('board_id', board.id).order('sort_order');
     const raw = (rows || []).map((r) => ({ ...r, data: r.data || {} }));
@@ -603,6 +691,9 @@
       removedOtherMonth = raw.length - sanitized.length;
       await persistEntries(true);
     }
+
+    const restoredUnsaved = await restoreUnsavedBackup(unsavedBackup, dbUpdatedAt);
+    if (restoredUnsaved) storageSet(UNSAVED_PREFIX + board.id, JSON.stringify(unsavedBackup));
 
     if (!entries.length) {
       ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
@@ -619,7 +710,10 @@
     updateBoardLabel();
     await loadReceiveSpeeches(true);
     renderActiveEditors();
-    return removedOtherMonth;
+    if (restoredUnsaved) {
+      showToast(toastEl, 'Alterações não salvas restauradas. Clique em "Salvar rascunho" para gravar.');
+    }
+    return { removedOtherMonth, restoredUnsaved };
   }
 
   async function loadBoardById(boardId) {
@@ -630,6 +724,7 @@
       .maybeSingle();
     if (error || !existing) throw new Error('Quadro não encontrado.');
 
+    writeUnsavedBackup();
     $('board-month').value = existing.reference_month.slice(0, 7);
     await hydrateBoardFromRecord(existing);
     switchToEditorTab('mecanicas');
@@ -654,6 +749,8 @@
     const { error } = await client.from('announcement_boards').delete().eq('id', boardId);
     if (error) throw new Error('Não foi possível excluir o quadro. Tente de novo.');
 
+    clearUnsavedBackup(boardId);
+    if (storageGet(LAST_BOARD_KEY) === boardId) rememberBoard(null);
     if (board?.id === boardId) {
       board = null;
       entries = [];
@@ -677,6 +774,7 @@
     const referenceMonth = `${y}-${String(m).padStart(2, '0')}-01`;
     const referenceLabel = Dates.monthLabel(y, m - 1);
 
+    writeUnsavedBackup();
     entries = [];
     resetBlockSelection();
     clearAllPendingPdfs();
@@ -695,10 +793,10 @@
       existing = data;
 
     if (existing) {
-      const removedOtherMonth = await hydrateBoardFromRecord(existing);
+      const { removedOtherMonth, restoredUnsaved } = await hydrateBoardFromRecord(existing);
       if (removedOtherMonth > 0) {
         showToast(toastEl, `${removedOtherMonth} data(s) de outro mês removida(s) — quadro de ${board.reference_label} atualizado.`);
-      } else {
+      } else if (!restoredUnsaved) {
         showToast(toastEl, 'Quadro carregado.');
       }
     } else {
@@ -709,6 +807,8 @@
       }).select().single();
       if (error) { showToast(toastEl, 'Não foi possível criar o quadro. Tente de novo.', true); return; }
       board = created;
+      rememberBoard(board.id);
+      dirty = false;
       ['mecanicas', 'midweek', 'weekend'].forEach((block) => {
         Dates.generateEntriesForBoard(block, referenceMonth).forEach((g, i) => {
           entries.push({
@@ -764,7 +864,10 @@
     if (error) throw new Error('Não foi possível salvar as designações. Tente de novo.');
 
     entries = (saved || []).map((r) => ({ ...r, data: r.data || {} }));
-    await client.from('announcement_boards').update({ updated_at: new Date().toISOString() }).eq('id', board.id);
+    clearUnsavedBackup(board.id);
+    const updatedAt = new Date().toISOString();
+    const { error: touchErr } = await client.from('announcement_boards').update({ updated_at: updatedAt }).eq('id', board.id);
+    if (!touchErr) board.updated_at = updatedAt;
   }
 
   async function saveDraft() {
@@ -1452,6 +1555,7 @@
         export_to_calendar: false
       });
       renderLimpezaEditor();
+      markDirty();
       const selects = $('editor-limpeza').querySelectorAll('[data-data-key="grupo"]');
       selects[selects.length - 1]?.focus();
     });
@@ -1489,9 +1593,27 @@
       else showToast(toastEl, 'Histórico salvo.');
     });
 
+    const markDirtyFromForm = (e) => {
+      if (e.target?.closest?.('[data-entry-id]')) markDirty();
+    };
+    document.addEventListener('input', markDirtyFromForm);
+    document.addEventListener('change', markDirtyFromForm);
+    window.addEventListener('pagehide', writeUnsavedBackup);
+    window.addEventListener('beforeunload', writeUnsavedBackup);
+
     const loadBoardWhenIdle = async () => {
       try {
-        await loadOrCreateBoard();
+        const lastBoardId = storageGet(LAST_BOARD_KEY);
+        let reopened = false;
+        if (lastBoardId) {
+          try {
+            await loadBoardById(lastBoardId);
+            reopened = true;
+          } catch {
+            rememberBoard(null);
+          }
+        }
+        if (!reopened) await loadOrCreateBoard();
         updatePublishButtonsState();
       } catch (err) {
         showToast(toastEl, friendlyError(err, 'Não foi possível carregar o quadro. Tente de novo.'), true);
