@@ -538,7 +538,7 @@
     const tesouros = [
       pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT, wideTitle: true }),
       // Dirigente Sala B na linha 2, logo acima da leitura da Sala B (linha 3).
-      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT), { required: true, color: cT, duration: '10 min', spanLabel: true }),
+      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT), { required: true, color: cT, spanLabel: true }),
       pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
     ];
 
