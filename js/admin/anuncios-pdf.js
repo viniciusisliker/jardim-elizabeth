@@ -344,7 +344,8 @@
   const WEEKEND_THEME = {
     territorio: { color: '#8A5A2B', bg: '#FAF3EA', fallback: 'Trabalho de campo' },
     discurso: { color: '#2F5D8A', bg: '#EDF3FA', fallback: 'Discurso público' },
-    sentinela: { color: '#3E7650', bg: '#EEF6F0', fallback: 'Estudo da Sentinela' }
+    sentinela: { color: '#3E7650', bg: '#EEF6F0', fallback: 'Estudo da Sentinela' },
+    enviados: { color: '#6B4C8A', bg: '#F4F0F9', fallback: 'Oradores enviados' }
   };
 
   const WEEKEND_ICONS = {
@@ -353,7 +354,9 @@
     // Microfone (discurso).
     discurso: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><rect x="9.5" y="4.5" width="5" height="9" rx="2.5" fill="#fff"/><path d="M7 11.5a5 5 0 0 0 10 0M12 16.5v3M9.2 19.5h5.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
     // Livro aberto (estudo).
-    sentinela: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M12 7.3C10.3 6 7.8 5.6 5 5.9v11.2c2.8-.3 5.3.1 7 1.4 1.7-1.3 4.2-1.7 7-1.4V5.9c-2.8-.3-5.3.1-7 1.4zM12 7.3v11.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>'
+    sentinela: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M12 7.3C10.3 6 7.8 5.6 5 5.9v11.2c2.8-.3 5.3.1 7 1.4 1.7-1.3 4.2-1.7 7-1.4V5.9c-2.8-.3-5.3.1-7 1.4zM12 7.3v11.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+    // Seta saindo da caixa (orador enviado a outra congregação).
+    enviados: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M11 6.5H7.5a1.5 1.5 0 0 0-1.5 1.5v8.5A1.5 1.5 0 0 0 7.5 18H16a1.5 1.5 0 0 0 1.5-1.5V13M13 5.5h5.5V11M18.5 5.5 11 13" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   const CALENDAR_ICON = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#5B6573"/><rect x="6" y="7.5" width="12" height="10.5" rx="1.4" fill="#fff"/><rect x="6" y="7.5" width="12" height="3" rx="1" fill="#C9D3DF"/><rect x="8.6" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><rect x="14.1" y="5.6" width="1.3" height="3.4" rx="0.6" fill="#fff"/><g fill="#5B6573"><rect x="8" y="12.3" width="1.8" height="1.5"/><rect x="11.1" y="12.3" width="1.8" height="1.5"/><rect x="14.2" y="12.3" width="1.8" height="1.5"/><rect x="8" y="15" width="1.8" height="1.5"/><rect x="11.1" y="15" width="1.8" height="1.5"/></g></svg>';
@@ -750,6 +753,14 @@
     };
   }
 
+  // "Nome — Congregação" (uma linha por irmão) → linhas do quadro.
+  function pmSentSpeakerRows(text) {
+    return String(text || '').split(/\r?\n/).map((line) => {
+      const [name, ...rest] = line.split(/\s+[—–-]\s+/);
+      return pmWeekendRow('Orador', name, { strong: true, extra: { label: 'Congregação:', value: rest.join(' — ') } });
+    });
+  }
+
   function pmWeekendCard(entry) {
     const d = entry.data || {};
     const title = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
@@ -792,7 +803,8 @@
         pmWeekendRow('Leitor', d.leitor_sentinela, hasLeitor ? { extra: { label: 'Oração final:', value: d.oracao_final } } : {}),
         pmWeekendRow('Cântico final', d.cantico_final),
         hasLeitor ? null : pmWeekendRow('Oração final', d.oracao_final)
-      ])
+      ]),
+      pmWeekendSection('enviados', pmSentSpeakerRows(d.oradores_enviados))
     ].filter(Boolean);
 
     const body = sections.length

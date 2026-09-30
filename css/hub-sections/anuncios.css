@@ -61,6 +61,8 @@
     .qa-field--discursos .qa-field-control{background:#f7f9fc;color:#0f3462}
     .qa-field-hint{font-size:0.6875rem;color:#43474f;line-height:1.35;margin:0;opacity:.85}
     .qa-field-control{width:100%;border:1px solid #c8cdd8;border-radius:0.5rem;padding:0.625rem 0.875rem;font-size:0.9375rem;font-weight:500;color:#1B1C1C;background:#fafafa;transition:border-color .15s,box-shadow .15s,background .15s}
+    textarea.qa-field-control{resize:vertical;min-height:4.5rem;font-family:inherit;line-height:1.45}
+    .qa-field-control-wrap textarea.qa-field-control ~ .qa-field-source{top:0.5rem;transform:none}
     .qa-field-control:hover{border-color:#1F497D;background:#fff}
     .qa-field-control:focus{outline:none;border-color:#002060;background:#fff;box-shadow:0 0 0 3px rgba(0,32,96,.1)}
     .qa-field.is-filled .qa-field-control{border-color:rgba(0,32,96,.35);background:#fff}

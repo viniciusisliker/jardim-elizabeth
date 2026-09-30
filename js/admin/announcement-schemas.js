@@ -57,6 +57,7 @@
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela', rotation: 'leitor' },
     { key: 'cantico_final', label: 'Cântico final', type: 'text', group: 'sentinela' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela', rotation: 'oracao' },
+    { key: 'oradores_enviados', label: 'Irmãos enviados', type: 'textarea', group: 'enviados', optional: true, placeholder: 'Um por linha — Ex.: João Silva — Cong. Vila Sônia', hint: 'Irmãos da congregação que fazem discurso em outras congregações neste fim de semana' },
     { key: 'evento_especial', label: 'Evento especial', type: 'text', group: 'especial', optional: true, placeholder: 'Ex.: Assembleia de Circuito', hint: 'Quando preenchido, substitui o programa normal desta data' }
   ];
 
@@ -64,6 +65,7 @@
     territorio: { title: 'Trabalho de campo (sábado)', icon: 'hiking' },
     discurso: { title: 'Discurso público', icon: 'record_voice_over' },
     sentinela: { title: 'Estudo da Sentinela', icon: 'menu_book' },
+    enviados: { title: 'Oradores enviados', icon: 'outbound' },
     especial: { title: 'Programa alternativo', icon: 'event' }
   };
 
