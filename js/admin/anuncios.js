@@ -119,9 +119,13 @@
     const filled = trim(val) ? ' is-filled' : '';
     const spanClass = extraClass || (field.fullWidth ? ' span-2' : '');
     const badge = field.optional ? '<span class="qa-field-badge">Opcional</span>' : '';
-    const discursosBadge = o.fromDiscursos ? '<span class="qa-field-badge qa-field-badge--discursos">Discursos Públicos</span>' : '';
+    // Origem "Discursos Públicos" vai dentro do campo, não no rótulo: evita que o
+    // selo quebre linha e desalinhe os inputs vizinhos.
+    const discursosBadge = o.fromDiscursos
+      ? '<span class="qa-field-source" title="Vem de Discursos Públicos → Recebemos"><span class="material-symbols-outlined">link</span>Discursos</span>'
+      : '';
     const hint = field.hint ? `<p class="qa-field-hint">${escapeHtml(field.hint)}</p>` : '';
-    const readonly = o.readonly ? ' readonly tabindex="-1"' : '';
+    const readonly = o.readonly ? ` readonly tabindex="-1" title="${escapeHtml(val)}"` : '';
 
     let control;
     if (field.type === 'select') {
@@ -137,9 +141,9 @@
       <div class="qa-field${optional}${filled}${spanClass}${o.fromDiscursos ? ' qa-field--discursos' : ''}">
         <div class="qa-field-head">
           <span class="qa-field-tag">${escapeHtml(field.label)}</span>
-          ${badge}${discursosBadge}
+          ${badge}
         </div>
-        ${control}
+        ${o.fromDiscursos ? `<div class="qa-field-control-wrap">${control}${discursosBadge}</div>` : control}
         ${hint}
       </div>`;
   }
@@ -161,29 +165,46 @@
       </div>`;
   }
 
+  // Layout do final de semana: grupos com vários campos ocupam a largura toda;
+  // os de campo único (território, Sala B) ficam lado a lado. Dentro de cada grupo,
+  // `wide` indica os campos de texto longo que ocupam a linha inteira.
+  const WEEKEND_LAYOUT = [
+    { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente'], wide: ['tema_discurso'] },
+    { group: 'sentinela', order: ['estudo_sentinela_tema', 'leitor_sentinela', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
+    { group: 'territorio', half: true, wide: ['dirigente_sabado'] },
+    { group: 'sala_b', half: true, wide: ['presidente_sala_b'] },
+    { group: 'especial', wide: ['evento_especial'], optional: true }
+  ];
+
   function fieldsHtmlWeekend(fields, entry) {
     const groups = Schemas.WEEKEND_GROUPS;
-    const order = ['territorio', 'discurso', 'sentinela', 'sala_b', 'especial'];
     const speech = receiveSpeechesByDate[entry.event_date];
     const { data, discursosKeys } = Sync.mergeWeekendDisplayData(entry.data, speech);
-    return order.map((gid) => {
-      const meta = groups[gid];
-      const groupFields = fields.filter((f) => f.group === gid);
+    return WEEKEND_LAYOUT.map((layout) => {
+      const meta = groups[layout.group];
+      let groupFields = fields.filter((f) => f.group === layout.group);
       if (!groupFields.length || !meta) return '';
-      const isSpecial = gid === 'especial';
-      const gridClass = isSpecial ? 'cols-1' : '';
-      const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, isSpecial ? ' span-2' : '', {
+      if (layout.order) {
+        const rank = (f) => {
+          const i = layout.order.indexOf(f.key);
+          return i === -1 ? layout.order.length : i;
+        };
+        groupFields = [...groupFields].sort((a, b) => rank(a) - rank(b));
+      }
+      const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, (layout.wide || []).includes(f.key) ? ' span-2' : '', {
         data,
         readonly: discursosKeys.includes(f.key),
         fromDiscursos: discursosKeys.includes(f.key)
       })).join('');
+      const cls = ['qa-subsection', layout.optional ? 'qa-subsection--optional' : '', layout.half ? '' : 'qa-subsection--full']
+        .filter(Boolean).join(' ');
       return `
-        <div class="qa-subsection${isSpecial ? ' qa-subsection--optional' : ''}">
+        <div class="${cls}">
           <div class="qa-subsection-head">
             <span class="material-symbols-outlined">${escapeHtml(meta.icon)}</span>
             ${escapeHtml(meta.title)}
           </div>
-          <div class="qa-fields-grid${gridClass ? ' ' + gridClass : ''}">${fieldsHtml}</div>
+          <div class="qa-fields-grid">${fieldsHtml}</div>
         </div>`;
     }).join('');
   }
@@ -226,7 +247,7 @@
       const speechHint = Object.keys(receiveSpeechesByDate).length
         ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong> (badge dourado). Presidente, Sentinela e território editam aqui.</p>'
         : '<p class="text-xs text-on-surface-variant mb-3">Preencha <strong>Discursos Públicos → Recebemos</strong> e salve para trazer orador e tema automaticamente.</p>';
-      return speechHint + sectionShell('Programa de final de semana', 'weekend', fieldsHtmlWeekend(fields, entry));
+      return speechHint + sectionShell('Programa de final de semana', 'weekend', fieldsHtmlWeekend(fields, entry), 'qa-weekend-layout');
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
