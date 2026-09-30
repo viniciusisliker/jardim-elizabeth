@@ -392,16 +392,29 @@
     }
     const sideLabel = side ? { text: side.label, bold: true, color: side.color } : { text: '' };
     const sideValue = side ? { text: side.value, color: T.text } : { text: '' };
+    // Rótulo longo (Dirigente Sala B) invade a coluna de nomes em vez de alargar a coluna
+    // de rótulos, que apertaria o título de todas as partes.
+    const spanLabel = Boolean(opts?.spanLabel && side);
+    const nameCell = spanLabel
+      ? {
+        colSpan: 2,
+        columns: [
+          { width: '*', text: nameRuns, noWrap: true },
+          { width: 'auto', ...sideLabel, alignment: 'right', noWrap: true }
+        ],
+        columnGap: 8
+      }
+      : { text: nameRuns, noWrap: true };
     return {
       cells: [
         { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
         { text: titleRuns },
-        { text: nameRuns, noWrap: true },
-        { ...sideLabel, alignment: 'right', noWrap: true },
+        nameCell,
+        spanLabel ? {} : { ...sideLabel, alignment: 'right', noWrap: true },
         { ...sideValue, noWrap: true }
       ],
       nameWidth: runsWidth(nameRuns),
-      sideLabelWidth: side ? runsWidth([sideLabel]) : 0,
+      sideLabelWidth: side && !spanLabel ? runsWidth([sideLabel]) : 0,
       sideValueWidth: side ? runsWidth([sideValue]) : 0
     };
   }
@@ -434,7 +447,7 @@
     };
   }
 
-  function pmMidweekSection(themeKey, rows, widths, headerExtra) {
+  function pmMidweekSection(themeKey, rows, widths) {
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
     const theme = MIDWEEK_THEME[themeKey];
@@ -454,19 +467,8 @@
                 color: theme.color,
                 characterSpacing: 0.4,
                 margin: [0, 1.5, 0, 0]
-              },
-              headerExtra
-                ? {
-                  width: 'auto',
-                  text: [
-                    { text: `${headerExtra.label}  `, bold: true, color: headerExtra.color },
-                    { text: headerExtra.value, color: T.text }
-                  ],
-                  fontSize: 8,
-                  margin: [0, 0.5, 0, 0]
-                }
-                : null
-            ].filter(Boolean),
+              }
+            ],
             columnGap: 6,
             fillColor: theme.bg,
             margin: [8, 3.5, 8, 3.5]
@@ -497,7 +499,8 @@
 
     const tesouros = [
       pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
-      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true, color: cT, duration: '10 min' }),
+      // Dirigente Sala B na linha 2, logo acima da leitura da Sala B (linha 3).
+      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT), { required: true, color: cT, duration: '10 min', spanLabel: true }),
       pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
     ];
 
@@ -553,7 +556,7 @@
         layout: 'noBorders',
         margin: [0, 0, 0, 5]
       },
-      pmMidweekSection('tesouros', tesouros, widths, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT)),
+      pmMidweekSection('tesouros', tesouros, widths),
       pmMidweekSection('ministerio', ministerio, widths),
       pmMidweekSection('vida', vidaRows, widths)
     ].filter(Boolean);
