@@ -123,7 +123,7 @@
       partial: 'hub/sections/anuncios.html',
       styles: [
         'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/anuncios.css?v=2026092402'
+        'css/hub-sections/anuncios.css?v=2026093002'
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
@@ -133,7 +133,8 @@
         'js/admin/announcement-schemas.js?v=2026060526',
         'js/admin/anuncios-export.js?v=2026060526',
         'js/admin/anuncios-pdf.js?v=2026081501',
-        'js/admin/anuncios.js?v=2026093001'
+        'js/admin/anuncios-rodizio.js?v=2026093002',
+        'js/admin/anuncios.js?v=2026093002'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {
