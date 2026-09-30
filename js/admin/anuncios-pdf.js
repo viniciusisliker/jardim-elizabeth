@@ -355,7 +355,6 @@
 
   function pmRowsTable(rows) {
     const withSide = rows.some((r) => r.hasSide);
-    const last = rows.length;
     return {
       table: {
         widths: withSide ? [12, PM_TITLE_WIDTH, '*', 'auto', 'auto'] : [12, PM_TITLE_WIDTH, '*'],
@@ -363,10 +362,8 @@
       },
       fontSize: 8.5,
       layout: {
-        hLineWidth: (i) => (i === 0 || i === last ? 0 : 0.25),
-        vLineWidth: (i) => (withSide && i === 3 ? 0.25 : 0),
-        hLineColor: () => LINE,
-        vLineColor: () => LINE,
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
         paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 6 : 4),
         paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
         paddingTop: () => 2,
