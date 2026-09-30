@@ -1,0 +1,10 @@
+# Arquivos que não são servidos pelo site: ficam fora do deploy para
+# economizar Deployment Storage na Vercel (cada deploy guarda uma cópia).
+/.github
+/_mockups
+/scripts
+/supabase
+/maps
+/*.md
+/S-13.pdf
+/registro-territorios-*
