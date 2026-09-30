@@ -922,8 +922,16 @@
     return pub.publicUrl;
   }
 
+  /** Caminho no Storage: pasta com timestamp (evita cache/colisão) + nome legível do arquivo. */
+  function storagePdfPath(block) {
+    const title = window.JEAnnouncementPdf?.fileTitle?.(block, board) || block;
+    // Chaves do Supabase Storage não aceitam acentos.
+    const safe = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .-]/g, '').trim();
+    return `${board.id}/${Date.now()}/${safe || block}.pdf`;
+  }
+
   async function uploadPdfToStorage(block, blob) {
-    const path = `${board.id}/${block}-${Date.now()}.pdf`;
+    const path = storagePdfPath(block);
     const pdfUrl = await uploadAnnouncementPdf(path, blob);
 
     const col = block === 'mecanicas' ? 'pdf_mecanicas_url' : block === 'midweek' ? 'pdf_midweek_url' : 'pdf_weekend_url';
@@ -949,7 +957,7 @@
   }
 
   async function uploadFullBoardPdf(blob) {
-    const path = `${board.id}/full-${Date.now()}.pdf`;
+    const path = storagePdfPath('full');
     const pdfUrl = await uploadAnnouncementPdf(path, blob);
     const boardUpdate = {
       pdf_full_url: pdfUrl,

@@ -100,6 +100,30 @@
     return board.reference_label || '';
   }
 
+  const FILE_TITLES = {
+    mecanicas: 'Designações Mecânicas',
+    midweek: 'Nossa Vida e Ministério Cristão',
+    weekend: 'Discurso Público e Estudo de A Sentinela',
+    full: 'Quadro de Anúncios'
+  };
+
+  function monthName(board) {
+    const months = window.JEAnnouncementDates?.MONTHS_PT;
+    const ref = board?.reference_month;
+    if (months && ref) {
+      const idx = Number(String(ref).slice(5, 7)) - 1;
+      if (months[idx]) return months[idx];
+    }
+    return String(board?.reference_label || '').split('/')[0].trim();
+  }
+
+  /** Nome do arquivo (sem extensão), ex.: "Nossa Vida e Ministério Cristão - Outubro". */
+  function fileTitle(block, board) {
+    const base = FILE_TITLES[block] || FILE_TITLES.full;
+    const month = monthName(board);
+    return month ? `${base} - ${month}` : base;
+  }
+
   function baseDoc(content, meta) {
     const section = meta?.section || 'Quadro de Anúncios';
     const month = meta?.month || '';
@@ -798,14 +822,18 @@
   async function blockToPdfBlob(block, board, entries) {
     await ensurePdfMake();
     await ensureMeasure();
-    return toPdfBlob(buildDocDefinition(block, board, entries));
+    const docDef = buildDocDefinition(block, board, entries);
+    docDef.info = { title: fileTitle(block, board) };
+    return toPdfBlob(docDef);
   }
 
   async function boardToPdfBlob(board, entries) {
     await ensurePdfMake();
     await ensureMeasure();
-    return toPdfBlob(buildDocDefinition('full', board, entries));
+    const docDef = buildDocDefinition('full', board, entries);
+    docDef.info = { title: fileTitle('full', board) };
+    return toPdfBlob(docDef);
   }
 
-  window.JEAnnouncementPdf = { blockToPdfBlob, boardToPdfBlob };
+  window.JEAnnouncementPdf = { blockToPdfBlob, boardToPdfBlob, fileTitle };
 })();
