@@ -690,7 +690,7 @@
   }
 
   // Seção do quadro: faixa colorida com ícone + linhas rótulo | valor | complemento.
-  function pmWeekendSection(key, rows) {
+  function pmWeekendSection(key, rows, opts = {}) {
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
     const theme = WEEKEND_THEME[key];
@@ -723,7 +723,7 @@
           [
             {},
             {
-              table: { widths: [62, '*', 'auto'], body: filtered },
+              table: { widths: [opts.labelWidth || 62, '*', 'auto'], body: filtered },
               layout: {
                 hLineWidth: () => 0,
                 vLineWidth: () => 0,
@@ -781,7 +781,6 @@
     // Leitor e oração final dividem a linha; sem leitor, a oração ganha linha própria.
     const hasLeitor = hasValue(d.leitor_sentinela);
     const sections = [
-      pmWeekendSection('territorio', [pmWeekendRow('Dirigente', d.dirigente_sabado)]),
       pmWeekendSection('discurso', [
         pmWeekendRow('Presidente', d.presidente),
         pmWeekendRow('Tema', d.tema_discurso, { strong: true }),
@@ -832,6 +831,15 @@
 
     // Um quadro por linha (largura total), como no modelo impresso da congregação.
     list.forEach((e) => content.push(pmWeekendCard(e)));
+
+    // Dirigentes do trabalho de campo ficam num bloco único no fim, uma linha por data.
+    const campoRows = list.map((e) => pmWeekendRow(
+      e.event_date ? formatDisplayDate(e.event_date) : 'Sem data',
+      e.data?.dirigente_sabado,
+      { strong: true }
+    ));
+    const campo = pmWeekendSection('territorio', campoRows, { labelWidth: 78 });
+    if (campo) content.push({ ...campo, unbreakable: true, margin: [0, 4, 0, 0] });
     return content;
   }
 
