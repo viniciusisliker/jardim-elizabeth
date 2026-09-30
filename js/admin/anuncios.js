@@ -251,8 +251,8 @@
   // os de campo único (território, Sala B) ficam lado a lado. Dentro de cada grupo,
   // `wide` indica os campos de texto longo que ocupam a linha inteira.
   const WEEKEND_LAYOUT = [
-    { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente'], wide: ['tema_discurso'] },
-    { group: 'sentinela', order: ['estudo_sentinela_tema', 'leitor_sentinela', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
+    { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente', 'cantico_inicial'], wide: ['tema_discurso'] },
+    { group: 'sentinela', order: ['estudo_sentinela_tema', 'cantico_sentinela', 'leitor_sentinela', 'cantico_final', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
     { group: 'territorio', half: true, wide: ['dirigente_sabado'] },
     { group: 'sala_b', half: true, wide: ['presidente_sala_b'] },
     { group: 'especial', wide: ['evento_especial'], optional: true }

@@ -707,6 +707,7 @@
         title: weekendGroups().discurso?.title || 'Discurso público',
         lines: [
           kvLine('Presidente', d.presidente),
+          kvLine('Cântico inicial', d.cantico_inicial),
           kvLine('Tema', d.tema_discurso),
           kvLine('Orador', oradorLine)
         ]
@@ -715,7 +716,9 @@
         title: weekendGroups().sentinela?.title || 'Estudo da Sentinela',
         lines: [
           kvLine('Tema', d.estudo_sentinela_tema),
+          kvLine('Cântico', d.cantico_sentinela),
           kvLine('Leitor', d.leitor_sentinela),
+          kvLine('Cântico final', d.cantico_final),
           kvLine('Oração final', d.oracao_final)
         ]
       },
