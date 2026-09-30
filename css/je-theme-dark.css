@@ -1139,6 +1139,8 @@ html.dark .dp-doc-panel,
 html.dark .qa-table-block,
 html.dark .qa-section,
 html.dark .qa-limpeza-wrap,
+html.dark .qa-limpeza-table,
+html.dark .qa-limpeza-empty,
 html.dark .dp-preview-card,
 html.dark .dp-preview-sheet,
 html.dark .dp-more-fields,
@@ -1187,6 +1189,7 @@ html.dark .dp-field textarea,
 html.dark .dp-field select,
 html.dark .qa-table-row input,
 html.dark .qa-table-row select,
+html.dark .qa-limpeza-row select,
 html.dark .dp-char-pill {
   background: var(--je-input-bg) !important;
   border-color: var(--je-outline-variant) !important;
@@ -1536,3 +1539,5 @@ html.dark #proxeventos-lista > .je-home-ev-row + .je-home-ev-row {
   border-top: 1px solid var(--je-card-border);
 }
 
+html.dark .qa-limpeza-row { border-color: var(--je-outline-variant) !important; }
+html.dark .qa-limpeza-label { color: var(--je-on-surface-variant) !important; }

@@ -359,55 +359,112 @@
     bindEntryForm(container, block, list, idx);
   }
 
+  // Fins de semana (sábado + domingo) que tocam o mês do quadro, no formato do PDF:
+  // "03 - 04 de Junho" ou "31 de Maio - 01 de Junho" quando vira o mês.
+  function limpezaWeekendOptions() {
+    if (!board?.reference_month) return [];
+    const ref = new Date(board.reference_month + 'T12:00:00');
+    const month = ref.getMonth();
+    const cursor = new Date(ref.getFullYear(), month, 1, 12);
+    cursor.setDate(cursor.getDate() - ((cursor.getDay() + 1) % 7)); // sábado anterior ou o próprio dia 1
+    const pad = (n) => String(n).padStart(2, '0');
+    const out = [];
+    while (true) {
+      const sat = new Date(cursor);
+      const sun = new Date(cursor);
+      sun.setDate(sun.getDate() + 1);
+      if (sat.getMonth() !== month && sun.getMonth() !== month) {
+        if (out.length) break;
+      } else {
+        const satM = Dates.MONTHS_PT[sat.getMonth()];
+        const sunM = Dates.MONTHS_PT[sun.getMonth()];
+        out.push(satM === sunM
+          ? `${pad(sat.getDate())} - ${pad(sun.getDate())} de ${sunM}`
+          : `${pad(sat.getDate())} de ${satM} - ${pad(sun.getDate())} de ${sunM}`);
+      }
+      cursor.setDate(cursor.getDate() + 7);
+    }
+    return out;
+  }
+
   function renderLimpezaEditor() {
     const container = $('editor-limpeza');
     if (!container) return;
     const list = limpezaEntries();
 
     if (!list.length) {
-      container.innerHTML = '<p class="text-xs text-on-surface-variant">Nenhuma linha — adicione abaixo.</p>';
+      container.innerHTML = '<p class="qa-limpeza-empty">Nenhum fim de semana ainda. Use <strong>Adicionar fim de semana</strong> abaixo.</p>';
       return;
     }
 
-    let idx = blockSelection.limpeza_mensal ?? 0;
-    if (idx >= list.length) idx = list.length - 1;
-    blockSelection.limpeza_mensal = idx;
-    const entry = list[idx];
-    const d = entry.data || {};
+    const weekends = limpezaWeekendOptions();
+    const used = new Set(list.map((e) => (e.data || {}).fim_de_semana).filter(Boolean));
 
-    const tabs = list.map((e, i) => {
-      const active = i === idx ? ' is-active' : '';
-      const filled = entryFilled(e) ? ' is-filled' : '';
-      return `<button type="button" data-nav-index="${i}" class="entry-nav-btn${active}${filled} px-4 py-2 !flex-row !items-center gap-2">
-        <span class="text-sm font-bold">Linha ${i + 1}</span>${entryFilled(e) ? '<span class="text-xs">✓</span>' : ''}
-      </button>`;
+    const rows = list.map((entry, i) => {
+      const d = entry.data || {};
+      const current = d.fim_de_semana || '';
+      // Valor antigo digitado à mão continua aparecendo, mesmo fora da lista gerada.
+      const options = current && !weekends.includes(current) ? [current, ...weekends] : weekends;
+      const weekendOpts = options.map((w) => {
+        const taken = w !== current && used.has(w) ? ' (já escolhido)' : '';
+        return `<option value="${escapeHtml(w)}" ${w === current ? 'selected' : ''}>${escapeHtml(w + taken)}</option>`;
+      }).join('');
+      const groupOpts = Schemas.CLEANING_GROUPS.map((g) =>
+        `<option value="${escapeHtml(g)}" ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`
+      ).join('');
+      return `
+        <div class="qa-limpeza-row" data-entry-id="${entry.id}">
+          <label class="qa-limpeza-field">
+            <span class="qa-limpeza-label">Fim de semana</span>
+            <select data-data-key="fim_de_semana" aria-label="Fim de semana da linha ${i + 1}">
+              <option value="">Escolha o fim de semana</option>
+              ${weekendOpts}
+            </select>
+          </label>
+          <label class="qa-limpeza-field">
+            <span class="qa-limpeza-label">Grupo</span>
+            <select data-data-key="grupo" aria-label="Grupo da linha ${i + 1}">
+              <option value="">Escolha o grupo</option>
+              ${groupOpts}
+            </select>
+          </label>
+          <button type="button" class="qa-limpeza-remove" data-remove-limpeza="${entry.id}" title="Remover" aria-label="Remover linha ${i + 1}">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>`;
     }).join('');
 
     container.innerHTML = `
-      <div class="space-y-3">
-        <div class="qa-limpeza-tabs flex flex-wrap gap-2">${tabs}</div>
-        <div class="qa-table-block qa-table-block--limpeza" data-entry-id="${entry.id}">
-          <div class="qa-table-head"><span>Fim de semana</span><span>Grupo</span><span></span></div>
-          <div class="qa-table-row">
-            <div class="qa-cell"><label>Fim de semana</label>
-              <input data-data-key="fim_de_semana" value="${escapeHtml(d.fim_de_semana || '')}" placeholder="03 - 04 de Junho"/></div>
-            <div class="qa-cell"><label>Grupo</label>
-              <select data-data-key="grupo">
-                <option value=""></option>
-                ${Schemas.CLEANING_GROUPS.map((g) => `<option ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`).join('')}
-              </select></div>
-            <div class="qa-cell qa-cell--spacer" aria-hidden="true"></div>
-          </div>
+      <div class="qa-limpeza-table">
+        <div class="qa-limpeza-row qa-limpeza-row--head" aria-hidden="true">
+          <span>Fim de semana</span><span>Grupo</span><span></span>
         </div>
-        ${window.JEHubDocFooter.renderDocEntryFooter({
-          prevDisabled: idx === 0,
-          nextDisabled: idx >= list.length - 1,
-          removeAttrs: `data-remove-entry="${entry.id}"`,
-          removeAria: 'Remover esta linha'
-        })}
+        ${rows}
       </div>`;
 
-    bindEntryForm(container, 'limpeza_mensal', list, idx);
+    // Trocar o fim de semana atualiza os "(já escolhido)" das outras linhas.
+    container.querySelectorAll('[data-data-key="fim_de_semana"]').forEach((sel) => {
+      sel.addEventListener('change', () => {
+        readFormIntoEntries();
+        renderLimpezaEditor();
+      });
+    });
+
+    container.querySelectorAll('[data-remove-limpeza]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        readFormIntoEntries();
+        const entry = entries.find((e) => e.id === btn.dataset.removeLimpeza);
+        if (!entry) return;
+        if (entryFilled(entry) && !await window.JEDialog.confirm({
+          title: 'Remover linha',
+          message: 'Remover este fim de semana da limpeza?',
+          confirmLabel: 'Remover',
+          danger: true
+        })) return;
+        entries = entries.filter((e) => e.id !== entry.id);
+        renderLimpezaEditor();
+      });
+    });
   }
 
   function renderBlockEditorOnly(block) {
@@ -1381,16 +1438,22 @@
     $('btn-add-weekend').addEventListener('click', () => addEntry('weekend'));
 
     $('btn-add-limpeza').addEventListener('click', () => {
+      readFormIntoEntries();
+      const list = limpezaEntries();
+      // Já sugere o próximo fim de semana ainda não escolhido.
+      const used = new Set(list.map((e) => (e.data || {}).fim_de_semana).filter(Boolean));
+      const next = limpezaWeekendOptions().find((w) => !used.has(w)) || '';
       entries.push({
         id: newLocalId(),
         board_id: board?.id,
         block: 'limpeza_mensal',
-        sort_order: limpezaEntries().length + 1,
-        data: { fim_de_semana: '', grupo: '' },
+        sort_order: list.reduce((max, e) => Math.max(max, e.sort_order || 0), 0) + 1,
+        data: { fim_de_semana: next, grupo: '' },
         export_to_calendar: false
       });
-      blockSelection.limpeza_mensal = limpezaEntries().length - 1;
       renderLimpezaEditor();
+      const selects = $('editor-limpeza').querySelectorAll('[data-data-key="grupo"]');
+      selects[selects.length - 1]?.focus();
     });
 
     $('btn-download-csv').addEventListener('click', () => {
