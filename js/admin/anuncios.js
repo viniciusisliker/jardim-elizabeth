@@ -250,7 +250,7 @@
   // Layout do final de semana: cada grupo ocupa a largura toda. Dentro de cada grupo,
   // `wide` indica os campos de texto longo que ocupam a linha inteira.
   const WEEKEND_LAYOUT = [
-    { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente', 'cantico_inicial'], wide: ['tema_discurso'] },
+    { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente'], wide: ['tema_discurso'] },
     { group: 'sentinela', order: ['estudo_sentinela_tema', 'cantico_sentinela', 'leitor_sentinela', 'cantico_final', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
     { group: 'territorio', wide: ['dirigente_sabado'] },
     { group: 'especial', wide: ['evento_especial'], optional: true }

@@ -721,7 +721,6 @@
         title: weekendGroups().discurso?.title || 'Discurso público',
         rows: [
           pmWeekendRow('Presidente', d.presidente),
-          pmWeekendRow('Cântico', d.cantico_inicial),
           pmWeekendRow('Tema', d.tema_discurso, { strong: true }),
           pmWeekendRow('Orador', d.orador, { extra: { label: 'Congregação:', value: d.congregacao_orador } })
         ]
