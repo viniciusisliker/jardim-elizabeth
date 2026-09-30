@@ -49,11 +49,14 @@
   const WEEKEND_FIELDS = [
     { key: 'dirigente_sabado', label: 'Dirigente de sábado (território)', type: 'text', group: 'territorio', hint: 'Dirige o trabalho de campo no sábado — usado no cronograma de territórios' },
     { key: 'presidente', label: 'Presidente', type: 'text', group: 'discurso' },
+    { key: 'cantico_inicial', label: 'Cântico inicial', type: 'text', group: 'discurso' },
     { key: 'tema_discurso', label: 'Tema do discurso', type: 'text', group: 'discurso' },
     { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
     { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text', group: 'discurso', hint: 'Se orador visitante' },
     { key: 'estudo_sentinela_tema', label: 'Tema do estudo', type: 'text', group: 'sentinela' },
+    { key: 'cantico_sentinela', label: 'Cântico', type: 'text', group: 'sentinela' },
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela' },
+    { key: 'cantico_final', label: 'Cântico final', type: 'text', group: 'sentinela' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela' },
     { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text', group: 'sala_b' },
     { key: 'evento_especial', label: 'Evento especial', type: 'text', group: 'especial', optional: true, placeholder: 'Ex.: Assembleia de Circuito', hint: 'Quando preenchido, substitui o programa normal desta data' }
