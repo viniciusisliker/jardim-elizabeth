@@ -212,7 +212,7 @@
         </div>
         <div class="qa-fields-grid">${list.map((f) => fieldInput(f, entry)).join('')}</div>
       </div>`;
-    return subsection('Salão principal', 'church', fields.filter((f) => !isSalaB(f)))
+    return subsection('Salão principal', 'groups', fields.filter((f) => !isSalaB(f)))
       + subsection('Sala B', 'meeting_room', fields.filter(isSalaB));
   }
 
