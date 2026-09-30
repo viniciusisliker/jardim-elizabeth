@@ -77,7 +77,7 @@
   const SECTION_TITLES = {
     mecanicas: 'Designações Mecânicas',
     midweek: 'Nossa Vida e Ministério Cristão',
-    weekend: 'Reunião de Final de Semana'
+    weekend: 'Discurso Público e Estudo de A Sentinela'
   };
 
   function emptyData(block) {
