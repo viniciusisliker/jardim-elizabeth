@@ -760,26 +760,8 @@
       return content;
     }
 
-    const cards = list.map((e) => pmWeekendCard(e));
-    if (cards.length >= 3) {
-      const pairs = chunkEntries(cards, 2);
-      pairs.forEach((pair) => {
-        if (pair.length === 2) {
-          content.push({
-            columns: [
-              { width: '*', stack: [pair[0]] },
-              { width: 10, text: '' },
-              { width: '*', stack: [pair[1]] }
-            ],
-            margin: [0, 0, 0, 2]
-          });
-        } else {
-          content.push(pair[0]);
-        }
-      });
-    } else {
-      content.push(...cards);
-    }
+    // Um quadro por linha (largura total), como no modelo impresso da congregação.
+    list.forEach((e) => content.push(pmWeekendCard(e)));
     return content;
   }
 
