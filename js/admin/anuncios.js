@@ -201,6 +201,21 @@
       </div>`;
   }
 
+  // Separa salão principal (tipo + designados) da Sala B para facilitar a montagem.
+  function fieldsHtmlMinisterio(fields, entry) {
+    const isSalaB = (f) => /_sala_b$/.test(f.key);
+    const subsection = (title, icon, list) => `
+      <div class="qa-subsection">
+        <div class="qa-subsection-head">
+          <span class="material-symbols-outlined">${escapeHtml(icon)}</span>
+          ${escapeHtml(title)}
+        </div>
+        <div class="qa-fields-grid">${list.map((f) => fieldInput(f, entry)).join('')}</div>
+      </div>`;
+    return subsection('Salão principal', 'church', fields.filter((f) => !isSalaB(f)))
+      + subsection('Sala B', 'meeting_room', fields.filter(isSalaB));
+  }
+
   function fieldsHtmlGrouped(fields, entry, block) {
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
@@ -214,6 +229,7 @@
       const secFields = fields.filter((f) => f.section === sec);
       if (!secFields.length) return '';
       const meta = MIDWEEK_SECTIONS[sec];
+      if (sec === 'ministerio') return sectionShell(meta.title, meta.icon, fieldsHtmlMinisterio(secFields, entry), 'cols-1');
       const body = secFields.map((f) => fieldInput(f, entry)).join('');
       return sectionShell(meta.title, meta.icon, body);
     }).join('');
