@@ -406,17 +406,17 @@
       }
       : { text: nameRuns, noWrap: true };
     // Título longo (ex.: tema de Tesouros): a linha pode abrir mão das colunas do
-    // meio para o título, com o designado encostado à direita (ver pmRowsTable).
+    // meio para o título, com o designado logo em seguida (ver pmRowsTable).
     const wideCells = opts?.wideTitle && !side && !inline
       ? [
         { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
         {
           colSpan: 4,
           columns: [
-            { width: '*', text: titleRuns },
-            { width: 'auto', text: nameRuns, noWrap: true, alignment: 'right' }
+            { width: 'auto', text: titleRuns },
+            { width: '*', text: nameRuns, noWrap: true }
           ],
-          columnGap: 12
+          columnGap: 16
         },
         {}, {}, {}
       ]
