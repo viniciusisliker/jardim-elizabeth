@@ -477,6 +477,76 @@ gtag('config', 'G-PGXCZF9S9W');
       transform: translateY(-1px);
     }
 
+    .je-qa-rod-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    @media (min-width: 640px) { .je-qa-rod-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .je-qa-rod-grid { grid-template-columns: repeat(3, 1fr); } }
+    .je-qa-rod-card {
+      border-radius: 1rem;
+      background: #fff;
+      border: 1px solid rgba(15,52,98,.1);
+      box-shadow: 0 4px 20px rgba(15,52,98,.06);
+      overflow: hidden;
+    }
+    .je-qa-rod-card h3 {
+      margin: 0;
+      padding: 0.625rem 1rem;
+      background: #0f3462;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .je-qa-rod-card ol { list-style: none; margin: 0; padding: 0; counter-reset: rod; }
+    .je-qa-rod-card li {
+      counter-increment: rod;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      color: #1f2937;
+      border-top: 1px solid rgba(15,52,98,.07);
+    }
+    .je-qa-rod-card li:first-child { border-top: 0; }
+    .je-qa-rod-card li::before {
+      content: counter(rod);
+      flex-shrink: 0;
+      width: 1.375rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #3b5e97;
+      text-align: right;
+    }
+    .je-qa-rod-card table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .je-qa-rod-card th {
+      padding: 0.5rem 1rem;
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #3b5e97;
+      text-align: left;
+    }
+    .je-qa-rod-card td {
+      padding: 0.5rem 1rem;
+      color: #1f2937;
+      border-top: 1px solid rgba(15,52,98,.07);
+    }
+    html.dark .je-qa-rod-card {
+      background: var(--je-card);
+      border-color: var(--je-card-border);
+      box-shadow: 0 4px 20px rgba(0,0,0,.2);
+    }
+    html.dark .je-qa-rod-card li,
+    html.dark .je-qa-rod-card td { color: var(--je-on-surface); border-color: var(--je-card-border); }
+    html.dark .je-qa-rod-card li::before,
+    html.dark .je-qa-rod-card th { color: var(--je-secondary); }
+
     @media (max-width: 767px) {
       .je-qa-intro { flex-direction: column; align-items: flex-start; }
       .je-qa-drive-btn { width: 100%; min-height: 2.75rem; }
@@ -590,6 +660,91 @@ gtag('config', 'G-PGXCZF9S9W');
           </span>
         </button>
 
+      </div>
+
+      <div class="je-qa-history-head" id="lista-de-rodizio">
+        <span class="material-symbols-outlined">autorenew</span>
+        <h2>Lista de Rodízio</h2>
+        <div class="je-qa-history-line" aria-hidden="true"></div>
+      </div>
+
+      <div class="je-qa-rod-grid">
+        <article class="je-qa-rod-card">
+          <h3>Leitor</h3>
+          <ol>
+            <li>Rikael Morais</li>
+            <li>Vinicius de Morais</li>
+            <li>Lucas Dias</li>
+            <li>André Neves</li>
+            <li>Ygor Inácio</li>
+            <li>Arnaldo Isliker</li>
+          </ol>
+        </article>
+        <article class="je-qa-rod-card">
+          <h3>Presidente</h3>
+          <ol>
+            <li>Ademilson Dias</li>
+            <li>Rikael Morais</li>
+            <li>Lucas Dias</li>
+            <li>Marcelo Almeida</li>
+            <li>Arnaldo Isliker</li>
+            <li>Edvan Dantas</li>
+            <li>João Neves</li>
+            <li>Alex Tenório</li>
+            <li>Vinicius de Morais</li>
+            <li>André Neves</li>
+          </ol>
+        </article>
+        <article class="je-qa-rod-card">
+          <h3>Oração</h3>
+          <ol>
+            <li>Alex Tenório</li>
+            <li>André Neves</li>
+            <li>João Neves</li>
+            <li>Ademilson Dias</li>
+            <li>Edvan Dantas</li>
+            <li>Arnaldo Isliker</li>
+            <li>Lucas Dias</li>
+            <li>Marcelo Almeida</li>
+            <li>Rikael Morais</li>
+            <li>Vinicius de Morais</li>
+          </ol>
+        </article>
+        <article class="je-qa-rod-card">
+          <h3>Campo</h3>
+          <ol>
+            <li>Ademilson Dias</li>
+            <li>Edvan Dantas</li>
+            <li>João Neves</li>
+            <li>Lucas Dias</li>
+            <li>Rikael Morais</li>
+            <li>Denison Oliveira</li>
+            <li>Vinicius de Morais</li>
+            <li>André Neves</li>
+            <li>Marcelo Almeida</li>
+          </ol>
+        </article>
+        <article class="je-qa-rod-card">
+          <h3>Grupos</h3>
+          <ol>
+            <li>Grupo Pirajussara</li>
+            <li>Grupo Leônidas</li>
+            <li>Grupo Elizabeth</li>
+            <li>Grupo Helga</li>
+          </ol>
+        </article>
+        <article class="je-qa-rod-card">
+          <h3>Limpeza Mensal</h3>
+          <table>
+            <thead><tr><th>Fim de semana</th><th>Grupo</th></tr></thead>
+            <tbody>
+              <tr><td>03 - 04 de Junho</td><td>Elizabeth</td></tr>
+              <tr><td>10 - 11 de Junho</td><td>Helga</td></tr>
+              <tr><td>17 - 18 de Junho</td><td>Leônidas</td></tr>
+              <tr><td>24 - 25 de Junho</td><td>Pirajussara</td></tr>
+            </tbody>
+          </table>
+        </article>
       </div>
 
       <div class="je-qa-history-head">
