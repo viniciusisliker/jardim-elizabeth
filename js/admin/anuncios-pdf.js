@@ -321,7 +321,7 @@
 
   function pmAssigneeText(assignee) {
     if (hasValue(assignee)) return { text: val(assignee), bold: true, color: T.text };
-    return { text: 'a designar', color: MUTED, italics: true };
+    return { text: '' };
   }
 
   // Designação extra: Sala B (coluna da direita) ou Leitor (colado no nome).
@@ -384,8 +384,8 @@
     if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, bold: false, color, fontSize: 7.5 });
     const nameRuns = [pmAssigneeText(assignee)];
     if (inline) {
+      if (hasValue(assignee)) nameRuns.push({ text: '  ·  ', color: MUTED });
       nameRuns.push(
-        { text: '  ·  ', color: MUTED },
         { text: `${inline.label}  `, bold: true, color: inline.color },
         { text: inline.value, color: T.text }
       );
