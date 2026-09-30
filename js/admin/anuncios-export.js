@@ -124,11 +124,13 @@
       if (trim(d.leitura_biblia_sala_b)) pushRow(out, `3. ${base} - ${trim(d.leitura_biblia_sala_b)} (Sala B)`, iso);
     }
 
-    for (let i = 1; i <= 3; i++) {
+    let lastMinisterio = 3;
+    for (let i = 1; i <= 4; i++) {
       const tipo = trim(d[`ministerio_${i}_tipo`]);
       const designados = trim(d[`ministerio_${i}_designados`]);
       const salaB = trim(d[`ministerio_${i}_sala_b`]);
       if (!tipo && !designados && !salaB) continue;
+      if (i > lastMinisterio) lastMinisterio = i;
       const num = 3 + i;
       const label = tipo || `Parte ${num}`;
       if (designados) pushRow(out, `${num}. ${label} - ${designados}`, iso);
@@ -137,8 +139,10 @@
     }
 
     if (trim(d.vida_crista_titulo) || trim(d.vida_crista_designado)) {
-      pushRow(out, `7. ${trim(d.vida_crista_titulo) || 'Nossa vida cristã'} - ${trim(d.vida_crista_designado)}`, iso);
+      pushRow(out, `${4 + lastMinisterio}. ${trim(d.vida_crista_titulo) || 'Nossa vida cristã'} - ${trim(d.vida_crista_designado)}`, iso);
     }
+
+    if (trim(d.estudo_dirigente)) pushRow(out, `${5 + lastMinisterio}. Estudo bíblico de congregação - ${trim(d.estudo_dirigente)}`, iso);
 
     if (trim(d.leitor_sentinela)) pushRow(out, `Leitor - ${trim(d.leitor_sentinela)}`, iso);
     if (trim(d.oracao_final)) pushRow(out, `Oração final - ${trim(d.oracao_final)}`, iso);
