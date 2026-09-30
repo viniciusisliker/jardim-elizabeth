@@ -247,14 +247,12 @@
       </div>`;
   }
 
-  // Layout do final de semana: grupos com vários campos ocupam a largura toda;
-  // os de campo único (território, Sala B) ficam lado a lado. Dentro de cada grupo,
+  // Layout do final de semana: cada grupo ocupa a largura toda. Dentro de cada grupo,
   // `wide` indica os campos de texto longo que ocupam a linha inteira.
   const WEEKEND_LAYOUT = [
     { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente'], wide: ['tema_discurso'] },
     { group: 'sentinela', order: ['estudo_sentinela_tema', 'leitor_sentinela', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
-    { group: 'territorio', half: true, wide: ['dirigente_sabado'] },
-    { group: 'sala_b', half: true, wide: ['presidente_sala_b'] },
+    { group: 'territorio', wide: ['dirigente_sabado'] },
     { group: 'especial', wide: ['evento_especial'], optional: true }
   ];
 
