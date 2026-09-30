@@ -405,7 +405,25 @@
         columnGap: 8
       }
       : { text: nameRuns, noWrap: true };
+    // Título longo (ex.: tema de Tesouros): a linha pode abrir mão das colunas do
+    // meio para o título, com o designado encostado à direita (ver pmRowsTable).
+    const wideCells = opts?.wideTitle && !side && !inline
+      ? [
+        { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
+        {
+          colSpan: 4,
+          columns: [
+            { width: '*', text: titleRuns },
+            { width: 'auto', text: nameRuns, noWrap: true, alignment: 'right' }
+          ],
+          columnGap: 12
+        },
+        {}, {}, {}
+      ]
+      : null;
     return {
+      wideCells,
+      titleWidth: runsWidth(titleRuns),
       cells: [
         { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
         { text: titleRuns },
@@ -429,18 +447,38 @@
       : [12, '*', max('nameWidth')];
   }
 
+  // Largura útil das linhas dentro do quadro (A4 menos margens, bordas e recuos).
+  const PM_ROWS_WIDTH = 492;
+  const pmPadLeft = (i) => (i === 0 ? 0 : i === 3 ? 14 : 4);
+  const pmPadRight = (i, count) => (i === count - 1 ? 0 : 4);
+
+  // Largura que sobra para a coluna '*' (título da parte).
+  function pmTitleColumnWidth(widths) {
+    return widths.reduce((rest, w, i) => rest - pmPadLeft(i) - pmPadRight(i, widths.length)
+      - (typeof w === 'number' ? w : 0), PM_ROWS_WIDTH);
+  }
+
   function pmRowsTable(rows, widths) {
+    const titleCol = pmTitleColumnWidth(widths);
+    const cellsOf = (r) => {
+      if (r.wideCells && r.titleWidth > titleCol) {
+        const cells = r.wideCells.slice(0, widths.length);
+        cells[1] = { ...cells[1], colSpan: widths.length - 1 };
+        return cells;
+      }
+      return r.cells.slice(0, widths.length);
+    };
     return {
       table: {
         widths,
-        body: rows.map((r) => r.cells.slice(0, widths.length))
+        body: rows.map(cellsOf)
       },
       fontSize: PM_FONT_SIZE,
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 14 : 4),
-        paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
+        paddingLeft: pmPadLeft,
+        paddingRight: (i, node) => pmPadRight(i, node.table.widths.length),
         paddingTop: () => 2,
         paddingBottom: () => 2
       }
@@ -498,7 +536,7 @@
 
 
     const tesouros = [
-      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
+      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT, wideTitle: true }),
       // Dirigente Sala B na linha 2, logo acima da leitura da Sala B (linha 3).
       pmMidweekRow(2, 'Joias espirituais', d.joias_designado, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT), { required: true, color: cT, duration: '10 min', spanLabel: true }),
       pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
