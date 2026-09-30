@@ -151,9 +151,9 @@
           { canvas: [{ type: 'line', x1: 0, y1: 0, x2: PAGE_WIDTH, y2: 0, lineWidth: 0.6, lineColor: T.accentGold }] },
           {
             columns: [
-              { text: CONGREGATION, fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] },
-              { text: [month, section].filter(Boolean).join('  ·  '), alignment: 'center', fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] },
-              { text: `${currentPage} / ${pageCount}`, alignment: 'right', fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] }
+              { width: 'auto', text: CONGREGATION, fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] },
+              { width: '*', text: [month, section].filter(Boolean).join('  ·  '), alignment: 'center', fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] },
+              { width: 'auto', text: `${currentPage} / ${pageCount}`, alignment: 'right', fontSize: 7, color: '#6B7280', margin: [0, 6, 0, 0] }
             ]
           }
         ]
@@ -654,21 +654,37 @@
     return content;
   }
 
-  function kvLine(label, value) {
+  // Linha do quadro do final de semana: rótulo | valor | complemento à direita.
+  function pmWeekendRow(label, value, opts = {}) {
     if (!hasValue(value)) return null;
-    return {
-      text: [
-        { text: `${label}  `, style: 'inlineLabel' },
-        { text: val(value), style: 'inlineVal', bold: true }
-      ],
-      margin: [0, 0, 0, 2]
-    };
+    const extra = opts.extra && hasValue(opts.extra.value)
+      ? {
+        text: [
+          { text: `${opts.extra.label}  `, bold: true, color: T.headerAlt, fontSize: 8 },
+          { text: val(opts.extra.value) }
+        ],
+        alignment: 'right',
+        noWrap: true
+      }
+      : { text: '' };
+    return [
+      { text: label, fontSize: 8, color: '#5B6B80', margin: [0, 1, 0, 0] },
+      { text: val(value), bold: !!opts.strong },
+      extra
+    ];
+  }
+
+  function pmWeekendSectionRow(title) {
+    return [
+      { text: title.toUpperCase(), style: 'sectionTitle', colSpan: 3, margin: [0, 3, 0, 0] },
+      {},
+      {}
+    ];
   }
 
   function pmWeekendCard(entry) {
     const d = entry.data || {};
-    const dateStr = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
-    const title = entry.weekday_label ? `${dateStr}  ·  ${entry.weekday_label}` : dateStr;
+    const title = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
     const special = val(d.evento_especial);
 
     if (special) {
@@ -679,13 +695,13 @@
           widths: ['*'],
           body: [[{
             stack: [
-              { text: title, style: 'liteBanner', fillColor: '#F4E6D4', color: T.accent, margin: [8, 6, 8, 6] },
+              { text: title, style: 'liteBanner', fillColor: '#F4E6D4', color: T.accent, margin: [10, 5, 10, 5] },
               {
                 stack: [
                   { text: 'PROGRAMA ALTERNATIVO', fontSize: 6.5, bold: true, color: T.accent, characterSpacing: 0.6, margin: [0, 0, 0, 3] },
                   { text: special, fontSize: 11, bold: true, color: T.header }
                 ],
-                margin: [8, 8, 8, 10]
+                margin: [10, 6, 10, 8]
               }
             ]
           }]]
@@ -694,45 +710,48 @@
       };
     }
 
-    const oradorLine = hasValue(d.orador)
-      ? (hasValue(d.congregacao_orador) ? `${val(d.orador)}  ·  ${val(d.congregacao_orador)}` : val(d.orador))
-      : '';
-
-    const blocks = [
+    // Leitor e oração final dividem a linha; sem leitor, a oração ganha linha própria.
+    const hasLeitor = hasValue(d.leitor_sentinela);
+    const sections = [
       {
         title: weekendGroups().territorio?.title || 'Trabalho de campo',
-        lines: [kvLine('Dirigente', d.dirigente_sabado)]
+        rows: [pmWeekendRow('Dirigente', d.dirigente_sabado)]
       },
       {
         title: weekendGroups().discurso?.title || 'Discurso público',
-        lines: [
-          kvLine('Presidente', d.presidente),
-          kvLine('Cântico inicial', d.cantico_inicial),
-          kvLine('Tema', d.tema_discurso),
-          kvLine('Orador', oradorLine)
+        rows: [
+          pmWeekendRow('Presidente', d.presidente),
+          pmWeekendRow('Cântico', d.cantico_inicial),
+          pmWeekendRow('Tema', d.tema_discurso, { strong: true }),
+          pmWeekendRow('Orador', d.orador, { extra: { label: 'Congregação:', value: d.congregacao_orador } })
         ]
       },
       {
         title: weekendGroups().sentinela?.title || 'Estudo da Sentinela',
-        lines: [
-          kvLine('Tema', d.estudo_sentinela_tema),
-          kvLine('Cântico', d.cantico_sentinela),
-          kvLine('Leitor', d.leitor_sentinela),
-          kvLine('Cântico final', d.cantico_final),
-          kvLine('Oração final', d.oracao_final)
+        rows: [
+          pmWeekendRow('Tema', d.estudo_sentinela_tema, { strong: true }),
+          pmWeekendRow('Cântico', d.cantico_sentinela),
+          pmWeekendRow('Leitor', d.leitor_sentinela, hasLeitor ? { extra: { label: 'Oração final:', value: d.oracao_final } } : {}),
+          pmWeekendRow('Cântico final', d.cantico_final),
+          hasLeitor ? null : pmWeekendRow('Oração final', d.oracao_final)
         ]
       }
-    ].map((b) => ({ ...b, lines: b.lines.filter(Boolean) })).filter((b) => b.lines.length);
+    ].map((sec) => ({ ...sec, rows: sec.rows.filter(Boolean) })).filter((sec) => sec.rows.length);
 
-    const body = blocks.length
+    const body = sections.length
       ? {
-        stack: blocks.map((b) => ({
-          margin: [0, 0, 0, 5],
-          stack: [
-            { text: b.title.toUpperCase(), style: 'sectionTitle', margin: [0, 0, 0, 2] },
-            ...b.lines
-          ]
-        }))
+        table: {
+          widths: [62, '*', 'auto'],
+          body: sections.flatMap((sec) => [pmWeekendSectionRow(sec.title), ...sec.rows])
+        },
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: (i) => (i === 0 ? 0 : 6),
+          paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 6),
+          paddingTop: () => 0.8,
+          paddingBottom: () => 0.8
+        }
       }
       : { text: 'Sem designações preenchidas', color: MUTED, italics: true, fontSize: 8 };
 
@@ -741,12 +760,10 @@
       margin: [0, 0, 0, 8],
       table: {
         widths: ['*'],
-        body: [[{
-          stack: [
-            { text: title, style: 'liteBanner', fillColor: T.sectionBg, margin: [8, 6, 8, 6] },
-            { ...body, margin: [8, 6, 8, 8] }
-          ]
-        }]]
+        body: [
+          [{ text: title, style: 'liteBanner', fillColor: '#EEF3F8', margin: [10, 4, 10, 4] }],
+          [{ ...body, margin: [10, 1, 10, 5] }]
+        ]
       },
       layout: hairlineLayout()
     };
