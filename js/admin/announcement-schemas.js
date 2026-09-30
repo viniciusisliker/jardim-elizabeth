@@ -58,7 +58,6 @@
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela' },
     { key: 'cantico_final', label: 'Cântico final', type: 'text', group: 'sentinela' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela' },
-    { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text', group: 'sala_b' },
     { key: 'evento_especial', label: 'Evento especial', type: 'text', group: 'especial', optional: true, placeholder: 'Ex.: Assembleia de Circuito', hint: 'Quando preenchido, substitui o programa normal desta data' }
   ];
 
@@ -66,7 +65,6 @@
     territorio: { title: 'Trabalho de campo (sábado)', icon: 'hiking' },
     discurso: { title: 'Discurso público', icon: 'record_voice_over' },
     sentinela: { title: 'Estudo da Sentinela', icon: 'menu_book' },
-    sala_b: { title: 'Sala B', icon: 'groups' },
     especial: { title: 'Programa alternativo', icon: 'event' }
   };
 

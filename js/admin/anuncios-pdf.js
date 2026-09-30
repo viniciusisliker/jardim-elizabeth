@@ -721,10 +721,6 @@
           kvLine('Cântico final', d.cantico_final),
           kvLine('Oração final', d.oracao_final)
         ]
-      },
-      {
-        title: weekendGroups().sala_b?.title || 'Sala B',
-        lines: [kvLine('Presidente', d.presidente_sala_b)]
       }
     ].map((b) => ({ ...b, lines: b.lines.filter(Boolean) })).filter((b) => b.lines.length);
 
