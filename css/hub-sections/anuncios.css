@@ -77,6 +77,7 @@
     .qa-field-control-wrap .qa-field-control{padding-right:6.75rem;text-overflow:ellipsis}
     .qa-field-source{position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:0.25rem;font-size:0.5625rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0f3462;background:rgba(15,52,98,.08);border:1px solid rgba(15,52,98,.18);padding:0.1875rem 0.4375rem;border-radius:9999px;pointer-events:none;white-space:nowrap}
     .qa-field-source .material-symbols-outlined{font-size:0.75rem}
+    .qa-field-source--manual{color:#8a4b08;background:rgba(138,75,8,.08);border-color:rgba(138,75,8,.2)}
     @media(max-width:1023px){
       #editor-mecanicas > .grid > div:first-child,
       #editor-midweek > .grid > div:first-child,

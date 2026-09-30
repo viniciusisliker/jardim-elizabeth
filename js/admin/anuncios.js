@@ -63,7 +63,7 @@
     if (entry.block === 'weekend' && entry.event_date) {
       data = Sync.mergeWeekendDisplayData(entry.data, receiveSpeechesByDate[entry.event_date]).data;
     }
-    return Object.values(data).some((v) => String(v || '').trim());
+    return Object.entries(data).some(([k, v]) => !k.startsWith('_') && String(v || '').trim());
   }
 
   async function loadReceiveSpeeches(force) {
@@ -91,8 +91,11 @@
         }
       }
       card.querySelectorAll('[data-data-key]').forEach((input) => {
-        if (input.readOnly) return;
         entry.data = entry.data || {};
+        if (entry.block === 'weekend') {
+          Sync.setWeekendFieldValue(entry.data, input.dataset.dataKey, input.value, receiveSpeechesByDate[entry.event_date]);
+          return;
+        }
         entry.data[input.dataset.dataKey] = input.value;
       });
     });
@@ -119,13 +122,13 @@
     const filled = trim(val) ? ' is-filled' : '';
     const spanClass = extraClass || (field.fullWidth ? ' span-2' : '');
     const badge = field.optional ? '<span class="qa-field-badge">Opcional</span>' : '';
-    // Origem "Discursos Públicos" vai dentro do campo, não no rótulo: evita que o
-    // selo quebre linha e desalinhe os inputs vizinhos.
+    // Origem do valor vai dentro do campo, não no rótulo: evita que o selo
+    // quebre linha e desalinhe os inputs vizinhos.
     const discursosBadge = o.fromDiscursos
       ? '<span class="qa-field-source" title="Vem de Discursos Públicos → Recebemos"><span class="material-symbols-outlined">link</span>Discursos</span>'
-      : '';
+      : (o.overridden ? '<span class="qa-field-source qa-field-source--manual" title="Apague o campo para voltar ao valor de Discursos Públicos"><span class="material-symbols-outlined">edit</span>Editado</span>' : '');
     const hint = field.hint ? `<p class="qa-field-hint">${escapeHtml(field.hint)}</p>` : '';
-    const readonly = o.readonly ? ` readonly tabindex="-1" title="${escapeHtml(val)}"` : '';
+    const readonly = o.readonly ? ' readonly tabindex="-1"' : '';
 
     let control;
     if (field.type === 'select') {
@@ -143,7 +146,7 @@
           <span class="qa-field-tag">${escapeHtml(field.label)}</span>
           ${badge}
         </div>
-        ${o.fromDiscursos ? `<div class="qa-field-control-wrap">${control}${discursosBadge}</div>` : control}
+        ${discursosBadge ? `<div class="qa-field-control-wrap">${control}${discursosBadge}</div>` : control}
         ${hint}
       </div>`;
   }
@@ -179,7 +182,7 @@
   function fieldsHtmlWeekend(fields, entry) {
     const groups = Schemas.WEEKEND_GROUPS;
     const speech = receiveSpeechesByDate[entry.event_date];
-    const { data, discursosKeys } = Sync.mergeWeekendDisplayData(entry.data, speech);
+    const { data, discursosKeys, overriddenKeys } = Sync.mergeWeekendDisplayData(entry.data, speech);
     return WEEKEND_LAYOUT.map((layout) => {
       const meta = groups[layout.group];
       let groupFields = fields.filter((f) => f.group === layout.group);
@@ -193,8 +196,8 @@
       }
       const fieldsHtml = groupFields.map((f) => fieldInput(f, entry, (layout.wide || []).includes(f.key) ? ' span-2' : '', {
         data,
-        readonly: discursosKeys.includes(f.key),
-        fromDiscursos: discursosKeys.includes(f.key)
+        fromDiscursos: discursosKeys.includes(f.key),
+        overridden: overriddenKeys.includes(f.key)
       })).join('');
       const cls = ['qa-subsection', layout.optional ? 'qa-subsection--optional' : '', layout.half ? '' : 'qa-subsection--full']
         .filter(Boolean).join(' ');
@@ -245,7 +248,7 @@
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
       const speechHint = Object.keys(receiveSpeechesByDate).length
-        ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong> (badge dourado). Presidente, Sentinela e território editam aqui.</p>'
+        ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong> (badge dourado), mas dá pra editar aqui. Campo alterado ganha o badge <strong>Editado</strong>; apague o campo para voltar ao valor de Discursos Públicos.</p>'
         : '<p class="text-xs text-on-surface-variant mb-3">Preencha <strong>Discursos Públicos → Recebemos</strong> e salve para trazer orador e tema automaticamente.</p>';
       return speechHint + sectionShell('Programa de final de semana', 'weekend', fieldsHtmlWeekend(fields, entry), 'qa-weekend-layout');
     }
