@@ -49,7 +49,6 @@
   const WEEKEND_FIELDS = [
     { key: 'dirigente_sabado', label: 'Dirigente de sábado (território)', type: 'text', group: 'territorio', hint: 'Dirige o trabalho de campo no sábado — usado no cronograma de territórios' },
     { key: 'presidente', label: 'Presidente', type: 'text', group: 'discurso' },
-    { key: 'cantico_inicial', label: 'Cântico inicial', type: 'text', group: 'discurso' },
     { key: 'tema_discurso', label: 'Tema do discurso', type: 'text', group: 'discurso' },
     { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
     { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text', group: 'discurso', hint: 'Se orador visitante' },
