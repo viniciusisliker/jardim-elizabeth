@@ -38,16 +38,46 @@
     return out;
   }
 
+  // Chaves que o usuário editou à mão no quadro de fim de semana: nelas o valor
+  // salvo no anúncio prevalece sobre o que vem de Discursos Públicos.
+  const MANUAL_KEYS_FIELD = '_manual_keys';
+
+  function manualKeysOf(data) {
+    const list = data && data[MANUAL_KEYS_FIELD];
+    return Array.isArray(list) ? list : [];
+  }
+
   function mergeWeekendDisplayData(announcementData, speechEntry) {
     const base = { ...(announcementData || {}) };
     const fromSpeech = speechToWeekendFields(speechEntry);
-    const discursosKeys = Object.keys(fromSpeech).filter((k) => fromSpeech[k]);
+    const manual = manualKeysOf(base);
+    const speechKeys = Object.keys(fromSpeech).filter((k) => fromSpeech[k]);
+    const overriddenKeys = speechKeys.filter((k) => manual.includes(k) && trim(base[k]));
+    const discursosKeys = speechKeys.filter((k) => !overriddenKeys.includes(k));
     if (!discursosKeys.length) {
-      return { data: base, fromDiscursos: false, discursosKeys: [] };
+      return { data: base, fromDiscursos: false, discursosKeys: [], overriddenKeys, speechFields: fromSpeech };
     }
     const merged = { ...base };
     discursosKeys.forEach((k) => { merged[k] = fromSpeech[k]; });
-    return { data: merged, fromDiscursos: true, discursosKeys };
+    return { data: merged, fromDiscursos: true, discursosKeys, overriddenKeys, speechFields: fromSpeech };
+  }
+
+  // Grava o valor digitado num campo do fim de semana. Se igual ao que vem de
+  // Discursos Públicos (ou vazio), volta a seguir a sincronização automática.
+  function setWeekendFieldValue(data, key, value, speechEntry) {
+    const fromSpeech = speechToWeekendFields(speechEntry);
+    const speechVal = trim(fromSpeech[key]);
+    let manual = manualKeysOf(data).filter((k) => k !== key);
+    if (!speechVal) {
+      data[key] = value;
+    } else if (!trim(value) || trim(value) === speechVal) {
+      delete data[key];
+    } else {
+      data[key] = value;
+      manual = [...manual, key];
+    }
+    if (manual.length) data[MANUAL_KEYS_FIELD] = manual;
+    else delete data[MANUAL_KEYS_FIELD];
   }
 
   async function fetchReceiveSpeechesByDate(client, referenceMonth) {
@@ -114,6 +144,8 @@
 
   window.JEWeekendDiscursosSync = {
     DISCURSOS_WEEKEND_KEYS,
+    MANUAL_KEYS_FIELD,
+    setWeekendFieldValue,
     speechToWeekendFields,
     mergeWeekendDisplayData,
     fetchReceiveSpeechesByDate,
