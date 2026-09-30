@@ -53,7 +53,6 @@
     { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
     { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text', group: 'discurso', hint: 'Se orador visitante' },
     { key: 'estudo_sentinela_tema', label: 'Tema do estudo', type: 'text', group: 'sentinela' },
-    { key: 'estudo_dirigente', label: 'Estudo bíblico — dirigente', type: 'text', section: 'vida' },
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela' },
     { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text', group: 'sala_b' },
