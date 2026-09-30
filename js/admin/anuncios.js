@@ -1392,12 +1392,13 @@
 
   function setupTabs() {
     const editorTabs = ['mecanicas', 'midweek', 'weekend'];
+    const navTabs = [...editorTabs, 'rodizio'];
 
     document.querySelectorAll('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         readFormIntoEntries();
         const tab = btn.dataset.tab;
-        const isEditorTab = editorTabs.includes(tab);
+        const isEditorTab = navTabs.includes(tab);
 
         document.querySelectorAll('#qa-board-nav .tab-btn').forEach((b) => {
           const active = isEditorTab && b === btn;
@@ -1419,6 +1420,7 @@
         document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
         $('panel-' + tab)?.classList.remove('hidden');
         if (tab === 'published') loadPublishedList();
+        else if (tab === 'rodizio') window.JEAnnouncementRotation?.load();
         else if (board && isEditorTab) renderActiveEditors();
       });
     });
@@ -1456,6 +1458,7 @@
     const now = new Date();
     $('board-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
+    window.JEAnnouncementRotation?.init({ client, toastEl });
     setupTabs();
     setupPublishedFilters();
     await Promise.all([loadHistorySettings(), loadPublishedList()]);

@@ -71,6 +71,13 @@
                 <span class="qa-board-nav-label">Final de Semana</span>
                 <span class="qa-board-nav-label-short">Fim de semana</span>
               </button>
+              <button type="button" role="tab" data-tab="rodizio" class="tab-btn qa-board-nav-link" aria-selected="false" title="Lista de Rodízio">
+                <span class="qa-board-nav-icon qa-board-nav-icon--rodizio" aria-hidden="true">
+                  <span class="material-symbols-outlined">autorenew</span>
+                </span>
+                <span class="qa-board-nav-label">Lista de Rodízio</span>
+                <span class="qa-board-nav-label-short">Rodízio</span>
+              </button>
             </nav>
           </div>
         </div>
@@ -146,6 +153,19 @@
         </div>
       </div>
       <div id="editor-weekend" class="space-y-4"></div>
+    </div>
+
+    <div id="panel-rodizio" class="tab-panel hidden space-y-4">
+      <div class="qa-panel-actions flex flex-wrap gap-2 justify-between items-center">
+        <p class="text-sm text-on-surface-variant">Ordem de quem faz cada parte. Não depende do quadro do mês.</p>
+        <div class="qa-panel-actions__main flex gap-2">
+          <button type="button" id="btn-reload-rodizio" class="text-sm font-semibold border border-outline-variant px-4 py-2 rounded-lg">Recarregar</button>
+          <button type="button" id="btn-save-rodizio" class="bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-lg" disabled>Salvar rodízio</button>
+        </div>
+      </div>
+      <div id="editor-rodizio" class="qa-rod-grid">
+        <p class="qa-limpeza-empty">Carregando…</p>
+      </div>
     </div>
 
     <div id="panel-published" class="tab-panel hidden">

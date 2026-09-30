@@ -227,3 +227,32 @@
     .pdf-upload-mode-tab{flex:1;padding:.5rem .75rem;border:none;border-radius:.5rem;background:transparent;font-size:.8125rem;font-weight:700;color:#43474f;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
     .pdf-upload-mode-tab:hover{color:#002060;background:rgba(255,255,255,.7)}
     .pdf-upload-mode-tab.is-active{background:#fff;color:#002060;box-shadow:0 1px 4px rgba(0,32,96,.12)}
+    /* Aba Lista de Rodízio */
+    .qa-board-nav-icon--rodizio{background:#ecfdf5;color:#047857}
+    .qa-rod-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+    @media (min-width:640px){.qa-rod-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (min-width:1100px){.qa-rod-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .qa-rod-grid>.qa-limpeza-empty{grid-column:1/-1}
+    .qa-rod-card{border:1px solid #D9E2F3;border-radius:.75rem;background:#fff;overflow:hidden;display:flex;flex-direction:column}
+    .qa-rod-title{margin:0;padding:.625rem 1rem;background:#002060;color:#fff;font-size:.8125rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .qa-rod-list{list-style:none;margin:0;padding:.5rem .75rem 0}
+    .qa-rod-item{display:flex;align-items:center;gap:.375rem;padding:.25rem 0}
+    .qa-rod-num{flex-shrink:0;width:1.5rem;text-align:right;font-size:.75rem;font-weight:800;color:#984806}
+    .qa-rod-item input{flex:1;min-width:0;min-height:2.25rem;border:1px solid #c3c6d0;border-radius:.375rem;padding:.25rem .5rem;font-size:.875rem;background:#fff}
+    .qa-rod-item input:focus{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
+    .qa-rod-btn{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;width:2rem;height:2rem;border:0;border-radius:.375rem;color:#5b5f67;background:transparent;cursor:pointer}
+    .qa-rod-btn:hover:not(:disabled),.qa-rod-btn:focus-visible{color:#002060;background:rgba(0,32,96,.06)}
+    .qa-rod-btn:disabled{opacity:.3;cursor:default}
+    .qa-rod-btn--remove:hover:not(:disabled),.qa-rod-btn--remove:focus-visible{color:#b3261e;background:rgba(179,38,30,.08)}
+    .qa-rod-btn .material-symbols-outlined{font-size:18px}
+    .qa-rod-add{display:flex;align-items:center;justify-content:center;gap:.375rem;margin:.5rem .75rem .75rem;min-height:2.5rem;border:1.5px dashed #C8A96E;border-radius:.625rem;color:#984806;font-size:.8125rem;font-weight:700;background:transparent;cursor:pointer}
+    .qa-rod-add:hover{background:rgba(152,72,6,.06)}
+    .qa-rod-add .material-symbols-outlined{font-size:18px}
+    #btn-save-rodizio:disabled{opacity:.5;cursor:default}
+    @media (max-width:639px){.qa-rod-item input{font-size:1rem;min-height:2.75rem}.qa-rod-btn{width:2.5rem;height:2.5rem}}
+    html.dark .qa-board-nav-icon--rodizio{background:rgba(16,185,129,.15);color:#6ee7b7}
+    html.dark .qa-rod-card{background:var(--je-card);border-color:var(--je-outline-variant)}
+    html.dark .qa-rod-title{background:var(--je-surface-container);color:var(--je-on-surface)}
+    html.dark .qa-rod-item input{background:var(--je-input-bg);border-color:var(--je-outline-variant);color:var(--je-on-surface)}
+    html.dark .qa-rod-btn{color:var(--je-on-surface-variant)}
+    html.dark .qa-rod-num{color:var(--je-secondary)}
