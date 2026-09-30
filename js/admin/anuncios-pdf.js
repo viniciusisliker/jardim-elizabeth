@@ -324,47 +324,49 @@
     return { text: 'a designar', color: MUTED, italics: true };
   }
 
-  function pmSideLine(label, value, color) {
-    return { label, value: val(value), color };
+  // Designação extra (Sala B, Leitor) colada no nome: "Fulano  ·  Sala B  Ciclano".
+  function pmExtra(label, value, color) {
+    return hasValue(value) ? { label, value: val(value), color } : null;
   }
 
   // Largura fixa do título: os nomes alinham também entre seções (só título muito longo quebra linha).
   const PM_TITLE_WIDTH = 240;
 
-  // Cada linha vira uma linha de tabela: nº | parte | designados | rótulo Sala B | nome Sala B.
+  // Cada linha vira uma linha de tabela: nº | parte | designados (+ extra colado no nome).
   // Assim os nomes ficam alinhados em coluna dentro da seção.
-  function pmMidweekRow(num, label, assignee, sideStack, opts) {
+  function pmMidweekRow(num, label, assignee, extra, opts) {
     const required = opts?.required;
     const color = opts?.color || T.headerAlt;
     const title = val(label);
-    if (!required && !title && !hasValue(assignee) && !sideStack) return null;
+    if (!required && !title && !hasValue(assignee) && !extra) return null;
     const titleRuns = [{ text: title || 'Parte', bold: true, color }];
     if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, bold: false, color, fontSize: 7.5 });
-    const side = sideStack || [];
-    return {
-      hasSide: side.length > 0,
-      cells: [
-        { text: `${num}.`, bold: true, color, alignment: 'right' },
-        { text: titleRuns },
-        { text: [pmAssigneeText(assignee)] },
-        { stack: side.map((s) => ({ text: s.label, bold: true, color: s.color })), alignment: 'right' },
-        { stack: side.map((s) => ({ text: s.value, color: T.text })) }
-      ]
-    };
+    const nameRuns = [pmAssigneeText(assignee)];
+    if (extra) {
+      nameRuns.push(
+        { text: '  ·  ', color: MUTED },
+        { text: `${extra.label}  `, bold: true, color: extra.color },
+        { text: extra.value, color: T.text }
+      );
+    }
+    return [
+      { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
+      { text: titleRuns },
+      { text: nameRuns }
+    ];
   }
 
   function pmRowsTable(rows) {
-    const withSide = rows.some((r) => r.hasSide);
     return {
       table: {
-        widths: withSide ? [12, PM_TITLE_WIDTH, '*', 'auto', 'auto'] : [12, PM_TITLE_WIDTH, '*'],
-        body: rows.map((r) => (withSide ? r.cells : r.cells.slice(0, 3)))
+        widths: [12, PM_TITLE_WIDTH, '*'],
+        body: rows
       },
       fontSize: 8.5,
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 6 : 4),
+        paddingLeft: (i) => (i === 0 ? 0 : 4),
         paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
         paddingTop: () => 2,
         paddingBottom: () => 2
@@ -372,7 +374,7 @@
     };
   }
 
-  function pmMidweekSection(themeKey, rows) {
+  function pmMidweekSection(themeKey, rows, headerExtra) {
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
     const theme = MIDWEEK_THEME[themeKey];
@@ -392,8 +394,19 @@
                 color: theme.color,
                 characterSpacing: 0.4,
                 margin: [0, 1.5, 0, 0]
-              }
-            ],
+              },
+              headerExtra
+                ? {
+                  width: 'auto',
+                  text: [
+                    { text: `${headerExtra.label}  `, bold: true, color: headerExtra.color },
+                    { text: headerExtra.value, color: T.text }
+                  ],
+                  fontSize: 8,
+                  margin: [0, 0.5, 0, 0]
+                }
+                : null
+            ].filter(Boolean),
             columnGap: 6,
             fillColor: theme.bg,
             margin: [8, 3.5, 8, 3.5]
@@ -419,12 +432,10 @@
     const cM = MIDWEEK_THEME.ministerio.color;
     const cV = MIDWEEK_THEME.vida.color;
 
-    // Uma linha lateral por parte: assim o texto da Sala B fica na altura da própria linha.
-    const dirigenteSalaB = hasValue(d.dirigente_sala_b) ? [pmSideLine('Dirigente Sala B', d.dirigente_sala_b, cT)] : null;
-    const leituraSalaB = hasValue(d.leitura_biblia_sala_b) ? [pmSideLine('Sala B', d.leitura_biblia_sala_b, cT)] : null;
+    const leituraSalaB = pmExtra('Sala B', d.leitura_biblia_sala_b, cT);
 
     const tesouros = [
-      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, dirigenteSalaB, { required: true, color: cT }),
+      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
       pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true, color: cT, duration: '10 min' }),
       pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
     ];
@@ -434,22 +445,25 @@
       const people = d[`ministerio_${i}_designados`];
       const salaB = d[`ministerio_${i}_sala_b`];
       if (!tipo && !hasValue(people) && !hasValue(salaB)) return null;
-      const side = hasValue(salaB) ? [pmSideLine('Sala B', salaB, cM)] : null;
-      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, side, { color: cM });
+      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, pmExtra('Sala B', salaB, cM), { color: cM });
     });
 
     const vidaNum = 4 + Math.max(3, ministerio.reduce((last, row, idx) => (row ? idx + 1 : last), 0));
     const vidaRows = [
       pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true, color: cV }),
       pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente,
-        hasValue(d.leitor_sentinela) ? [pmSideLine('Leitor', d.leitor_sentinela, cV)] : null, { required: true, color: cV })
+        pmExtra('Leitor', d.leitor_sentinela, cV), { required: true, color: cV }),
+      // Linha sem número fechando o quadro (sem faixa, para caberem dois por página).
+      hasValue(d.oracao_final) ? pmMidweekRow(null, 'Oração final', d.oracao_final, null, { color: cV }) : null
     ];
 
-    const metaBits = [];
-    if (hasValue(d.cantico)) metaBits.push({ text: [{ text: 'Cântico  ', bold: true, color: T.headerAlt }, val(d.cantico)], fontSize: 8.5 });
-    if (hasValue(d.presidente)) metaBits.push({ text: [{ text: 'Presidente  ', bold: true, color: T.headerAlt }, val(d.presidente)], fontSize: 8.5 });
-    // Oração final fica no cabeçalho (e não numa faixa no rodapé) para caberem dois quadros por página.
-    if (hasValue(d.oracao_final)) metaBits.push({ text: [{ text: 'Oração final  ', bold: true, color: cV }, val(d.oracao_final)], fontSize: 8.5 });
+    // Cântico e presidente vão na própria barra da data (economiza uma linha por quadro).
+    const metaRuns = [];
+    if (hasValue(d.cantico)) metaRuns.push({ text: 'Cântico  ', bold: true, color: T.headerAlt }, { text: val(d.cantico) });
+    if (hasValue(d.presidente)) {
+      if (metaRuns.length) metaRuns.push({ text: '     ' });
+      metaRuns.push({ text: 'Presidente  ', bold: true, color: T.headerAlt }, { text: val(d.presidente) });
+    }
 
     const inner = [
       {
@@ -465,18 +479,18 @@
                 bold: true,
                 color: T.header,
                 margin: [0, 3, 0, 0]
-              }
-            ],
+              },
+              metaRuns.length ? { width: 'auto', text: metaRuns, fontSize: 8.5, color: T.text, margin: [0, 5, 0, 0] } : null
+            ].filter(Boolean),
             columnGap: 8,
             fillColor: '#EEF3F8',
             margin: [8, 5, 10, 5]
           }]]
         },
         layout: 'noBorders',
-        margin: [0, 0, 0, metaBits.length ? 5 : 6]
+        margin: [0, 0, 0, 5]
       },
-      metaBits.length ? { columns: metaBits, columnGap: 16, margin: [2, 0, 2, 6] } : null,
-      pmMidweekSection('tesouros', tesouros),
+      pmMidweekSection('tesouros', tesouros, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT)),
       pmMidweekSection('ministerio', ministerio),
       pmMidweekSection('vida', vidaRows)
     ].filter(Boolean);
