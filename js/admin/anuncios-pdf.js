@@ -397,7 +397,7 @@
       pmMidweekRow(3, 'Leitura da Bíblia', d.leitura_biblia, salaB3.length ? salaB3 : null, { required: true })
     ];
 
-    const ministerio = [1, 2, 3].map((i) => {
+    const ministerio = [1, 2, 3, 4].map((i) => {
       const tipo = val(d[`ministerio_${i}_tipo`]);
       const people = d[`ministerio_${i}_designados`];
       const salaB = d[`ministerio_${i}_sala_b`];
@@ -408,9 +408,13 @@
       return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, side);
     });
 
+    const vidaNum = 4 + Math.max(3, ministerio.reduce((last, row, idx) => (row ? idx + 1 : last), 0));
+    const estudoParts = [];
+    if (hasValue(d.estudo_dirigente)) estudoParts.push(val(d.estudo_dirigente));
+    if (hasValue(d.leitor_sentinela)) estudoParts.push(`Leitor: ${val(d.leitor_sentinela)}`);
     const vidaRows = [
-      pmMidweekRow(7, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true }),
-      pmMidweekRow(8, 'Estudo bíblico de congregação', d.leitor_sentinela ? `Leitor: ${val(d.leitor_sentinela)}` : '', null, { required: true })
+      pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true }),
+      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', estudoParts.join(' · '), null, { required: true })
     ];
 
     const metaBits = [];

@@ -36,8 +36,12 @@
     { key: 'ministerio_3_tipo', label: 'Ministério 3 — tipo', type: 'text', section: 'ministerio' },
     { key: 'ministerio_3_designados', label: 'Ministério 3 — designados', type: 'text', section: 'ministerio' },
     { key: 'ministerio_3_sala_b', label: 'Ministério 3 — Sala B', type: 'text', section: 'ministerio' },
+    { key: 'ministerio_4_tipo', label: 'Ministério 4 — tipo', type: 'text', section: 'ministerio' },
+    { key: 'ministerio_4_designados', label: 'Ministério 4 — designados', type: 'text', section: 'ministerio' },
+    { key: 'ministerio_4_sala_b', label: 'Ministério 4 — Sala B', type: 'text', section: 'ministerio' },
     { key: 'vida_crista_titulo', label: 'Nossa vida cristã — título', type: 'text', section: 'vida' },
     { key: 'vida_crista_designado', label: 'Nossa vida cristã — designado', type: 'text', section: 'vida' },
+    { key: 'estudo_dirigente', label: 'Estudo bíblico — dirigente', type: 'text', section: 'vida' },
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', section: 'vida' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', section: 'vida' }
   ];
@@ -49,6 +53,7 @@
     { key: 'orador', label: 'Orador', type: 'text', group: 'discurso' },
     { key: 'congregacao_orador', label: 'Congregação do orador', type: 'text', group: 'discurso', hint: 'Se orador visitante' },
     { key: 'estudo_sentinela_tema', label: 'Tema do estudo', type: 'text', group: 'sentinela' },
+    { key: 'estudo_dirigente', label: 'Estudo bíblico — dirigente', type: 'text', section: 'vida' },
     { key: 'leitor_sentinela', label: 'Leitor', type: 'text', group: 'sentinela' },
     { key: 'oracao_final', label: 'Oração final', type: 'text', group: 'sentinela' },
     { key: 'presidente_sala_b', label: 'Presidente Sala B', type: 'text', group: 'sala_b' },
