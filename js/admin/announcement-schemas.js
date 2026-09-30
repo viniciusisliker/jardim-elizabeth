@@ -76,7 +76,7 @@
 
   const SECTION_TITLES = {
     mecanicas: 'Designações Mecânicas',
-    midweek: 'Reunião de Meio de Semana',
+    midweek: 'Nossa Vida e Ministério Cristão',
     weekend: 'Reunião de Final de Semana'
   };
 
