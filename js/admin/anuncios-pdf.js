@@ -328,8 +328,8 @@
     return { label, value: val(value), color };
   }
 
-  // Largura fixa do título: os nomes alinham também entre seções (título longo quebra linha).
-  const PM_TITLE_WIDTH = 132;
+  // Largura fixa do título: os nomes alinham também entre seções (só título muito longo quebra linha).
+  const PM_TITLE_WIDTH = 240;
 
   // Cada linha vira uma linha de tabela: nº | parte | designados | rótulo Sala B | nome Sala B.
   // Assim os nomes ficam alinhados em coluna dentro da seção.
@@ -347,8 +347,8 @@
         { text: `${num}.`, bold: true, color, alignment: 'right' },
         { text: titleRuns },
         { text: [pmAssigneeText(assignee)] },
-        { stack: side.map((s) => ({ text: s.label, bold: true, color: s.color })), alignment: 'right', fontSize: 8 },
-        { stack: side.map((s) => ({ text: s.value, color: T.text })), fontSize: 8 }
+        { stack: side.map((s) => ({ text: s.label, bold: true, color: s.color })), alignment: 'right' },
+        { stack: side.map((s) => ({ text: s.value, color: T.text })) }
       ]
     };
   }
@@ -419,15 +419,14 @@
     const cM = MIDWEEK_THEME.ministerio.color;
     const cV = MIDWEEK_THEME.vida.color;
 
-    const salaB3 = [];
-    if (hasValue(d.dirigente_sala_b)) salaB3.push(pmSideLine('Dirigente Sala B', d.dirigente_sala_b, cT));
-    if (hasValue(d.leitura_biblia_sala_b)) salaB3.push(pmSideLine('Sala B', d.leitura_biblia_sala_b, cT));
-    const hasSalaB = salaB3.length > 0;
+    // Uma linha lateral por parte: assim o texto da Sala B fica na altura da própria linha.
+    const dirigenteSalaB = hasValue(d.dirigente_sala_b) ? [pmSideLine('Dirigente Sala B', d.dirigente_sala_b, cT)] : null;
+    const leituraSalaB = hasValue(d.leitura_biblia_sala_b) ? [pmSideLine('Sala B', d.leitura_biblia_sala_b, cT)] : null;
 
     const tesouros = [
-      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
+      pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, dirigenteSalaB, { required: true, color: cT }),
       pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true, color: cT, duration: '10 min' }),
-      pmMidweekRow(3, hasValue(d.leitura_biblia_sala_b) ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, hasSalaB ? salaB3 : null, { required: true, color: cT })
+      pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
     ];
 
     const ministerio = [1, 2, 3, 4].map((i) => {
@@ -442,38 +441,15 @@
     const vidaNum = 4 + Math.max(3, ministerio.reduce((last, row, idx) => (row ? idx + 1 : last), 0));
     const vidaRows = [
       pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true, color: cV }),
-      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente, null, { required: true, color: cV })
+      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente,
+        hasValue(d.leitor_sentinela) ? [pmSideLine('Leitor', d.leitor_sentinela, cV)] : null, { required: true, color: cV })
     ];
 
     const metaBits = [];
     if (hasValue(d.cantico)) metaBits.push({ text: [{ text: 'Cântico  ', bold: true, color: T.headerAlt }, val(d.cantico)], fontSize: 8.5 });
     if (hasValue(d.presidente)) metaBits.push({ text: [{ text: 'Presidente  ', bold: true, color: T.headerAlt }, val(d.presidente)], fontSize: 8.5 });
-
-    const closing = [];
-    if (hasValue(d.leitor_sentinela)) {
-      closing.push({ width: '*', text: [{ text: 'Leitor  ', bold: true, color: cV }, val(d.leitor_sentinela)] });
-    }
-    if (hasValue(d.oracao_final)) {
-      closing.push({ width: '*', text: [{ text: 'Oração final  ', bold: true, color: cV }, val(d.oracao_final)], alignment: closing.length ? 'right' : 'center' });
-    }
-    if (closing.length === 1 && closing[0].alignment !== 'center') closing[0].alignment = 'center';
-
-    const footer = closing.length
-      ? {
-        margin: [0, 5, 0, 0],
-        table: {
-          widths: ['*'],
-          body: [[{
-            columns: closing,
-            columnGap: 16,
-            fontSize: 8.5,
-            fillColor: MIDWEEK_THEME.vida.bg,
-            margin: [8, 4, 8, 4]
-          }]]
-        },
-        layout: 'noBorders'
-      }
-      : null;
+    // Oração final fica no cabeçalho (e não numa faixa no rodapé) para caberem dois quadros por página.
+    if (hasValue(d.oracao_final)) metaBits.push({ text: [{ text: 'Oração final  ', bold: true, color: cV }, val(d.oracao_final)], fontSize: 8.5 });
 
     const inner = [
       {
@@ -493,7 +469,7 @@
             ],
             columnGap: 8,
             fillColor: '#EEF3F8',
-            margin: [8, 6, 10, 6]
+            margin: [8, 5, 10, 5]
           }]]
         },
         layout: 'noBorders',
@@ -502,8 +478,7 @@
       metaBits.length ? { columns: metaBits, columnGap: 16, margin: [2, 0, 2, 6] } : null,
       pmMidweekSection('tesouros', tesouros),
       pmMidweekSection('ministerio', ministerio),
-      pmMidweekSection('vida', vidaRows),
-      footer
+      pmMidweekSection('vida', vidaRows)
     ].filter(Boolean);
 
     return {
@@ -520,8 +495,8 @@
         vLineColor: () => '#B7C9DE',
         paddingLeft: () => 8,
         paddingRight: () => 8,
-        paddingTop: () => 8,
-        paddingBottom: () => 8
+        paddingTop: () => 6,
+        paddingBottom: () => 6
       }
     };
   }
