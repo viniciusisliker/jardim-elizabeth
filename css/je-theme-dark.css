@@ -412,6 +412,15 @@ html.dark .je-qa-history-text h3 { color: var(--je-on-surface) !important; }
 html.dark .je-qa-history-text p { color: var(--je-on-surface-variant) !important; }
 html.dark .je-qa-card-title { color: var(--je-on-surface) !important; }
 html.dark .je-qa-card-desc { color: var(--je-on-surface-variant) !important; }
+/* Quadro de hoje: a "folha" continua clara (é o que vira imagem); só o entorno segue o tema */
+html.dark .je-qh-head h2 { color: var(--je-on-surface) !important; }
+html.dark .je-qh-line { background: var(--je-card-border) !important; }
+html.dark .je-qh-sheet__paper { border-color: var(--je-card-border); }
+html.dark .je-qh-save {
+  background: var(--je-surface-container) !important;
+  border-color: var(--je-card-border) !important;
+  color: var(--je-on-surface) !important;
+}
 
 /* Hub */
 html.dark .hub-home-intro {
