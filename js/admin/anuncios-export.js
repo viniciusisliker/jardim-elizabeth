@@ -173,6 +173,8 @@
       );
     }
     if (trim(d.oracao_final)) pushRow(out, `Oração final: ${trim(d.oracao_final)}`, iso);
+    String(d.oradores_enviados || '').split(/\r?\n/).map(trim).filter(Boolean)
+      .forEach((line) => pushRow(out, `Orador enviado: ${line}`, iso));
 
     return out;
   }

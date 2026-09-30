@@ -205,7 +205,7 @@
     // Origem do valor vai dentro do campo, não no rótulo: evita que o selo
     // quebre linha e desalinhe os inputs vizinhos.
     const discursosBadge = o.fromDiscursos
-      ? '<span class="qa-field-source" title="Vem de Discursos Públicos → Recebemos"><span class="material-symbols-outlined">link</span>Discursos</span>'
+      ? '<span class="qa-field-source" title="Vem de Discursos Públicos"><span class="material-symbols-outlined">link</span>Discursos</span>'
       : (o.overridden ? '<span class="qa-field-source qa-field-source--manual" title="Apague o campo para voltar ao valor de Discursos Públicos"><span class="material-symbols-outlined">edit</span>Editado</span>' : '');
     const hint = field.hint ? `<p class="qa-field-hint">${escapeHtml(field.hint)}</p>` : '';
     const readonly = o.readonly ? ' readonly tabindex="-1"' : '';
@@ -216,6 +216,9 @@
         `<option value="${escapeHtml(opt)}" ${val === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`
       ).join('');
       control = `<select class="qa-field-control" data-data-key="${field.key}"${readonly}><option value=""></option>${options}</select>`;
+    } else if (field.type === 'textarea') {
+      const rows = Math.max(2, String(val).split('\n').length);
+      control = `<textarea class="qa-field-control" data-data-key="${field.key}" rows="${rows}"${field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : ''}${readonly}>${escapeHtml(val)}</textarea>`;
     } else {
       control = `<input class="qa-field-control" data-data-key="${field.key}" value="${escapeHtml(val)}"${field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : ''}${readonly}/>`;
     }
@@ -261,6 +264,7 @@
   const WEEKEND_LAYOUT = [
     { group: 'discurso', order: ['tema_discurso', 'orador', 'congregacao_orador', 'presidente'], wide: ['tema_discurso'] },
     { group: 'sentinela', order: ['estudo_sentinela_tema', 'cantico_sentinela', 'leitor_sentinela', 'cantico_final', 'oracao_final'], wide: ['estudo_sentinela_tema'] },
+    { group: 'enviados', wide: ['oradores_enviados'], optional: true },
     { group: 'territorio', wide: ['dirigente_sabado'] },
     { group: 'especial', wide: ['evento_especial'], optional: true }
   ];
@@ -334,8 +338,8 @@
     if (block === 'mecanicas') return fieldsHtmlMecanicas(entry, fields);
     if (block === 'weekend') {
       const speechHint = Object.keys(receiveSpeechesByDate).length
-        ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong> (badge dourado), mas dá pra editar aqui. Campo alterado ganha o badge <strong>Editado</strong>; apague o campo para voltar ao valor de Discursos Públicos.</p>'
-        : '<p class="text-xs text-on-surface-variant mb-3">Preencha <strong>Discursos Públicos → Recebemos</strong> e salve para trazer orador e tema automaticamente.</p>';
+        ? '<p class="text-xs text-on-surface-variant mb-3">Orador e tema de cada sábado vêm de <strong>Discursos Públicos → Recebemos</strong>, e os oradores enviados de <strong>Discursos Públicos → Enviamos</strong> (badge dourado), mas dá pra editar aqui. Campo alterado ganha o badge <strong>Editado</strong>; apague o campo para voltar ao valor de Discursos Públicos.</p>'
+        : '<p class="text-xs text-on-surface-variant mb-3">Preencha <strong>Discursos Públicos → Recebemos</strong> e salve para trazer orador e tema automaticamente (e <strong>Enviamos</strong> para os oradores enviados).</p>';
       return speechHint + sectionShell('Programa de final de semana', 'weekend', fieldsHtmlWeekend(fields, entry), 'qa-weekend-layout');
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
