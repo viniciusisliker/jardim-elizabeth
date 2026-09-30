@@ -707,7 +707,6 @@
         title: weekendGroups().discurso?.title || 'Discurso público',
         lines: [
           kvLine('Presidente', d.presidente),
-          kvLine('Cântico inicial', d.cantico_inicial),
           kvLine('Tema', d.tema_discurso),
           kvLine('Orador', oradorLine)
         ]
