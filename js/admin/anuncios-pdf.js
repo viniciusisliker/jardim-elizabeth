@@ -324,47 +324,122 @@
     return { text: 'a designar', color: MUTED, italics: true };
   }
 
-  function pmSideLine(label, value, color) {
-    return { label, value: val(value), color };
+  // Designação extra: Sala B (coluna da direita) ou Leitor (colado no nome).
+  function pmExtra(label, value, color) {
+    return hasValue(value) ? { label, value: val(value), color } : null;
   }
 
-  // Largura fixa do título: os nomes alinham também entre seções (título longo quebra linha).
-  const PM_TITLE_WIDTH = 132;
+  // Medição de texto com a mesma Roboto que o pdfmake embute, para calcular as colunas
+  // de cada quadro: nomes e Sala B com a largura exata, e o título da parte com o resto.
+  const MEASURE_FONT = 'JEPdfRoboto';
+  let measureCtx = null;
+
+  function base64ToBuffer(b64) {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out.buffer;
+  }
+
+  async function ensureMeasure() {
+    if (measureCtx) return;
+    try {
+      const vfs = window.pdfMake.vfs;
+      const faces = [
+        new FontFace(MEASURE_FONT, base64ToBuffer(vfs['Roboto-Regular.ttf']), { weight: '400' }),
+        new FontFace(MEASURE_FONT, base64ToBuffer(vfs['Roboto-Medium.ttf']), { weight: '700' })
+      ];
+      await Promise.all(faces.map((f) => f.load()));
+      faces.forEach((f) => document.fonts.add(f));
+      measureCtx = document.createElement('canvas').getContext('2d');
+    } catch (_) {
+      measureCtx = null; // cai na estimativa por caractere
+    }
+  }
+
+  function textWidth(text, bold, size) {
+    const str = String(text || '');
+    if (measureCtx) {
+      measureCtx.font = `${bold ? 700 : 400} ${size}px ${MEASURE_FONT}`;
+      return measureCtx.measureText(str).width;
+    }
+    return str.length * size * (bold ? 0.58 : 0.54);
+  }
+
+  const PM_FONT_SIZE = 8.5;
+
+  function runsWidth(runs) {
+    return runs.reduce((sum, r) => sum + textWidth(r.text, r.bold, r.fontSize || PM_FONT_SIZE), 0);
+  }
 
   // Cada linha vira uma linha de tabela: nº | parte | designados | rótulo Sala B | nome Sala B.
-  // Assim os nomes ficam alinhados em coluna dentro da seção.
-  function pmMidweekRow(num, label, assignee, sideStack, opts) {
+  // `inline` (ex.: Leitor) vai colado no nome; `side` (Sala B) vai nas colunas da direita.
+  function pmMidweekRow(num, label, assignee, side, opts) {
     const required = opts?.required;
     const color = opts?.color || T.headerAlt;
     const title = val(label);
-    if (!required && !title && !hasValue(assignee) && !sideStack) return null;
+    const inline = opts?.inline || null;
+    if (!required && !title && !hasValue(assignee) && !side) return null;
     const titleRuns = [{ text: title || 'Parte', bold: true, color }];
     if (opts?.duration) titleRuns.push({ text: ` (${opts.duration})`, bold: false, color, fontSize: 7.5 });
-    const side = sideStack || [];
+    const nameRuns = [pmAssigneeText(assignee)];
+    if (inline) {
+      nameRuns.push(
+        { text: '  ·  ', color: MUTED },
+        { text: `${inline.label}  `, bold: true, color: inline.color },
+        { text: inline.value, color: T.text }
+      );
+    }
+    const sideLabel = side ? { text: side.label, bold: true, color: side.color } : { text: '' };
+    const sideValue = side ? { text: side.value, color: T.text } : { text: '' };
+    // Rótulo longo (Dirigente Sala B) invade a coluna de nomes em vez de alargar a coluna
+    // de rótulos, que apertaria o título de todas as partes.
+    const spanLabel = Boolean(opts?.spanLabel && side);
+    const nameCell = spanLabel
+      ? {
+        colSpan: 2,
+        columns: [
+          { width: '*', text: nameRuns, noWrap: true },
+          { width: 'auto', ...sideLabel, alignment: 'right', noWrap: true }
+        ],
+        columnGap: 8
+      }
+      : { text: nameRuns, noWrap: true };
     return {
-      hasSide: side.length > 0,
       cells: [
-        { text: `${num}.`, bold: true, color, alignment: 'right' },
+        { text: num ? `${num}.` : '', bold: true, color, alignment: 'right' },
         { text: titleRuns },
-        { text: [pmAssigneeText(assignee)] },
-        { stack: side.map((s) => ({ text: s.label, bold: true, color: s.color })), alignment: 'right', fontSize: 8 },
-        { stack: side.map((s) => ({ text: s.value, color: T.text })), fontSize: 8 }
-      ]
+        nameCell,
+        spanLabel ? {} : { ...sideLabel, alignment: 'right', noWrap: true },
+        { ...sideValue, noWrap: true }
+      ],
+      nameWidth: runsWidth(nameRuns),
+      sideLabelWidth: side && !spanLabel ? runsWidth([sideLabel]) : 0,
+      sideValueWidth: side ? runsWidth([sideValue]) : 0
     };
   }
 
-  function pmRowsTable(rows) {
-    const withSide = rows.some((r) => r.hasSide);
+  // Larguras comuns às três seções do quadro, para os nomes alinharem entre elas.
+  function pmMeetingWidths(rows) {
+    const list = rows.filter(Boolean);
+    const max = (key) => Math.ceil(Math.max(0, ...list.map((r) => r[key])) + 2);
+    const hasSide = list.some((r) => r.sideValueWidth > 0);
+    return hasSide
+      ? [12, '*', max('nameWidth'), max('sideLabelWidth'), max('sideValueWidth')]
+      : [12, '*', max('nameWidth')];
+  }
+
+  function pmRowsTable(rows, widths) {
     return {
       table: {
-        widths: withSide ? [12, PM_TITLE_WIDTH, '*', 'auto', 'auto'] : [12, PM_TITLE_WIDTH, '*'],
-        body: rows.map((r) => (withSide ? r.cells : r.cells.slice(0, 3)))
+        widths,
+        body: rows.map((r) => r.cells.slice(0, widths.length))
       },
-      fontSize: 8.5,
+      fontSize: PM_FONT_SIZE,
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 6 : 4),
+        paddingLeft: (i) => (i === 0 ? 0 : i === 3 ? 14 : 4),
         paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
         paddingTop: () => 2,
         paddingBottom: () => 2
@@ -372,7 +447,7 @@
     };
   }
 
-  function pmMidweekSection(themeKey, rows) {
+  function pmMidweekSection(themeKey, rows, widths) {
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
     const theme = MIDWEEK_THEME[themeKey];
@@ -398,7 +473,7 @@
             fillColor: theme.bg,
             margin: [8, 3.5, 8, 3.5]
           }],
-          [{ stack: [pmRowsTable(filtered)], margin: [8, 1, 8, 3] }]
+          [{ stack: [pmRowsTable(filtered, widths)], margin: [8, 1, 8, 3] }]
         ]
       },
       layout: {
@@ -419,15 +494,14 @@
     const cM = MIDWEEK_THEME.ministerio.color;
     const cV = MIDWEEK_THEME.vida.color;
 
-    const salaB3 = [];
-    if (hasValue(d.dirigente_sala_b)) salaB3.push(pmSideLine('Dirigente Sala B', d.dirigente_sala_b, cT));
-    if (hasValue(d.leitura_biblia_sala_b)) salaB3.push(pmSideLine('Sala B', d.leitura_biblia_sala_b, cT));
-    const hasSalaB = salaB3.length > 0;
+    const leituraSalaB = pmExtra('Sala B', d.leitura_biblia_sala_b, cT);
+
 
     const tesouros = [
       pmMidweekRow(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado, null, { required: true, color: cT }),
-      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, null, { required: true, color: cT, duration: '10 min' }),
-      pmMidweekRow(3, hasValue(d.leitura_biblia_sala_b) ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, hasSalaB ? salaB3 : null, { required: true, color: cT })
+      // Dirigente Sala B na linha 2, logo acima da leitura da Sala B (linha 3).
+      pmMidweekRow(2, 'Joias espirituais', d.joias_designado, pmExtra('Dirigente Sala B', d.dirigente_sala_b, cT), { required: true, color: cT, duration: '10 min', spanLabel: true }),
+      pmMidweekRow(3, leituraSalaB ? 'Leitura da Bíblia (Sala A)' : 'Leitura da Bíblia', d.leitura_biblia, leituraSalaB, { required: true, color: cT })
     ];
 
     const ministerio = [1, 2, 3, 4].map((i) => {
@@ -435,45 +509,27 @@
       const people = d[`ministerio_${i}_designados`];
       const salaB = d[`ministerio_${i}_sala_b`];
       if (!tipo && !hasValue(people) && !hasValue(salaB)) return null;
-      const side = hasValue(salaB) ? [pmSideLine('Sala B', salaB, cM)] : null;
-      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, side, { color: cM });
+      return pmMidweekRow(i + 3, tipo || `Parte ${i}`, people, pmExtra('Sala B', salaB, cM), { color: cM });
     });
 
     const vidaNum = 4 + Math.max(3, ministerio.reduce((last, row, idx) => (row ? idx + 1 : last), 0));
     const vidaRows = [
       pmMidweekRow(vidaNum, val(d.vida_crista_titulo) || 'Nossa vida cristã', d.vida_crista_designado, null, { required: true, color: cV }),
-      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente, null, { required: true, color: cV })
+      pmMidweekRow(vidaNum + 1, 'Estudo bíblico de congregação', d.estudo_dirigente,
+        null, { required: true, color: cV, inline: pmExtra('Leitor', d.leitor_sentinela, cV) }),
+      // Linha sem número fechando o quadro (sem faixa, para caberem dois por página).
+      hasValue(d.oracao_final) ? pmMidweekRow(null, 'Oração final', d.oracao_final, null, { color: cV }) : null
     ];
 
-    const metaBits = [];
-    if (hasValue(d.cantico)) metaBits.push({ text: [{ text: 'Cântico  ', bold: true, color: T.headerAlt }, val(d.cantico)], fontSize: 8.5 });
-    if (hasValue(d.presidente)) metaBits.push({ text: [{ text: 'Presidente  ', bold: true, color: T.headerAlt }, val(d.presidente)], fontSize: 8.5 });
+    const widths = pmMeetingWidths([...tesouros, ...ministerio, ...vidaRows]);
 
-    const closing = [];
-    if (hasValue(d.leitor_sentinela)) {
-      closing.push({ width: '*', text: [{ text: 'Leitor  ', bold: true, color: cV }, val(d.leitor_sentinela)] });
+    // Cântico e presidente vão na própria barra da data (economiza uma linha por quadro).
+    const metaRuns = [];
+    if (hasValue(d.cantico)) metaRuns.push({ text: 'Cântico  ', bold: true, color: T.headerAlt }, { text: val(d.cantico) });
+    if (hasValue(d.presidente)) {
+      if (metaRuns.length) metaRuns.push({ text: '     ' });
+      metaRuns.push({ text: 'Presidente  ', bold: true, color: T.headerAlt }, { text: val(d.presidente) });
     }
-    if (hasValue(d.oracao_final)) {
-      closing.push({ width: '*', text: [{ text: 'Oração final  ', bold: true, color: cV }, val(d.oracao_final)], alignment: closing.length ? 'right' : 'center' });
-    }
-    if (closing.length === 1 && closing[0].alignment !== 'center') closing[0].alignment = 'center';
-
-    const footer = closing.length
-      ? {
-        margin: [0, 5, 0, 0],
-        table: {
-          widths: ['*'],
-          body: [[{
-            columns: closing,
-            columnGap: 16,
-            fontSize: 8.5,
-            fillColor: MIDWEEK_THEME.vida.bg,
-            margin: [8, 4, 8, 4]
-          }]]
-        },
-        layout: 'noBorders'
-      }
-      : null;
 
     const inner = [
       {
@@ -489,21 +545,20 @@
                 bold: true,
                 color: T.header,
                 margin: [0, 3, 0, 0]
-              }
-            ],
+              },
+              metaRuns.length ? { width: 'auto', text: metaRuns, fontSize: 8.5, color: T.text, margin: [0, 5, 0, 0] } : null
+            ].filter(Boolean),
             columnGap: 8,
             fillColor: '#EEF3F8',
-            margin: [8, 6, 10, 6]
+            margin: [8, 5, 10, 5]
           }]]
         },
         layout: 'noBorders',
-        margin: [0, 0, 0, metaBits.length ? 5 : 6]
+        margin: [0, 0, 0, 5]
       },
-      metaBits.length ? { columns: metaBits, columnGap: 16, margin: [2, 0, 2, 6] } : null,
-      pmMidweekSection('tesouros', tesouros),
-      pmMidweekSection('ministerio', ministerio),
-      pmMidweekSection('vida', vidaRows),
-      footer
+      pmMidweekSection('tesouros', tesouros, widths),
+      pmMidweekSection('ministerio', ministerio, widths),
+      pmMidweekSection('vida', vidaRows, widths)
     ].filter(Boolean);
 
     return {
@@ -520,8 +575,8 @@
         vLineColor: () => '#B7C9DE',
         paddingLeft: () => 8,
         paddingRight: () => 8,
-        paddingTop: () => 8,
-        paddingBottom: () => 8
+        paddingTop: () => 6,
+        paddingBottom: () => 6
       }
     };
   }
@@ -704,11 +759,13 @@
 
   async function blockToPdfBlob(block, board, entries) {
     await ensurePdfMake();
+    await ensureMeasure();
     return toPdfBlob(buildDocDefinition(block, board, entries));
   }
 
   async function boardToPdfBlob(board, entries) {
     await ensurePdfMake();
+    await ensureMeasure();
     return toPdfBlob(buildDocDefinition('full', board, entries));
   }
 
