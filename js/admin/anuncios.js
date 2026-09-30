@@ -201,6 +201,10 @@
       </div>`;
   }
 
+  // Campos de Tesouros que, só no formulário, aparecem junto dos blocos de sala do
+  // ministério para facilitar a montagem. O PDF mantém a ordem original.
+  const TESOUROS_NO_BLOCO_DE_SALA = ['leitura_biblia', 'dirigente_sala_b', 'leitura_biblia_sala_b'];
+
   // Separa salão principal (tipo + designados) da Sala B para facilitar a montagem.
   function fieldsHtmlMinisterio(fields, entry) {
     const isSalaB = (f) => /_sala_b$/.test(f.key);
@@ -226,7 +230,10 @@
     }
     const sections = ['header', 'tesouros', 'ministerio', 'vida'];
     return sections.map((sec) => {
-      const secFields = fields.filter((f) => f.section === sec);
+      const moved = (f) => TESOUROS_NO_BLOCO_DE_SALA.includes(f.key);
+      const secFields = sec === 'ministerio'
+        ? [...fields.filter(moved), ...fields.filter((f) => f.section === sec)]
+        : fields.filter((f) => f.section === sec && !moved(f));
       if (!secFields.length) return '';
       const meta = MIDWEEK_SECTIONS[sec];
       if (sec === 'ministerio') return sectionShell(meta.title, meta.icon, fieldsHtmlMinisterio(secFields, entry), 'cols-1');
