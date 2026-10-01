@@ -473,10 +473,10 @@
       }
       /* S1: tile sólido com gradiente na cor da seção */
       .je-home-shortcut-icon--ms .material-symbols-outlined { font-size: 1.5rem; }
-      .je-home-shortcut .je-home-shortcut-icon--ms {
-        color: #fff;
-        background: linear-gradient(150deg, var(--je-sc-tone-light) 0%, var(--je-sc-tone) 100%) !important;
-        box-shadow: 0 6px 14px var(--je-sc-tone-shadow);
+      .je-home-shortcuts .je-home-shortcut .je-home-shortcut-icon {
+        color: var(--je-sc-ink);
+        background: linear-gradient(150deg, color-mix(in srgb, var(--je-sc-tone) 78%, #fff) 0%, var(--je-sc-tone) 100%);
+        box-shadow: 0 6px 14px color-mix(in srgb, var(--je-sc-tone) 30%, transparent);
       }
       .je-home-shortcut-short {
         display: block;
@@ -490,12 +490,12 @@
         overflow-wrap: anywhere;
       }
     }
-    .je-home-shortcut { --je-sc-tone: #3b5e97; --je-sc-tone-light: #6f8fc2; --je-sc-tone-shadow: rgba(59, 94, 151, 0.3); }
-    .je-home-shortcut--agenda { --je-sc-tone: #1d4ed8; --je-sc-tone-light: #5b82e6; --je-sc-tone-shadow: rgba(29, 78, 216, 0.3); }
-    .je-home-shortcut--agendamentos { --je-sc-tone: #047857; --je-sc-tone-light: #3f9d82; --je-sc-tone-shadow: rgba(4, 120, 87, 0.3); }
-    .je-home-shortcut--anuncios { --je-sc-tone: #b45309; --je-sc-tone-light: #ca7d47; --je-sc-tone-shadow: rgba(180, 83, 9, 0.3); }
-    .je-home-shortcut--territorios { --je-sc-tone: #4338ca; --je-sc-tone-light: #7369d7; --je-sc-tone-shadow: rgba(67, 56, 202, 0.3); }
-    .je-home-shortcut--donativos { --je-sc-tone: #be185d; --je-sc-tone-light: #cf5288; --je-sc-tone-shadow: rgba(190, 24, 93, 0.3); }
+    .je-home-shortcut { --je-sc-tone: #3b5e97; --je-sc-ink: #fbf9f8; }
+    .je-home-shortcut--agenda { --je-sc-tone: #1d4ed8; }
+    .je-home-shortcut--agendamentos { --je-sc-tone: #047857; }
+    .je-home-shortcut--anuncios { --je-sc-tone: #b45309; }
+    .je-home-shortcut--territorios { --je-sc-tone: #4338ca; }
+    .je-home-shortcut--donativos { --je-sc-tone: #be185d; }
     .je-home-shortcut--agenda .je-home-shortcut-icon { background: #dbeafe; }
     .je-home-shortcut--agendamentos .je-home-shortcut-icon { background: #d1fae5; }
     .je-home-shortcut--anuncios .je-home-shortcut-icon { background: #fef3c7; }

@@ -167,12 +167,12 @@
     setText('#je-site-home-shortcuts-title', sc.title);
     const shortcuts = document.getElementById('je-site-home-shortcuts');
     if (shortcuts && Array.isArray(sc.items)) {
-      // Configs salvas antes dos campos icon/short herdam o padrão do mesmo variant.
+      // Configs salvas antes dos campos icon/short herdam o ícone e o nome curto do mesmo variant.
       const defaultsByVariant = {};
       (Schema()?.defaults()?.home?.shortcuts?.items || []).forEach((d) => { defaultsByVariant[d.variant] = d; });
       shortcuts.innerHTML = sc.items.map((item) => {
         const def = defaultsByVariant[item.variant] || {};
-        const icon = item.icon || (!item.emoji || item.emoji === def.emoji ? def.icon : '');
+        const icon = item.icon || def.icon || '';
         const short = item.short || (item.title === def.title ? def.short : '') || item.title;
         const iconHtml = icon
           ? `<span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">${esc(icon)}</span></span>`
