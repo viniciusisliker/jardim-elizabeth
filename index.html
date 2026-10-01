@@ -437,34 +437,65 @@
       margin-top: 0.125rem;
       line-height: 1.35;
     }
+    .je-home-shortcut-icon--ms { color: var(--je-sc-tone); }
+    .je-home-shortcut-icon--ms .material-symbols-outlined {
+      font-size: 1.375rem;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .je-home-shortcut-short { display: none; }
     @media (max-width: 767px) {
       .je-home-shortcut--donativos { grid-column: auto; }
       .je-home-shortcuts {
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 0.25rem;
+        align-items: start;
       }
       .je-home-shortcut {
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding: 0.25rem 0.125rem;
-        gap: 0;
+        justify-content: flex-start;
+        padding: 0.375rem 0.125rem 0.25rem;
+        gap: 0.4375rem;
         border: none;
         box-shadow: none;
         background: transparent;
-        border-radius: 0.625rem;
+        border-radius: 0.875rem;
       }
       .je-home-shortcut:active { background: rgba(15, 52, 98, 0.07); }
       .je-home-shortcut-body,
       .je-home-shortcut-desc { display: none; }
       .je-home-shortcut-icon {
-        width: 3rem;
-        height: 3rem;
+        width: 3.25rem;
+        height: 3.25rem;
         font-size: 1.375rem;
-        border-radius: 0.875rem;
+        border-radius: 1rem;
         box-shadow: 0 2px 10px rgba(15, 52, 98, 0.1);
       }
+      /* S1: tile sólido com gradiente na cor da seção */
+      .je-home-shortcut-icon--ms .material-symbols-outlined { font-size: 1.5rem; }
+      .je-home-shortcut .je-home-shortcut-icon--ms {
+        color: #fff;
+        background: linear-gradient(150deg, var(--je-sc-tone-light) 0%, var(--je-sc-tone) 100%) !important;
+        box-shadow: 0 6px 14px var(--je-sc-tone-shadow);
+      }
+      .je-home-shortcut-short {
+        display: block;
+        min-height: 2.3em;
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.15;
+        color: #0f3462;
+        text-align: center;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
+      }
     }
+    .je-home-shortcut { --je-sc-tone: #3b5e97; --je-sc-tone-light: #6f8fc2; --je-sc-tone-shadow: rgba(59, 94, 151, 0.3); }
+    .je-home-shortcut--agenda { --je-sc-tone: #1d4ed8; --je-sc-tone-light: #5b82e6; --je-sc-tone-shadow: rgba(29, 78, 216, 0.3); }
+    .je-home-shortcut--agendamentos { --je-sc-tone: #047857; --je-sc-tone-light: #3f9d82; --je-sc-tone-shadow: rgba(4, 120, 87, 0.3); }
+    .je-home-shortcut--anuncios { --je-sc-tone: #b45309; --je-sc-tone-light: #ca7d47; --je-sc-tone-shadow: rgba(180, 83, 9, 0.3); }
+    .je-home-shortcut--territorios { --je-sc-tone: #4338ca; --je-sc-tone-light: #7369d7; --je-sc-tone-shadow: rgba(67, 56, 202, 0.3); }
+    .je-home-shortcut--donativos { --je-sc-tone: #be185d; --je-sc-tone-light: #cf5288; --je-sc-tone-shadow: rgba(190, 24, 93, 0.3); }
     .je-home-shortcut--agenda .je-home-shortcut-icon { background: #dbeafe; }
     .je-home-shortcut--agendamentos .je-home-shortcut-icon { background: #d1fae5; }
     .je-home-shortcut--anuncios .je-home-shortcut-icon { background: #fef3c7; }
@@ -831,7 +862,7 @@
       .je-home-news-item:nth-child(n+4) { display: none; }
     }
   </style>
-  <link href="css/je-theme-dark.css?v=20260725201500" rel="stylesheet"/>
+  <link href="css/je-theme-dark.css?v=20261001120000" rel="stylesheet"/>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
@@ -867,35 +898,40 @@
         </div>
         <div id="je-site-home-shortcuts" class="je-home-shortcuts">
         <a class="je-home-shortcut je-home-shortcut--agenda" href="agenda.html" aria-label="Agenda">
-          <span class="je-home-shortcut-icon" aria-hidden="true">🗓️</span>
+          <span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">calendar_month</span></span>
+          <span class="je-home-shortcut-short" aria-hidden="true">Agenda</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">Agenda</span>
             <span class="je-home-shortcut-desc">Eventos e reuniões</span>
           </span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--agendamentos" href="agendamentos.html" aria-label="Agendamentos">
-          <span class="je-home-shortcut-icon" aria-hidden="true">📋</span>
+          <span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">event_available</span></span>
+          <span class="je-home-shortcut-short" aria-hidden="true">Carrinhos</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">Agendamentos</span>
             <span class="je-home-shortcut-desc">Carrinhos e displays</span>
           </span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--anuncios" href="quadrodeanuncios.html" aria-label="Quadro de Anúncios">
-          <span class="je-home-shortcut-icon" aria-hidden="true">🔔</span>
+          <span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">campaign</span></span>
+          <span class="je-home-shortcut-short" aria-hidden="true">Quadro de Anúncios</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">Quadro de Anúncios</span>
             <span class="je-home-shortcut-desc">Avisos da congregação</span>
           </span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--territorios" href="territorios.html" aria-label="Territórios">
-          <span class="je-home-shortcut-icon" aria-hidden="true">🗺️</span>
+          <span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">map</span></span>
+          <span class="je-home-shortcut-short" aria-hidden="true">Territórios</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">Territórios</span>
             <span class="je-home-shortcut-desc">Mapas do serviço de campo</span>
           </span>
         </a>
         <a class="je-home-shortcut je-home-shortcut--donativos" href="donativos.html" aria-label="Donativos">
-          <span class="je-home-shortcut-icon" aria-hidden="true">🤲</span>
+          <span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">volunteer_activism</span></span>
+          <span class="je-home-shortcut-short" aria-hidden="true">Donativos</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">Donativos</span>
             <span class="je-home-shortcut-desc">Contribuições via PIX</span>
@@ -1029,7 +1065,7 @@
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/header.js"></script>
-<script src="js/site-loader.js?v=20260725230000"></script>
+<script src="js/site-loader.js?v=20261001120000"></script>
   <script src="js/agenda-helpers.js"></script>
   <script src="js/content.js?v=20260725340000"></script>
 

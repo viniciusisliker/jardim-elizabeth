@@ -136,7 +136,7 @@
           markDirty();
         }
         if (action === 'add-shortcut') {
-          config.home.shortcuts.items.push({ href: '#', emoji: '🔗', title: 'Novo', desc: '', variant: 'agenda' });
+          config.home.shortcuts.items.push({ href: '#', emoji: '', icon: 'link', title: 'Novo', short: 'Novo', desc: '', variant: 'agenda' });
           renderEditor();
           markDirty();
         }
@@ -227,7 +227,9 @@
         ${field('Título', `home.shortcuts.items.${i}.title`, item.title)}
         ${field('Descrição', `home.shortcuts.items.${i}.desc`, item.desc)}
         ${field('Link', `home.shortcuts.items.${i}.href`, item.href)}
-        ${field('Emoji', `home.shortcuts.items.${i}.emoji`, item.emoji)}
+        ${field('Nome curto (celular)', `home.shortcuts.items.${i}.short`, item.short)}
+        ${field('Ícone Material', `home.shortcuts.items.${i}.icon`, item.icon)}
+        ${field('Emoji (se não houver ícone)', `home.shortcuts.items.${i}.emoji`, item.emoji)}
         <button type="button" class="sb-mini-btn sb-mini-btn--danger" data-action="remove-shortcut" data-index="${i}">Remover</button>
       </div>`).join('');
     let news = (h.news?.items || []).map((item, i) => `
@@ -446,7 +448,7 @@
     if (!window.JESiteConfigSchema) {
       await new Promise((resolve, reject) => {
         const s = document.createElement('script');
-        s.src = 'js/site-config-schema.js?v=20260725200000';
+        s.src = 'js/site-config-schema.js?v=20261001120000';
         s.onload = resolve;
         s.onerror = reject;
         document.head.appendChild(s);

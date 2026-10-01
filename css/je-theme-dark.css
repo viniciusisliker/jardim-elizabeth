@@ -218,6 +218,8 @@ html.dark .je-home-shortcut-desc { color: var(--je-on-surface-variant) !importan
   }
   html.dark .je-home-shortcut:active { background: rgba(255, 255, 255, 0.06) !important; }
   html.dark .je-home-shortcut-icon { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28) !important; }
+  html.dark .je-home-shortcut .je-home-shortcut-icon--ms { box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35) !important; }
+  html.dark .je-home-shortcut-short { color: var(--je-on-surface) !important; }
 }
 html.dark .je-home-card {
   background: var(--je-card) !important;

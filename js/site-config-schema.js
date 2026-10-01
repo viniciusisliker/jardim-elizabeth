@@ -17,11 +17,11 @@
   ];
 
   const SHORTCUTS = [
-    { href: 'agenda.html', emoji: '🗓️', title: 'Agenda', desc: 'Eventos e reuniões', variant: 'agenda' },
-    { href: 'agendamentos.html', emoji: '📋', title: 'Agendamentos', desc: 'Carrinhos e displays', variant: 'agendamentos' },
-    { href: 'quadrodeanuncios.html', emoji: '🔔', title: 'Quadro de Anúncios', desc: 'Avisos da congregação', variant: 'anuncios' },
-    { href: 'territorios.html', emoji: '🗺️', title: 'Territórios', desc: 'Mapas do serviço de campo', variant: 'territorios' },
-    { href: 'donativos.html', emoji: '🤲', title: 'Donativos', desc: 'Contribuições via PIX', variant: 'donativos' }
+    { href: 'agenda.html', emoji: '🗓️', icon: 'calendar_month', title: 'Agenda', short: 'Agenda', desc: 'Eventos e reuniões', variant: 'agenda' },
+    { href: 'agendamentos.html', emoji: '📋', icon: 'event_available', title: 'Agendamentos', short: 'Carrinhos', desc: 'Carrinhos e displays', variant: 'agendamentos' },
+    { href: 'quadrodeanuncios.html', emoji: '🔔', icon: 'campaign', title: 'Quadro de Anúncios', short: 'Quadro de Anúncios', desc: 'Avisos da congregação', variant: 'anuncios' },
+    { href: 'territorios.html', emoji: '🗺️', icon: 'map', title: 'Territórios', short: 'Territórios', desc: 'Mapas do serviço de campo', variant: 'territorios' },
+    { href: 'donativos.html', emoji: '🤲', icon: 'volunteer_activism', title: 'Donativos', short: 'Donativos', desc: 'Contribuições via PIX', variant: 'donativos' }
   ];
 
   const NEWS = [

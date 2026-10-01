@@ -1069,7 +1069,7 @@
   }
 
   async function ensureSiteConfigScripts() {
-    const v = '20260725203000';
+    const v = '20261001120000';
     try {
       if (!window.JESiteConfigSchema) {
         await loadScriptOnce(`${assetBase}/js/site-config-schema.js?v=${v}`);
