@@ -128,21 +128,28 @@
       groups.get(key).events.push(ev);
     });
     groups.forEach((g) => g.events.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
-    const order = ['2026-04', '2026-03', '2026-02', '2026-01', 'futuros'];
-    const sorted = [];
-    order.forEach((k) => { if (groups.has(k)) sorted.push([k, groups.get(k)]); });
-    groups.forEach((v, k) => { if (!order.includes(k)) sorted.push([k, v]); });
-    return sorted;
+    // Ordem cronológica (YYYY-MM); "futuros" e grupos sem data vão para o fim.
+    const rank = (k) => (/^\d{4}-\d{2}$/.test(k) ? k : k === 'futuros' ? '9999-98' : '9999-99');
+    return [...groups.entries()].sort(([ka], [kb]) => (rank(ka) < rank(kb) ? -1 : rank(ka) > rank(kb) ? 1 : 0));
+  }
+
+  // Abre o mês atual ou o próximo com eventos; se tudo já passou, o último.
+  function defaultOpenIndex(groups) {
+    const current = todayIso().slice(0, 7);
+    const idx = groups.findIndex(([k]) => k === 'futuros' || k >= current);
+    return idx >= 0 ? idx : groups.length - 1;
   }
 
   function renderAgendaMonths(events, openFirst) {
     const groups = groupAgendaByMonth(events);
+    const openIdx = openFirst ? defaultOpenIndex(groups) : -1;
     return groups.map(([key, group], idx) => {
       const dotGold = key === 'futuros' ? ' je-ag-month-dot--gold' : '';
-      const openCls = openFirst && idx === 0 ? ' open' : '';
+      const isOpen = idx === openIdx;
+      const openCls = isOpen ? ' open' : '';
       return `
         <div class="je-ag-month${openCls}">
-          <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="${openFirst && idx === 0 ? 'true' : 'false'}">
+          <button type="button" class="je-ag-month-head" onclick="toggleMonth(this)" aria-expanded="${isOpen ? 'true' : 'false'}">
             <span class="je-ag-month-head-left">
               <span class="je-ag-month-dot${dotGold}" aria-hidden="true"></span>
               <span class="je-ag-month-label">${esc(group.label)}</span>
@@ -158,7 +165,12 @@
   }
 
   function renderHighlights(events) {
-    const highlights = events.filter((e) => e.is_highlight).slice(0, 6);
+    const today = todayIso();
+    const all = events
+      .filter((e) => e.is_highlight)
+      .sort((a, b) => (a.event_date || '9999').localeCompare(b.event_date || '9999'));
+    const upcoming = all.filter((e) => !e.event_date || e.event_date >= today);
+    const highlights = (upcoming.length ? upcoming : all).slice(0, 6);
     if (!highlights.length) return '';
     return highlights.map((ev) => {
       const d = ev.event_date ? new Date(ev.event_date + 'T12:00:00') : null;
