@@ -167,14 +167,26 @@
     setText('#je-site-home-shortcuts-title', sc.title);
     const shortcuts = document.getElementById('je-site-home-shortcuts');
     if (shortcuts && Array.isArray(sc.items)) {
-      shortcuts.innerHTML = sc.items.map((item) => `
+      // Configs salvas antes dos campos icon/short herdam o ícone e o nome curto do mesmo variant.
+      const defaultsByVariant = {};
+      (Schema()?.defaults()?.home?.shortcuts?.items || []).forEach((d) => { defaultsByVariant[d.variant] = d; });
+      shortcuts.innerHTML = sc.items.map((item) => {
+        const def = defaultsByVariant[item.variant] || {};
+        const icon = item.icon || def.icon || '';
+        const short = item.short || (item.title === def.title ? def.short : '') || item.title;
+        const iconHtml = icon
+          ? `<span class="je-home-shortcut-icon je-home-shortcut-icon--ms" aria-hidden="true"><span class="material-symbols-outlined">${esc(icon)}</span></span>`
+          : `<span class="je-home-shortcut-icon" aria-hidden="true">${esc(item.emoji || '')}</span>`;
+        return `
         <a class="je-home-shortcut je-home-shortcut--${esc(item.variant || 'default')}" href="${esc(item.href)}" aria-label="${esc(item.title)}">
-          <span class="je-home-shortcut-icon" aria-hidden="true">${esc(item.emoji || '')}</span>
+          ${iconHtml}
+          <span class="je-home-shortcut-short" aria-hidden="true">${esc(short)}</span>
           <span class="je-home-shortcut-body">
             <span class="je-home-shortcut-title">${esc(item.title)}</span>
             <span class="je-home-shortcut-desc">${esc(item.desc || '')}</span>
           </span>
-        </a>`).join('');
+        </a>`;
+      }).join('');
     }
 
     const week = home.week || {};
