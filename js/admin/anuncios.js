@@ -215,7 +215,13 @@
     ['oracao_final', 'Oração final'],
     ['oradores_enviados', 'Discurso em outra congregação']
   ];
+  // Nas próprias mecânicas, o mesmo irmão em dois campos do dia também é conflito.
+  // Grupo de limpeza não entra: não é nome de irmão.
+  const MECANICAS_PARTS = Schemas.fieldsForBlock('mecanicas')
+    .filter((f) => f.rotation !== 'grupos')
+    .map((f) => [f.key, f.label]);
   const ASSIGNMENT_SOURCES = [
+    { block: 'mecanicas', quadro: 'Mecânicas', parts: MECANICAS_PARTS },
     { block: 'midweek', quadro: 'Meio de semana', parts: MIDWEEK_PARTS },
     { block: 'weekend', quadro: 'Fim de semana', parts: WEEKEND_PARTS }
   ];
@@ -244,30 +250,32 @@
           const text = trim(data[key]);
           if (!text) return;
           const detail = detailKey ? trim(data[detailKey]) : '';
-          out.push({ quadro, parte: detail ? `${label} — ${detail}` : label, text });
+          out.push({ block, key, quadro, parte: detail ? `${label} — ${detail}` : label, text });
         });
       });
     });
     return out;
   }
 
-  function assignmentsFor(name, dateIso) {
+  // `ownKey`: campo das mecânicas que está sendo preenchido (não conta como conflito consigo mesmo).
+  function assignmentsFor(name, dateIso, ownKey) {
     if (!trim(name)) return [];
     return assignmentsOnDate(dateIso)
+      .filter((a) => !(a.block === 'mecanicas' && a.key === ownKey))
       .filter((a) => mentionsName(a.text, name))
-      .map(({ quadro, parte }) => ({ quadro, parte }));
+      .map(({ block, quadro, parte }) => ({ block, quadro, parte }));
   }
 
-  function assignmentTagsHtml(name, dateIso) {
-    return assignmentsFor(name, dateIso).map((a) => `
-      <span class="qa-assign-tag" title="${escapeHtml(a.quadro)}: ${escapeHtml(a.parte)}">
+  function assignmentTagsHtml(name, dateIso, ownKey) {
+    return assignmentsFor(name, dateIso, ownKey).map((a) => `
+      <span class="qa-assign-tag${a.block === 'mecanicas' ? ' qa-assign-tag--conflict' : ''}" title="${escapeHtml(a.quadro)}: ${escapeHtml(a.parte)}">
         <span class="material-symbols-outlined" aria-hidden="true">event_busy</span>
         <span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span>
       </span>`).join('');
   }
 
-  function assignmentOptionLabel(name, dateIso) {
-    const list = assignmentsFor(name, dateIso);
+  function assignmentOptionLabel(name, dateIso, ownKey) {
+    const list = assignmentsFor(name, dateIso, ownKey);
     if (!list.length) return name;
     return `${name}  •  ${list.map((a) => `${a.quadro}: ${a.parte}`).join(' | ')}`;
   }
@@ -279,16 +287,16 @@
     const val = (entry.data && entry.data[field.key]) || '';
     const personField = field.rotation && field.rotation !== 'grupos';
     const date = personField ? entry.event_date : null;
-    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label, date) : '';
+    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label, date, personField ? field.key : null) : '';
     const head = `<div class="qa-cell-head"><label>${escapeHtml(field.label)}</label>${rotationBtn}</div>`;
     const choices = field.type === 'select'
       ? (field.rotation ? rotationOptions(field.rotation, val, field.options) : (field.options || Schemas.CLEANING_GROUPS))
       : [];
-    const tags = date ? `<div class="qa-assign-tags" data-assign-tags="${escapeHtml(date)}">${assignmentTagsHtml(val, date)}</div>` : '';
+    const tags = date ? `<div class="qa-assign-tags" data-assign-tags="${escapeHtml(date)}" data-assign-key="${escapeHtml(field.key)}">${assignmentTagsHtml(val, date, field.key)}</div>` : '';
     // Lista de rodízio vazia (ou ainda carregando): cai no campo de texto pra não travar o preenchimento.
     if (choices.length) {
       const opts = choices.map((o) =>
-        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date) : o)}</option>`
+        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date, field.key) : o)}</option>`
       ).join('');
       return `<div class="qa-cell">${head}
         <select data-data-key="${field.key}"><option value=""></option>${opts}</select>${tags}</div>`;
@@ -341,8 +349,9 @@
 
   // Ícone ao lado do campo que abre a lista de rodízio (aba Rodízio) num pop-up.
   // Com `date`, o pop-up marca quem já tem designação no meio/fim de semana nesse dia.
-  function rotationButton(slug, label, date) {
-    const dateAttr = date ? ` data-rotation-date="${escapeHtml(date)}"` : '';
+  function rotationButton(slug, label, date, ownKey) {
+    const dateAttr = (date ? ` data-rotation-date="${escapeHtml(date)}"` : '')
+      + (ownKey ? ` data-rotation-key="${escapeHtml(ownKey)}"` : '');
     return `<button type="button" class="qa-rotation-btn" data-rotation-slug="${escapeHtml(slug)}"${dateAttr} title="Ver lista de rodízio" aria-label="Ver lista de rodízio — ${escapeHtml(label)}">
       <span class="material-symbols-outlined" aria-hidden="true">autorenew</span>
     </button>`;
@@ -491,12 +500,31 @@
       renderBlockEditorOnly(block);
       markDirty();
     });
-    // Trocar o irmão nas mecânicas atualiza as tags de designação logo abaixo do campo.
-    container.querySelectorAll('[data-assign-tags]').forEach((tagsEl) => {
+    // Trocar o irmão nas mecânicas atualiza as tags de todos os campos do dia:
+    // colocar alguém no Som também marca o campo do Portão onde ele já estava.
+    const assignTagEls = [...container.querySelectorAll('[data-assign-tags]')];
+    const refreshAssignTags = () => {
+      readFormIntoEntries();
+      assignTagEls.forEach((tagsEl) => {
+        const input = tagsEl.parentElement.querySelector('[data-data-key]');
+        if (!input) return;
+        const { assignTags: date, assignKey: key } = tagsEl.dataset;
+        tagsEl.innerHTML = assignmentTagsHtml(input.value, date, key);
+        tagsEl.parentElement.classList.toggle('has-conflict', !!tagsEl.querySelector('.qa-assign-tag--conflict'));
+        if (input.tagName === 'SELECT') {
+          [...input.options].forEach((opt) => {
+            if (opt.value) opt.textContent = assignmentOptionLabel(opt.value, date, key);
+          });
+        }
+      });
+    };
+    assignTagEls.forEach((tagsEl) => {
       const input = tagsEl.parentElement.querySelector('[data-data-key]');
-      const refresh = () => { tagsEl.innerHTML = assignmentTagsHtml(input.value, tagsEl.dataset.assignTags); };
-      input?.addEventListener('change', refresh);
-      input?.addEventListener('input', refresh);
+      input?.addEventListener('change', refreshAssignTags);
+      input?.addEventListener('input', refreshAssignTags);
+    });
+    assignTagEls.forEach((tagsEl) => {
+      tagsEl.parentElement.classList.toggle('has-conflict', !!tagsEl.querySelector('.qa-assign-tag--conflict'));
     });
     container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
     container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
