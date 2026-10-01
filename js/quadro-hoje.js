@@ -95,7 +95,7 @@
   function renderMecanicas(entry) {
     const d = entry.data || {};
     const cells = [
-      ['Portão', d.portao], ['Indicador', d.indicador], ['Som', d.som],
+      ['Indicador (Portão)', d.portao], ['Indicador (Auditório)', d.indicador], ['Som', d.som],
       ['Mic. volante 1', d.microf_volantes_1], ['Mic. volante 2', d.microf_volantes_2], ['Limpeza', d.limpeza_grupo]
     ].map(([label, v]) => `
       <div class="je-qh-cell">
