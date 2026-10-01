@@ -180,16 +180,27 @@
     });
   }
 
+  // Grupos de limpeza seguem a lista "grupos" da aba Rodízio; a lista fixa só
+  // vale enquanto o rodízio não carregou. Valor já salvo fora da lista continua aparecendo.
+  function cleaningGroupOptions(current) {
+    const fromRotation = window.JEAnnouncementRotation?.getItems('grupos');
+    const groups = fromRotation && fromRotation.length ? fromRotation : Schemas.CLEANING_GROUPS;
+    return current && !groups.includes(current) ? [current, ...groups] : groups;
+  }
+
   function fieldCell(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
+    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label) : '';
+    const head = `<div class="qa-cell-head"><label>${escapeHtml(field.label)}</label>${rotationBtn}</div>`;
     if (field.type === 'select') {
-      const opts = (field.options || Schemas.CLEANING_GROUPS).map((o) =>
+      const choices = field.rotation === 'grupos' ? cleaningGroupOptions(val) : (field.options || Schemas.CLEANING_GROUPS);
+      const opts = choices.map((o) =>
         `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
       ).join('');
-      return `<div class="qa-cell"><label>${escapeHtml(field.label)}</label>
+      return `<div class="qa-cell">${head}
         <select data-data-key="${field.key}"><option value=""></option>${opts}</select></div>`;
     }
-    return `<div class="qa-cell"><label>${escapeHtml(field.label)}</label>
+    return `<div class="qa-cell">${head}
       <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></div>`;
   }
 
@@ -308,7 +319,7 @@
     const row2 = ['microf_volantes_1', 'microf_volantes_2', 'limpeza_grupo'].map((k) => fieldCell(byKey(k), entry)).join('');
     return `
       <div class="qa-table-block qa-table-block--mecanicas">
-        <div class="qa-table-head"><span>Portão</span><span>Indicador</span><span>Som</span></div>
+        <div class="qa-table-head"><span>Indicador (Portão)</span><span>Indicador (Auditório)</span><span>Som</span></div>
         <div class="qa-table-row">${row1}</div>
         <div class="qa-table-head"><span>Microf. volante 1</span><span>Microf. volante 2</span><span>Limpeza (grupo)</span></div>
         <div class="qa-table-row">${row2}</div>
@@ -500,7 +511,7 @@
         const taken = w !== current && used.has(w) ? ' (já escolhido)' : '';
         return `<option value="${escapeHtml(w)}" ${w === current ? 'selected' : ''}>${escapeHtml(w + taken)}</option>`;
       }).join('');
-      const groupOpts = Schemas.CLEANING_GROUPS.map((g) =>
+      const groupOpts = cleaningGroupOptions(d.grupo || '').map((g) =>
         `<option value="${escapeHtml(g)}" ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`
       ).join('');
       return `
@@ -1483,7 +1494,17 @@
     const now = new Date();
     $('board-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    window.JEAnnouncementRotation?.init({ client, toastEl });
+    window.JEAnnouncementRotation?.init({
+      client,
+      toastEl,
+      // Grupos de limpeza vêm do rodízio: re-renderiza quando a lista carrega ou é salva.
+      onChange: () => {
+        if (!board) return;
+        readFormIntoEntries();
+        renderActiveEditors();
+      }
+    });
+    window.JEAnnouncementRotation?.load();
     setupTabs();
     setupPublishedFilters();
     await Promise.all([loadHistorySettings(), loadPublishedList()]);

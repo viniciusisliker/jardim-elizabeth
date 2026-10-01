@@ -42,6 +42,9 @@
     .qa-table-row{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #D9E2F3}
     .qa-table-row .qa-cell{padding:0.625rem 0.75rem;border-right:1px solid #D9E2F3}
     .qa-table-row .qa-cell:last-child{border-right:none}
+    .qa-table-row .qa-cell-head{display:flex;align-items:center;gap:0.375rem;margin-bottom:0.375rem}
+    .qa-table-row .qa-cell-head label{margin-bottom:0}
+    .qa-table-row .qa-cell-head .qa-rotation-btn{width:1.5rem;height:1.5rem}
     .qa-table-row .qa-cell label{font-size:0.625rem;font-weight:800;color:#1F497D;text-transform:uppercase;letter-spacing:.08em;display:inline-flex;align-items:center;gap:0.25rem;margin-bottom:0.375rem}
     .qa-table-row .qa-cell label::before{content:'';width:2px;height:0.625rem;border-radius:1px;background:#984806}
     .qa-table-row input,.qa-table-row select{width:100%;border:1px solid #c3c6d0;border-radius:0.375rem;padding:0.5rem 0.625rem;font-size:0.875rem;background:#fff}
@@ -101,6 +104,9 @@
       .qa-table-block--mecanicas .qa-table-row .qa-cell{padding:0.375rem 0.5rem}
       .qa-table-block--mecanicas .qa-table-row .qa-cell:nth-child(3){grid-column:1/-1}
       .qa-table-block--mecanicas .qa-table-row .qa-cell label{font-size:0.5625rem;margin-bottom:0.1875rem}
+      .qa-table-block--mecanicas .qa-table-row .qa-cell-head{margin-bottom:0.1875rem}
+      .qa-table-block--mecanicas .qa-table-row .qa-cell-head label{margin-bottom:0}
+      .qa-table-block--mecanicas .qa-table-row .qa-cell-head .qa-rotation-btn{width:2rem;height:2rem}
       .qa-table-block--mecanicas .qa-table-row input,
       .qa-table-block--mecanicas .qa-table-row select{padding:0.375rem 0.5rem;font-size:0.8125rem;min-height:2.25rem}
       .qa-board-nav-link{min-height:2.75rem}

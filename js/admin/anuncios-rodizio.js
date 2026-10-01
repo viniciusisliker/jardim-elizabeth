@@ -8,6 +8,9 @@
   let lists = [];
   let loaded = false;
   let dirty = false;
+  let onChange = null;
+  // Itens como estão salvos no banco (as edições em andamento não contam).
+  let savedItems = {};
 
   function $(id) { return document.getElementById(id); }
 
@@ -117,6 +120,16 @@
     loaded = true;
     setDirty(false);
     render();
+    snapshotSaved();
+  }
+
+  function snapshotSaved() {
+    savedItems = Object.fromEntries(lists.map((l) => [l.slug, l.items.map((v) => v.trim()).filter(Boolean)]));
+    onChange?.();
+  }
+
+  function getItems(slug) {
+    return savedItems[slug] || null;
   }
 
   async function save() {
@@ -147,11 +160,12 @@
     lists = payload.map(({ updated_at, ...rest }) => rest);
     setDirty(false);
     render();
+    snapshotSaved();
     showToast(toastEl, 'Rodízio salvo.');
   }
 
   // Pop-up somente leitura aberto pelo ícone ao lado dos campos do quadro
-  // (Presidente, Leitor, Oração final, Dirigente de campo, Limpeza).
+  // (Presidente, Leitor, Oração final, Dirigente de campo, Limpeza, mecânicas).
   let popup = null;
 
   function closePopup() {
@@ -229,6 +243,7 @@
   function init(opts) {
     client = opts.client;
     toastEl = opts.toastEl;
+    onChange = opts.onChange || null;
     const container = $('editor-rodizio');
     container?.addEventListener('click', onClick);
     container?.addEventListener('input', (e) => {
@@ -255,5 +270,5 @@
     });
   }
 
-  window.JEAnnouncementRotation = { init, load, openPopup };
+  window.JEAnnouncementRotation = { init, load, openPopup, getItems };
 })();

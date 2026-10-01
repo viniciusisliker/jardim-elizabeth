@@ -9,12 +9,12 @@
   ];
 
   const MECANICAS_FIELDS = [
-    { key: 'portao', label: 'Portão', type: 'text' },
-    { key: 'indicador', label: 'Indicador', type: 'text' },
-    { key: 'som', label: 'Som', type: 'text' },
-    { key: 'microf_volantes_1', label: 'Microf. volante 1', type: 'text' },
-    { key: 'microf_volantes_2', label: 'Microf. volante 2', type: 'text' },
-    { key: 'limpeza_grupo', label: 'Limpeza (grupo)', type: 'select', options: CLEANING_GROUPS }
+    { key: 'portao', label: 'Indicador (Portão)', type: 'text', rotation: 'indicadores' },
+    { key: 'indicador', label: 'Indicador (Auditório)', type: 'text', rotation: 'indicadores' },
+    { key: 'som', label: 'Som', type: 'text', rotation: 'som' },
+    { key: 'microf_volantes_1', label: 'Microf. volante 1', type: 'text', rotation: 'microfone_volante' },
+    { key: 'microf_volantes_2', label: 'Microf. volante 2', type: 'text', rotation: 'microfone_volante' },
+    { key: 'limpeza_grupo', label: 'Limpeza (grupo)', type: 'select', options: CLEANING_GROUPS, rotation: 'grupos' }
   ];
 
   const MIDWEEK_FIELDS = [

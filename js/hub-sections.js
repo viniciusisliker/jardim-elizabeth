@@ -123,18 +123,18 @@
       partial: 'hub/sections/anuncios.html',
       styles: [
         'css/hub-sections/doc-entry-footer.css?v=2026060977',
-        'css/hub-sections/anuncios.css?v=2026093003'
+        'css/hub-sections/anuncios.css?v=2026100101'
       ],
       scripts: [
         'js/hub-doc-footer.js?v=2026060977',
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
         'js/admin/weekend-discursos-sync.js?v=20260710220000',
-        'js/admin/announcement-schemas.js?v=2026093003',
-        'js/admin/anuncios-export.js?v=2026060526',
-        'js/admin/anuncios-pdf.js?v=2026081501',
-        'js/admin/anuncios-rodizio.js?v=2026093003',
-        'js/admin/anuncios.js?v=2026093003'
+        'js/admin/announcement-schemas.js?v=2026100101',
+        'js/admin/anuncios-export.js?v=2026100101',
+        'js/admin/anuncios-pdf.js?v=2026100101',
+        'js/admin/anuncios-rodizio.js?v=2026100101',
+        'js/admin/anuncios.js?v=2026100101'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {

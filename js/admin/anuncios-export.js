@@ -90,10 +90,10 @@
     const iso = entry.event_date;
     const out = [];
 
-    if (trim(d.portao)) pushRow(out, `Portão: ${trim(d.portao)}`, iso);
+    if (trim(d.portao)) pushRow(out, `Indicador (Portão): ${trim(d.portao)}`, iso);
     splitPeople(d.microf_volantes_1).forEach((name) => pushRow(out, `Microf. Volantes: ${name}`, iso));
     splitPeople(d.microf_volantes_2).forEach((name) => pushRow(out, `Microf. Volantes: ${name}`, iso));
-    if (trim(d.indicador)) pushRow(out, `Indicador: ${trim(d.indicador)}`, iso);
+    if (trim(d.indicador)) pushRow(out, `Indicador (Auditório): ${trim(d.indicador)}`, iso);
     if (trim(d.som)) pushRow(out, `Som: ${trim(d.som)}`, iso);
     if (trim(d.limpeza_grupo)) pushRow(out, `Limpeza: ${trim(d.limpeza_grupo)}`, iso);
 

@@ -198,7 +198,7 @@
       table: {
         widths: ['*', '*', '*'],
         body: [
-          [pmHead('Portão'), pmHead('Indicador'), pmHead('Som')],
+          [pmHead('Indicador (Portão)'), pmHead('Indicador (Auditório)'), pmHead('Som')],
           [pmCell(d.portao), pmCell(d.indicador), pmCell(d.som)],
           [pmHead('Mic. 1'), pmHead('Mic. 2'), pmHead('Limpeza')],
           [pmCell(d.microf_volantes_1), pmCell(d.microf_volantes_2), pmCell(d.limpeza_grupo)]
