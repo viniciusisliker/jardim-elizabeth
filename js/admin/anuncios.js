@@ -287,9 +287,11 @@
     const tags = date ? `<div class="qa-assign-tags" data-assign-tags="${escapeHtml(date)}">${assignmentTagsHtml(val, date)}</div>` : '';
     // Lista de rodízio vazia (ou ainda carregando): cai no campo de texto pra não travar o preenchimento.
     if (choices.length) {
-      const opts = choices.map((o) =>
-        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date) : o)}</option>`
-      ).join('');
+      // Quem já tem designação no dia aparece em cinza claro na lista.
+      const opts = choices.map((o) => {
+        const busy = date && assignmentsFor(o, date).length ? ' class="qa-option-busy"' : '';
+        return `<option value="${escapeHtml(o)}"${busy} ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date) : o)}</option>`;
+      }).join('');
       return `<div class="qa-cell">${head}
         <select data-data-key="${field.key}"><option value=""></option>${opts}</select>${tags}</div>`;
     }
