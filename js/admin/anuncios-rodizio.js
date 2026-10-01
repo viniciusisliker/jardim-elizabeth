@@ -192,9 +192,19 @@
     closePopup();
 
     const names = list.items.map((v) => v.trim()).filter(Boolean);
+    // Aberto de um campo das mecânicas: marca quem já tem parte no meio/fim de semana nesse dia.
+    const date = opener?.dataset.rotationDate;
+    const assignmentsFor = date ? window.JEAnnouncementAssignments?.assignmentsFor : null;
+    const tagsFor = (name) => {
+      const list = assignmentsFor ? assignmentsFor(name, date) : [];
+      return list.length
+        ? `<span class="qa-assign-tags">${list.map((a) => `
+            <span class="qa-assign-tag"><span class="material-symbols-outlined" aria-hidden="true">event_busy</span><span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span></span>`).join('')}</span>`
+        : '';
+    };
     const body = names.length
       ? `<ol class="qa-rod-popup__list">${names.map((name, i) => `
-          <li><span class="qa-rod-num" aria-hidden="true">${i + 1}</span>${escapeHtml(name)}</li>`).join('')}</ol>`
+          <li><span class="qa-rod-num" aria-hidden="true">${i + 1}</span><span class="qa-rod-popup__name">${escapeHtml(name)}${tagsFor(name)}</span></li>`).join('')}</ol>`
       : '<p class="qa-limpeza-empty">Lista vazia. Adicione nomes na aba Rodízio.</p>';
 
     const overlay = document.createElement('div');

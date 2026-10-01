@@ -189,23 +189,112 @@
     return current && !items.includes(current) ? [current, ...items] : items;
   }
 
+  // Partes do meio e do fim de semana que contam como "já tem designação no dia".
+  // O editor das mecânicas cruza os nomes do rodízio com essas partes na mesma data.
+  const MIDWEEK_PARTS = [
+    ['presidente', 'Presidente'],
+    ['tesouros_designado', 'Tesouros'],
+    ['joias_designado', 'Joias espirituais'],
+    ['leitura_biblia', 'Leitura da Bíblia'],
+    ['dirigente_sala_b', 'Dirigente Sala B'],
+    ['leitura_biblia_sala_b', 'Leitura da Bíblia (Sala B)'],
+    ...[1, 2, 3, 4].flatMap((n) => [
+      [`ministerio_${n}_designados`, `Ministério ${n}`, `ministerio_${n}_tipo`],
+      [`ministerio_${n}_sala_b`, `Ministério ${n} (Sala B)`, `ministerio_${n}_tipo`]
+    ]),
+    ['vida_crista_designado', 'Nossa vida cristã', 'vida_crista_titulo'],
+    ['estudo_dirigente', 'Dirigente do estudo bíblico'],
+    ['leitor_sentinela', 'Leitor do estudo bíblico'],
+    ['oracao_final', 'Oração final']
+  ];
+  const WEEKEND_PARTS = [
+    ['dirigente_sabado', 'Dirigente de campo'],
+    ['presidente', 'Presidente'],
+    ['orador', 'Discurso público'],
+    ['leitor_sentinela', 'Leitor de A Sentinela'],
+    ['oracao_final', 'Oração final'],
+    ['oradores_enviados', 'Discurso em outra congregação']
+  ];
+  const ASSIGNMENT_SOURCES = [
+    { block: 'midweek', quadro: 'Meio de semana', parts: MIDWEEK_PARTS },
+    { block: 'weekend', quadro: 'Fim de semana', parts: WEEKEND_PARTS }
+  ];
+
+  function normName(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  // Nome inteiro como palavra: "Paulo" não casa com "Paulão", mas casa em "Paulo / Pedro".
+  function mentionsName(text, name) {
+    const n = normName(name);
+    if (!n) return false;
+    const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^a-z0-9])${escaped}($|[^a-z0-9])`).test(normName(text));
+  }
+
+  function assignmentsOnDate(dateIso) {
+    if (!dateIso) return [];
+    const out = [];
+    ASSIGNMENT_SOURCES.forEach(({ block, quadro, parts }) => {
+      entries.filter((e) => e.block === block && e.event_date === dateIso).forEach((e) => {
+        const data = block === 'weekend'
+          ? Sync.mergeWeekendDisplayData(e.data, receiveSpeechesByDate[dateIso]).data
+          : (e.data || {});
+        parts.forEach(([key, label, detailKey]) => {
+          const text = trim(data[key]);
+          if (!text) return;
+          const detail = detailKey ? trim(data[detailKey]) : '';
+          out.push({ quadro, parte: detail ? `${label} — ${detail}` : label, text });
+        });
+      });
+    });
+    return out;
+  }
+
+  function assignmentsFor(name, dateIso) {
+    if (!trim(name)) return [];
+    return assignmentsOnDate(dateIso)
+      .filter((a) => mentionsName(a.text, name))
+      .map(({ quadro, parte }) => ({ quadro, parte }));
+  }
+
+  function assignmentTagsHtml(name, dateIso) {
+    return assignmentsFor(name, dateIso).map((a) => `
+      <span class="qa-assign-tag" title="${escapeHtml(a.quadro)}: ${escapeHtml(a.parte)}">
+        <span class="material-symbols-outlined" aria-hidden="true">event_busy</span>
+        <span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span>
+      </span>`).join('');
+  }
+
+  function assignmentOptionLabel(name, dateIso) {
+    const list = assignmentsFor(name, dateIso);
+    if (!list.length) return name;
+    return `${name}  •  ${list.map((a) => `${a.quadro}: ${a.parte}`).join(' | ')}`;
+  }
+
+  // Usado também pelo pop-up do rodízio (anuncios-rodizio.js).
+  window.JEAnnouncementAssignments = { assignmentsFor };
+
   function fieldCell(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
-    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label) : '';
+    const personField = field.rotation && field.rotation !== 'grupos';
+    const date = personField ? entry.event_date : null;
+    const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label, date) : '';
     const head = `<div class="qa-cell-head"><label>${escapeHtml(field.label)}</label>${rotationBtn}</div>`;
     const choices = field.type === 'select'
       ? (field.rotation ? rotationOptions(field.rotation, val, field.options) : (field.options || Schemas.CLEANING_GROUPS))
       : [];
+    const tags = date ? `<div class="qa-assign-tags" data-assign-tags="${escapeHtml(date)}">${assignmentTagsHtml(val, date)}</div>` : '';
     // Lista de rodízio vazia (ou ainda carregando): cai no campo de texto pra não travar o preenchimento.
     if (choices.length) {
       const opts = choices.map((o) =>
-        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
+        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date) : o)}</option>`
       ).join('');
       return `<div class="qa-cell">${head}
-        <select data-data-key="${field.key}"><option value=""></option>${opts}</select></div>`;
+        <select data-data-key="${field.key}"><option value=""></option>${opts}</select>${tags}</div>`;
     }
     return `<div class="qa-cell">${head}
-      <input data-data-key="${field.key}" value="${escapeHtml(val)}"/></div>`;
+      <input data-data-key="${field.key}" value="${escapeHtml(val)}"/>${tags}</div>`;
   }
 
   function fieldInput(field, entry, extraClass, opts) {
@@ -251,8 +340,10 @@
   }
 
   // Ícone ao lado do campo que abre a lista de rodízio (aba Rodízio) num pop-up.
-  function rotationButton(slug, label) {
-    return `<button type="button" class="qa-rotation-btn" data-rotation-slug="${escapeHtml(slug)}" title="Ver lista de rodízio" aria-label="Ver lista de rodízio — ${escapeHtml(label)}">
+  // Com `date`, o pop-up marca quem já tem designação no meio/fim de semana nesse dia.
+  function rotationButton(slug, label, date) {
+    const dateAttr = date ? ` data-rotation-date="${escapeHtml(date)}"` : '';
+    return `<button type="button" class="qa-rotation-btn" data-rotation-slug="${escapeHtml(slug)}"${dateAttr} title="Ver lista de rodízio" aria-label="Ver lista de rodízio — ${escapeHtml(label)}">
       <span class="material-symbols-outlined" aria-hidden="true">autorenew</span>
     </button>`;
   }
@@ -399,6 +490,13 @@
       blockSelection[block] = Math.min(blockSelection[block], entriesFor(block).length - 1);
       renderBlockEditorOnly(block);
       markDirty();
+    });
+    // Trocar o irmão nas mecânicas atualiza as tags de designação logo abaixo do campo.
+    container.querySelectorAll('[data-assign-tags]').forEach((tagsEl) => {
+      const input = tagsEl.parentElement.querySelector('[data-data-key]');
+      const refresh = () => { tagsEl.innerHTML = assignmentTagsHtml(input.value, tagsEl.dataset.assignTags); };
+      input?.addEventListener('change', refresh);
+      input?.addEventListener('input', refresh);
     });
     container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
     container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
