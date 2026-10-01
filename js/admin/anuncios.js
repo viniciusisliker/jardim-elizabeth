@@ -180,20 +180,24 @@
     });
   }
 
-  // Grupos de limpeza seguem a lista "grupos" da aba Rodízio; a lista fixa só
-  // vale enquanto o rodízio não carregou. Valor já salvo fora da lista continua aparecendo.
-  function cleaningGroupOptions(current) {
-    const fromRotation = window.JEAnnouncementRotation?.getItems('grupos');
-    const groups = fromRotation && fromRotation.length ? fromRotation : Schemas.CLEANING_GROUPS;
-    return current && !groups.includes(current) ? [current, ...groups] : groups;
+  // Opções dos campos com rodízio vêm da lista da aba Rodízio. Para os grupos de
+  // limpeza, a lista fixa só vale enquanto o rodízio não carregou. Valor já salvo
+  // fora da lista continua aparecendo.
+  function rotationOptions(slug, current, fallback) {
+    const fromRotation = window.JEAnnouncementRotation?.getItems(slug);
+    const items = fromRotation && fromRotation.length ? fromRotation : (fallback || []);
+    return current && !items.includes(current) ? [current, ...items] : items;
   }
 
   function fieldCell(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
     const rotationBtn = field.rotation ? rotationButton(field.rotation, field.label) : '';
     const head = `<div class="qa-cell-head"><label>${escapeHtml(field.label)}</label>${rotationBtn}</div>`;
-    if (field.type === 'select') {
-      const choices = field.rotation === 'grupos' ? cleaningGroupOptions(val) : (field.options || Schemas.CLEANING_GROUPS);
+    const choices = field.type === 'select'
+      ? (field.rotation ? rotationOptions(field.rotation, val, field.options) : (field.options || Schemas.CLEANING_GROUPS))
+      : [];
+    // Lista de rodízio vazia (ou ainda carregando): cai no campo de texto pra não travar o preenchimento.
+    if (choices.length) {
       const opts = choices.map((o) =>
         `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
       ).join('');
@@ -511,7 +515,7 @@
         const taken = w !== current && used.has(w) ? ' (já escolhido)' : '';
         return `<option value="${escapeHtml(w)}" ${w === current ? 'selected' : ''}>${escapeHtml(w + taken)}</option>`;
       }).join('');
-      const groupOpts = cleaningGroupOptions(d.grupo || '').map((g) =>
+      const groupOpts = rotationOptions('grupos', d.grupo || '', Schemas.CLEANING_GROUPS).map((g) =>
         `<option value="${escapeHtml(g)}" ${d.grupo === g ? 'selected' : ''}>${escapeHtml(g)}</option>`
       ).join('');
       return `

@@ -9,11 +9,11 @@
   ];
 
   const MECANICAS_FIELDS = [
-    { key: 'portao', label: 'Indicador (Portão)', type: 'text', rotation: 'indicadores' },
-    { key: 'indicador', label: 'Indicador (Auditório)', type: 'text', rotation: 'indicadores' },
-    { key: 'som', label: 'Som', type: 'text', rotation: 'som' },
-    { key: 'microf_volantes_1', label: 'Microf. volante 1', type: 'text', rotation: 'microfone_volante' },
-    { key: 'microf_volantes_2', label: 'Microf. volante 2', type: 'text', rotation: 'microfone_volante' },
+    { key: 'portao', label: 'Indicador (Portão)', type: 'select', rotation: 'indicadores' },
+    { key: 'indicador', label: 'Indicador (Auditório)', type: 'select', rotation: 'indicadores' },
+    { key: 'som', label: 'Som', type: 'select', rotation: 'som' },
+    { key: 'microf_volantes_1', label: 'Microf. volante 1', type: 'select', rotation: 'microfone_volante' },
+    { key: 'microf_volantes_2', label: 'Microf. volante 2', type: 'select', rotation: 'microfone_volante' },
     { key: 'limpeza_grupo', label: 'Limpeza (grupo)', type: 'select', options: CLEANING_GROUPS, rotation: 'grupos' }
   ];
 
