@@ -295,9 +295,11 @@
     const tags = date ? `<div class="qa-assign-tags" data-assign-tags="${escapeHtml(date)}" data-assign-key="${escapeHtml(field.key)}">${assignmentTagsHtml(val, date, field.key)}</div>` : '';
     // Lista de rodízio vazia (ou ainda carregando): cai no campo de texto pra não travar o preenchimento.
     if (choices.length) {
-      const opts = choices.map((o) =>
-        `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date, field.key) : o)}</option>`
-      ).join('');
+      // Quem já tem designação no dia aparece em cinza claro na lista.
+      const opts = choices.map((o) => {
+        const busy = date && assignmentsFor(o, date, field.key).length ? ' class="qa-option-busy"' : '';
+        return `<option value="${escapeHtml(o)}"${busy} ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date, field.key) : o)}</option>`;
+      }).join('');
       return `<div class="qa-cell">${head}
         <select data-data-key="${field.key}"><option value=""></option>${opts}</select>${tags}</div>`;
     }
@@ -513,7 +515,9 @@
         tagsEl.parentElement.classList.toggle('has-conflict', !!tagsEl.querySelector('.qa-assign-tag--conflict'));
         if (input.tagName === 'SELECT') {
           [...input.options].forEach((opt) => {
-            if (opt.value) opt.textContent = assignmentOptionLabel(opt.value, date, key);
+            if (!opt.value) return;
+            opt.textContent = assignmentOptionLabel(opt.value, date, key);
+            opt.classList.toggle('qa-option-busy', assignmentsFor(opt.value, date, key).length > 0);
           });
         }
       });
