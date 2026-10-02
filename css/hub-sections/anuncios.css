@@ -55,6 +55,8 @@
     .qa-assign-tag .material-symbols-outlined{font-size:0.8125rem;line-height:1}
     .qa-rod-popup__name{display:flex;flex-direction:column;gap:0.125rem;min-width:0}
     .qa-rod-popup__name .qa-assign-tags:not(:empty){margin-top:0.125rem}
+    .qa-cell select option.qa-option-busy{color:#9aa0a6}
+    html.dark .qa-cell select option.qa-option-busy{color:#80868b}
     html.dark .qa-assign-tag{color:#f6c89a;background:rgba(152,72,6,.22);border-color:rgba(246,200,154,.3)}
     .qa-table-row input:focus,.qa-table-row select:focus{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
     .qa-section{background:#fff;border:1px solid rgba(31,73,125,.35);border-radius:0.625rem;margin-bottom:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,32,96,.06)}
