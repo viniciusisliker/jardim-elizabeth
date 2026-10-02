@@ -176,10 +176,15 @@
     return pmWeekendSection(key, rows, { ...opts, theme: MEC_THEME[key], icon: MEC_ICONS[key] });
   }
 
+  const WEEKDAY_FULL = {
+    Dom: 'Domingo', Seg: 'Segunda', Ter: 'Terça', Qua: 'Quarta', Qui: 'Quinta', Sex: 'Sexta', 'Sáb': 'Sábado'
+  };
+
   function pmMecanicasCard(entry) {
     const d = entry.data || {};
     const dateStr = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
-    const weekday = val(entry.weekday_label);
+    const weekdayRaw = val(entry.weekday_label);
+    const weekday = WEEKDAY_FULL[weekdayRaw] || weekdayRaw;
     const title = weekday ? `${dateStr}  ·  ${weekday}` : dateStr;
     const mics = [d.microf_volantes_1, d.microf_volantes_2].map(val).filter(Boolean).join('  ·  ');
 
