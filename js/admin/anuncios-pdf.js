@@ -42,12 +42,6 @@
     return val(v).length > 0;
   }
 
-  function chunkEntries(list, size) {
-    const chunks = [];
-    for (let i = 0; i < list.length; i += size) chunks.push(list.slice(i, i + size));
-    return chunks;
-  }
-
   function loadScriptOnce(src) {
     if (document.querySelector(`script[src="${src}"]`)) {
       return Promise.resolve();
@@ -80,19 +74,6 @@
       paddingRight: () => 0,
       paddingTop: () => 0,
       paddingBottom: () => 0
-    };
-  }
-
-  function innerGridLayout() {
-    return {
-      hLineWidth: (i) => (i === 0 ? 0 : 0.4),
-      vLineWidth: () => 0.4,
-      hLineColor: () => LINE,
-      vLineColor: () => LINE,
-      paddingLeft: () => 5,
-      paddingRight: () => 5,
-      paddingTop: () => 4,
-      paddingBottom: () => 4
     };
   }
 
@@ -135,11 +116,6 @@
         kicker: { fontSize: 7, bold: true, color: T.accent, characterSpacing: 1.2 },
         coverTitle: { fontSize: 16, bold: true, color: T.header },
         coverSub: { fontSize: 9, color: '#4B5563', margin: [0, 2, 0, 0] },
-        bannerMeta: { fontSize: 6.5, bold: true, color: '#D6E4F5', characterSpacing: 0.6 },
-        bannerDate: { fontSize: 11, bold: true, color: '#ffffff' },
-        gridHead: { fontSize: 6.5, bold: true, color: '#ffffff', alignment: 'center', characterSpacing: 0.3 },
-        gridVal: { fontSize: 8.5, bold: true, alignment: 'center' },
-        gridValEmpty: { fontSize: 8.5, color: MUTED, italics: true, alignment: 'center' },
         liteBanner: { fontSize: 10, bold: true, color: T.header },
         sectionTitle: { fontSize: 7, bold: true, color: T.headerAlt, characterSpacing: 0.4 },
         inlineLabel: { fontSize: 7, bold: true, color: T.headerAlt },
@@ -180,121 +156,202 @@
     };
   }
 
-  function pmHead(label) {
-    return { text: label, style: 'gridHead', fillColor: T.headerAlt };
+  // Paleta suave das designações mecânicas (cor do ícone/rótulo + fundo claro).
+  const MEC_THEME = {
+    indicador: { color: '#2F5D8A', bg: '#EDF3FA' },
+    audio: { color: '#6B4C8A', bg: '#F4F0F9' },
+    limpeza: { color: '#3E7650', bg: '#EEF6F0' }
+  };
+  const MEC_BORDER = '#D9E1EC';
+
+  const MEC_ICONS = {
+    // Porta (indicador do portão).
+    portao: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><rect x="7.5" y="4.8" width="9" height="14.2" rx="1" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M5 19h14" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><circle cx="14.2" cy="12.2" r="0.95" fill="#fff"/></svg>',
+    // Pessoa (indicador do auditório).
+    auditorio: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><circle cx="12" cy="8.3" r="3" fill="#fff"/><path d="M6.4 18.8c0-3.3 2.5-5.6 5.6-5.6s5.6 2.3 5.6 5.6z" fill="#fff"/></svg>',
+    // Alto-falante (som).
+    som: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><path d="M5 9.8h3.2L12.4 6v12l-4.2-3.8H5z" fill="#fff"/><path d="M15.2 9.4a3.6 3.6 0 0 1 0 5.2M17.5 7.2a6.7 6.7 0 0 1 0 9.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    // Microfone (volantes).
+    mic: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><rect x="9.5" y="4.5" width="5" height="9" rx="2.5" fill="#fff"/><path d="M7 11.5a5 5 0 0 0 10 0M12 16.5v3M9.2 19.5h5.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    // Brilhos (limpeza).
+    limpeza: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><path d="M10 4.5l1.6 4.4 4.4 1.6-4.4 1.6L10 16.5l-1.6-4.4L4 10.5l4.4-1.6z" fill="#fff"/><path d="M16.8 13.2l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z" fill="#fff"/></svg>'
+  };
+
+  const MEC_ROLES = [
+    { key: 'portao', label: 'Ind. Portão', icon: 'portao', theme: 'indicador' },
+    { key: 'indicador', label: 'Ind. Auditório', icon: 'auditorio', theme: 'indicador' },
+    { key: 'som', label: 'Som', icon: 'som', theme: 'audio' },
+    { key: 'microf_volantes_1', label: 'Mic. 1', icon: 'mic', theme: 'audio' },
+    { key: 'microf_volantes_2', label: 'Mic. 2', icon: 'mic', theme: 'audio' },
+    { key: 'limpeza_grupo', label: 'Limpeza', icon: 'limpeza', theme: 'limpeza' }
+  ];
+
+  const MEC_ICON_SIZE = 11;
+  const MEC_ICON_GAP = 4;
+  const MEC_CELL_PAD = 6;
+  const MEC_LABEL_SIZE = 7;
+  const MEC_NAME_SIZE = 9;
+  const MEC_ROW_WIDTH = 530;
+
+  function mecIcon(role) {
+    const c = MEC_THEME[role.theme].color;
+    return MEC_ICONS[role.icon].replace(/\{c\}/g, c);
   }
 
-  function pmCell(value) {
+  // Larguras das 6 colunas, iguais em todos os cards: cada coluna recebe o que o
+  // maior nome/rótulo dela pede e o espaço que sobra é dividido igualmente.
+  function mecColumnWidths(list) {
+    const natural = MEC_ROLES.map((role) => {
+      const label = MEC_ICON_SIZE + MEC_ICON_GAP + textWidth(role.label, true, MEC_LABEL_SIZE);
+      const names = list.map((e) => textWidth(val(e.data?.[role.key]) || '—', true, MEC_NAME_SIZE));
+      return Math.ceil(Math.max(label, ...names) + 2);
+    });
+    const pads = MEC_ROLES.length * MEC_CELL_PAD * 2;
+    const total = natural.reduce((a, b) => a + b, 0);
+    if (total + pads > MEC_ROW_WIDTH) return MEC_ROLES.map(() => '*');
+    const extra = (MEC_ROW_WIDTH - pads - total) / MEC_ROLES.length;
+    return natural.map((w, i) => (i === natural.length - 1 ? '*' : Math.floor(w + extra)));
+  }
+
+  function mecCell(role, value) {
+    const theme = MEC_THEME[role.theme];
     const raw = val(value);
     return {
-      text: raw || '—',
-      style: raw ? 'gridVal' : 'gridValEmpty',
-      margin: [1, 3, 1, 3]
+      stack: [
+        {
+          columns: [
+            { svg: mecIcon(role), width: MEC_ICON_SIZE, height: MEC_ICON_SIZE },
+            { width: '*', text: role.label, fontSize: MEC_LABEL_SIZE, bold: true, color: theme.color, margin: [0, 1.8, 0, 0] }
+          ],
+          columnGap: MEC_ICON_GAP
+        },
+        raw
+          ? { text: raw, fontSize: MEC_NAME_SIZE, bold: true, color: T.text, margin: [0, 3, 0, 0] }
+          : { text: '—', fontSize: MEC_NAME_SIZE, color: MUTED, margin: [0, 3, 0, 0] }
+      ]
     };
   }
 
-  function pmMecanicasGrid(d) {
-    return {
-      table: {
-        widths: ['*', '*', '*'],
-        body: [
-          [pmHead('Indicador (Portão)'), pmHead('Indicador (Auditório)'), pmHead('Som')],
-          [pmCell(d.portao), pmCell(d.indicador), pmCell(d.som)],
-          [pmHead('Mic. 1'), pmHead('Mic. 2'), pmHead('Limpeza')],
-          [pmCell(d.microf_volantes_1), pmCell(d.microf_volantes_2), pmCell(d.limpeza_grupo)]
-        ]
-      },
-      layout: innerGridLayout()
-    };
-  }
-
-  function pmMecanicasCard(entry, idx, total) {
+  function pmMecanicasCard(entry, idx, total, widths) {
     const d = entry.data || {};
     const dateStr = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
     const weekday = val(entry.weekday_label);
-    const dateLine = weekday ? `${dateStr}  ·  ${weekday}` : dateStr;
 
     return {
       unbreakable: true,
+      margin: [0, 0, 0, 5],
       table: {
         widths: ['*'],
-        body: [[{
-          stack: [
-            {
-              table: {
-                widths: ['*'],
-                body: [[{
-                  stack: [
-                    { text: `${idx + 1} / ${total}`, style: 'bannerMeta' },
-                    { text: dateLine, style: 'bannerDate', margin: [0, 1, 0, 0] }
-                  ],
-                  fillColor: T.header,
-                  margin: [8, 6, 8, 7]
-                }]]
+        body: [
+          [{
+            columns: [
+              { svg: CALENDAR_ICON, width: 13, height: 13 },
+              {
+                width: '*',
+                text: [
+                  { text: dateStr, bold: true, color: T.header },
+                  weekday ? { text: `   ${weekday}`, color: '#5B6B80', fontSize: 9 } : ''
+                ],
+                fontSize: 10.5,
+                margin: [0, 1, 0, 0]
               },
-              layout: 'noBorders'
+              { width: 'auto', text: `${idx + 1} / ${total}`, fontSize: 7, color: MUTED, margin: [0, 3, 0, 0] }
+            ],
+            columnGap: 7,
+            fillColor: '#F3F6FA',
+            margin: [9, 3, 9, 3]
+          }],
+          [{
+            table: {
+              widths,
+              body: [MEC_ROLES.map((role) => mecCell(role, d[role.key]))]
             },
-            {
-              ...pmMecanicasGrid(d),
-              fillColor: T.cream
-            }
-          ]
-        }]]
+            layout: {
+              hLineWidth: () => 0,
+              vLineWidth: (i, node) => (i === 0 || i === node.table.widths.length ? 0 : 0.5),
+              vLineColor: () => MEC_BORDER,
+              paddingLeft: () => MEC_CELL_PAD,
+              paddingRight: () => MEC_CELL_PAD,
+              paddingTop: () => 5,
+              paddingBottom: () => 5
+            },
+            margin: [2, 0, 2, 0]
+          }]
+        ]
       },
-      layout: hairlineLayout()
+      layout: {
+        hLineWidth: () => 0.6,
+        vLineWidth: () => 0.6,
+        hLineColor: () => MEC_BORDER,
+        vLineColor: () => MEC_BORDER,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0
+      }
     };
   }
 
   function pmLimpezaTable(cleaningRows) {
     if (!cleaningRows.length) return null;
-    const rows = cleaningRows.map((e) => {
+    const theme = MEC_THEME.limpeza;
+    // Um fim de semana por coluna, no mesmo estilo das células dos cards.
+    const cells = cleaningRows.map((e) => {
       const d = e.data || {};
-      return [
-        { text: val(d.fim_de_semana) || '—', fontSize: 8.5, bold: true },
-        { text: val(d.grupo) || '—', fontSize: 8.5, bold: true }
-      ];
+      const group = val(d.grupo);
+      return {
+        stack: [
+          { text: val(d.fim_de_semana) || '—', fontSize: MEC_LABEL_SIZE, bold: true, color: theme.color },
+          group
+            ? { text: group, fontSize: MEC_NAME_SIZE, bold: true, color: T.text, margin: [0, 3, 0, 0] }
+            : { text: '—', fontSize: MEC_NAME_SIZE, color: MUTED, margin: [0, 3, 0, 0] }
+        ]
+      };
     });
     return {
       unbreakable: true,
       margin: [0, 6, 0, 0],
       table: {
         widths: ['*'],
-        body: [[{
-          stack: [
-            {
-              columns: [
-                { text: 'LIMPEZA MENSAL', fontSize: 8, bold: true, color: T.accent, characterSpacing: 0.6 },
-                { text: `${cleaningRows.length} fim(ns) de semana`, alignment: 'right', fontSize: 7.5, color: '#6B7280' }
-              ],
-              fillColor: T.sectionBg,
-              margin: [8, 6, 8, 6]
+        body: [
+          [{
+            columns: [
+              { svg: MEC_ICONS.limpeza.replace(/\{c\}/g, theme.color), width: 12, height: 12 },
+              { width: '*', text: 'LIMPEZA MENSAL', fontSize: 7.5, bold: true, color: theme.color, characterSpacing: 0.5, margin: [0, 2, 0, 0] },
+              { width: 'auto', text: `${cleaningRows.length} fim(ns) de semana`, fontSize: 7.5, color: '#6B7280', margin: [0, 2, 0, 0] }
+            ],
+            columnGap: 6,
+            fillColor: theme.bg,
+            margin: [9, 4, 9, 4]
+          }],
+          [{
+            table: {
+              widths: cells.map(() => '*'),
+              body: [cells]
             },
-            {
-              table: {
-                widths: ['*', '*'],
-                body: [
-                  [
-                    { text: 'Fim de semana', style: 'gridHead', fillColor: T.headerAlt },
-                    { text: 'Grupo', style: 'gridHead', fillColor: T.headerAlt }
-                  ],
-                  ...rows
-                ]
-              },
-              layout: {
-                hLineWidth: () => 0.4,
-                vLineWidth: () => 0.4,
-                hLineColor: () => LINE,
-                vLineColor: () => LINE,
-                paddingLeft: () => 8,
-                paddingRight: () => 8,
-                paddingTop: () => 5,
-                paddingBottom: () => 5
-              }
-            }
-          ]
-        }]]
+            layout: {
+              hLineWidth: () => 0,
+              vLineWidth: (i, node) => (i === 0 || i === node.table.widths.length ? 0 : 0.5),
+              vLineColor: () => MEC_BORDER,
+              paddingLeft: () => MEC_CELL_PAD,
+              paddingRight: () => MEC_CELL_PAD,
+              paddingTop: () => 5,
+              paddingBottom: () => 5
+            },
+            margin: [2, 0, 2, 0]
+          }]
+        ]
       },
-      layout: hairlineLayout()
+      layout: {
+        hLineWidth: () => 0.6,
+        vLineWidth: () => 0.6,
+        hLineColor: () => MEC_BORDER,
+        vLineColor: () => MEC_BORDER,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0
+      }
     };
   }
 
@@ -306,28 +363,9 @@
     if (!list.length) {
       content.push({ text: 'Nenhuma designação mecânica neste mês.', color: MUTED, italics: true, fontSize: 9 });
     } else {
-      const pairs = chunkEntries(list, 2);
-      let cardIndex = 0;
-      pairs.forEach((pair) => {
-        const cards = pair.map((e) => {
-          const card = pmMecanicasCard(e, cardIndex, list.length);
-          cardIndex += 1;
-          return card;
-        });
-        if (cards.length === 2) {
-          content.push({
-            columns: [
-              { width: '*', stack: [cards[0]] },
-              { width: 10, text: '' },
-              { width: '*', stack: [cards[1]] }
-            ],
-            columnGap: 0,
-            margin: [0, 0, 0, 8]
-          });
-        } else {
-          content.push({ ...cards[0], margin: [0, 0, 0, 8], width: 264 });
-        }
-      });
+      // Um card por linha (largura total), com as 6 funções lado a lado.
+      const widths = mecColumnWidths(list);
+      list.forEach((e, idx) => content.push(pmMecanicasCard(e, idx, list.length, widths)));
     }
 
     const limpeza = pmLimpezaTable(cleaningRows);
