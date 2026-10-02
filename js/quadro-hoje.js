@@ -165,8 +165,20 @@
     return sheet('midweek', 'Meio de semana', 'Nossa Vida e Ministério Cristão', entry.event_date, body, meta);
   }
 
+  // Orador/tema de Discursos Públicos ficam em `_discursos` (gravado pelo Hub);
+  // campo editado à mão (`_manual_keys`) prevalece.
+  function weekendData(raw) {
+    const d = { ...(raw || {}) };
+    const snap = d._discursos && typeof d._discursos === 'object' ? d._discursos : {};
+    const manual = Array.isArray(d._manual_keys) ? d._manual_keys : [];
+    Object.keys(snap).forEach((k) => {
+      if (val(snap[k]) && !(manual.includes(k) && val(d[k]))) d[k] = snap[k];
+    });
+    return d;
+  }
+
   function renderWeekend(entry) {
-    const d = entry.data || {};
+    const d = weekendData(entry.data);
     const title = 'Discurso Público e Estudo de A Sentinela';
     const special = val(d.evento_especial);
     if (special) {

@@ -1289,7 +1289,9 @@
       event_date: e.event_date || null,
       weekday_label: e.weekday_label || null,
       sort_order: e.sort_order ?? idx,
-      data: e.data || {},
+      data: e.block === 'weekend'
+        ? Sync.withSpeechSnapshot(e.data, receiveSpeechesByDate[e.event_date])
+        : (e.data || {}),
       export_to_calendar: e.export_to_calendar !== false
     }));
 
