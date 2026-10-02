@@ -129,12 +129,12 @@
         'js/hub-doc-footer.js?v=2026060977',
         'js/admin/announcement-theme.js',
         'js/admin/announcement-dates.js',
-        'js/admin/weekend-discursos-sync.js?v=20260710220000',
+        'js/admin/weekend-discursos-sync.js?v=2026100202',
         'js/admin/announcement-schemas.js?v=2026100101',
         'js/admin/anuncios-export.js?v=2026100101',
         'js/admin/anuncios-pdf.js?v=2026100101',
         'js/admin/anuncios-rodizio.js?v=2026100103',
-        'js/admin/anuncios.js?v=2026100201'
+        'js/admin/anuncios.js?v=2026100202'
       ],
       initKey: 'JEAdminAnuncios',
       hero: {

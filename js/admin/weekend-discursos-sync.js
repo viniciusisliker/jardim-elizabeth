@@ -187,6 +187,22 @@
     });
   }
 
+  // Cópia do que vem de Discursos Públicos gravada junto do anúncio, para as
+  // páginas públicas (sem acesso a speech_assignments) mostrarem orador e tema.
+  const SPEECH_SNAPSHOT_FIELD = '_discursos';
+
+  function withSpeechSnapshot(data, speechEntry) {
+    const out = { ...(data || {}) };
+    const fields = speechToWeekendFields(speechEntry);
+    const keys = Object.keys(fields).filter((k) => trim(fields[k]));
+    if (keys.length) {
+      out[SPEECH_SNAPSHOT_FIELD] = Object.fromEntries(keys.map((k) => [k, fields[k]]));
+    } else {
+      delete out[SPEECH_SNAPSHOT_FIELD];
+    }
+    return out;
+  }
+
   function mergeWeekendEntries(entries, speechesByDate) {
     return (entries || []).map((entry) => {
       if (entry.block !== 'weekend') return entry;
@@ -199,6 +215,8 @@
   window.JEWeekendDiscursosSync = {
     DISCURSOS_WEEKEND_KEYS,
     MANUAL_KEYS_FIELD,
+    SPEECH_SNAPSHOT_FIELD,
+    withSpeechSnapshot,
     setWeekendFieldValue,
     speechToWeekendFields,
     formatSentSpeakers,
