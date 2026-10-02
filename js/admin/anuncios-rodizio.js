@@ -192,7 +192,8 @@
     closePopup();
 
     const names = list.items.map((v) => v.trim()).filter(Boolean);
-    // Aberto de um campo das mecânicas: marca quem já tem parte no meio/fim de semana nesse dia.
+    // Aberto de um campo das mecânicas: marca quem já tem parte nesse dia e quem quebra
+    // a regra de folga/repetição entre semanas.
     const date = opener?.dataset.rotationDate;
     const ownKey = opener?.dataset.rotationKey;
     const assignmentsFor = date ? window.JEAnnouncementAssignments?.assignmentsFor : null;
@@ -200,7 +201,7 @@
       const list = assignmentsFor ? assignmentsFor(name, date, ownKey) : [];
       return list.length
         ? `<span class="qa-assign-tags">${list.map((a) => `
-            <span class="qa-assign-tag${a.block === 'mecanicas' ? ' qa-assign-tag--conflict' : ''}"><span class="material-symbols-outlined" aria-hidden="true">event_busy</span><span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span></span>`).join('')}</span>`
+            <span class="qa-assign-tag${a.conflict ? ' qa-assign-tag--conflict' : ''}"><span class="material-symbols-outlined" aria-hidden="true">event_busy</span><span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span></span>`).join('')}</span>`
         : '';
     };
     const body = names.length
