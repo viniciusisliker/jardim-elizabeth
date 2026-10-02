@@ -94,15 +94,15 @@
 
   function renderMecanicas(entry) {
     const d = entry.data || {};
-    const cells = [
-      ['Indicador (Portão)', d.portao], ['Indicador (Auditório)', d.indicador], ['Som', d.som],
-      ['Mic. volante 1', d.microf_volantes_1], ['Mic. volante 2', d.microf_volantes_2], ['Limpeza', d.limpeza_grupo]
-    ].map(([label, v]) => `
-      <div class="je-qh-cell">
-        <span class="je-qh-cell__label">${esc(label)}</span>
-        <span class="je-qh-cell__value${val(v) ? '' : ' is-empty'}">${esc(val(v) || '—')}</span>
-      </div>`).join('');
-    return sheet('org', 'Organização', 'Designações Mecânicas', entry.event_date, `<div class="je-qh-grid">${cells}</div>`);
+    const r = (label, v) => row(null, label, val(v) || '—');
+    const body = [
+      section('indicadores', 'badge', 'Indicadores', [r('Portão', d.portao), r('Auditório', d.indicador)]),
+      section('audio', 'mic', 'Som e microfones', [
+        r('Som', d.som), r('Mic. volante 1', d.microf_volantes_1), r('Mic. volante 2', d.microf_volantes_2)
+      ]),
+      section('limpeza', 'cleaning_services', 'Limpeza', [r('Grupo', d.limpeza_grupo)])
+    ].join('');
+    return sheet('org', 'Organização', 'Designações Mecânicas', entry.event_date, body);
   }
 
   function row(num, label, name, extra) {
