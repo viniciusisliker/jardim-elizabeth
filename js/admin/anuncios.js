@@ -32,6 +32,9 @@
   let boardListFilter = 'all';
   let receiveSpeechesByDate = {};
   let receiveSpeechesMonth = null;
+  // Mecânicas dos quadros do mês anterior e do seguinte: a regra de folga/repetição
+  // olha semanas vizinhas, que na virada do mês estão em outro quadro.
+  let neighborMecanicas = [];
   const blockSelection = { mecanicas: 0, midweek: 0, weekend: 0, limpeza_mensal: 0 };
   const pendingPdfs = {};
   let pdfPreviewBlock = null;
@@ -156,6 +159,39 @@
     receiveSpeechesMonth = board.reference_month;
   }
 
+  function shiftMonth(referenceMonth, delta) {
+    const [y, m] = referenceMonth.split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1, 12);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  }
+
+  async function loadNeighborMecanicas() {
+    neighborMecanicas = [];
+    if (!board?.reference_month || !client) return;
+    const months = [shiftMonth(board.reference_month, -1), shiftMonth(board.reference_month, 1)];
+    try {
+      const { data: boards, error } = await client
+        .from('announcement_boards')
+        .select('id, reference_month')
+        .in('reference_month', months)
+        .neq('status', 'archived')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      // Um quadro por mês, o mais recente (mesmo critério de abrir o quadro).
+      const ids = months.map((m) => (boards || []).find((b) => b.reference_month === m)?.id).filter(Boolean);
+      if (!ids.length) return;
+      const { data: rows, error: rowsErr } = await client
+        .from('announcement_entries')
+        .select('event_date, data')
+        .in('board_id', ids)
+        .eq('block', 'mecanicas');
+      if (rowsErr) throw rowsErr;
+      neighborMecanicas = (rows || []).map((r) => ({ block: 'mecanicas', event_date: r.event_date, data: r.data || {} }));
+    } catch (err) {
+      console.warn('Não foi possível carregar as mecânicas dos meses vizinhos', err);
+    }
+  }
+
   function readFormIntoEntries() {
     document.querySelectorAll('[data-entry-id]').forEach((card) => {
       const id = card.dataset.entryId;
@@ -257,18 +293,78 @@
     return out;
   }
 
+  // Regras do rodízio das mecânicas entre semanas (semana = segunda a domingo;
+  // quarta e fim de semana contam como uma semana só):
+  // - no máximo 2 semanas seguidas; a 3ª sem folga é conflito;
+  // - a mesma tarefa em semanas seguidas é conflito. Volante 1 e 2 são a mesma tarefa;
+  //   Portão e Auditório não.
+  const MAX_WEEKS_IN_A_ROW = 2;
+  const TASK_ALIAS = { microf_volantes_2: 'microf_volantes_1' };
+  const TASK_LABEL = { microf_volantes_1: 'Microf. volante' };
+  const taskOf = (key) => TASK_ALIAS[key] || key;
+  const taskLabel = (task) => TASK_LABEL[task] || (MECANICAS_PARTS.find(([k]) => k === task) || [])[1] || task;
+
+  function weekOf(dateIso) {
+    const d = new Date(dateIso + 'T12:00:00');
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return Dates.toISODate(d);
+  }
+
+  function shiftWeek(weekIso, n) {
+    const d = new Date(weekIso + 'T12:00:00');
+    d.setDate(d.getDate() + 7 * n);
+    return Dates.toISODate(d);
+  }
+
+  // Semana -> tarefas que o irmão fez nas mecânicas, ignorando o próprio campo em edição.
+  function mecanicasWeeksOf(name, dateIso, ownKey) {
+    const weeks = new Map();
+    [...entries.filter((e) => e.block === 'mecanicas'), ...neighborMecanicas].forEach((e) => {
+      if (!e.event_date) return;
+      MECANICAS_PARTS.forEach(([key]) => {
+        if (e.event_date === dateIso && key === ownKey) return;
+        if (!mentionsName((e.data || {})[key], name)) return;
+        const week = weekOf(e.event_date);
+        if (!weeks.has(week)) weeks.set(week, new Set());
+        weeks.get(week).add(taskOf(key));
+      });
+    });
+    return weeks;
+  }
+
+  function weeklyRotationIssues(name, dateIso, ownKey) {
+    if (!dateIso || !MECANICAS_PARTS.some(([k]) => k === ownKey)) return [];
+    const weeks = mecanicasWeeksOf(name, dateIso, ownKey);
+    const week = weekOf(dateIso);
+    const task = taskOf(ownKey);
+    const out = [];
+    const issue = (parte) => out.push({ block: 'rodizio', quadro: 'Rodízio', parte, conflict: true });
+
+    if (weeks.get(shiftWeek(week, -1))?.has(task)) issue(`${taskLabel(task)} na semana anterior`);
+    if (weeks.get(shiftWeek(week, 1))?.has(task)) issue(`${taskLabel(task)} na semana seguinte`);
+
+    let before = 0;
+    while (before <= MAX_WEEKS_IN_A_ROW && weeks.has(shiftWeek(week, -(before + 1)))) before++;
+    let after = 0;
+    while (after <= MAX_WEEKS_IN_A_ROW && weeks.has(shiftWeek(week, after + 1))) after++;
+    const inARow = before + 1 + after;
+    if (inARow > MAX_WEEKS_IN_A_ROW) issue(`sem folga (${inARow} semanas seguidas)`);
+    return out;
+  }
+
   // `ownKey`: campo das mecânicas que está sendo preenchido (não conta como conflito consigo mesmo).
   function assignmentsFor(name, dateIso, ownKey) {
     if (!trim(name)) return [];
     return assignmentsOnDate(dateIso)
       .filter((a) => !(a.block === 'mecanicas' && a.key === ownKey))
       .filter((a) => mentionsName(a.text, name))
-      .map(({ block, quadro, parte }) => ({ block, quadro, parte }));
+      .map(({ block, quadro, parte }) => ({ block, quadro, parte, conflict: block === 'mecanicas' }))
+      .concat(weeklyRotationIssues(name, dateIso, ownKey));
   }
 
   function assignmentTagsHtml(name, dateIso, ownKey) {
     return assignmentsFor(name, dateIso, ownKey).map((a) => `
-      <span class="qa-assign-tag${a.block === 'mecanicas' ? ' qa-assign-tag--conflict' : ''}" title="${escapeHtml(a.quadro)}: ${escapeHtml(a.parte)}">
+      <span class="qa-assign-tag${a.conflict ? ' qa-assign-tag--conflict' : ''}" title="${escapeHtml(a.quadro)}: ${escapeHtml(a.parte)}">
         <span class="material-symbols-outlined" aria-hidden="true">event_busy</span>
         <span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span>
       </span>`).join('');
@@ -864,7 +960,7 @@
     }
 
     updateBoardLabel();
-    await loadReceiveSpeeches(true);
+    await Promise.all([loadReceiveSpeeches(true), loadNeighborMecanicas()]);
     renderActiveEditors();
     if (restoredUnsaved) {
       showToast(toastEl, 'Alterações não salvas restauradas. Clique em "Salvar rascunho" para gravar.');
@@ -988,7 +1084,7 @@
       });
       await persistEntries(true);
       updateBoardLabel();
-      await loadReceiveSpeeches(true);
+      await Promise.all([loadReceiveSpeeches(true), loadNeighborMecanicas()]);
       renderActiveEditors();
       showToast(toastEl, 'Novo quadro criado com datas do mês.');
     }
