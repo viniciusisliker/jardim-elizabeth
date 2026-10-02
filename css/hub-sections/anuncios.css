@@ -61,6 +61,41 @@
     html.dark .qa-cell select option.qa-option-busy{color:#80868b}
     html.dark .qa-assign-tag{color:#f6c89a;background:rgba(152,72,6,.22);border-color:rgba(246,200,154,.3)}
     html.dark .qa-assign-tag--conflict{color:#ffb4ab;background:rgba(186,26,26,.25);border-color:rgba(255,180,171,.35)}
+    .qa-cell.has-conflict .qa-picker__trigger{border-color:#ba1a1a;box-shadow:0 0 0 1px #ba1a1a}
+    .qa-picker.is-enhanced select{display:none}
+    .qa-picker__trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:1px solid #c3c6d0;border-radius:0.375rem;padding:0.5rem 0.5rem 0.5rem 0.625rem;font-size:0.875rem;line-height:1.25rem;background:#fff;color:#1b1c1c;text-align:left;cursor:pointer}
+    .qa-picker__trigger:focus-visible,.qa-picker.is-open .qa-picker__trigger{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
+    .qa-picker__value{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .qa-picker.is-empty .qa-picker__value{color:#8a8d93}
+    .qa-picker__trigger .material-symbols-outlined{font-size:1.25rem;color:#6b7280;transition:transform .15s}
+    .qa-picker.is-open .qa-picker__trigger .material-symbols-outlined{transform:rotate(180deg)}
+    .qa-picker-panel{position:fixed;z-index:1000;display:flex;flex-direction:column;background:#fff;border:1px solid #c3c6d0;border-radius:0.625rem;box-shadow:0 12px 32px rgba(0,32,96,.18);overflow:hidden}
+    .qa-picker-panel__search{display:flex;align-items:center;gap:0.375rem;padding:0.5rem 0.625rem;border-bottom:1px solid #e2e6ef}
+    .qa-picker-panel__search .material-symbols-outlined{font-size:1.125rem;color:#6b7280}
+    .qa-picker-panel__search input{flex:1;min-width:0;border:none;background:transparent;font-size:0.875rem;padding:0.25rem 0;color:inherit}
+    .qa-picker-panel__search input:focus{outline:none}
+    .qa-picker-panel [hidden]{display:none!important}
+    .qa-picker-panel__list{list-style:none;margin:0;padding:0.25rem;overflow:auto;flex:1;min-height:0}
+    .qa-picker__heading{display:flex;align-items:center;gap:0.375rem;padding:0.5rem 0.5rem 0.25rem;font-size:0.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#1F497D}
+    .qa-picker__heading span{font-weight:700;color:#6b7280}
+    .qa-picker__opt{display:flex;flex-direction:column;gap:0.25rem;padding:0.4375rem 0.5rem;border-radius:0.4375rem;cursor:pointer}
+    .qa-picker__opt.is-active{background:#eef3fa}
+    .qa-picker__opt.is-selected .qa-picker__name{color:#002060;font-weight:800}
+    .qa-picker__name{display:flex;align-items:center;gap:0.25rem;font-size:0.875rem;font-weight:600;color:#1b1c1c}
+    .qa-picker__name .material-symbols-outlined{font-size:1rem;color:#1a7f4b}
+    .qa-picker__opt.is-busy .qa-picker__name{color:#5f6368}
+    .qa-picker__opt .qa-assign-tags{margin-top:0}
+    .qa-picker__opt--clear .qa-picker__name{color:#6b7280;font-weight:600}
+    .qa-picker__opt--clear .material-symbols-outlined{color:#6b7280}
+    .qa-picker__empty{padding:0.75rem 0.5rem;font-size:0.8125rem;color:#6b7280;text-align:center}
+    html.dark .qa-picker__trigger{background:var(--je-input-bg);color:var(--je-on-surface);border-color:var(--je-outline-variant)}
+    html.dark .qa-picker-panel{background:var(--je-input-bg);border-color:var(--je-card-border);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+    html.dark .qa-picker-panel__search{border-color:var(--je-card-border)}
+    html.dark .qa-picker__name{color:var(--je-on-surface)}
+    html.dark .qa-picker__opt.is-busy .qa-picker__name{color:#a8abb0}
+    html.dark .qa-picker__opt.is-selected .qa-picker__name{color:#aac7ff}
+    html.dark .qa-picker__opt.is-active{background:rgba(170,199,255,.12)}
+    html.dark .qa-picker__heading{color:#aac7ff}
     .qa-table-row input:focus,.qa-table-row select:focus{outline:none;border-color:#002060;box-shadow:0 0 0 2px rgba(0,32,96,.12)}
     .qa-section{background:#fff;border:1px solid rgba(31,73,125,.35);border-radius:0.625rem;margin-bottom:1rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,32,96,.06)}
     .qa-section-title{display:flex;align-items:center;gap:0.5rem;font-size:0.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#002060;background:linear-gradient(180deg,#EEECE1 0%,#e8e6df 100%);padding:0.75rem 1.125rem;border-bottom:1px solid #D9E2F3}
