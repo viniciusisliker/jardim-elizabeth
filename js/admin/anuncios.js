@@ -379,6 +379,184 @@
   // Usado também pelo pop-up do rodízio (anuncios-rodizio.js).
   window.JEAnnouncementAssignments = { assignmentsFor };
 
+  // Seletor de irmão com designações: o <select> nativo não quebra linha e corta o
+  // texto das designações. O select continua no DOM (é ele que o formulário lê) e
+  // por cima entra um botão que abre uma lista com o nome e as designações em etiquetas.
+  let openPicker = null;
+
+  function closePersonPicker(focusTrigger) {
+    if (!openPicker) return;
+    const { panel, trigger, wrap, onViewport, onOutside } = openPicker;
+    openPicker = null;
+    panel.remove();
+    wrap.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+    window.removeEventListener('scroll', onViewport, true);
+    window.removeEventListener('resize', onViewport);
+    document.removeEventListener('mousedown', onOutside, true);
+    if (focusTrigger) trigger.focus();
+  }
+
+  function positionPersonPicker() {
+    if (!openPicker) return;
+    const { panel, trigger } = openPicker;
+    const r = trigger.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const vh = window.innerHeight;
+    const width = Math.min(Math.max(r.width, 360), vw - 16);
+    const left = Math.max(8, Math.min(r.left, vw - width - 8));
+    const below = vh - r.bottom - 8;
+    const above = r.top - 8;
+    const openUp = below < 260 && above > below;
+    panel.style.width = `${width}px`;
+    panel.style.left = `${left}px`;
+    panel.style.maxHeight = `${Math.min(420, Math.max(160, (openUp ? above : below) - 4))}px`;
+    panel.style.top = openUp ? '' : `${r.bottom + 4}px`;
+    panel.style.bottom = openUp ? `${vh - r.top + 4}px` : '';
+  }
+
+  function personPickerLabel(select) {
+    return select.value || 'Escolher…';
+  }
+
+  function openPersonPicker(wrap) {
+    closePersonPicker();
+    const select = wrap.querySelector('select');
+    const trigger = wrap.querySelector('.qa-picker__trigger');
+    const tagsEl = wrap.parentElement.querySelector('[data-assign-tags]');
+    const { assignTags: date, assignKey: key } = tagsEl?.dataset || {};
+    readFormIntoEntries();
+
+    const items = [...select.options].filter((o) => o.value).map((o) => {
+      const list = date ? assignmentsFor(o.value, date, key) : [];
+      return { value: o.value, list, conflict: list.some((a) => a.conflict) };
+    });
+    const optionHtml = (it) => `
+      <li role="option" class="qa-picker__opt${it.list.length ? ' is-busy' : ''}${it.conflict ? ' is-conflict' : ''}${it.value === select.value ? ' is-selected' : ''}" data-value="${escapeHtml(it.value)}" aria-selected="${it.value === select.value}">
+        <span class="qa-picker__name">${escapeHtml(it.value)}${it.value === select.value ? '<span class="material-symbols-outlined" aria-hidden="true">check</span>' : ''}</span>
+        ${it.list.length ? `<span class="qa-assign-tags">${it.list.map((a) => `
+          <span class="qa-assign-tag${a.conflict ? ' qa-assign-tag--conflict' : ''}">
+            <span class="material-symbols-outlined" aria-hidden="true">event_busy</span>
+            <span><strong>${escapeHtml(a.quadro)}:</strong> ${escapeHtml(a.parte)}</span>
+          </span>`).join('')}</span>` : ''}
+      </li>`;
+    const free = items.filter((it) => !it.list.length);
+    const busy = items.filter((it) => it.list.length);
+    const heading = (label, n) => `<li class="qa-picker__heading" role="presentation">${label} <span>${n}</span></li>`;
+
+    const panel = document.createElement('div');
+    panel.className = 'qa-picker-panel';
+    panel.innerHTML = `
+      <div class="qa-picker-panel__search">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input type="text" placeholder="Buscar nome…" aria-label="Buscar nome" autocomplete="off"/>
+      </div>
+      <ul class="qa-picker-panel__list" role="listbox">
+        ${select.value ? '<li role="option" class="qa-picker__opt qa-picker__opt--clear" data-value=""><span class="qa-picker__name"><span class="material-symbols-outlined" aria-hidden="true">close</span>Deixar em branco</span></li>' : ''}
+        ${free.length ? heading('Disponíveis', free.length) + free.map(optionHtml).join('') : ''}
+        ${busy.length ? heading('Já designados', busy.length) + busy.map(optionHtml).join('') : ''}
+        <li class="qa-picker__empty" role="presentation" hidden>Nenhum nome encontrado</li>
+      </ul>`;
+    document.body.appendChild(panel);
+
+    const search = panel.querySelector('input');
+    const listEl = panel.querySelector('ul');
+    const visibleOpts = () => [...listEl.querySelectorAll('.qa-picker__opt:not([hidden])')];
+    let active = null;
+    const setActive = (el) => {
+      active?.classList.remove('is-active');
+      active = el || null;
+      if (active) { active.classList.add('is-active'); active.scrollIntoView({ block: 'nearest' }); }
+    };
+    const choose = (value) => {
+      if (select.value !== value) {
+        select.value = value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      trigger.querySelector('.qa-picker__value').textContent = personPickerLabel(select);
+      wrap.classList.toggle('is-empty', !select.value);
+      closePersonPicker(true);
+    };
+
+    search.addEventListener('input', () => {
+      const q = normName(search.value);
+      listEl.querySelectorAll('.qa-picker__opt').forEach((li) => {
+        li.hidden = !!q && (!li.dataset.value || !normName(li.dataset.value).includes(q));
+      });
+      listEl.querySelectorAll('.qa-picker__heading').forEach((h) => {
+        let n = 0;
+        for (let el = h.nextElementSibling; el && el.classList.contains('qa-picker__opt'); el = el.nextElementSibling) if (!el.hidden) n++;
+        h.hidden = !n;
+        h.querySelector('span').textContent = n;
+      });
+      listEl.querySelector('.qa-picker__empty').hidden = visibleOpts().length > 0;
+      setActive(visibleOpts().find((li) => li.dataset.value));
+    });
+    search.addEventListener('keydown', (e) => {
+      const opts = visibleOpts();
+      const i = opts.indexOf(active);
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(opts[Math.min(opts.length - 1, i + 1)]); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(opts[Math.max(0, i - 1)]); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (active) choose(active.dataset.value); }
+      else if (e.key === 'Escape') { e.preventDefault(); closePersonPicker(true); }
+      else if (e.key === 'Tab') closePersonPicker();
+    });
+    listEl.addEventListener('mousemove', (e) => {
+      const li = e.target.closest('.qa-picker__opt');
+      if (li && li !== active) setActive(li);
+    });
+    listEl.addEventListener('click', (e) => {
+      const li = e.target.closest('.qa-picker__opt');
+      if (li) choose(li.dataset.value);
+    });
+
+    const onViewport = (e) => {
+      if (e.type === 'scroll' && panel.contains(e.target)) return;
+      positionPersonPicker();
+    };
+    const onOutside = (e) => {
+      if (!panel.contains(e.target) && !wrap.contains(e.target)) closePersonPicker();
+    };
+    openPicker = { panel, trigger, wrap, onViewport, onOutside };
+    window.addEventListener('scroll', onViewport, true);
+    window.addEventListener('resize', onViewport);
+    document.addEventListener('mousedown', onOutside, true);
+    wrap.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+    positionPersonPicker();
+    setActive(listEl.querySelector('.qa-picker__opt.is-selected') || visibleOpts().find((li) => li.dataset.value));
+    search.focus({ preventScroll: true });
+  }
+
+  function enhancePersonPickers(container) {
+    container.querySelectorAll('[data-person-picker]').forEach((wrap) => {
+      if (wrap.classList.contains('is-enhanced')) return;
+      const select = wrap.querySelector('select');
+      if (!select) return;
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'qa-picker__trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+      const label = wrap.closest('.qa-cell')?.querySelector('label')?.textContent;
+      if (label) trigger.setAttribute('aria-label', label);
+      trigger.innerHTML = `<span class="qa-picker__value"></span><span class="material-symbols-outlined" aria-hidden="true">expand_more</span>`;
+      trigger.querySelector('.qa-picker__value').textContent = personPickerLabel(select);
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+      wrap.classList.toggle('is-empty', !select.value);
+      wrap.appendChild(trigger);
+      wrap.classList.add('is-enhanced');
+      trigger.addEventListener('click', () => {
+        if (openPicker?.wrap === wrap) closePersonPicker();
+        else openPersonPicker(wrap);
+      });
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); openPersonPicker(wrap); }
+      });
+    });
+  }
+
   function fieldCell(field, entry) {
     const val = (entry.data && entry.data[field.key]) || '';
     const personField = field.rotation && field.rotation !== 'grupos';
@@ -396,8 +574,9 @@
         const busy = date && assignmentsFor(o, date, field.key).length ? ' class="qa-option-busy"' : '';
         return `<option value="${escapeHtml(o)}"${busy} ${val === o ? 'selected' : ''}>${escapeHtml(date ? assignmentOptionLabel(o, date, field.key) : o)}</option>`;
       }).join('');
+      const select = `<select data-data-key="${field.key}"><option value=""></option>${opts}</select>`;
       return `<div class="qa-cell">${head}
-        <select data-data-key="${field.key}"><option value=""></option>${opts}</select>${tags}</div>`;
+        ${date ? `<div class="qa-picker" data-person-picker>${select}</div>` : select}${tags}</div>`;
     }
     return `<div class="qa-cell">${head}
       <input data-data-key="${field.key}" value="${escapeHtml(val)}"/>${tags}</div>`;
@@ -626,6 +805,7 @@
     assignTagEls.forEach((tagsEl) => {
       tagsEl.parentElement.classList.toggle('has-conflict', !!tagsEl.querySelector('.qa-assign-tag--conflict'));
     });
+    enhancePersonPickers(container);
     container.querySelector('[data-prev-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx - 1));
     container.querySelector('[data-next-entry]')?.addEventListener('click', () => selectBlockEntry(block, idx + 1));
     container.querySelectorAll('[data-nav-index]').forEach((btn) => {
@@ -634,6 +814,7 @@
   }
 
   function renderBlockEditor(block, containerId) {
+    closePersonPicker();
     const container = $(containerId);
     if (!container) return;
     const list = entriesFor(block);
