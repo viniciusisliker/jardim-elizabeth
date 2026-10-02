@@ -214,6 +214,7 @@
       { width: '*', text: title, style: 'liteBanner', margin: [0, 1.5, 0, 0] }
     ];
     if (cleaning) {
+      header.push({ svg: MEC_ICONS.limpeza.replace(/\{c\}/g, MEC_THEME.limpeza.color), width: 11, height: 11, margin: [0, 2, -3, 0] });
       header.push({
         width: 'auto',
         text: [{ text: 'Limpeza  ', bold: true, color: MEC_THEME.limpeza.color }, { text: cleaning }],
