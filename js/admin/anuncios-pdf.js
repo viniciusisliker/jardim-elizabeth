@@ -156,202 +156,78 @@
     };
   }
 
-  // Paleta suave das designações mecânicas (cor do ícone/rótulo + fundo claro).
+  // Mesma linguagem dos quadros de reunião: faixa com ícone + linhas rótulo | nome.
   const MEC_THEME = {
-    indicador: { color: '#2F5D8A', bg: '#EDF3FA' },
-    audio: { color: '#6B4C8A', bg: '#F4F0F9' },
-    limpeza: { color: '#3E7650', bg: '#EEF6F0' }
+    indicadores: { color: '#2F5D8A', bg: '#EDF3FA', title: 'Indicadores' },
+    audio: { color: '#6B4C8A', bg: '#F4F0F9', title: 'Som e microfones' },
+    limpeza: { color: '#3E7650', bg: '#EEF6F0', title: 'Limpeza mensal' }
   };
-  const MEC_BORDER = '#D9E1EC';
 
   const MEC_ICONS = {
-    // Porta (indicador do portão).
-    portao: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><rect x="7.5" y="4.8" width="9" height="14.2" rx="1" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M5 19h14" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><circle cx="14.2" cy="12.2" r="0.95" fill="#fff"/></svg>',
-    // Pessoa (indicador do auditório).
-    auditorio: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><circle cx="12" cy="8.3" r="3" fill="#fff"/><path d="M6.4 18.8c0-3.3 2.5-5.6 5.6-5.6s5.6 2.3 5.6 5.6z" fill="#fff"/></svg>',
-    // Alto-falante (som).
-    som: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><path d="M5 9.8h3.2L12.4 6v12l-4.2-3.8H5z" fill="#fff"/><path d="M15.2 9.4a3.6 3.6 0 0 1 0 5.2M17.5 7.2a6.7 6.7 0 0 1 0 9.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
-    // Microfone (volantes).
-    mic: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><rect x="9.5" y="4.5" width="5" height="9" rx="2.5" fill="#fff"/><path d="M7 11.5a5 5 0 0 0 10 0M12 16.5v3M9.2 19.5h5.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    // Pessoa (indicadores).
+    indicadores: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><circle cx="12" cy="8.3" r="3" fill="#fff"/><path d="M6.4 18.8c0-3.3 2.5-5.6 5.6-5.6s5.6 2.3 5.6 5.6z" fill="#fff"/></svg>',
+    // Microfone (som e microfones volantes).
+    audio: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><rect x="9.5" y="4.5" width="5" height="9" rx="2.5" fill="#fff"/><path d="M7 11.5a5 5 0 0 0 10 0M12 16.5v3M9.2 19.5h5.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>',
     // Brilhos (limpeza).
-    limpeza: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="{c}"/><path d="M10 4.5l1.6 4.4 4.4 1.6-4.4 1.6L10 16.5l-1.6-4.4L4 10.5l4.4-1.6z" fill="#fff"/><path d="M16.8 13.2l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z" fill="#fff"/></svg>'
+    limpeza: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="{c}"/><path d="M10 4.5l1.6 4.4 4.4 1.6-4.4 1.6L10 16.5l-1.6-4.4L4 10.5l4.4-1.6z" fill="#fff"/><path d="M16.8 13.2l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z" fill="#fff"/></svg>'
   };
 
-  const MEC_ROLES = [
-    { key: 'portao', label: 'Ind. Portão', icon: 'portao', theme: 'indicador' },
-    { key: 'indicador', label: 'Ind. Auditório', icon: 'auditorio', theme: 'indicador' },
-    { key: 'som', label: 'Som', icon: 'som', theme: 'audio' },
-    { key: 'microf_volantes_1', label: 'Mic. 1', icon: 'mic', theme: 'audio' },
-    { key: 'microf_volantes_2', label: 'Mic. 2', icon: 'mic', theme: 'audio' },
-    { key: 'limpeza_grupo', label: 'Limpeza', icon: 'limpeza', theme: 'limpeza' }
-  ];
-
-  const MEC_ICON_SIZE = 11;
-  const MEC_ICON_GAP = 4;
-  const MEC_CELL_PAD = 6;
-  const MEC_LABEL_SIZE = 7;
-  const MEC_NAME_SIZE = 9;
-  const MEC_ROW_WIDTH = 530;
-
-  function mecIcon(role) {
-    const c = MEC_THEME[role.theme].color;
-    return MEC_ICONS[role.icon].replace(/\{c\}/g, c);
+  function mecSection(key, rows, opts = {}) {
+    return pmWeekendSection(key, rows, { ...opts, theme: MEC_THEME[key], icon: MEC_ICONS[key] });
   }
 
-  // Larguras das 6 colunas, iguais em todos os cards: cada coluna recebe o que o
-  // maior nome/rótulo dela pede e o espaço que sobra é dividido igualmente.
-  function mecColumnWidths(list) {
-    const natural = MEC_ROLES.map((role) => {
-      const label = MEC_ICON_SIZE + MEC_ICON_GAP + textWidth(role.label, true, MEC_LABEL_SIZE);
-      const names = list.map((e) => textWidth(val(e.data?.[role.key]) || '—', true, MEC_NAME_SIZE));
-      return Math.ceil(Math.max(label, ...names) + 2);
-    });
-    const pads = MEC_ROLES.length * MEC_CELL_PAD * 2;
-    const total = natural.reduce((a, b) => a + b, 0);
-    if (total + pads > MEC_ROW_WIDTH) return MEC_ROLES.map(() => '*');
-    const extra = (MEC_ROW_WIDTH - pads - total) / MEC_ROLES.length;
-    return natural.map((w, i) => (i === natural.length - 1 ? '*' : Math.floor(w + extra)));
-  }
-
-  function mecCell(role, value) {
-    const theme = MEC_THEME[role.theme];
-    const raw = val(value);
-    return {
-      stack: [
-        {
-          columns: [
-            { svg: mecIcon(role), width: MEC_ICON_SIZE, height: MEC_ICON_SIZE },
-            { width: '*', text: role.label, fontSize: MEC_LABEL_SIZE, bold: true, color: theme.color, margin: [0, 1.8, 0, 0] }
-          ],
-          columnGap: MEC_ICON_GAP
-        },
-        raw
-          ? { text: raw, fontSize: MEC_NAME_SIZE, bold: true, color: T.text, margin: [0, 3, 0, 0] }
-          : { text: '—', fontSize: MEC_NAME_SIZE, color: MUTED, margin: [0, 3, 0, 0] }
-      ]
-    };
-  }
-
-  function pmMecanicasCard(entry, idx, total, widths) {
+  function pmMecanicasCard(entry) {
     const d = entry.data || {};
     const dateStr = entry.event_date ? formatDisplayDate(entry.event_date) : 'Sem data';
     const weekday = val(entry.weekday_label);
+    const title = weekday ? `${dateStr}  ·  ${weekday}` : dateStr;
+    const mics = [d.microf_volantes_1, d.microf_volantes_2].map(val).filter(Boolean).join('  ·  ');
+
+    const indicadores = mecSection('indicadores', [
+      pmWeekendRow('Portão', d.portao, { strong: true }),
+      pmWeekendRow('Auditório', d.indicador, { strong: true })
+    ], { labelWidth: 48 });
+    const audio = mecSection('audio', [
+      pmWeekendRow('Som', d.som, { strong: true }),
+      pmWeekendRow('Microfones', mics, { strong: true })
+    ], { labelWidth: 48 });
+    const sections = [indicadores, audio].filter(Boolean);
+
+    let body;
+    if (sections.length === 2) {
+      body = { columns: [{ width: '*', stack: [indicadores] }, { width: '*', stack: [audio] }], columnGap: 8 };
+    } else if (sections.length === 1) {
+      body = { stack: sections };
+    } else {
+      body = { text: 'Sem designações preenchidas', color: MUTED, italics: true, fontSize: 8, margin: [0, 0, 0, 3] };
+    }
+
+    // Limpeza vai na própria barra da data, como cântico/presidente no meio de semana.
+    const cleaning = val(d.limpeza_grupo);
+    const header = [
+      { svg: CALENDAR_ICON, width: 15, height: 15 },
+      { width: '*', text: title, style: 'liteBanner', margin: [0, 1.5, 0, 0] }
+    ];
+    if (cleaning) {
+      header.push({
+        width: 'auto',
+        text: [{ text: 'Limpeza  ', bold: true, color: MEC_THEME.limpeza.color }, { text: cleaning }],
+        fontSize: 8.5,
+        margin: [0, 2.5, 0, 0]
+      });
+    }
 
     return {
       unbreakable: true,
-      margin: [0, 0, 0, 5],
+      margin: [0, 0, 0, 6],
       table: {
         widths: ['*'],
         body: [
-          [{
-            columns: [
-              { svg: CALENDAR_ICON, width: 13, height: 13 },
-              {
-                width: '*',
-                text: [
-                  { text: dateStr, bold: true, color: T.header },
-                  weekday ? { text: `   ${weekday}`, color: '#5B6B80', fontSize: 9 } : ''
-                ],
-                fontSize: 10.5,
-                margin: [0, 1, 0, 0]
-              },
-              { width: 'auto', text: `${idx + 1} / ${total}`, fontSize: 7, color: MUTED, margin: [0, 3, 0, 0] }
-            ],
-            columnGap: 7,
-            fillColor: '#F3F6FA',
-            margin: [9, 3, 9, 3]
-          }],
-          [{
-            table: {
-              widths,
-              body: [MEC_ROLES.map((role) => mecCell(role, d[role.key]))]
-            },
-            layout: {
-              hLineWidth: () => 0,
-              vLineWidth: (i, node) => (i === 0 || i === node.table.widths.length ? 0 : 0.5),
-              vLineColor: () => MEC_BORDER,
-              paddingLeft: () => MEC_CELL_PAD,
-              paddingRight: () => MEC_CELL_PAD,
-              paddingTop: () => 5,
-              paddingBottom: () => 5
-            },
-            margin: [2, 0, 2, 0]
-          }]
+          [{ columns: header, columnGap: 7, fillColor: '#F3F5F8', margin: [8, 3, 10, 3] }],
+          [{ ...body, margin: [8, 5, 8, 2] }]
         ]
       },
-      layout: {
-        hLineWidth: () => 0.6,
-        vLineWidth: () => 0.6,
-        hLineColor: () => MEC_BORDER,
-        vLineColor: () => MEC_BORDER,
-        paddingLeft: () => 0,
-        paddingRight: () => 0,
-        paddingTop: () => 0,
-        paddingBottom: () => 0
-      }
-    };
-  }
-
-  function pmLimpezaTable(cleaningRows) {
-    if (!cleaningRows.length) return null;
-    const theme = MEC_THEME.limpeza;
-    // Um fim de semana por coluna, no mesmo estilo das células dos cards.
-    const cells = cleaningRows.map((e) => {
-      const d = e.data || {};
-      const group = val(d.grupo);
-      return {
-        stack: [
-          { text: val(d.fim_de_semana) || '—', fontSize: MEC_LABEL_SIZE, bold: true, color: theme.color },
-          group
-            ? { text: group, fontSize: MEC_NAME_SIZE, bold: true, color: T.text, margin: [0, 3, 0, 0] }
-            : { text: '—', fontSize: MEC_NAME_SIZE, color: MUTED, margin: [0, 3, 0, 0] }
-        ]
-      };
-    });
-    return {
-      unbreakable: true,
-      margin: [0, 6, 0, 0],
-      table: {
-        widths: ['*'],
-        body: [
-          [{
-            columns: [
-              { svg: MEC_ICONS.limpeza.replace(/\{c\}/g, theme.color), width: 12, height: 12 },
-              { width: '*', text: 'LIMPEZA MENSAL', fontSize: 7.5, bold: true, color: theme.color, characterSpacing: 0.5, margin: [0, 2, 0, 0] },
-              { width: 'auto', text: `${cleaningRows.length} fim(ns) de semana`, fontSize: 7.5, color: '#6B7280', margin: [0, 2, 0, 0] }
-            ],
-            columnGap: 6,
-            fillColor: theme.bg,
-            margin: [9, 4, 9, 4]
-          }],
-          [{
-            table: {
-              widths: cells.map(() => '*'),
-              body: [cells]
-            },
-            layout: {
-              hLineWidth: () => 0,
-              vLineWidth: (i, node) => (i === 0 || i === node.table.widths.length ? 0 : 0.5),
-              vLineColor: () => MEC_BORDER,
-              paddingLeft: () => MEC_CELL_PAD,
-              paddingRight: () => MEC_CELL_PAD,
-              paddingTop: () => 5,
-              paddingBottom: () => 5
-            },
-            margin: [2, 0, 2, 0]
-          }]
-        ]
-      },
-      layout: {
-        hLineWidth: () => 0.6,
-        vLineWidth: () => 0.6,
-        hLineColor: () => MEC_BORDER,
-        vLineColor: () => MEC_BORDER,
-        paddingLeft: () => 0,
-        paddingRight: () => 0,
-        paddingTop: () => 0,
-        paddingBottom: () => 0
-      }
+      layout: hairlineLayout()
     };
   }
 
@@ -363,13 +239,17 @@
     if (!list.length) {
       content.push({ text: 'Nenhuma designação mecânica neste mês.', color: MUTED, italics: true, fontSize: 9 });
     } else {
-      // Um card por linha (largura total), com as 6 funções lado a lado.
-      const widths = mecColumnWidths(list);
-      list.forEach((e, idx) => content.push(pmMecanicasCard(e, idx, list.length, widths)));
+      // Um quadro por linha (largura total), como nos quadros de reunião.
+      list.forEach((e) => content.push(pmMecanicasCard(e)));
     }
 
-    const limpeza = pmLimpezaTable(cleaningRows);
-    if (limpeza) content.push(limpeza);
+    // Limpeza mensal num bloco único no fim, uma linha por fim de semana (como os dirigentes de campo).
+    const limpeza = mecSection('limpeza', cleaningRows.map((e) => pmWeekendRow(
+      val(e.data?.fim_de_semana) || '—',
+      e.data?.grupo,
+      { strong: true }
+    )), { labelWidth: 78 });
+    if (limpeza) content.push({ ...limpeza, unbreakable: true, margin: [0, 4, 0, 0] });
     return content;
   }
 
@@ -734,8 +614,8 @@
   function pmWeekendSection(key, rows, opts = {}) {
     const filtered = rows.filter(Boolean);
     if (!filtered.length) return null;
-    const theme = WEEKEND_THEME[key];
-    const title = opts.title || weekendGroups()[key]?.title || theme.fallback;
+    const theme = opts.theme || WEEKEND_THEME[key];
+    const title = opts.title || theme.title || weekendGroups()[key]?.title || theme.fallback;
     return {
       margin: [0, 0, 0, 3],
       table: {
@@ -745,7 +625,7 @@
             { text: '', fillColor: theme.color, rowSpan: 2 },
             {
               columns: [
-                { svg: WEEKEND_ICONS[key].replace(/\{c\}/g, theme.color), width: 11, height: 11 },
+                { svg: (opts.icon || WEEKEND_ICONS[key]).replace(/\{c\}/g, theme.color), width: 11, height: 11 },
                 {
                   width: '*',
                   text: title.toUpperCase(),
