@@ -152,10 +152,10 @@
       viewId: 'hub-view-discursos',
       partial: 'hub/sections/discursos.html',
       styles: [
-        'css/hub-sections/discursos.css?v=20260725173000'
+        'css/hub-sections/discursos.css?v=20261004120000'
       ],
       scripts: [
-        'js/admin/discursos-publicos.js?v=20260725174500'
+        'js/admin/discursos-publicos.js?v=20261004120000'
       ],
       initKey: 'JEAdminDiscursos',
       hero: {
