@@ -313,3 +313,107 @@
       .dp-form .dp-span-2,.dp-form .dp-span-3{grid-column:1/-1}
     }
 
+
+    /* ---------- Agenda por fim de semana (mobile first) ---------- */
+    #hub-view-discursos .dp-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;flex:0 0 auto;border-radius:9999px;border:1px solid #dbe3ef;background:#fff;color:#002060;cursor:pointer;text-decoration:none}
+    #hub-view-discursos .dp-icon-btn .material-symbols-outlined{font-size:1.25rem}
+    #hub-view-discursos .dp-link-btn{border:none;background:none;color:#3b5e97;font-size:.8125rem;font-weight:700;padding:.5rem;cursor:pointer}
+    #hub-view-discursos .dp-next{display:flex;align-items:center;gap:.875rem;width:100%;margin-bottom:.875rem;padding:.875rem 1rem;border:none;border-radius:1rem;background:#002060;color:#fff;text-align:left;cursor:pointer;box-shadow:0 6px 20px rgba(0,32,96,.18)}
+    #hub-view-discursos .dp-next__num{font-size:2.75rem;font-weight:800;line-height:.9;letter-spacing:-.03em;min-width:3.25rem;text-align:center;font-variant-numeric:lining-nums}
+    #hub-view-discursos .dp-next__body{display:flex;flex-direction:column;gap:.125rem;min-width:0}
+    #hub-view-discursos .dp-next__when{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.75)}
+    #hub-view-discursos .dp-next__theme{font-size:1rem;font-weight:700;line-height:1.25}
+    #hub-view-discursos .dp-next__who{font-size:.8125rem;color:rgba(255,255,255,.85)}
+    #hub-view-discursos .dp-month-bar{display:flex;align-items:center;gap:.5rem;margin-bottom:.375rem}
+    #hub-view-discursos .dp-month-title{flex:1;margin:0;text-align:center;font-size:1.125rem;font-weight:800;color:#002060;text-transform:capitalize}
+    #hub-view-discursos .dp-month-summary{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.375rem .75rem;margin-bottom:.875rem;font-size:.75rem;color:#6b7280}
+    #hub-view-discursos .dp-month-summary .is-warn{color:#984806;font-weight:700}
+    #hub-view-discursos .dp-month-summary .is-ok{color:#1a7f4b;font-weight:700}
+    #hub-view-discursos .dp-filter-chip{border:1px solid #dbe3ef;border-radius:9999px;background:#fff;color:#43474f;font-size:.75rem;font-weight:700;padding:.3125rem .75rem;cursor:pointer}
+    #hub-view-discursos .dp-filter-chip.is-on{background:#984806;border-color:#984806;color:#fff}
+    #hub-view-discursos .dp-weekends{display:grid;gap:.75rem;padding-bottom:4.5rem}
+    @media(min-width:900px){#hub-view-discursos .dp-weekends{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+    #hub-view-discursos .dp-wk{background:#fff;border:1px solid #e2e6ef;border-radius:1rem;overflow:hidden;box-shadow:0 2px 10px rgba(15,52,98,.04)}
+    #hub-view-discursos .dp-wk.is-now{border:2px solid #002060}
+    #hub-view-discursos .dp-wk.is-past{opacity:.62}
+    #hub-view-discursos .dp-wk-head{display:flex;align-items:center;gap:.75rem;padding:.625rem .75rem;border-bottom:1px solid #eef0f4;background:#f7f9fc}
+    #hub-view-discursos .dp-wk.is-now .dp-wk-head{background:#eef3fa}
+    #hub-view-discursos .dp-wk-date{display:flex;flex-direction:column;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:.75rem;background:#002060;color:#fff;line-height:1}
+    #hub-view-discursos .dp-wk-day{font-size:1.125rem;font-weight:800}
+    #hub-view-discursos .dp-wk-month{font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+    #hub-view-discursos .dp-wk-head-text{flex:1;display:flex;flex-direction:column;min-width:0}
+    #hub-view-discursos .dp-wk-head-text strong{font-size:.875rem;color:#002060}
+    #hub-view-discursos .dp-wk-head-text span{font-size:.75rem;color:#6b7280}
+    #hub-view-discursos .dp-wk-lane{padding:.625rem .75rem}
+    #hub-view-discursos .dp-wk-lane--send{border-top:1px dashed #e2e6ef;background:#fcfcfd}
+    #hub-view-discursos .dp-wk-lane h4{display:flex;align-items:center;gap:.375rem;margin:0 0 .5rem;font-size:.625rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}
+    #hub-view-discursos .dp-wk-lane h4 .material-symbols-outlined{font-size:1rem}
+    #hub-view-discursos .dp-wk-receive{display:flex;gap:.75rem;align-items:flex-start;padding:.25rem;border-radius:.625rem;cursor:pointer}
+    #hub-view-discursos .dp-wk-receive:hover,#hub-view-discursos .dp-wk-send:hover{background:#f7f9fc}
+    #hub-view-discursos .dp-wk-receive + .dp-wk-receive{margin-top:.5rem;padding-top:.75rem;border-top:1px solid #eef0f4}
+    #hub-view-discursos .dp-wk-num{flex:0 0 auto;min-width:3rem;font-size:2.25rem;font-weight:800;line-height:1;letter-spacing:-.03em;color:#002060;text-align:center;font-variant-numeric:lining-nums}
+    #hub-view-discursos .dp-wk-num--text{font-size:1.25rem;padding-top:.375rem;color:#984806}
+    #hub-view-discursos .dp-wk-body{flex:1;min-width:0}
+    #hub-view-discursos .dp-wk-theme{margin:0;font-size:.9375rem;font-weight:700;line-height:1.3;color:#1b1c1c}
+    #hub-view-discursos .dp-wk-who{margin:.125rem 0 0;font-size:.8125rem;color:#43474f}
+    #hub-view-discursos .dp-wk-who strong{color:#002060}
+    #hub-view-discursos .dp-wk-actions{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem}
+    #hub-view-discursos .dp-wk-alert{display:flex;align-items:flex-start;gap:.25rem;margin:.375rem 0 0;padding:.25rem .5rem;border-radius:.5rem;background:#fff4e5;color:#8a4b0a;font-size:.75rem;font-weight:600;line-height:1.3}
+    #hub-view-discursos .dp-wk-alert .material-symbols-outlined{font-size:.9375rem}
+    #hub-view-discursos .is-cancelled .dp-wk-theme,#hub-view-discursos .is-cancelled .dp-wk-who,#hub-view-discursos .is-cancelled .dp-wk-send__main p{text-decoration:line-through;color:#9ca3af}
+    #hub-view-discursos .dp-wk-empty{display:flex;align-items:center;justify-content:center;gap:.375rem;width:100%;min-height:3.5rem;border:2px dashed #e0b48a;border-radius:.75rem;background:#fffaf4;color:#984806;font-size:.875rem;font-weight:700;cursor:pointer}
+    #hub-view-discursos .dp-wk-send-list{list-style:none;margin:0 0 .375rem;padding:0;display:grid;gap:.375rem}
+    #hub-view-discursos .dp-wk-send{display:flex;align-items:flex-start;gap:.5rem;padding:.375rem .25rem;border-radius:.5rem;cursor:pointer}
+    #hub-view-discursos .dp-wk-send__main{flex:1;min-width:0}
+    #hub-view-discursos .dp-wk-send__main p{margin:0;font-size:.8125rem;color:#1b1c1c;line-height:1.35}
+    #hub-view-discursos .dp-wk-send__main p .material-symbols-outlined{font-size:.875rem;vertical-align:-2px;color:#6b7280}
+    #hub-view-discursos .dp-wk-send__main strong{color:#002060}
+    #hub-view-discursos .dp-wk-send__meta{color:#6b7280!important;font-size:.75rem!important}
+    #hub-view-discursos .dp-wk-add{display:inline-flex;align-items:center;gap:.25rem;border:none;background:none;color:#3b5e97;font-size:.75rem;font-weight:700;padding:.375rem .25rem;cursor:pointer}
+    #hub-view-discursos .dp-wk-add .material-symbols-outlined{font-size:1rem}
+    #hub-view-discursos .dp-chip{display:inline-flex;align-items:center;gap:.25rem;flex:0 0 auto;min-height:1.875rem;padding:.25rem .625rem;border-radius:9999px;border:1px solid transparent;font-size:.75rem;font-weight:700;white-space:nowrap;cursor:default}
+    #hub-view-discursos button.dp-chip{cursor:pointer}
+    #hub-view-discursos .dp-chip .material-symbols-outlined{font-size:1rem}
+    #hub-view-discursos .dp-chip--pendente{background:#fff4e5;border-color:#f3d3ad;color:#984806}
+    #hub-view-discursos .dp-chip--confirmado{background:#e8f5ee;border-color:#bfe3cf;color:#1a7f4b}
+    #hub-view-discursos .dp-chip--cancelado{background:#fdecec;color:#b91c1c}
+    #hub-view-discursos .dp-chip--ex-a_combinar{background:#f1f3f7;color:#43474f}
+    #hub-view-discursos .dp-chip--ex-aguardando{background:#fff4e5;color:#984806}
+    #hub-view-discursos .dp-chip--ex-fechado{background:#e8f5ee;color:#1a7f4b}
+    #hub-view-discursos .dp-chip--ex-cancelado{background:#fdecec;color:#b91c1c}
+    #hub-view-discursos .dp-fab{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:.375rem;padding:.875rem 1.125rem;border:none;border-radius:9999px;background:#984806;color:#fff;font-size:.875rem;font-weight:800;box-shadow:0 8px 24px rgba(152,72,6,.35);cursor:pointer}
+    #hub-view-discursos .terr-panel:not(.active) .dp-fab{display:none}
+
+    /* ---------- Intercâmbio ---------- */
+    #hub-view-discursos .dp-ex-month{margin-bottom:.875rem;padding:.75rem;border:1px solid #e2e6ef;border-radius:1rem;background:#fff}
+    #hub-view-discursos .dp-ex-month__head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.375rem}
+    #hub-view-discursos .dp-ex-month__head h3{display:flex;align-items:center;gap:.375rem;margin:0;font-size:.6875rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}
+    #hub-view-discursos .dp-ex-month__head h3 .material-symbols-outlined{font-size:1rem}
+    #hub-view-discursos .dp-ex-month__empty{margin:0;font-size:.8125rem;color:#6b7280}
+    #hub-view-discursos .dp-ex{display:flex;align-items:flex-start;gap:.625rem;padding:.5rem;border-radius:.75rem;cursor:pointer}
+    #hub-view-discursos .dp-ex:hover{background:#f7f9fc}
+    #hub-view-discursos .dp-ex + .dp-ex{border-top:1px solid #eef0f4}
+    #hub-view-discursos .dp-ex__main{flex:1;min-width:0}
+    #hub-view-discursos .dp-ex__main p{margin:0;line-height:1.35}
+    #hub-view-discursos .dp-ex__cong{font-size:.9375rem;font-weight:800;color:#002060}
+    #hub-view-discursos .dp-ex__cong small{font-size:.6875rem;font-weight:600;color:#6b7280;margin-left:.25rem}
+    #hub-view-discursos .dp-ex__coord{font-size:.8125rem;color:#43474f;margin-top:.125rem!important}
+    #hub-view-discursos .dp-ex__sent{display:flex;align-items:center;gap:.25rem;font-size:.75rem;color:#3b5e97;font-weight:600;margin-top:.25rem!important}
+    #hub-view-discursos .dp-ex__sent .material-symbols-outlined{font-size:.9375rem}
+    #hub-view-discursos .dp-ex__notes{font-size:.75rem;color:#6b7280;margin-top:.25rem!important}
+    #hub-view-discursos .dp-ex__side{display:flex;flex-direction:column;align-items:flex-end;gap:.375rem}
+    #hub-view-discursos .dp-ex__last{margin:0 .5rem .375rem;font-size:.6875rem;color:#6b7280}
+    #hub-view-discursos .dp-ex-bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.75rem}
+    #hub-view-discursos .dp-ex-year h3{margin:.75rem 0 .5rem;font-size:1.25rem;font-weight:800;color:#002060}
+    #hub-view-discursos .dp-ex-row{display:flex;gap:.625rem;align-items:flex-start;margin-bottom:.5rem}
+    #hub-view-discursos .dp-ex-row__month{flex:0 0 2.5rem;padding-top:.625rem;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;text-align:right}
+    #hub-view-discursos .dp-ex-row__card{flex:1;min-width:0;background:#fff;border:1px solid #e2e6ef;border-radius:.875rem}
+
+    /* ---------- Temas: última vez no salão ---------- */
+    #hub-view-discursos .dp-theme-last{display:block;margin-top:.125rem;font-size:.6875rem;font-weight:600;color:#6b7280}
+    #hub-view-discursos .dp-theme-last.is-next{color:#1a7f4b}
+    #hub-view-discursos .dp-theme-last.is-never{color:#6d28d9}
+
+    /* ---------- Modal: excluir dentro da edição ---------- */
+    .dp-form footer .dp-footer-spacer{flex:1}
+    .dp-form footer .dp-danger-btn{border:1px solid #f3c2c2;background:#fff;color:#b91c1c;border-radius:.5rem;padding:.375rem .75rem;font-size:.75rem;font-weight:700;cursor:pointer}

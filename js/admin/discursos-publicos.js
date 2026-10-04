@@ -3,12 +3,12 @@
   const DIRECTION = { receive: 'Recebemos', send: 'Enviamos' };
   const PRIVILEGE = { anciao: 'Ancião', servo_ministerial: 'Servo Ministerial' };
   const STATUS = { pendente: 'Pendente', confirmado: 'Confirmado', cancelado: 'Cancelado' };
-  let client, root, toastEl, themes = [], speakers = [], congregations = [], assignments = [];
+  let client, root, toastEl, themes = [], speakers = [], congregations = [], assignments = [], exchanges = [];
+  let exchangeAvailable = false;
   const rendered = {};
 
   const $ = (selector) => root?.querySelector(selector);
   const text = (v) => String(v ?? '').trim();
-  const today = () => new Date().toISOString().slice(0, 10);
   const dateText = (iso) => iso ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(`${iso}T12:00:00`)) : '—';
   const errorText = (err) => /does not exist|schema cache/i.test(String(err?.message || err))
     ? 'As tabelas de Discursos Públicos ainda não foram aplicadas.'
@@ -63,7 +63,7 @@
       <div class="terr-nav-stage dp-nav-stage">
         <div class="terr-nav-scroll">
           <nav class="terr-nav dp-crm-nav" role="tablist" aria-label="Abas de Discursos Públicos">
-            ${[['agenda', 'Agenda', 'calendar_month'], ['oradores', 'Oradores', 'groups'], ['temas', 'Temas', 'menu_book']]
+            ${[['agenda', 'Agenda', 'calendar_month'], ['intercambio', 'Intercâmbio', 'handshake'], ['oradores', 'Oradores', 'groups'], ['temas', 'Temas', 'menu_book']]
               .map(([id, label, icon], i) => `<button type="button" class="terr-tab${i ? '' : ' active'}" data-dp-tab="${id}" role="tab" title="${label}" aria-label="${label}">
                 <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
                 <span class="terr-tab-label">${label}</span>
@@ -72,89 +72,368 @@
         </div>
       </div>
       <section id="dp-panel-agenda" class="terr-panel active"></section>
+      <section id="dp-panel-intercambio" class="terr-panel"></section>
       <section id="dp-panel-oradores" class="terr-panel"></section>
       <section id="dp-panel-temas" class="terr-panel"></section>`;
   }
 
-  function dateRange(days) {
-    const start = new Date(); start.setHours(0, 0, 0, 0);
-    const end = new Date(start); end.setDate(end.getDate() + days);
-    return assignments.filter((a) => a.event_date >= today() && a.event_date <= end.toISOString().slice(0, 10));
+  const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const EXCHANGE_STATUS = { a_combinar: 'A combinar', aguardando: 'Aguardando', fechado: 'Fechado', cancelado: 'Cancelado' };
+  const REPEAT_WINDOW_DAYS = 365;
+
+  const isoOf = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const localToday = () => isoOf(new Date());
+  const monthLabel = (ym) => { const [y, m] = ym.split('-').map(Number); return `${MONTHS[m - 1]} ${y}`; };
+  const shiftMonth = (ym, delta) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + delta, 1); return isoOf(d).slice(0, 7); };
+  const shortDate = (iso) => { const d = new Date(`${iso}T12:00:00`); return `${WEEKDAYS[d.getDay()]} ${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}`; };
+  const daysBetween = (a, b) => Math.round((new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`)) / 864e5);
+  const speakerKey = (a) => a.speaker_id || normalizeSearch(text(a.speaker_name));
+
+  // Mesmo critério do quadro (weekend-discursos-sync): discurso de domingo pertence ao sábado anterior.
+  function weekendOf(iso) {
+    const d = new Date(`${String(iso).slice(0, 10)}T12:00:00`);
+    const day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -1 : 6 - day));
+    return isoOf(d);
   }
 
-  function statsHtml() {
-    const next30 = dateRange(30);
-    const pending = assignments.filter((a) => a.confirmation_status === 'pendente' && a.event_date >= today()).length;
-    return `
-      <div class="terr-catalog-stats dp-stats">
-        <article><strong>${next30.filter((a) => a.direction === 'receive').length}</strong><span>Recebemos — 30 dias</span></article>
-        <article><strong>${next30.filter((a) => a.direction === 'send').length}</strong><span>Enviamos — 30 dias</span></article>
-        <article><strong>${pending}</strong><span>Pendentes</span></article>
-        <article><strong>${speakers.filter((s) => s.is_active).length}</strong><span>Oradores ativos</span></article>
-        <article><strong>${themes.filter((t) => t.is_active).length}</strong><span>Temas S-34</span></article>
-      </div>`;
+  function saturdaysOf(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1, 1, 12);
+    while (d.getDay() !== 6) d.setDate(d.getDate() + 1);
+    const out = [];
+    while (d.getMonth() === m - 1) { out.push(isoOf(d)); d.setDate(d.getDate() + 7); }
+    return out;
   }
 
-  function assignmentTable(rows) {
-    if (!rows.length) return empty('Nenhuma designação encontrada.');
-    return `<div class="terr-table-wrap"><table class="terr-catalog-table dp-table"><colgroup>
-      <col class="dp-col-direction"/><col class="dp-col-date"/><col class="dp-col-speaker"/><col class="dp-col-theme"/><col class="dp-col-congregation"/><col class="dp-col-status"/><col class="dp-col-actions"/>
-    </colgroup><thead><tr>
-      <th>Direção</th><th>Data</th><th>Orador</th><th>Tema</th><th>Congregação</th><th>Status</th><th></th>
-    </tr></thead><tbody>${rows.map((a) => {
-      const theme = assignmentTheme(a);
-      const congregation = a.congregation_name || a.speech_congregations?.name || '—';
-      const speaker = a.speaker_name || a.speech_speakers?.full_name || '—';
-      return `<tr data-dp-edit="${a.id}" class="dp-assignment-row">
-      <td><span class="dp-badge dp-badge--${a.direction}">${DIRECTION[a.direction]}</span></td>
-      <td class="dp-cell-date">${escapeHtml(dateText(a.event_date))}${a.event_time ? `<small>${escapeHtml(a.event_time.slice(0, 5))}</small>` : ''}</td>
-      <td class="dp-cell-truncate" title="${escapeHtml(speaker)}">${escapeHtml(speaker)}</td>
-      <td class="dp-cell-truncate dp-cell-theme" title="${escapeHtml(theme)}">${escapeHtml(theme)}</td>
-      <td class="dp-cell-truncate" title="${escapeHtml(congregation)}">${escapeHtml(congregation)}</td>
-      <td><span class="dp-status dp-status--${a.confirmation_status}">${STATUS[a.confirmation_status]}</span></td>
-      <td class="dp-actions"><button type="button" data-dp-wa="${a.id}" title="WhatsApp">WhatsApp</button><button type="button" data-dp-delete="${a.id}" title="Excluir">Excluir</button></td>
-    </tr>`;
-    }).join('')}</tbody></table></div>`;
+  function phoneDigits(phone) {
+    let d = String(phone || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.length <= 9) d = `11${d}`;
+    if (d.length <= 11) d = `55${d}`;
+    return d;
+  }
+
+  function relativeDays(iso) {
+    const n = daysBetween(localToday(), iso);
+    if (n === 0) return 'hoje';
+    if (n === 1) return 'amanhã';
+    if (n === -1) return 'ontem';
+    if (n > 0) return n < 14 ? `em ${n} dias` : `em ${Math.round(n / 7)} semanas`;
+    const k = -n;
+    if (k < 60) return `há ${Math.round(k / 7) || 1} sem.`;
+    if (k < 730) return `há ${Math.round(k / 30)} meses`;
+    return `há ${Math.round(k / 365)} anos`;
+  }
+
+  // Discursos feitos no nosso salão (recebidos, não cancelados), por esboço.
+  function hallHistoryByOutline() {
+    const map = {};
+    assignments.forEach((a) => {
+      if (a.direction !== 'receive' || a.confirmation_status === 'cancelado' || !a.outline_number) return;
+      (map[a.outline_number] = map[a.outline_number] || []).push(a);
+    });
+    Object.values(map).forEach((list) => list.sort((x, y) => x.event_date.localeCompare(y.event_date)));
+    return map;
+  }
+
+  function assignmentAlerts(a, weekendRows, history) {
+    const alerts = [];
+    if (a.confirmation_status === 'cancelado') return alerts;
+    if (a.direction === 'receive' && a.outline_number) {
+      const near = (history[a.outline_number] || [])
+        .filter((o) => o.id !== a.id && Math.abs(daysBetween(o.event_date, a.event_date)) < REPEAT_WINDOW_DAYS);
+      if (near.length) alerts.push(`Esboço ${a.outline_number} também em ${near.map((o) => dateText(o.event_date)).join(', ')}`);
+    }
+    const key = speakerKey(a);
+    if (key && weekendRows.some((o) => o.id !== a.id && o.confirmation_status !== 'cancelado' && speakerKey(o) === key)) {
+      alerts.push(`${text(a.speaker_name) || 'Orador'} está em mais de uma designação neste fim de semana`);
+    }
+    if (!text(a.speaker_name)) alerts.push('Sem orador definido');
+    if (!a.outline_number && !text(a.theme_title)) alerts.push('Sem tema definido');
+    return alerts;
+  }
+
+  function statusChip(a) {
+    const s = a.confirmation_status;
+    if (s === 'cancelado') return `<span class="dp-chip dp-chip--cancelado">Cancelado</span>`;
+    const next = s === 'confirmado' ? 'pendente' : 'confirmado';
+    return `<button type="button" class="dp-chip dp-chip--${s}" data-dp-status="${a.id}" data-next="${next}" title="Toque para marcar como ${STATUS[next].toLowerCase()}">
+      <span class="material-symbols-outlined" aria-hidden="true">${s === 'confirmado' ? 'check_circle' : 'schedule'}</span>${STATUS[s]}</button>`;
+  }
+
+  function outlineBadge(a) {
+    if (a.outline_number) return `<span class="dp-wk-num">${a.outline_number}</span>`;
+    return `<span class="dp-wk-num dp-wk-num--text">${text(a.theme_title) ? 'DE' : '—'}</span>`;
+  }
+
+  function receiveBlock(a, weekendRows, history) {
+    const theme = a.theme_title || a.speech_themes?.title || '';
+    const cong = a.congregation_name || a.speech_congregations?.name || '';
+    const alerts = assignmentAlerts(a, weekendRows, history);
+    return `<div class="dp-wk-receive${a.confirmation_status === 'cancelado' ? ' is-cancelled' : ''}" data-dp-edit="${a.id}" role="button" tabindex="0">
+      ${outlineBadge(a)}
+      <div class="dp-wk-body">
+        <p class="dp-wk-theme">${escapeHtml(theme || 'Tema não definido')}</p>
+        <p class="dp-wk-who"><strong>${escapeHtml(a.speaker_name || 'Orador não definido')}</strong>${cong ? ` · ${escapeHtml(cong)}` : ''}${a.event_time ? ` · ${escapeHtml(a.event_time.slice(0, 5))}` : ''}</p>
+        ${alerts.map((m) => `<p class="dp-wk-alert"><span class="material-symbols-outlined" aria-hidden="true">warning</span>${escapeHtml(m)}</p>`).join('')}
+        <div class="dp-wk-actions">${statusChip(a)}</div>
+      </div>
+    </div>`;
+  }
+
+  function sendRow(a, weekendRows, history) {
+    const cong = a.congregation_name || a.speech_congregations?.name || '—';
+    const alerts = assignmentAlerts(a, weekendRows, history);
+    const outline = a.outline_number ? `nº ${a.outline_number}` : (text(a.theme_title) ? 'DE' : '');
+    return `<li class="dp-wk-send${a.confirmation_status === 'cancelado' ? ' is-cancelled' : ''}" data-dp-edit="${a.id}" role="button" tabindex="0">
+      <div class="dp-wk-send__main">
+        <p><strong>${escapeHtml(a.speaker_name || 'Orador não definido')}</strong> <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span> ${escapeHtml(cong)}</p>
+        <p class="dp-wk-send__meta">${escapeHtml(shortDate(a.event_date))}${a.event_time ? ` · ${escapeHtml(a.event_time.slice(0, 5))}` : ''}${outline ? ` · ${escapeHtml(outline)}` : ''}${a.theme_title ? ` · ${escapeHtml(a.theme_title)}` : ''}</p>
+        ${alerts.map((m) => `<p class="dp-wk-alert"><span class="material-symbols-outlined" aria-hidden="true">warning</span>${escapeHtml(m)}</p>`).join('')}
+      </div>
+      ${statusChip(a)}
+    </li>`;
+  }
+
+  function weekendCard(sat, rows, history, onlyPending) {
+    const receive = rows.filter((a) => a.direction === 'receive');
+    const send = rows.filter((a) => a.direction === 'send');
+    const current = weekendOf(localToday());
+    const isPast = sat < current;
+    const isNow = sat === current;
+    const satDate = new Date(`${sat}T12:00:00`);
+    const visibleReceive = onlyPending ? receive.filter((a) => a.confirmation_status === 'pendente') : receive;
+    const visibleSend = onlyPending ? send.filter((a) => a.confirmation_status === 'pendente') : send;
+    if (onlyPending && !visibleReceive.length && !visibleSend.length && receive.length) return '';
+    return `<article class="dp-wk${isPast ? ' is-past' : ''}${isNow ? ' is-now' : ''}" data-dp-weekend="${sat}">
+      <header class="dp-wk-head">
+        <div class="dp-wk-date"><span class="dp-wk-day">${satDate.getDate()}</span><span class="dp-wk-month">${MONTHS[satDate.getMonth()].slice(0, 3)}</span></div>
+        <div class="dp-wk-head-text"><strong>Sábado</strong><span>${isNow ? 'Este fim de semana' : escapeHtml(relativeDays(sat))}</span></div>
+        ${rows.length ? `<button type="button" class="dp-icon-btn" data-dp-wa-weekend="${sat}" title="Mensagem de WhatsApp deste fim de semana" aria-label="WhatsApp deste fim de semana"><span class="material-symbols-outlined">share</span></button>` : ''}
+      </header>
+      <section class="dp-wk-lane">
+        <h4><span class="material-symbols-outlined" aria-hidden="true">home</span>No nosso salão</h4>
+        ${receive.length
+          ? visibleReceive.map((a) => receiveBlock(a, rows, history)).join('')
+          : `<button type="button" class="dp-wk-empty" data-dp-new-at="${sat}" data-direction="receive"><span class="material-symbols-outlined" aria-hidden="true">add_circle</span>Sem orador · adicionar</button>`}
+      </section>
+      <section class="dp-wk-lane dp-wk-lane--send">
+        <h4><span class="material-symbols-outlined" aria-hidden="true">directions_car</span>Saindo${send.length ? ` · ${send.length}` : ''}</h4>
+        ${visibleSend.length ? `<ul class="dp-wk-send-list">${visibleSend.map((a) => sendRow(a, rows, history)).join('')}</ul>` : ''}
+        <button type="button" class="dp-wk-add" data-dp-new-at="${sat}" data-direction="send"><span class="material-symbols-outlined" aria-hidden="true">add</span>Enviar orador</button>
+      </section>
+    </article>`;
+  }
+
+  function nextSpeechHtml() {
+    const t = localToday();
+    const next = assignments
+      .filter((a) => a.direction === 'receive' && a.confirmation_status !== 'cancelado' && a.event_date >= t)
+      .sort((a, b) => a.event_date.localeCompare(b.event_date))[0];
+    if (!next) return '';
+    const cong = next.congregation_name || next.speech_congregations?.name || '';
+    return `<button type="button" class="dp-next" data-dp-edit="${next.id}">
+      <span class="dp-next__num">${next.outline_number || 'DE'}</span>
+      <span class="dp-next__body">
+        <span class="dp-next__when">Próximo discurso · ${escapeHtml(shortDate(next.event_date))} · ${escapeHtml(relativeDays(next.event_date))}</span>
+        <span class="dp-next__theme">${escapeHtml(next.theme_title || 'Tema não definido')}</span>
+        <span class="dp-next__who">${escapeHtml(next.speaker_name || 'Orador não definido')}${cong ? ` · ${escapeHtml(cong)}` : ''}</span>
+      </span>
+    </button>`;
+  }
+
+  function exchangeForMonth(ym) {
+    return exchanges.filter((x) => String(x.reference_month).slice(0, 7) === ym);
+  }
+
+  function exchangeCard(x, compact) {
+    const phone = phoneDigits(x.coordinator_phone);
+    return `<div class="dp-ex${compact ? ' dp-ex--compact' : ''} dp-ex--${x.status}" data-dp-ex-edit="${x.id}" role="button" tabindex="0">
+      <div class="dp-ex__main">
+        <p class="dp-ex__cong">${escapeHtml(x.congregation_name || 'Congregação não definida')}${x.region ? ` <small>${escapeHtml(x.region)}</small>` : ''}</p>
+        <p class="dp-ex__coord">${x.coordinator_name ? `Coordenador: <strong>${escapeHtml(x.coordinator_name)}</strong>` : 'Sem coordenador'}${x.coordinator_phone ? ` · ${escapeHtml(x.coordinator_phone)}` : ''}</p>
+        ${x.sent_note ? `<p class="dp-ex__sent"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span>Enviamos: ${escapeHtml(x.sent_note)}</p>` : ''}
+        ${x.notes ? `<p class="dp-ex__notes">${escapeHtml(x.notes)}</p>` : ''}
+      </div>
+      <div class="dp-ex__side">
+        <span class="dp-chip dp-chip--ex-${x.status}">${EXCHANGE_STATUS[x.status] || x.status}</span>
+        ${phone ? `<a class="dp-icon-btn" href="https://wa.me/${phone}" target="_blank" rel="noopener" data-dp-stop title="WhatsApp do coordenador" aria-label="WhatsApp do coordenador"><span class="material-symbols-outlined">chat</span></a>` : ''}
+      </div>
+    </div>`;
+  }
+
+  function exchangeMonthHtml(ym) {
+    if (!exchangeAvailable) return '';
+    const list = exchangeForMonth(ym);
+    return `<section class="dp-ex-month">
+      <div class="dp-ex-month__head"><h3><span class="material-symbols-outlined" aria-hidden="true">handshake</span>Intercâmbio do mês</h3>
+        <button type="button" class="dp-link-btn" data-dp-ex-new="${ym}">${list.length ? 'Adicionar' : 'Definir'}</button></div>
+      ${list.length ? list.map((x) => exchangeCard(x, true)).join('') : '<p class="dp-ex-month__empty">Nenhuma congregação parceira definida para este mês.</p>'}
+    </section>`;
   }
 
   function renderAgenda() {
     const host = $('#dp-panel-agenda');
     if (!host) return;
-    const month = host.dataset.month || new Date().toISOString().slice(0, 7);
-    const direction = host.dataset.direction || '';
-    const status = host.dataset.status || '';
-    const rows = assignments
-      .filter((a) => (!month || a.event_date.startsWith(month))
-        && (!direction || a.direction === direction)
-        && (!status || a.confirmation_status === status))
-      .sort((a, b) => a.event_date.localeCompare(b.event_date));
+    const month = host.dataset.month || localToday().slice(0, 7);
+    const onlyPending = host.dataset.pending === '1';
+    const history = hallHistoryByOutline();
+    const sats = new Set(saturdaysOf(month));
+    const byWeekend = {};
+    assignments.forEach((a) => {
+      const sat = weekendOf(a.event_date);
+      if (!sat.startsWith(month) && !a.event_date.startsWith(month)) return;
+      (byWeekend[sat] = byWeekend[sat] || []).push(a);
+      sats.add(sat);
+    });
+    const weekends = [...sats].sort();
+    const monthRows = Object.values(byWeekend).flat();
+    const pending = monthRows.filter((a) => a.confirmation_status === 'pendente').length;
+    const gaps = weekends.filter((s) => !(byWeekend[s] || []).some((a) => a.direction === 'receive')).length;
+    const cards = weekends.map((s) => weekendCard(s, (byWeekend[s] || []).sort((a, b) => a.event_date.localeCompare(b.event_date)), history, onlyPending)).join('');
+
     host.innerHTML = `
-      ${statsHtml()}
-      <div class="terr-catalog-card">
-        <div class="terr-catalog-heading">
-          <div>
-            <h2>Agenda</h2>
-            <p>Recebemos e enviamos · confirmação · WhatsApp · sincroniza com o Quadro (final de semana)</p>
-          </div>
-        </div>
-        <div class="terr-sched-toolbar dp-toolbar">
-          <label>Direção <select data-dp-filter="direction">${option('', 'Todos', direction)}${option('receive', 'Recebemos', direction)}${option('send', 'Enviamos', direction)}</select></label>
-          <label>Status <select data-dp-filter="status">${option('', 'Todos', status)}${Object.entries(STATUS).map(([k, v]) => option(k, v, status)).join('')}</select></label>
-          <label>Mês <input type="month" value="${month}" data-dp-month></label>
-          <button type="button" class="btn-primary" data-dp-new>Nova designação</button>
-          <button type="button" data-dp-wa-range>WhatsApp da semana</button>
-        </div>
-        ${assignmentTable(rows)}
-      </div>`;
-    host.querySelectorAll('[data-dp-filter]').forEach((el) => el.addEventListener('change', () => {
-      host.dataset[el.dataset.dpFilter] = el.value;
+      ${nextSpeechHtml()}
+      <div class="dp-month-bar">
+        <button type="button" class="dp-icon-btn" data-dp-month-step="-1" aria-label="Mês anterior"><span class="material-symbols-outlined">chevron_left</span></button>
+        <h2 class="dp-month-title">${escapeHtml(monthLabel(month))}</h2>
+        <button type="button" class="dp-icon-btn" data-dp-month-step="1" aria-label="Próximo mês"><span class="material-symbols-outlined">chevron_right</span></button>
+        ${month !== localToday().slice(0, 7) ? '<button type="button" class="dp-link-btn" data-dp-month-today>Hoje</button>' : ''}
+      </div>
+      <div class="dp-month-summary">
+        <span>${weekends.length} fins de semana</span>
+        ${gaps ? `<span class="is-warn">${gaps} sem orador</span>` : '<span class="is-ok">todos com orador</span>'}
+        <button type="button" class="dp-filter-chip${onlyPending ? ' is-on' : ''}" data-dp-pending>${pending} pendente${pending === 1 ? '' : 's'}</button>
+      </div>
+      ${exchangeMonthHtml(month)}
+      <div class="dp-weekends">${cards || empty('Nenhuma designação pendente neste mês.')}</div>
+      <button type="button" class="dp-fab" data-dp-new aria-label="Nova designação"><span class="material-symbols-outlined" aria-hidden="true">add</span><span>Nova designação</span></button>`;
+
+    host.querySelectorAll('[data-dp-month-step]').forEach((b) => b.addEventListener('click', () => {
+      host.dataset.month = shiftMonth(month, Number(b.dataset.dpMonthStep));
       renderAgenda();
     }));
-    host.querySelector('[data-dp-month]')?.addEventListener('change', (e) => {
-      host.dataset.month = e.target.value;
-      renderAgenda();
-    });
+    host.querySelector('[data-dp-month-today]')?.addEventListener('click', () => { host.dataset.month = localToday().slice(0, 7); renderAgenda(); });
+    host.querySelector('[data-dp-pending]')?.addEventListener('click', () => { host.dataset.pending = onlyPending ? '' : '1'; renderAgenda(); });
+    host.querySelectorAll('[data-dp-wa-weekend]').forEach((b) => b.addEventListener('click', () => openWhatsapp(byWeekend[b.dataset.dpWaWeekend] || [])));
+    host.querySelectorAll('[data-dp-new-at]').forEach((b) => b.addEventListener('click', () => openAssignmentModal(null, {
+      direction: b.dataset.direction,
+      event_date: b.dataset.direction === 'send' ? isoOf(new Date(new Date(`${b.dataset.dpNewAt}T12:00:00`).getTime() + 864e5)) : b.dataset.dpNewAt
+    })));
+    bindExchangeActions(host);
     bindAssignmentActions(host);
+  }
+
+  async function setAssignmentStatus(id, status) {
+    const { error } = await client.from('speech_assignments').update({ confirmation_status: status }).eq('id', id);
+    if (error) return toast(errorText(error), true);
+    const a = assignments.find((x) => x.id === id);
+    if (a) a.confirmation_status = status;
+    refresh();
+    toast(status === 'confirmado' ? 'Confirmado.' : 'Marcado como pendente.');
+  }
+
+  /* ---------- Intercâmbio ---------- */
+  function renderExchange() {
+    const host = $('#dp-panel-intercambio');
+    if (!host) return;
+    if (!exchangeAvailable) {
+      host.innerHTML = `<div class="terr-empty-state dp-empty"><p>O intercâmbio mensal precisa da migration <code>20261004120000_speech_exchange_months</code>.</p></div>`;
+      return;
+    }
+    const view = host.dataset.view || 'next';
+    const thisMonth = `${localToday().slice(0, 7)}-01`;
+    const rows = exchanges
+      .filter((x) => (view === 'next' ? x.reference_month >= thisMonth : x.reference_month < thisMonth))
+      .sort((a, b) => (view === 'next' ? a.reference_month.localeCompare(b.reference_month) : b.reference_month.localeCompare(a.reference_month)));
+    const byYear = {};
+    rows.forEach((x) => (byYear[x.reference_month.slice(0, 4)] = byYear[x.reference_month.slice(0, 4)] || []).push(x));
+    const years = Object.keys(byYear).sort((a, b) => (view === 'next' ? a.localeCompare(b) : b.localeCompare(a)));
+    const lastVisit = {};
+    exchanges.filter((x) => x.reference_month < thisMonth && x.status !== 'cancelado').forEach((x) => {
+      const k = normalizeSearch(text(x.congregation_name));
+      if (k && (!lastVisit[k] || lastVisit[k] < x.reference_month)) lastVisit[k] = x.reference_month;
+    });
+
+    host.innerHTML = `
+      <div class="dp-ex-bar">
+        <div class="dp-themes-chips" role="group" aria-label="Período">
+          ${[['next', 'Próximos'], ['past', 'Histórico']].map(([id, label]) => `<button type="button" class="dp-themes-chip${view === id ? ' is-on' : ''}" data-dp-ex-view="${id}">${label}</button>`).join('')}
+        </div>
+        <button type="button" class="dp-link-btn" data-dp-ex-new="${localToday().slice(0, 7)}">Novo mês</button>
+      </div>
+      ${years.length ? years.map((y) => `<section class="dp-ex-year"><h3>${y}</h3>
+        ${byYear[y].map((x) => {
+          const ym = x.reference_month.slice(0, 7);
+          const lv = view === 'next' ? lastVisit[normalizeSearch(text(x.congregation_name))] : null;
+          return `<div class="dp-ex-row">
+            <span class="dp-ex-row__month">${escapeHtml(MONTHS[Number(ym.slice(5)) - 1].slice(0, 3))}</span>
+            <div class="dp-ex-row__card">${exchangeCard(x)}${lv ? `<p class="dp-ex__last">Última vez: ${escapeHtml(monthLabel(lv.slice(0, 7)))}</p>` : ''}</div>
+          </div>`;
+        }).join('')}</section>`).join('') : empty(view === 'next' ? 'Nenhum intercâmbio futuro cadastrado.' : 'Nenhum histórico cadastrado.')}`;
+
+    host.querySelectorAll('[data-dp-ex-view]').forEach((b) => b.addEventListener('click', () => { host.dataset.view = b.dataset.dpExView; renderExchange(); }));
+    bindExchangeActions(host);
+  }
+
+  function bindExchangeActions(scope) {
+    scope.querySelectorAll('[data-dp-stop]').forEach((el) => el.addEventListener('click', (e) => e.stopPropagation()));
+    scope.querySelectorAll('[data-dp-ex-new]').forEach((b) => b.addEventListener('click', () => openExchangeModal(null, b.dataset.dpExNew)));
+    scope.querySelectorAll('[data-dp-ex-edit]').forEach((el) => {
+      const open = () => openExchangeModal(exchanges.find((x) => x.id === el.dataset.dpExEdit));
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+    });
+  }
+
+  function openExchangeModal(existing, ym) {
+    const x = existing || { reference_month: `${ym || localToday().slice(0, 7)}-01`, status: 'a_combinar' };
+    openModal(existing ? 'Editar intercâmbio' : 'Novo intercâmbio', `
+      <form class="dp-form" data-dp-ex-form>
+        <label>Mês<input required name="month" type="month" value="${escapeHtml(String(x.reference_month).slice(0, 7))}"></label>
+        <label>Status<select name="status">${Object.entries(EXCHANGE_STATUS).map(([k, v]) => option(k, v, x.status)).join('')}</select></label>
+        <label class="dp-span-3">Congregação<input required name="congregation_name" list="dp-ex-congs" autocomplete="off" value="${escapeHtml(x.congregation_name || '')}">
+          <datalist id="dp-ex-congs">${activeCongregations().map((c) => `<option value="${escapeHtml(c.name)}"></option>`).join('')}</datalist></label>
+        <label>Coordenador<input name="coordinator_name" autocomplete="off" value="${escapeHtml(x.coordinator_name || '')}"></label>
+        <label>Telefone<input name="coordinator_phone" type="tel" value="${escapeHtml(x.coordinator_phone || '')}"></label>
+        <label class="dp-span-3">Região / referência<input name="region" autocomplete="off" value="${escapeHtml(x.region || '')}"></label>
+        <label class="dp-span-3">Enviamos<input name="sent_note" autocomplete="off" placeholder="Quem vai daqui para lá (ex.: Edvan / Lucas)" value="${escapeHtml(x.sent_note || '')}"></label>
+        <label class="dp-span-3">Observações<textarea name="notes" rows="2">${escapeHtml(x.notes || '')}</textarea></label>
+        <footer>${existing ? '<button type="button" class="dp-danger-btn" data-dp-ex-delete>Excluir</button>' : ''}<span class="dp-footer-spacer"></span><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
+      </form>`);
+    const form = modalRoot()?.querySelector('[data-dp-ex-form]');
+    if (!form) return;
+    form.querySelector('[data-dp-ex-delete]')?.addEventListener('click', async () => {
+      if (!await confirmDialog('Excluir intercâmbio', `Excluir o intercâmbio de ${x.congregation_name || 'congregação'} em ${monthLabel(String(x.reference_month).slice(0, 7))}?`)) return;
+      const { error } = await client.from('speech_exchange_months').delete().eq('id', existing.id);
+      if (error) return toast(errorText(error), true);
+      closeModal(); await loadData(); refresh(); toast('Intercâmbio excluído.');
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = Object.fromEntries(new FormData(form).entries());
+      const name = text(v.congregation_name);
+      const cong = congregations.find((c) => normalizeSearch(c.name) === normalizeSearch(name));
+      const payload = {
+        reference_month: `${v.month}-01`,
+        congregation_id: cong?.id || null,
+        congregation_name: name || null,
+        coordinator_name: text(v.coordinator_name) || null,
+        coordinator_phone: text(v.coordinator_phone) || null,
+        region: text(v.region) || null,
+        status: v.status,
+        sent_note: text(v.sent_note) || null,
+        notes: text(v.notes) || null,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = existing
+        ? await client.from('speech_exchange_months').update(payload).eq('id', existing.id)
+        : await client.from('speech_exchange_months').insert(payload);
+      if (error) return toast(/duplicate|unique/i.test(error.message) ? 'Essa congregação já está cadastrada neste mês.' : errorText(error), true);
+      closeModal(); await loadData(); refresh(); toast('Intercâmbio salvo.');
+    });
   }
 
   const LOCAL_CONGREGATION = 'Jardim Elizabeth';
@@ -766,8 +1045,8 @@
     if (error) throw error;
   }
 
-  function openAssignmentModal(existing) {
-    const a = existing || { direction: 'receive', event_date: today(), modality: 'presencial', confirmation_status: 'pendente' };
+  function openAssignmentModal(existing, defaults = {}) {
+    const a = existing || { direction: 'receive', event_date: localToday(), modality: 'presencial', confirmation_status: 'pendente', ...defaults };
     openModal(`${existing ? 'Editar' : 'Nova'} designação`, `
       <form class="dp-form dp-form--assignment" data-dp-assignment-form>
         <label>Direção<select name="direction">${option('receive', 'Recebemos', a.direction)}${option('send', 'Enviamos', a.direction)}</select></label>
@@ -781,11 +1060,12 @@
         <label>Modalidade<select name="modality">${option('presencial', 'Presencial', a.modality)}${option('online', 'Online', a.modality)}</select></label>
         <label>Status<select name="confirmation_status">${Object.entries(STATUS).map(([k, v]) => option(k, v, a.confirmation_status)).join('')}</select></label>
         <label class="dp-span-3">Observações<textarea name="notes" rows="1">${escapeHtml(a.notes || '')}</textarea></label>
-        <footer><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
+        <footer>${existing ? `<button type="button" class="dp-danger-btn" data-dp-delete="${existing.id}">Excluir</button><button type="button" data-dp-wa="${existing.id}">WhatsApp</button>` : ''}<span class="dp-footer-spacer"></span><button type="button" data-dp-close>Cancelar</button><button class="btn-primary">Salvar</button></footer>
       </form>`, { wide: true });
     const form = modalRoot()?.querySelector('[data-dp-assignment-form]');
     if (!form) return;
     bindFormCombos(form);
+    if (existing) bindAssignmentActions(form);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
@@ -802,14 +1082,20 @@
 
   function bindAssignmentActions(scope) {
     scope.querySelector('[data-dp-new]')?.addEventListener('click', () => openAssignmentModal());
-    scope.querySelectorAll('[data-dp-edit]').forEach((row) => row.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return; openAssignmentModal(assignments.find((a) => a.id === row.dataset.dpEdit));
+    scope.querySelectorAll('[data-dp-edit]').forEach((row) => {
+      const open = () => openAssignmentModal(assignments.find((a) => a.id === row.dataset.dpEdit));
+      row.addEventListener('click', (e) => { if (e.target.closest('button:not([data-dp-edit]), a')) return; open(); });
+      if (row.tagName !== 'BUTTON') row.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target === row) open(); });
+    });
+    scope.querySelectorAll('[data-dp-status]').forEach((button) => button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setAssignmentStatus(button.dataset.dpStatus, button.dataset.next);
     }));
     scope.querySelectorAll('[data-dp-delete]').forEach((button) => button.addEventListener('click', async () => {
       const a = assignments.find((x) => x.id === button.dataset.dpDelete);
       if (!await confirmDialog('Excluir designação', `Excluir a designação de ${a?.speaker_name || 'orador'}?`)) return;
       const { error } = await client.from('speech_assignments').delete().eq('id', button.dataset.dpDelete);
-      if (error) return toast(errorText(error), true); await loadData(); refresh(); toast('Designação excluída.');
+      if (error) return toast(errorText(error), true); closeModal(); await loadData(); refresh(); toast('Designação excluída.');
     }));
     scope.querySelectorAll('[data-dp-wa]').forEach((button) => button.addEventListener('click', () => openWhatsapp([assignments.find((a) => a.id === button.dataset.dpWa)])));
     scope.querySelector('[data-dp-wa-range]')?.addEventListener('click', () => {
@@ -998,6 +1284,20 @@
       .sort((a, b) => a.outline_number - b.outline_number);
     if (filter === 'prepared') rows = rows.filter((t) => preparedCount(t.id) > 0);
     if (filter === 'bare') rows = rows.filter((t) => preparedCount(t.id) === 0);
+    const history = hallHistoryByOutline();
+    const t0 = localToday();
+    const lastDone = (t) => (history[t.outline_number] || []).filter((a) => a.event_date <= t0).pop()?.event_date || '';
+    const nextDone = (t) => (history[t.outline_number] || []).find((a) => a.event_date > t0)?.event_date || '';
+    if (filter === 'stale') {
+      rows = rows.filter((t) => t.is_active && !nextDone(t))
+        .sort((a, b) => lastDone(a).localeCompare(lastDone(b)) || (a.outline_number - b.outline_number));
+    }
+    const doneLabel = (t) => {
+      const next = nextDone(t);
+      if (next) return `<span class="dp-theme-last is-next">agendado ${escapeHtml(shortDate(next))}</span>`;
+      const last = lastDone(t);
+      return last ? `<span class="dp-theme-last">${escapeHtml(relativeDays(last))}</span>` : '<span class="dp-theme-last is-never">nunca aqui</span>';
+    };
 
     const keepFocus = document.activeElement?.matches?.('[data-dp-themes-search]');
     const caret = keepFocus ? document.activeElement.selectionStart : null;
@@ -1010,16 +1310,16 @@
             <input data-dp-themes-search type="search" placeholder="Nº ou título…" value="${escapeHtml(q)}" aria-label="Buscar temas">
           </label>
           <div class="dp-themes-chips" role="group" aria-label="Filtro de temas">
-            ${[['all', `Todos · ${themes.length}`], ['prepared', `Com orador · ${withPrep}`], ['bare', `Sem orador · ${bare}`]]
+            ${[['all', `Todos · ${themes.length}`], ['stale', 'Há mais tempo'], ['prepared', `Com orador · ${withPrep}`], ['bare', `Sem orador · ${bare}`]]
               .map(([id, label]) => `<button type="button" class="dp-themes-chip${filter === id ? ' is-on' : ''}" data-dp-themes-filter="${id}">${label}</button>`).join('')}
           </div>
         </div>
-        <div class="dp-themes-meta"><span>Catálogo S-34</span><span>${rows.length} exibido${rows.length === 1 ? '' : 's'}</span></div>
+        <div class="dp-themes-meta"><span>${filter === 'stale' ? 'Nunca feitos no nosso salão primeiro, depois os mais antigos' : 'Catálogo S-34'}</span><span>${rows.length} exibido${rows.length === 1 ? '' : 's'}</span></div>
         ${rows.length ? `<div class="dp-themes-list" role="list">${rows.map((t) => {
           const n = preparedCount(t.id);
           return `<button type="button" class="dp-theme-row" role="listitem" data-dp-theme-id="${t.id}" title="Ver oradores">
             <span class="dp-theme-num">${t.outline_number}</span>
-            <span class="dp-theme-title">${escapeHtml(t.title)}</span>
+            <span class="dp-theme-title">${escapeHtml(t.title)}${doneLabel(t)}</span>
             <span class="dp-theme-prep${n ? ' has' : ''}" aria-label="${n} preparados">${n || '—'}</span>
           </button>`;
         }).join('')}</div>` : empty('Nenhum tema encontrado.')}
@@ -1041,14 +1341,14 @@
   function selectTab(tab) {
     root.querySelectorAll('[data-dp-tab]').forEach((b) => b.classList.toggle('active', b.dataset.dpTab === tab));
     root.querySelectorAll('.terr-panel').forEach((p) => p.classList.toggle('active', p.id === `dp-panel-${tab}`));
-    const renderers = { agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes };
+    const renderers = { agenda: renderAgenda, intercambio: renderExchange, oradores: renderSpeakers, temas: renderThemes };
     if (!rendered[tab] && renderers[tab]) {
       renderers[tab]();
       rendered[tab] = true;
     }
   }
   function refresh() {
-    const renderers = { agenda: renderAgenda, oradores: renderSpeakers, temas: renderThemes };
+    const renderers = { agenda: renderAgenda, intercambio: renderExchange, oradores: renderSpeakers, temas: renderThemes };
     Object.keys(rendered).forEach((tab) => {
       if (rendered[tab] && renderers[tab]) renderers[tab]();
     });
@@ -1075,6 +1375,10 @@
     const failure = [themeRes, speakerRes, congregationRes, assignmentRes].find((x) => x.error);
     if (failure) throw failure.error;
     themes = themeRes.data || []; speakers = speakerRes.data || []; congregations = congregationRes.data || []; assignments = assignmentRes.data || [];
+    // Intercâmbio é opcional: sem a migration a Agenda continua funcionando.
+    const exchangeRes = await client.from('speech_exchange_months').select('*').order('reference_month');
+    exchangeAvailable = !exchangeRes.error;
+    exchanges = exchangeRes.data || [];
   }
 
   async function init() {
