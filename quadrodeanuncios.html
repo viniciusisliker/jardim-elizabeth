@@ -534,25 +534,18 @@ gtag('config', 'G-PGXCZF9S9W');
     .je-qh-sec__title .material-symbols-outlined { font-size: 15px; font-variation-settings: 'FILL' 1, 'wght' 500; }
     .je-qh-sec__rows { list-style: none; margin: 0; padding: 0.25rem 0.875rem; }
     .je-qh-row {
-      display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) minmax(0, auto); gap: 0 0.875rem;
+      display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) minmax(0, 56%); gap: 0 0.875rem;
       padding: 0.625rem 0; font-size: 0.8125rem; line-height: 1.4; border-bottom: 1px dashed #e5e9f0;
     }
     .je-qh-row:last-child { border-bottom: 0; }
     .je-qh-row__num { color: var(--c); font-weight: 800; text-align: right; }
     .je-qh-row__label { color: var(--c); font-weight: 700; }
-    .je-qh-row__name { font-weight: 700; text-align: right; }
-    .je-qh-row__extra {
-      display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem;
-      margin-top: 0.375rem; font-weight: 600; color: inherit;
-    }
-    .je-qh-row__extra b {
-      flex: none; padding: 0.0625rem 0.4375rem; border-radius: 999px; background: var(--bg); color: var(--c);
-      font-size: 0.625rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.5;
-    }
+    .je-qh-row__people { display: grid; grid-template-columns: 5.25rem minmax(0, 1fr); gap: 0.25rem 0.5rem; align-items: baseline; }
+    .je-qh-row__tag { color: var(--c); font-size: 0.625rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; }
+    .je-qh-row__name { font-weight: 700; }
     @media (max-width: 479px) {
-      .je-qh-row { grid-template-columns: 1.5rem minmax(0, 1fr); row-gap: 0.25rem; }
-      .je-qh-row__name { grid-column: 2; text-align: left; }
-      .je-qh-row__extra { justify-content: flex-start; }
+      .je-qh-row { grid-template-columns: 1.5rem minmax(0, 1fr); row-gap: 0.375rem; }
+      .je-qh-row__people { grid-column: 2; }
     }
 
     .je-qh-special { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.75rem; border-radius: 0.5rem; background: #f4e6d4; color: #0f3462; }
@@ -763,7 +756,7 @@ gtag('config', 'G-PGXCZF9S9W');
   <script src="js/header.js"></script>
   <script src="js/site-loader.js"></script>
   <script src="js/content.js?v=20260725260000"></script>
-  <script src="js/quadro-hoje.js?v=2026100202"></script>
+  <script src="js/quadro-hoje.js?v=2026100701"></script>
 
 </body>
 </html>
