@@ -105,29 +105,18 @@
     return sheet('org', 'Organização', 'Designações Mecânicas', entry.event_date, body);
   }
 
-  // Nomes numa grade de duas colunas (etiqueta | nome), alinhada entre linhas e quadros.
-  // Com Sala B, o salão principal também ganha etiqueta: as duas salas no mesmo nível.
   function row(num, label, name, extra) {
     if (!val(label) && !val(name) && !extra) return '';
-    const people = [[extra && extra.room ? 'Salão' : '', val(name)]];
-    if (extra) people.push([extra.label, extra.value]);
     return `
       <li class="je-qh-row">
         <span class="je-qh-row__num">${num ? `${num}.` : ''}</span>
         <span class="je-qh-row__label">${esc(label)}</span>
-        <span class="je-qh-row__people">${people.map(([tag, v]) => `
-          <span class="je-qh-row__tag">${esc(tag)}</span><span class="je-qh-row__name">${esc(v)}</span>`).join('')}
-        </span>
+        <span class="je-qh-row__name">${esc(val(name))}${extra || ''}</span>
       </li>`;
   }
 
   function extra(label, v) {
-    return val(v) ? { label, value: val(v) } : null;
-  }
-
-  function salaB(v, label = 'Sala B') {
-    const e = extra(label, v);
-    return e && { ...e, room: true };
+    return val(v) ? `<span class="je-qh-row__extra"><b>${esc(label)}</b> ${esc(val(v))}</span>` : '';
   }
 
   function section(theme, icon, title, rows) {
@@ -146,9 +135,9 @@
     const ministerio = [1, 2, 3, 4].map((i) => {
       const tipo = val(d[`ministerio_${i}_tipo`]);
       const people = d[`ministerio_${i}_designados`];
-      const nomesSalaB = d[`ministerio_${i}_sala_b`];
-      if (!tipo && !val(people) && !val(nomesSalaB)) return '';
-      return row(i + 3, tipo || `Parte ${i}`, people, salaB(nomesSalaB));
+      const salaB = d[`ministerio_${i}_sala_b`];
+      if (!tipo && !val(people) && !val(salaB)) return '';
+      return row(i + 3, tipo || `Parte ${i}`, people, extra('Sala B', salaB));
     });
     const lastMin = ministerio.reduce((last, r, idx) => (r ? idx + 1 : last), 0);
     const vidaNum = 4 + Math.max(3, lastMin);
@@ -162,8 +151,8 @@
     const body = [
       section('tesouros', 'diamond', 'Tesouros da Palavra de Deus', [
         row(1, val(d.tesouros_titulo) || 'Tesouros da Palavra de Deus', d.tesouros_designado),
-        row(2, 'Joias espirituais', d.joias_designado, salaB(d.dirigente_sala_b, 'Dirigente B')),
-        row(3, 'Leitura da Bíblia', d.leitura_biblia, salaB(d.leitura_biblia_sala_b))
+        row(2, 'Joias espirituais', d.joias_designado, extra('Dirigente Sala B', d.dirigente_sala_b)),
+        row(3, 'Leitura da Bíblia', d.leitura_biblia, extra('Sala B', d.leitura_biblia_sala_b))
       ]),
       section('ministerio', 'grass', 'Faça seu melhor no ministério', ministerio),
       section('vida', 'groups', 'Nossa vida cristã', [
